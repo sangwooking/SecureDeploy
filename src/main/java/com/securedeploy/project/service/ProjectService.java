@@ -105,6 +105,26 @@ public class ProjectService {
                 .orElseGet(() -> createUserProject(userId, resolveRepositoryName(repositoryUrl), ReviewSourceType.GITHUB, repositoryUrl));
     }
 
+
+    @Transactional
+    public void deleteProject(Long projectId, Long userId) {
+        if (userId == null) {
+            throw new SecureDeployException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        ProjectEntity project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new SecureDeployException(HttpStatus.NOT_FOUND, "프로젝트를 찾을 수 없습니다."));
+        if (project.getUser() == null) {
+            throw new SecureDeployException(HttpStatus.FORBIDDEN, "사용자 소유 프로젝트만 삭제할 수 있습니다.");
+        }
+        if (!project.getUser().getId().equals(userId)) {
+            throw new SecureDeployException(HttpStatus.FORBIDDEN, "이 프로젝트를 삭제할 권한이 없습니다.");
+        }
+
+        reviewRepository.findAllByProjectIdOrderByCreatedAtDesc(projectId)
+                .forEach(reviewRepository::delete);
+        projectRepository.delete(project);
+    }
+
     @Transactional(readOnly = true)
     public ProjectEntity findProject(Long projectId) {
         return projectRepository.findById(projectId)

@@ -1,5 +1,7 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import {
+  deleteProject,
+  deleteReview,
   downloadAiReviewReport,
   downloadReviewReport,
   fetchAiComparisonInsight,
@@ -129,6 +131,8 @@ function App() {
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [isComparisonLoading, setIsComparisonLoading] = useState(false);
   const [isDashboardLoading, setIsDashboardLoading] = useState(false);
+  const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
+  const [deletingProjectId, setDeletingProjectId] = useState<number | null>(null);
   const [isAiComparisonLoading, setIsAiComparisonLoading] = useState(false);
   const [isReportDownloading, setIsReportDownloading] = useState(false);
   const [isAiReportDownloading, setIsAiReportDownloading] = useState(false);
@@ -380,6 +384,91 @@ function App() {
       setDashboardErrorMessage(error instanceof Error ? error.message : '프로젝트 보안 대시보드를 불러오지 못했습니다.');
     } finally {
       setIsDashboardLoading(false);
+    }
+  };
+
+  const refreshProjectPanelsAfterDelete = async (projectId?: number | null) => {
+    if (!projectId) {
+      return;
+    }
+
+    if (projectDashboard?.projectId === projectId) {
+      try {
+        const dashboard = await fetchProjectDashboard(projectId);
+        setProjectDashboard(dashboard);
+      } catch (error) {
+        setProjectDashboard(null);
+        setDashboardErrorMessage(error instanceof Error ? error.message : '프로젝트 보안 대시보드를 다시 불러오지 못했습니다.');
+      }
+    }
+
+    if (reviewComparison?.projectId === projectId) {
+      try {
+        const comparison = await fetchLatestReviewComparison(projectId);
+        setReviewComparison(comparison);
+      } catch (error) {
+        setReviewComparison(null);
+        setComparisonErrorMessage(error instanceof Error ? error.message : '최근 분석 비교 결과를 다시 불러오지 못했습니다.');
+      }
+      setAiComparisonInsight(null);
+    }
+  };
+
+  const handleReviewDelete = async (history: ReviewHistoryResponse) => {
+    if (!window.confirm(`분석 결과 #${history.reviewId}을 삭제할까요? 연결된 취약점과 AI Audit snippet도 함께 삭제됩니다.`)) {
+      return;
+    }
+
+    setDeletingReviewId(history.reviewId);
+    setErrorMessage('');
+    setSuccessMessage('');
+    setHistoryErrorMessage('');
+
+    try {
+      const response = await deleteReview(history.reviewId);
+      setReviewHistory((previous) => previous.filter((item) => item.reviewId !== history.reviewId));
+      const currentProjectId = result?.projectId ?? null;
+      if (selectedReviewId === history.reviewId || result?.reviewId === history.reviewId) {
+        resetCurrentResult();
+      } else if (currentProjectId === history.projectId) {
+        await loadStatusSummary(currentProjectId);
+      }
+      await refreshProjectPanelsAfterDelete(history.projectId);
+      await loadReviewHistory();
+      setSuccessMessage(response.message);
+    } catch (error) {
+      setHistoryErrorMessage(error instanceof Error ? error.message : '분석 결과를 삭제하지 못했습니다.');
+    } finally {
+      setDeletingReviewId(null);
+    }
+  };
+
+  const handleProjectDelete = async (projectId: number) => {
+    if (!window.confirm('프로젝트를 삭제할까요? 연결된 모든 분석 결과, 취약점, snippet이 함께 삭제됩니다.')) {
+      return;
+    }
+
+    setDeletingProjectId(projectId);
+    setErrorMessage('');
+    setSuccessMessage('');
+    setDashboardErrorMessage('');
+
+    try {
+      const response = await deleteProject(projectId);
+      setReviewHistory((previous) => previous.filter((item) => item.projectId !== projectId));
+      if (result?.projectId === projectId || projectDashboard?.projectId === projectId || reviewComparison?.projectId === projectId) {
+        resetCurrentResult();
+      } else {
+        setProjectDashboard(null);
+        setReviewComparison(null);
+        setAiComparisonInsight(null);
+      }
+      await loadReviewHistory();
+      setSuccessMessage(response.message);
+    } catch (error) {
+      setDashboardErrorMessage(error instanceof Error ? error.message : '프로젝트를 삭제하지 못했습니다.');
+    } finally {
+      setDeletingProjectId(null);
     }
   };
 
@@ -898,13 +987,16 @@ function App() {
                     <button className="compare-button" type="button" onClick={() => void handleCompareLatest(history.projectId)} disabled={isComparisonLoading}>
                       {isComparisonLoading ? '비교 중...' : '최근 분석 비교'}
                     </button>
+                    <button className="delete-button" type="button" onClick={() => void handleReviewDelete(history)} disabled={deletingReviewId === history.reviewId || deletingProjectId === history.projectId}>
+                      {deletingReviewId === history.reviewId ? '삭제 중...' : '삭제'}
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {projectDashboard && <ProjectSecurityDashboardPanel dashboard={projectDashboard} />}
+          {projectDashboard && <ProjectSecurityDashboardPanel dashboard={projectDashboard} isDeleting={deletingProjectId === projectDashboard.projectId} onDelete={() => void handleProjectDelete(projectDashboard.projectId)} />}
 
           {reviewComparison && <ReviewComparisonPanel comparison={reviewComparison} aiInsight={aiComparisonInsight} isAiLoading={isAiComparisonLoading} onGenerateAi={() => void handleAiComparisonGenerate(reviewComparison.projectId)} />}
         </section>
@@ -990,7 +1082,7 @@ function AuthScreen({
   );
 }
 
-function ProjectSecurityDashboardPanel({ dashboard }: { dashboard: ProjectSecurityDashboardResponse }) {
+function ProjectSecurityDashboardPanel({ dashboard, isDeleting, onDelete }: { dashboard: ProjectSecurityDashboardResponse; isDeleting: boolean; onDelete: () => void }) {
   const comparison = dashboard.comparisonSummary;
   const latestScore = dashboard.latestSecurityScore ?? 0;
   const latestVulnerabilityCount = dashboard.latestVulnerabilityCount ?? 0;
@@ -1009,6 +1101,9 @@ function ProjectSecurityDashboardPanel({ dashboard }: { dashboard: ProjectSecuri
         <div className="project-dashboard-meta">
           <span>최신 분석 {dashboard.latestAnalyzedAt ? formatDateTime(dashboard.latestAnalyzedAt) : '없음'}</span>
           <strong>{dashboard.latestDeploymentStatus ?? '분석 전'}</strong>
+          <button className="delete-button project-delete-button" type="button" onClick={onDelete} disabled={isDeleting}>
+            {isDeleting ? '삭제 중...' : '프로젝트 삭제'}
+          </button>
         </div>
       </div>
 

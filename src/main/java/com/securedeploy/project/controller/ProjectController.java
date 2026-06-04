@@ -4,6 +4,7 @@ import com.securedeploy.ai.dto.AiComparisonInsightResponse;
 import com.securedeploy.auth.service.CurrentUserService;
 import com.securedeploy.ai.service.AiReviewService;
 import com.securedeploy.github.dto.GithubRepositoryReviewRequest;
+import com.securedeploy.global.dto.DeleteResponse;
 import com.securedeploy.project.comparison.ReviewComparisonService;
 import com.securedeploy.project.dto.ProjectDetailResponse;
 import com.securedeploy.project.dto.ProjectResponse;
@@ -20,6 +21,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,6 +65,11 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.findProjectDetail(projectId, currentUserService.currentUserId()));
     }
 
+    @DeleteMapping("/{projectId}")
+    public ResponseEntity<DeleteResponse> deleteProject(@PathVariable Long projectId) {
+        projectService.deleteProject(projectId, currentUserService.currentUserId());
+        return ResponseEntity.ok(new DeleteResponse("프로젝트가 삭제되었습니다."));
+    }
 
     @GetMapping("/{projectId}/dashboard")
     public ResponseEntity<ProjectSecurityDashboardResponse> findProjectDashboard(@PathVariable Long projectId) {

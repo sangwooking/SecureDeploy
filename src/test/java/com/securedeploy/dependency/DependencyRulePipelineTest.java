@@ -13,16 +13,22 @@ import com.securedeploy.rule.rules.OutdatedDockerBaseImageRule;
 import com.securedeploy.rule.rules.VulnerableGradleDependencyRule;
 import com.securedeploy.rule.rules.VulnerableMavenDependencyRule;
 import com.securedeploy.rule.rules.VulnerableNpmDependencyRule;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class DependencyRulePipelineTest {
 
+    @TempDir
+    private Path tempDir;
+
     @Test
-    void sampleDependencyProjectIsCollectedAndDetected() {
+    void sampleDependencyProjectIsCollectedAndDetected() throws Exception {
+        Path sampleProject = createSampleDependencyProject();
         ProjectScanner scanner = new ProjectScanner(new ProjectFileCollector());
-        ProjectStructure structure = scanner.scan(Path.of("sample-dependency-vulnerable"));
+        ProjectStructure structure = scanner.scan(sampleProject);
 
         assertThat(structure.analysisFiles())
                 .extracting(file -> file.type())
@@ -58,5 +64,61 @@ class DependencyRulePipelineTest {
         assertThat(matches).extracting(RuleMatch::evidence).anyMatch(evidence -> evidence.contains("dependency=commons-collections:commons-collections") && evidence.contains("currentVersion=3.2.1"));
         assertThat(matches).extracting(RuleMatch::evidence).anyMatch(evidence -> evidence.contains("dependency=ubuntu") && evidence.contains("currentVersion=18.04"));
         assertThat(matches).extracting(RuleMatch::evidence).anyMatch(evidence -> evidence.contains("dependency=node") && evidence.contains("currentVersion=latest"));
+    }
+
+
+    private Path createSampleDependencyProject() throws Exception {
+        Path project = tempDir.resolve("sample-dependency-vulnerable");
+        Files.createDirectories(project.resolve("frontend"));
+        Files.createDirectories(project.resolve("backend"));
+        Files.createDirectories(project.resolve("gradle-service"));
+        Files.createDirectories(project.resolve("docker"));
+
+        Files.writeString(project.resolve("frontend/package.json"), """
+                {
+                  "dependencies": {
+                    "axios": "0.20.0",
+                    "lodash": "4.17.10",
+                    "minimist": "1.2.0",
+                    "serialize-javascript": "2.1.2"
+                  }
+                }
+                """);
+        Files.writeString(project.resolve("frontend/package-lock.json"), """
+                {
+                  "packages": {
+                    "node_modules/lodash": { "version": "4.17.10" },
+                    "node_modules/minimist": { "version": "1.2.0" },
+                    "node_modules/axios": { "version": "0.20.0" }
+                  }
+                }
+                """);
+        Files.writeString(project.resolve("backend/pom.xml"), """
+                <project>
+                  <dependencies>
+                    <dependency>
+                      <groupId>org.apache.logging.log4j</groupId>
+                      <artifactId>log4j-core</artifactId>
+                      <version>2.14.1</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>com.fasterxml.jackson.core</groupId>
+                      <artifactId>jackson-databind</artifactId>
+                      <version>2.9.10</version>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """);
+        Files.writeString(project.resolve("gradle-service/build.gradle"), """
+                dependencies {
+                    implementation 'org.springframework:spring-webmvc:5.3.10'
+                    implementation 'commons-collections:commons-collections:3.2.1'
+                }
+                """);
+        Files.writeString(project.resolve("docker/Dockerfile"), """
+                FROM ubuntu:18.04 AS base
+                FROM node:latest AS web
+                """);
+        return project;
     }
 }

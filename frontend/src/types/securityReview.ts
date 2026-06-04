@@ -33,6 +33,10 @@ export type RuleCategory =
 
 export type ReviewSourceType = 'ZIP' | 'GITHUB';
 
+export interface DeleteResponse {
+  message: string;
+}
+
 export type VulnerabilityStatus = 'UNCHECKED' | 'ACKNOWLEDGED' | 'IN_PROGRESS' | 'RESOLVED' | 'IGNORED';
 
 export type AiFeatureType = 'VULNERABILITY_REVIEW' | 'PROJECT_SUMMARY' | 'REMEDIATION_SUGGESTION' | 'SECURITY_AUDIT' | 'COMPARISON_INSIGHT' | 'PRIORITY_PLANNING' | 'SECURITY_ROADMAP';

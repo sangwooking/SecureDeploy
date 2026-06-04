@@ -1,5 +1,6 @@
 import type {
   AuthResponse,
+  DeleteResponse,
   AiComparisonInsightResponse,
   AiPriorityResponse,
   AiProjectSummaryResponse,
@@ -99,6 +100,22 @@ export async function fetchLatestReviewComparison(projectId: number): Promise<Re
 export async function fetchReviewDetail(reviewId: number): Promise<SecurityReviewResponse> {
   const response = await fetch(`${API_BASE_URL}/api/reviews/${reviewId}`, { headers: authHeaders() });
   return parseJsonResponse<SecurityReviewResponse>(response, '분석 상세 결과를 불러오지 못했습니다.');
+}
+
+export async function deleteReview(reviewId: number): Promise<DeleteResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/reviews/${reviewId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  return parseJsonResponse<DeleteResponse>(response, '분석 결과를 삭제하지 못했습니다.');
+}
+
+export async function deleteProject(projectId: number): Promise<DeleteResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  return parseJsonResponse<DeleteResponse>(response, '프로젝트를 삭제하지 못했습니다.');
 }
 
 export async function fetchAiReview(reviewId: number): Promise<AiReviewResultResponse> {
