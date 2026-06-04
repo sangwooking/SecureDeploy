@@ -1,0 +1,11 @@
+package com.securedeploy.ai.dto;
+
+public enum AiFeatureType {
+    VULNERABILITY_REVIEW,
+    PROJECT_SUMMARY,
+    REMEDIATION_SUGGESTION,
+    SECURITY_AUDIT,
+    COMPARISON_INSIGHT,
+    PRIORITY_PLANNING,
+    SECURITY_ROADMAP
+}

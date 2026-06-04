@@ -1,0 +1,39 @@
+debug: false
+
+spring:
+  application:
+    name: sample-secure-spring
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:secure-demo}
+    username: ${DB_USERNAME:demo_user}
+    password: ${DB_PASSWORD}
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: secure-demo
+  expiration-minutes: ${JWT_EXPIRATION_MINUTES:30}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  endpoint:
+    health:
+      show-details: never
+
+server:
+  error:
+    include-stacktrace: never
+    include-message: never
+  servlet:
+    session:
+      cookie:
+        secure: true
+        http-only: true
+        same-site: strict
