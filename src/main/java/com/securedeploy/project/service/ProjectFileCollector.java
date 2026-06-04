@@ -43,6 +43,9 @@ public class ProjectFileCollector {
         if ("pom.xml".equals(lowerName)) {
             return Optional.of(ProjectFileType.XML);
         }
+        if ("build.gradle".equals(lowerName) || "build.gradle.kts".equals(lowerName)) {
+            return Optional.of(ProjectFileType.GRADLE_BUILD);
+        }
         if ("package.json".equals(lowerName)) {
             return Optional.of(ProjectFileType.PACKAGE_JSON);
         }

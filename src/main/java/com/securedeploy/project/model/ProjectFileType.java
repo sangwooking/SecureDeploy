@@ -6,6 +6,7 @@ public enum ProjectFileType {
     PROPERTIES,
     ENV,
     XML,
+    GRADLE_BUILD,
     DOCKERFILE,
     DOCKER_COMPOSE,
     GITHUB_ACTIONS,

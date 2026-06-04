@@ -149,7 +149,10 @@ public class PromptBuilder {
                 - React dangerouslySetInnerHTML and client-side XSS risks
                 - Client environment variable and API URL exposure risks
                 - Redirect parameter validation risks
-                - Docker root container execution and latest image tag risks
+                - Known vulnerable dependency candidate usage in package.json, pom.xml, Gradle, and lock files
+                - Software supply-chain risks from outdated libraries, risky package scripts, and unpinned dependencies
+                - Dependency update priority and deployment impact
+                - Docker root container execution and latest/outdated base image risks
                 - CI/CD secret handling and curl/wget pipe execution risks
                 - Kubernetes privileged container, NodePort, plaintext Secret risks
                 - Nginx directory listing, server token, HTTP-only deployment risks

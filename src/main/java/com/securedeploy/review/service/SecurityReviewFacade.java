@@ -124,7 +124,7 @@ public class SecurityReviewFacade {
     private AnalysisOutcome reviewProject(String projectName, Path projectRoot) {
         ProjectStructure projectStructure = projectScanner.scan(projectRoot);
         if (projectStructure.analysisFiles().isEmpty()) {
-            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "분석 가능한 파일을 찾지 못했습니다. Spring Boot 또는 React/Vite 프로젝트의 .java, .js, .ts, .tsx, 설정 파일, package.json, pom.xml 또는 Dockerfile이 포함되어 있는지 확인해 주세요.");
+            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "분석 가능한 파일을 찾지 못했습니다. Spring Boot 또는 React/Vite 프로젝트의 .java, .js, .ts, .tsx, 설정 파일, package.json, pom.xml, build.gradle, Dockerfile 또는 배포 설정 파일이 포함되어 있는지 확인해 주세요.");
         }
         List<RuleMatch> matches = ruleEngine.execute(new RuleExecutionContext(projectStructure));
         SnippetGroup snippetGroup = snippetCollector.collect(projectStructure);

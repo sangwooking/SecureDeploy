@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework:spring-webmvc:5.3.10'
+    implementation 'commons-collections:commons-collections:3.2.1'
+}

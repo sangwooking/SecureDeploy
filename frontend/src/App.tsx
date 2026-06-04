@@ -724,7 +724,7 @@ function App() {
               <label className="file-drop">
                 <input type="file" accept=".zip,application/zip" onChange={handleFileChange} disabled={isLoading} />
                 <span className="file-name">{selectedFile ? selectedFile.name : 'ZIP 파일 선택'}</span>
-                <span className="file-hint">.java, JS/TS, 설정 파일, package.json, pom.xml, Dockerfile을 분석합니다.</span>
+                <span className="file-hint">.java, JS/TS, 의존성, Docker/배포 설정까지 분석합니다.</span>
               </label>
             ) : (
               <label className="github-input-wrap">

@@ -23,6 +23,14 @@ final class RuleFileTypes {
         return file.type() == ProjectFileType.XML && file.relativePath().endsWith("pom.xml");
     }
 
+    static boolean isGradleBuild(ProjectFile file) {
+        return file.type() == ProjectFileType.GRADLE_BUILD;
+    }
+
+    static boolean isLockFile(ProjectFile file) {
+        return file.type() == ProjectFileType.LOCK_FILE;
+    }
+
     static boolean isFrontendSource(ProjectFile file) {
         return file.type() == ProjectFileType.JAVASCRIPT
                 || file.type() == ProjectFileType.TYPESCRIPT
