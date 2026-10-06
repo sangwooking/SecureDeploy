@@ -43,6 +43,9 @@ export type AiFeatureType = 'VULNERABILITY_REVIEW' | 'PROJECT_SUMMARY' | 'REMEDI
 
 export type AiConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
 
+export type FalsePositiveRisk = 'LOW' | 'MEDIUM' | 'HIGH';
+export type DetectionConfidence = 'LOW' | 'MEDIUM' | 'HIGH';
+
 export interface Vulnerability {
   vulnerabilityId?: number | null;
   ruleId: string;
@@ -53,6 +56,9 @@ export interface Vulnerability {
   message: string;
   recommendation: string;
   evidence?: string;
+  falsePositiveRisk?: FalsePositiveRisk;
+  confidence?: DetectionConfidence;
+  analysisNote?: string | null;
   status?: VulnerabilityStatus;
   statusUpdatedAt?: string | null;
   statusComment?: string | null;
@@ -238,6 +244,9 @@ export interface ComparedVulnerabilityResponse {
   message: string;
   recommendation: string;
   evidence?: string;
+  falsePositiveRisk?: FalsePositiveRisk;
+  confidence?: DetectionConfidence;
+  analysisNote?: string | null;
 }
 
 export interface ReviewComparisonResponse {

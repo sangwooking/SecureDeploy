@@ -8,7 +8,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/securedeploy}
     username: ${DB_USERNAME:securedeploy}
-    password: ${DB_PASSWORD:securedeploy}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -29,6 +29,5 @@ securedeploy:
       model: ${OPENAI_MODEL:gpt-5.4-mini}
       timeout-seconds: 30
   jwt:
-    secret: ${JWT_SECRET:securedeploy-local-dev-secret-change-me}
+    secret: ${JWT_SECRET}
     expiration-seconds: ${JWT_EXPIRATION_SECONDS:86400}
-

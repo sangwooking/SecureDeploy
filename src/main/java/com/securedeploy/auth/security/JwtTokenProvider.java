@@ -24,9 +24,12 @@ public class JwtTokenProvider {
     private final long expirationSeconds;
 
     public JwtTokenProvider(
-            @Value("${securedeploy.jwt.secret:securedeploy-local-dev-secret-change-me}") String secret,
+            @Value("${securedeploy.jwt.secret}") String secret,
             @Value("${securedeploy.jwt.expiration-seconds:86400}") long expirationSeconds
     ) {
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalArgumentException("JWT 서명 키는 환경변수 JWT_SECRET에 32바이트 이상의 임의 값으로 설정해야 합니다.");
+        }
         this.secret = secret;
         this.expirationSeconds = expirationSeconds;
     }

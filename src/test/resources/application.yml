@@ -17,6 +17,5 @@ securedeploy:
   storage:
     temp-dir: ${java.io.tmpdir}/securedeploy-test
   jwt:
-    secret: ${JWT_SECRET:securedeploy-local-dev-secret-change-me}
+    secret: securedeploy-test-signing-key-not-for-production-0001
     expiration-seconds: ${JWT_EXPIRATION_SECONDS:86400}
-

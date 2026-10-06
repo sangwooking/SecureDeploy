@@ -34,6 +34,11 @@ public class PromptBuilder {
                 Message: %s
                 Existing Recommendation: %s
                 Evidence: %s
+                False Positive Risk: %s
+                Detection Confidence: %s
+                False Positive Analysis Note: %s
+
+                If falsePositiveRisk is HIGH or confidence is LOW, describe it as 검토 필요 and do not overstate it as a confirmed exploit.
                 """.formatted(
                 request.ruleId(),
                 request.severity(),
@@ -42,7 +47,10 @@ public class PromptBuilder {
                 request.line(),
                 request.message(),
                 request.recommendation(),
-                request.evidence() == null ? "-" : request.evidence()
+                request.evidence() == null ? "-" : request.evidence(),
+                request.falsePositiveRisk(),
+                request.confidence(),
+                request.analysisNote() == null ? "-" : request.analysisNote()
         );
     }
 
@@ -53,6 +61,7 @@ public class PromptBuilder {
                 Generate vulnerability-level explanations only from the Rule Engine findings.
 
                 Project: %s
+                Findings include falsePositiveRisk, confidence, and analysisNote. Treat HIGH falsePositiveRisk or LOW confidence findings as review-needed items.
                 Findings: %s
                 """.formatted(context.projectName(), context.findings());
     }
@@ -79,6 +88,7 @@ public class PromptBuilder {
                 Vulnerability Count: %d
                 Security Score: %d
                 Deployment Status: %s
+                Findings include falsePositiveRisk, confidence, and analysisNote. Prioritize confidence HIGH findings and phrase confidence LOW findings as review-needed.
                 Findings: %s
                 """.formatted(
                 context.projectName(),
@@ -110,6 +120,7 @@ public class PromptBuilder {
                 ]
 
                 Project: %s
+                Findings include falsePositiveRisk, confidence, and analysisNote. Treat HIGH falsePositiveRisk or LOW confidence findings as review-needed items.
                 Findings: %s
                 """.formatted(context.projectName(), context.findings());
     }
@@ -164,6 +175,7 @@ public class PromptBuilder {
                 Deployment Status: %s
                 Scanned File Count: %d
                 Vulnerability Count: %d
+                Rule Engine Findings include falsePositiveRisk, confidence, and analysisNote. Treat likely false positives as AI-assisted review suggestions, not confirmed vulnerabilities.
                 Rule Engine Findings: %s
                 Major File Paths From Findings: %s
 
@@ -296,6 +308,7 @@ public class PromptBuilder {
                 Project: %s
                 Security Score: %d
                 Deployment Status: %s
+                Findings include falsePositiveRisk, confidence, and analysisNote. Rank confidence HIGH items first; lower or mark confidence LOW / falsePositiveRisk HIGH items as 검토 필요.
                 Findings: %s
                 """.formatted(
                 context.reviewId(),
@@ -333,6 +346,7 @@ public class PromptBuilder {
                 Source Type: %s
                 Security Score: %d
                 Deployment Status: %s
+                Findings include falsePositiveRisk, confidence, and analysisNote. Roadmap items for likely false positives should focus on verification before remediation.
                 Findings: %s
                 SecurityConfig snippets: %s
                 Controller snippets: %s

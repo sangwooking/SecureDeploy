@@ -211,7 +211,10 @@ public class AiReviewService {
                 vulnerability.getLine(),
                 vulnerability.getMessage(),
                 vulnerability.getRecommendation(),
-                vulnerability.getEvidence()
+                vulnerability.getEvidence(),
+                vulnerability.getFalsePositiveRisk(),
+                vulnerability.getConfidence(),
+                vulnerability.getAnalysisNote()
         );
         String prompt = promptBuilder.buildVulnerabilityReviewPrompt(request);
         return provider.generateVulnerabilityReview(request, prompt);

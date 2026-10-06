@@ -408,6 +408,10 @@ h1 {
     display: grid;
   }
 
+  .judgment-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
   .severity {
     width: fit-content;
   }
@@ -536,6 +540,101 @@ h1 {
   color: #172033;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 13px;
+  line-height: 1.45;
+}
+
+.false-positive-meta {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  border: 1px solid #dbe5f1;
+  border-radius: 8px;
+  background: #f8fbff;
+  color: #506079;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.judgment-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px;
+}
+
+.judgment-meta-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.judgment-meta-item > span {
+  color: #506079;
+  font-weight: 800;
+}
+
+.judgment-value {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.judgment-confidence-high,
+.judgment-risk-low {
+  color: #216e4e;
+  background: #dff7ea;
+}
+
+.judgment-confidence-medium,
+.judgment-risk-medium {
+  color: #8a4b00;
+  background: #fff0cc;
+}
+
+.judgment-confidence-low,
+.judgment-risk-high {
+  color: #9a3412;
+  background: #ffead5;
+}
+
+.judgment-confidence-unknown,
+.judgment-risk-unknown {
+  color: #506079;
+  background: #e8edf3;
+}
+
+.judgment-meta-help {
+  margin: 0;
+  color: #607086;
+  font-size: 12px;
+}
+
+.analysis-note {
+  padding-top: 8px;
+  border-top: 1px solid #dbe5f1;
+}
+
+.analysis-note strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #506079;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.analysis-note p {
+  margin: 0;
+  color: #607086;
+}
+
+.comparison-fp-note {
+  margin: 8px 0 0;
+  color: #607086;
+  font-size: 12px;
   line-height: 1.45;
 }
 

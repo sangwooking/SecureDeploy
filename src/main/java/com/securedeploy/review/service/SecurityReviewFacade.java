@@ -17,6 +17,7 @@ import com.securedeploy.review.dto.SecurityReviewResponse;
 import com.securedeploy.review.model.ReviewSourceType;
 import com.securedeploy.rule.engine.RuleExecutionContext;
 import com.securedeploy.rule.engine.VulnerabilityRuleEngine;
+import com.securedeploy.rule.filter.FalsePositiveAnalyzer;
 import com.securedeploy.rule.model.RuleMatch;
 import com.securedeploy.upload.model.ExtractedProject;
 import com.securedeploy.upload.model.UploadedArchive;
@@ -36,6 +37,7 @@ public class SecurityReviewFacade {
     private final GitHubRepositoryService gitHubRepositoryService;
     private final ProjectScanner projectScanner;
     private final VulnerabilityRuleEngine ruleEngine;
+    private final FalsePositiveAnalyzer falsePositiveAnalyzer;
     private final SecurityReviewService securityReviewService;
     private final ReviewPersistenceService reviewPersistenceService;
     private final SnippetCollector snippetCollector;
@@ -45,6 +47,7 @@ public class SecurityReviewFacade {
     public SecurityReviewFacade(UploadService uploadService, ZipExtractService zipExtractService,
                                 GitHubRepositoryService gitHubRepositoryService,
                                 ProjectScanner projectScanner, VulnerabilityRuleEngine ruleEngine,
+                                FalsePositiveAnalyzer falsePositiveAnalyzer,
                                 SecurityReviewService securityReviewService,
                                 ReviewPersistenceService reviewPersistenceService,
                                 SnippetCollector snippetCollector,
@@ -55,6 +58,7 @@ public class SecurityReviewFacade {
         this.gitHubRepositoryService = gitHubRepositoryService;
         this.projectScanner = projectScanner;
         this.ruleEngine = ruleEngine;
+        this.falsePositiveAnalyzer = falsePositiveAnalyzer;
         this.securityReviewService = securityReviewService;
         this.reviewPersistenceService = reviewPersistenceService;
         this.snippetCollector = snippetCollector;
@@ -126,7 +130,8 @@ public class SecurityReviewFacade {
         if (projectStructure.analysisFiles().isEmpty()) {
             throw new SecureDeployException(HttpStatus.BAD_REQUEST, "분석 가능한 파일을 찾지 못했습니다. Spring Boot 또는 React/Vite 프로젝트의 .java, .js, .ts, .tsx, 설정 파일, package.json, pom.xml, build.gradle, Dockerfile 또는 배포 설정 파일이 포함되어 있는지 확인해 주세요.");
         }
-        List<RuleMatch> matches = ruleEngine.execute(new RuleExecutionContext(projectStructure));
+        List<RuleMatch> rawMatches = ruleEngine.execute(new RuleExecutionContext(projectStructure));
+        List<RuleMatch> matches = falsePositiveAnalyzer.analyze(projectStructure, rawMatches);
         SnippetGroup snippetGroup = snippetCollector.collect(projectStructure);
 
         SecurityReviewResponse response = securityReviewService.createResponse(

@@ -140,7 +140,10 @@ public class ReviewPersistenceService {
                 vulnerability.line(),
                 vulnerability.message(),
                 vulnerability.recommendation(),
-                vulnerability.evidence()
+                vulnerability.evidence(),
+                vulnerability.falsePositiveRisk(),
+                vulnerability.confidence(),
+                vulnerability.analysisNote()
         );
     }
 }

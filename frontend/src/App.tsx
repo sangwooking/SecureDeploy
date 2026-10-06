@@ -67,6 +67,18 @@ const vulnerabilityStatusLabels: Record<VulnerabilityStatus, string> = {
   IGNORED: '무시',
 };
 
+const falsePositiveRiskLabels: Record<'LOW' | 'MEDIUM' | 'HIGH', string> = {
+  LOW: '낮음',
+  MEDIUM: '보통',
+  HIGH: '높음',
+};
+
+const confidenceLabels: Record<'LOW' | 'MEDIUM' | 'HIGH', string> = {
+  LOW: '낮음',
+  MEDIUM: '보통',
+  HIGH: '높음',
+};
+
 const ACCESS_TOKEN_STORAGE_KEY = 'securedeploy.accessToken';
 const AUTH_USER_STORAGE_KEY = 'securedeploy.authUser';
 
@@ -1299,6 +1311,14 @@ function ComparisonList({ title, items, emptyText }: { title: string; items: Rev
               <strong>{item.message}</strong>
               <p>{item.filePath}:{item.line}</p>
               {item.evidence && <code>{item.evidence}</code>}
+              {(item.falsePositiveRisk || item.confidence || item.analysisNote) && (
+                <p className="comparison-fp-note">
+                  {item.falsePositiveRisk && `오탐 가능성 ${falsePositiveRiskLabels[item.falsePositiveRisk]}`}
+                  {item.falsePositiveRisk && item.confidence && ' · '}
+                  {item.confidence && `신뢰도 ${confidenceLabels[item.confidence]}`}
+                  {item.analysisNote && ` · 판단 근거: ${item.analysisNote}`}
+                </p>
+              )}
             </article>
           ))}
         </div>
@@ -1386,6 +1406,32 @@ function renderVulnerabilityList(
                 <dd>{vulnerability.line}</dd>
               </div>
             </dl>
+
+            {(vulnerability.falsePositiveRisk || vulnerability.confidence || vulnerability.analysisNote) && (
+              <section className="false-positive-meta" aria-label="탐지 판단 정보">
+                <div className="judgment-meta-grid">
+                  <div className="judgment-meta-item" title="SecureDeploy가 탐지 결과를 얼마나 신뢰하는지 나타냅니다.">
+                    <span>신뢰도</span>
+                    <strong className={`judgment-value judgment-confidence-${vulnerability.confidence?.toLowerCase() ?? 'unknown'}`}>{vulnerability.confidence
+                      ? `${confidenceLabels[vulnerability.confidence]} · ${vulnerability.confidence}`
+                      : '정보 없음'}</strong>
+                  </div>
+                  <div className="judgment-meta-item" title="실제 취약점이 아닐 가능성을 나타냅니다.">
+                    <span>오탐 가능성</span>
+                    <strong className={`judgment-value judgment-risk-${vulnerability.falsePositiveRisk?.toLowerCase() ?? 'unknown'}`}>{vulnerability.falsePositiveRisk
+                      ? `${falsePositiveRiskLabels[vulnerability.falsePositiveRisk]} · ${vulnerability.falsePositiveRisk}`
+                      : '정보 없음'}</strong>
+                  </div>
+                </div>
+                <p className="judgment-meta-help">신뢰도는 탐지 확신 수준, 오탐 가능성은 실제 취약점이 아닐 가능성입니다.</p>
+                {vulnerability.analysisNote?.trim() && (
+                  <div className="analysis-note">
+                    <strong>판단 근거</strong>
+                    <p>{vulnerability.analysisNote}</p>
+                  </div>
+                )}
+              </section>
+            )}
 
             <div className="message-block">
               <span>message</span>

@@ -188,7 +188,7 @@ public class TemplateAiProvider implements AiProvider {
     @Override
     public List<AiPriorityItemResponse> generatePriorities(AiProjectContext context, String prompt) {
         List<AiVulnerabilityFinding> findings = context.findings().stream()
-                .sorted(Comparator.comparingInt(finding -> severityRank(finding.severity())))
+                .sorted(Comparator.comparingInt(this::priorityRank))
                 .limit(10)
                 .toList();
         List<AiPriorityItemResponse> priorities = new ArrayList<>();
@@ -199,11 +199,15 @@ public class TemplateAiProvider implements AiProvider {
                     finding.ruleId(),
                     titleFor(finding.ruleId(), finding.message()),
                     finding.severity(),
-                    "위험도 " + finding.severity() + ", 영역 " + finding.category() + " 기준으로 우선순위를 산정했습니다.",
+                    priorityReason(finding),
                     expectedImpactFor(finding),
                     difficultyFor(finding),
-                    finding.recommendation(),
-                    urgencyFor(finding.severity())
+                    finding.falsePositiveRisk() == com.securedeploy.rule.model.FalsePositiveRisk.HIGH || finding.confidence() == com.securedeploy.rule.model.DetectionConfidence.LOW
+                            ? "먼저 오탐 여부와 실제 배포 코드 영향 범위를 검증한 뒤 조치하세요. " + finding.recommendation()
+                            : finding.recommendation(),
+                    finding.falsePositiveRisk() == com.securedeploy.rule.model.FalsePositiveRisk.HIGH || finding.confidence() == com.securedeploy.rule.model.DetectionConfidence.LOW
+                            ? "검토 필요"
+                            : urgencyFor(finding.severity())
             ));
         }
         return priorities;
@@ -251,6 +255,29 @@ public class TemplateAiProvider implements AiProvider {
                         "장기적인 보안 품질 유지"
                 ))
         );
+    }
+
+
+    private int priorityRank(AiVulnerabilityFinding finding) {
+        int falsePositivePenalty = switch (finding.falsePositiveRisk()) {
+            case HIGH -> 100;
+            case MEDIUM -> 30;
+            case LOW -> 0;
+        };
+        int confidencePenalty = switch (finding.confidence()) {
+            case LOW -> 80;
+            case MEDIUM -> 20;
+            case HIGH -> 0;
+        };
+        return severityRank(finding.severity()) + falsePositivePenalty + confidencePenalty;
+    }
+
+    private String priorityReason(AiVulnerabilityFinding finding) {
+        String base = "위험도 " + finding.severity() + ", 영역 " + finding.category() + " 기준으로 우선순위를 산정했습니다.";
+        if (finding.falsePositiveRisk() == com.securedeploy.rule.model.FalsePositiveRisk.HIGH || finding.confidence() == com.securedeploy.rule.model.DetectionConfidence.LOW) {
+            return base + " 다만 오탐 가능성 " + finding.falsePositiveRisk() + ", 신뢰도 " + finding.confidence() + " 항목이므로 수정 전 검증이 우선입니다.";
+        }
+        return base;
     }
 
     private String expectedImpactFor(AiVulnerabilityFinding finding) {

@@ -330,7 +330,10 @@ public class RealOpenAiProvider implements AiProvider {
             return context.findings().get(index);
         }
         return new AiVulnerabilityFinding("AI_REMEDIATION", Severity.LOW, RuleCategory.CONFIGURATION, "-", 0,
-                "AI 수정 제안", "수정 후 재분석하세요.", null);
+                "AI 수정 제안", "수정 후 재분석하세요.", null,
+                com.securedeploy.rule.model.FalsePositiveRisk.MEDIUM,
+                com.securedeploy.rule.model.DetectionConfidence.LOW,
+                "AI 응답과 Rule Engine finding 매칭에 실패했습니다.");
     }
 
 
