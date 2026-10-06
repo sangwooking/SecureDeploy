@@ -19,6 +19,7 @@ import com.securedeploy.rule.engine.RuleExecutionContext;
 import com.securedeploy.rule.engine.VulnerabilityRuleEngine;
 import com.securedeploy.rule.filter.FalsePositiveAnalyzer;
 import com.securedeploy.rule.model.RuleMatch;
+import com.securedeploy.sca.service.ScaService;
 import com.securedeploy.upload.model.ExtractedProject;
 import com.securedeploy.upload.model.UploadedArchive;
 import com.securedeploy.upload.service.UploadService;
@@ -43,6 +44,7 @@ public class SecurityReviewFacade {
     private final SnippetCollector snippetCollector;
     private final ProjectService projectService;
     private final CurrentUserService currentUserService;
+    private final ScaService scaService;
 
     public SecurityReviewFacade(UploadService uploadService, ZipExtractService zipExtractService,
                                 GitHubRepositoryService gitHubRepositoryService,
@@ -52,7 +54,7 @@ public class SecurityReviewFacade {
                                 ReviewPersistenceService reviewPersistenceService,
                                 SnippetCollector snippetCollector,
                                 ProjectService projectService,
-                                CurrentUserService currentUserService) {
+                                CurrentUserService currentUserService, ScaService scaService) {
         this.uploadService = uploadService;
         this.zipExtractService = zipExtractService;
         this.gitHubRepositoryService = gitHubRepositoryService;
@@ -64,6 +66,7 @@ public class SecurityReviewFacade {
         this.snippetCollector = snippetCollector;
         this.projectService = projectService;
         this.currentUserService = currentUserService;
+        this.scaService = scaService;
     }
 
     public SecurityReviewResponse reviewUploadedZip(MultipartFile file) {
@@ -139,7 +142,7 @@ public class SecurityReviewFacade {
                 projectStructure.analysisFiles().size(),
                 matches
         );
-        return new AnalysisOutcome(response, snippetGroup);
+        return new AnalysisOutcome(response.withSca(scaService.analyze(projectStructure)), snippetGroup);
     }
 
     private record AnalysisOutcome(SecurityReviewResponse response, SnippetGroup snippetGroup) {

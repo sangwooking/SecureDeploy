@@ -1,0 +1,6 @@
+{
+  "name": "static-sca-fixture",
+  "private": true,
+  "dependencies": { "lodash": "^4.17.0" },
+  "devDependencies": { "unknown-version": "workspace:*" }
+}

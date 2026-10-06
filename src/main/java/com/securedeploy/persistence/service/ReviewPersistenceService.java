@@ -65,6 +65,7 @@ public class ReviewPersistenceService {
                 .forEach(review::addVulnerability);
 
         addSnippets(review, snippetGroup == null ? SnippetGroup.empty() : snippetGroup);
+        review.attachSca(response.sca());
 
         ReviewEntity savedReview = reviewRepository.save(review);
         return findReviewDetail(savedReview.getId());
@@ -112,7 +113,8 @@ public class ReviewPersistenceService {
                 review.getDeploymentStatus(),
                 review.getVulnerabilities().stream()
                         .map(VulnerabilityResultResponse::from)
-                        .toList()
+                        .toList(),
+                review.getScaResult()
         );
     }
 

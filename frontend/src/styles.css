@@ -1889,3 +1889,31 @@ h1 {
     justify-content: flex-start;
   }
 }
+.sca-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #dce3ed;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sca-section h2 { font-size: 21px; }
+.sca-section p { line-height: 1.6; }
+.sca-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.sca-metrics dt, .sca-finding-details dt { color: #506079; font-size: 13px; }
+.sca-metrics dd { margin: 6px 0 0; font-size: 24px; font-weight: 700; }
+.sca-severities { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; font-size: 13px; }
+.sca-warnings { padding-left: 20px; color: #8a4b00; line-height: 1.7; }
+.sca-finding-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.sca-finding-details dd { margin: 4px 0 0; }
+.sca-finding-details div { min-width: 0; }
+.sca-status { font-weight: 700; font-size: 14px; }
+.sca-unresolved { margin-top: 20px; line-height: 1.6; }
+.sca-unresolved summary { cursor: pointer; }
+.sca-unresolved li { margin-bottom: 10px; }
+.sca-assessment-notice { margin: 16px 0; background: #fff0cc; color: #754100; line-height: 1.6; }
+.sca-assessment-notice p { margin: 4px 0 0; }

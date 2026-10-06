@@ -19,6 +19,12 @@ spring:
         format_sql: true
 
 securedeploy:
+  sca:
+    enabled: true
+    timeout-seconds: 5
+    budget-seconds: 30
+    max-queries: 500
+    max-advisories: 100
   storage:
     temp-dir: ${java.io.tmpdir}/securedeploy
   ai:

@@ -1,0 +1,4 @@
+# Static test fixture
+org.springframework:spring-webmvc:5.3.20=compileClasspath,runtimeClasspath
+commons-collections:commons-collections:3.2.2=runtimeClasspath
+empty=testCompileClasspath

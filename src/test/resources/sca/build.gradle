@@ -1,0 +1,8 @@
+// Static test data only. This file must never be executed.
+dependencies {
+    implementation 'org.springframework:spring-webmvc:5.3.10'
+    runtimeOnly("commons-collections:commons-collections:3.2.1")
+    testImplementation "test.fixture:calculated:${someCalculatedVersion}"
+    api group: 'test.fixture', name: 'map', version: '1.0.0'
+    implementation(libs.versionCatalogAlias)
+}

@@ -73,6 +73,53 @@ export interface SecurityReviewResponse {
   securityScore: number;
   deploymentStatus: string;
   vulnerabilities: Vulnerability[];
+  sca?: ScaResult | null;
+  deploymentAssessmentScope?: 'RULE_ENGINE_ONLY';
+}
+
+export interface DependencyComponent {
+  ecosystem: 'MAVEN' | 'NPM';
+  packageName: string;
+  version: string | null;
+  scope: string;
+  direct: boolean | null;
+  sourceFile: string;
+  line: number;
+  versionResolution: 'EXACT' | 'RANGE' | 'UNRESOLVED';
+}
+
+export interface DependencyVulnerability {
+  ecosystem: 'MAVEN' | 'NPM';
+  packageName: string;
+  installedVersion: string;
+  osvId: string;
+  aliases: string[];
+  summary: string | null;
+  severity: Severity | null;
+  cvssScore: number | null;
+  cvssVectors: string[];
+  fixedVersions: string[];
+  published: string | null;
+  modified: string | null;
+  referenceUrls: string[];
+  sourceFiles: string[];
+}
+
+export interface ScaResult {
+  schemaVersion: number;
+  status: 'COMPLETE' | 'PARTIAL' | 'UNAVAILABLE' | 'NO_MANIFEST' | 'DISABLED';
+  analyzedAt: string;
+  summary: {
+    dependenciesDiscovered: number;
+    dependenciesAnalyzed: number;
+    unresolvedDependencies: number;
+    vulnerableDependencies: number;
+    dependencyVulnerabilities: number;
+    severityCounts: Record<string, number>;
+  };
+  components: DependencyComponent[];
+  dependencyVulnerabilities: DependencyVulnerability[];
+  warnings: string[];
 }
 
 export interface VulnerabilityStatusResponse extends Vulnerability {

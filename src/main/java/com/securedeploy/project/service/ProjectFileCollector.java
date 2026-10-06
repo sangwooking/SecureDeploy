@@ -49,7 +49,7 @@ public class ProjectFileCollector {
         if ("package.json".equals(lowerName)) {
             return Optional.of(ProjectFileType.PACKAGE_JSON);
         }
-        if ("package-lock.json".equals(lowerName) || "yarn.lock".equals(lowerName) || "pnpm-lock.yaml".equals(lowerName)) {
+        if ("gradle.lockfile".equals(lowerName) || "package-lock.json".equals(lowerName) || "yarn.lock".equals(lowerName) || "pnpm-lock.yaml".equals(lowerName)) {
             return Optional.of(ProjectFileType.LOCK_FILE);
         }
         if (isFrontendConfig(lowerName)) {

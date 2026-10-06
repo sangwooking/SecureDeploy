@@ -1,4 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
+import { DependencySecuritySection, ScaAssessmentNotice } from './components/DependencySecuritySection';
 import {
   deleteProject,
   deleteReview,
@@ -866,9 +867,10 @@ function App() {
               <Metric label="프로젝트명" value={result.projectName} />
               <Metric label="스캔 파일 수" value={result.scannedFileCount.toLocaleString()} />
               <Metric label="취약점 개수" value={result.vulnerabilityCount.toLocaleString()} />
-              <Metric label="보안 점수" value={`${result.securityScore}점`} tone={scoreTone} />
-              <Metric label="배포 적합성" value={deploymentStatus} tone={scoreTone} />
+              <Metric label="규칙 기반 보안 점수" value={`${result.securityScore}점`} tone={scoreTone} />
+              <Metric label="규칙 기반 배포 적합성" value={deploymentStatus} tone={scoreTone} />
             </div>
+            <ScaAssessmentNotice sca={result.sca} />
 
             {statusSummary && <VulnerabilityProgressPanel summary={statusSummary} />}
             {statusSummaryErrorMessage && <div className="feedback-message feedback-error status-summary-error">{statusSummaryErrorMessage}</div>}
@@ -907,7 +909,7 @@ function App() {
               <>
                 <div className="section-heading vulnerability-heading">
                   <div>
-                    <h2>취약점 목록</h2>
+                    <h2>규칙 기반 취약점 목록</h2>
                     <p>심각도 순으로 정렬된 분석 결과입니다.</p>
                   </div>
                   <span>{filteredVulnerabilities.length} / {result.vulnerabilities.length}건</span>
@@ -929,6 +931,7 @@ function App() {
                   handleStatusCommentChange,
                   (vulnerability, status) => void handleVulnerabilityStatusChange(vulnerability, status)
                 )}
+                <DependencySecuritySection sca={result.sca} />
               </>
             ) : (
               <AiReviewSection

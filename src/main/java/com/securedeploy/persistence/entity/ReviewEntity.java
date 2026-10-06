@@ -13,6 +13,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import com.securedeploy.sca.persistence.ReviewScaEntity;
+import com.securedeploy.sca.model.ScaResult;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -64,6 +67,17 @@ public class ReviewEntity {
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<ReviewSnippetEntity> snippets = new ArrayList<>();
+
+    @OneToOne(mappedBy = "review", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private ReviewScaEntity scaReport;
+
+    public void attachSca(ScaResult result) {
+        if (result != null) scaReport = new ReviewScaEntity(this, result);
+    }
+
+    public ScaResult getScaResult() {
+        return scaReport == null ? null : scaReport.getResult();
+    }
 
     protected ReviewEntity() {
     }
