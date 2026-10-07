@@ -1917,3 +1917,26 @@ h1 {
 .sca-unresolved li { margin-bottom: 10px; }
 .sca-assessment-notice { margin: 16px 0; background: #fff0cc; color: #754100; line-height: 1.6; }
 .sca-assessment-notice p { margin: 4px 0 0; }
+.risk-assessment { border-top: 2px solid #64748b; padding: 20px 0; margin: 20px 0; overflow-wrap: anywhere; }
+.risk-assessment.assessment-blocked { border-color: #b42318; }
+.risk-assessment.assessment-review_required { border-color: #a15c00; }
+.risk-assessment.assessment-ready { border-color: #18794e; }
+.risk-assessment .section-heading { flex-wrap: wrap; gap: 12px; }
+.risk-assessment h2 { font-size: 20px; }
+.risk-summary { grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); }
+.risk-summary dt { overflow-wrap: anywhere; }
+.risk-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; overflow-wrap: anywhere; max-width: 100%; }
+.risk-blocking { background: #fee4e2; color: #912018; }
+.risk-should_fix { background: #fef0c7; color: #854a0e; }
+.risk-review_required { background: #f3e8ff; color: #6b21a8; }
+.risk-informational { background: #e6f4ee; color: #176442; }
+.finding-priority { margin: 12px 0; overflow-wrap: anywhere; }
+.finding-priority p, .risk-snapshot-note, .risk-unavailable { font-size: 13px; line-height: 1.6; }
+.risk-requirement { border-top: 1px solid #dce3eb; padding: 12px 0; }
+.risk-primary-label { font-weight: 600; color: #334155; }
+.risk-assessment .section-heading > strong { font-size: 20px; }
+.assessment-blocked .section-heading > strong { color: #b42318; }
+.assessment-review_required .section-heading > strong { color: #854a0e; }
+.assessment-ready_with_warnings .section-heading > strong { color: #854a0e; }
+.assessment-ready .section-heading > strong { color: #176442; }
+.score-interpretation { font-size: 13px; line-height: 1.6; margin: 8px 0 16px; }

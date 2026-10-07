@@ -15,6 +15,7 @@ import com.securedeploy.review.dto.ReviewHistoryResponse;
 import com.securedeploy.review.dto.SecurityReviewResponse;
 import com.securedeploy.review.dto.VulnerabilityResultResponse;
 import com.securedeploy.review.model.ReviewSourceType;
+import com.securedeploy.risk.service.RiskPrioritizationEngine;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,12 +27,14 @@ public class ReviewPersistenceService {
     private final ReviewRepository reviewRepository;
     private final ProjectRepository projectRepository;
     private final ReviewAccessService reviewAccessService;
+    private final RiskPrioritizationEngine riskEngine;
 
     public ReviewPersistenceService(ReviewRepository reviewRepository, ProjectRepository projectRepository,
-                                    ReviewAccessService reviewAccessService) {
+                                    ReviewAccessService reviewAccessService, RiskPrioritizationEngine riskEngine) {
         this.reviewRepository = reviewRepository;
         this.projectRepository = projectRepository;
         this.reviewAccessService = reviewAccessService;
+        this.riskEngine = riskEngine;
     }
 
     @Transactional
@@ -68,6 +71,12 @@ public class ReviewPersistenceService {
         review.attachSca(response.sca());
 
         ReviewEntity savedReview = reviewRepository.save(review);
+        // Identity-generated finding IDs link the immutable snapshot to the saved cards.
+        var assessedFindings = java.util.stream.IntStream.range(0, response.vulnerabilities().size())
+                .mapToObj(index -> response.vulnerabilities().get(index)
+                        .withVulnerabilityId(savedReview.getVulnerabilities().get(index).getId())).toList();
+        savedReview.attachRiskAssessment(riskEngine.assess(assessedFindings, response.sca()));
+        reviewRepository.flush();
         return findReviewDetail(savedReview.getId());
     }
 
@@ -114,7 +123,8 @@ public class ReviewPersistenceService {
                 review.getVulnerabilities().stream()
                         .map(VulnerabilityResultResponse::from)
                         .toList(),
-                review.getScaResult()
+                review.getScaResult(),
+                review.getRiskAssessment()
         );
     }
 

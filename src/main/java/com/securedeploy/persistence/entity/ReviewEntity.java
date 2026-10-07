@@ -16,6 +16,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import com.securedeploy.sca.persistence.ReviewScaEntity;
 import com.securedeploy.sca.model.ScaResult;
+import com.securedeploy.risk.model.RiskAssessment;
+import com.securedeploy.risk.persistence.RiskAssessmentConverter;
+import jakarta.persistence.Convert;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -70,6 +73,13 @@ public class ReviewEntity {
 
     @OneToOne(mappedBy = "review", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private ReviewScaEntity scaReport;
+
+    @Convert(converter = RiskAssessmentConverter.class)
+    @Column(name = "risk_assessment_json", columnDefinition = "TEXT")
+    private RiskAssessment riskAssessment;
+
+    public void attachRiskAssessment(RiskAssessment assessment) { this.riskAssessment = assessment; }
+    public RiskAssessment getRiskAssessment() { return riskAssessment; }
 
     public void attachSca(ScaResult result) {
         if (result != null) scaReport = new ReviewScaEntity(this, result);

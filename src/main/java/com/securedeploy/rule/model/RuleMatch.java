@@ -1,5 +1,7 @@
 package com.securedeploy.rule.model;
 
+import com.securedeploy.dependency.model.DependencyObservation;
+
 public record RuleMatch(
         String ruleId,
         RuleCategory category,
@@ -11,8 +13,21 @@ public record RuleMatch(
         String evidence,
         FalsePositiveRisk falsePositiveRisk,
         DetectionConfidence confidence,
-        String analysisNote
+        String analysisNote,
+        DependencyObservation dependencyObservation
 ) {
+
+    public RuleMatch(String ruleId, RuleCategory category, Severity severity, String filePath, int line,
+                     String message, String recommendation, String evidence, FalsePositiveRisk falsePositiveRisk,
+                     DetectionConfidence confidence, String analysisNote) {
+        this(ruleId, category, severity, filePath, line, message, recommendation, evidence,
+                falsePositiveRisk, confidence, analysisNote, null);
+    }
+
+    public RuleMatch withDependencyObservation(DependencyObservation observation) {
+        return new RuleMatch(ruleId, category, severity, filePath, line, message, recommendation, evidence,
+                falsePositiveRisk, confidence, analysisNote, observation);
+    }
 
     public RuleMatch(String ruleId, RuleCategory category, Severity severity, String filePath, int line,
                      String message, String recommendation, String evidence) {
@@ -33,7 +48,8 @@ public record RuleMatch(
                 evidence,
                 adjustedFalsePositiveRisk,
                 adjustedConfidence,
-                adjustedAnalysisNote
+                adjustedAnalysisNote,
+                dependencyObservation
         );
     }
 }

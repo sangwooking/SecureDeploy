@@ -1,4 +1,5 @@
-import type { ScaResult } from '../types/securityReview';
+import type { RiskAssessment, ScaResult } from '../types/securityReview';
+import { FindingPriority } from './RiskAssessmentSection';
 
 const statusLabels: Record<ScaResult['status'], string> = {
   COMPLETE: '조회 완료',
@@ -9,24 +10,29 @@ const statusLabels: Record<ScaResult['status'], string> = {
 };
 const order = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3, UNKNOWN: 4 };
 
-export function ScaAssessmentNotice({ sca }: { sca?: ScaResult | null }) {
+export function ScaAssessmentNotice({ sca, riskAssessment }: { sca?: ScaResult | null; riskAssessment?: RiskAssessment | null }) {
   const incomplete = !sca || sca.status !== 'COMPLETE';
-  if (!incomplete && sca.summary.dependencyVulnerabilities === 0) return null;
+  const count = riskAssessment && riskAssessment.schemaVersion >= 2
+    ? riskAssessment.dependencyFindings.length : sca?.summary.dependencyVulnerabilities ?? 0;
+  if (!incomplete && count === 0) return null;
   return <div className="feedback-message sca-assessment-notice" role="status">
-    <strong>{incomplete ? '의존성 보안 확인 미완료' : '의존성 취약점 ' + sca.summary.dependencyVulnerabilities + '건 확인'}</strong>
+    <strong>{incomplete ? '의존성 보안 확인 미완료' : '의존성 취약점 ' + count + '건 확인'}</strong>
     <p>{incomplete ? '미조회·미해결 의존성의 안전 여부는 확인되지 않았습니다. ' : ''}
-      위 점수와 배포 적합성은 규칙 기반 결과이며, SCA 결과는 아직 반영되지 않았습니다.</p>
+      참고 점수와 기존 판정은 규칙 기반 결과입니다. 배포 여부는 상단의 위험 기반 배포 평가를 우선 확인하세요.</p>
   </div>;
 }
 
-export function DependencySecuritySection({ sca }: { sca?: ScaResult | null }) {
+export function DependencySecuritySection({ sca, riskAssessment }: { sca?: ScaResult | null; riskAssessment?: RiskAssessment | null }) {
   if (!sca) {
     return <section className="sca-section" aria-label="Dependency Security">
       <h2>Dependency Security</h2>
       <p>이 분석 이력에는 SCA 결과가 없습니다. 재분석하면 의존성을 확인할 수 있습니다.</p>
     </section>;
   }
-  const findings = [...sca.dependencyVulnerabilities].sort(
+  const canonicalFindings = riskAssessment && riskAssessment.schemaVersion >= 2
+    ? riskAssessment.dependencyFindings.flatMap(finding => finding.dependency ? [finding.dependency] : [])
+    : sca.dependencyVulnerabilities;
+  const findings = [...canonicalFindings].sort(
     (a, b) => order[a.severity ?? 'UNKNOWN'] - order[b.severity ?? 'UNKNOWN'],
   );
   const unresolved = sca.components.filter((component) => component.versionResolution !== 'EXACT');
@@ -36,17 +42,17 @@ export function DependencySecuritySection({ sca }: { sca?: ScaResult | null }) {
         <h2>Dependency Security</h2>
         <span className="sca-status">{statusLabels[sca.status]}</span>
       </div>
-      <p>OSV 조회 결과 · 현재 보안 점수와 배포 적합성에는 미반영</p>
+      <p>OSV 조회 결과 · 기존 규칙 기반 점수에는 미반영 · 별도 위험 기반 배포 평가에 사용</p>
       <dl className="sca-metrics">
         <div><dt>발견 패키지/버전</dt><dd>{sca.summary.dependenciesDiscovered}</dd></div>
         <div><dt>조회 완료</dt><dd>{sca.summary.dependenciesAnalyzed}</dd></div>
         <div><dt>취약 패키지/버전</dt><dd>{sca.summary.vulnerableDependencies}</dd></div>
-        <div><dt>의존성 취약점</dt><dd>{sca.summary.dependencyVulnerabilities}</dd></div>
+        <div><dt>의존성 취약점 (중복 통합)</dt><dd>{findings.length}</dd></div>
         <div><dt>버전 미해결</dt><dd>{sca.summary.unresolvedDependencies}</dd></div>
       </dl>
       <div className="sca-severities" aria-label="의존성 심각도 분포">
-        {Object.entries(sca.summary.severityCounts).map(([severity, count]) => (
-          <span key={severity}>{severity === 'UNKNOWN' ? '심각도 미확인' : severity}: {count}</span>
+        {Object.keys(order).map(severity => (
+          <span key={severity}>{severity === 'UNKNOWN' ? '심각도 미확인' : severity}: {findings.filter(finding => (finding.severity ?? 'UNKNOWN') === severity).length}</span>
         ))}
       </div>
       {sca.warnings.length > 0 && <ul className="sca-warnings">
@@ -69,6 +75,9 @@ export function DependencySecuritySection({ sca }: { sca?: ScaResult | null }) {
                 {finding.severity ?? '미확인'}
               </span>
             </div>
+            <FindingPriority finding={riskAssessment?.dependencyFindings.find(risk =>
+              risk.ecosystem === finding.ecosystem && risk.packageName === finding.packageName &&
+              risk.version === finding.installedVersion && risk.advisoryId === finding.osvId)} />
             <dl className="sca-finding-details">
               <div><dt>Installed Version</dt><dd>{finding.installedVersion}</dd></div>
               <div><dt>Vulnerability ID</dt><dd>{finding.osvId}</dd></div>

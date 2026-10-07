@@ -75,6 +75,77 @@ export interface SecurityReviewResponse {
   vulnerabilities: Vulnerability[];
   sca?: ScaResult | null;
   deploymentAssessmentScope?: 'RULE_ENGINE_ONLY';
+  riskAssessment?: RiskAssessment | null;
+  assessmentInterpretation?: {
+    primaryAssessmentField: string;
+    primaryAssessmentAvailable: boolean;
+    securityScoreRole: 'RULE_ENGINE_REFERENCE_ONLY';
+    legacyDeploymentStatusRole: 'LEGACY_RULE_ENGINE_REFERENCE';
+    securityScoreDeterminesDeployment: false;
+    message: string;
+  };
+}
+
+export type RiskPriority = 'BLOCKING' | 'SHOULD_FIX' | 'REVIEW_REQUIRED' | 'INFORMATIONAL';
+export type RiskSource = 'CODE' | 'DEPENDENCY' | 'ANALYSIS';
+export type AssessmentCompletion = 'COMPLETE' | 'PARTIAL' | 'FAILED' | 'NOT_INCLUDED' | 'UNKNOWN';
+
+export interface RiskFinding {
+  findingId: string;
+  source: RiskSource;
+  findingCategory: 'CODE' | 'SECRET' | 'DEPENDENCY' | 'CONFIG' | 'CONTAINER' | 'IAC' | 'CI_CD' | 'ANALYSIS';
+  vulnerabilityId: number | null;
+  ruleId: string | null;
+  ecosystem: string | null;
+  packageName: string | null;
+  version: string | null;
+  advisoryId: string | null;
+  sourceFiles: string[];
+  priority: RiskPriority;
+  reasonCode: string;
+  priorityReason: string;
+  dependencyFacts: {
+    exactVersion: boolean;
+    lookupConfirmed: boolean;
+    direct: boolean | null;
+    scopes: string[];
+    fixedVersionAvailable: boolean;
+    cvssScore: number | null;
+  } | null;
+  dependency?: DependencyVulnerability | null;
+}
+
+export interface DependencyCorrelation {
+  vulnerabilityId: number | null;
+  ruleId: string;
+  filePath: string;
+  line: number;
+  observation: { source: string; ecosystem: string; packageName: string; version: string; advisoryId: string | null };
+  relation: 'SAME_ADVISORY' | 'PACKAGE_CANDIDATE_CONTEXT' | 'REPEATED_CATALOG_OBSERVATION';
+  canonicalFindingIds: string[];
+  reason: string;
+}
+
+export interface RiskAssessment {
+  schemaVersion: number;
+  policyVersion: string;
+  assessedAt: string;
+  assessmentScope: 'RULE_ENGINE_AND_SCA';
+  prioritizedDeploymentAssessment: 'BLOCKED' | 'REVIEW_REQUIRED' | 'READY_WITH_WARNINGS' | 'READY';
+  assessmentReason: string;
+  assessmentCoverage: {
+    overall: AssessmentCompletion;
+    ruleEngine: AssessmentCompletion;
+    sca: AssessmentCompletion;
+    ai: AssessmentCompletion;
+    scopeNote: string;
+  };
+  prioritySummary: Record<RiskPriority, number>;
+  prioritySummaryBySource: Record<RiskSource, Record<RiskPriority, number>>;
+  codeFindings: RiskFinding[];
+  dependencyFindings: RiskFinding[];
+  reviewRequirements: RiskFinding[];
+  dependencyCorrelations?: DependencyCorrelation[];
 }
 
 export interface DependencyComponent {

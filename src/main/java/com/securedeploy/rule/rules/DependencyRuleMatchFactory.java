@@ -1,6 +1,7 @@
 package com.securedeploy.rule.rules;
 
 import com.securedeploy.dependency.model.DependencyInfo;
+import com.securedeploy.dependency.model.DependencyObservation;
 import com.securedeploy.dependency.model.VulnerableDependencyInfo;
 import com.securedeploy.rule.model.RuleCategory;
 import com.securedeploy.rule.model.RuleMatch;
@@ -20,7 +21,8 @@ final class DependencyRuleMatchFactory {
                 messagePrefix + " " + vulnerability.advisory(),
                 vulnerability.recommendation(),
                 evidence(dependency, vulnerability)
-        );
+        ).withDependencyObservation(new DependencyObservation("BUILTIN_CATALOG", dependency.ecosystem(),
+                dependency.name(), dependency.version(), vulnerability.cveId()));
     }
 
     private static String evidence(DependencyInfo dependency, VulnerableDependencyInfo vulnerability) {

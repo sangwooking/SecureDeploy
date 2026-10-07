@@ -1,5 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { DependencySecuritySection, ScaAssessmentNotice } from './components/DependencySecuritySection';
+import { FindingPriority, RiskAssessmentSection } from './components/RiskAssessmentSection';
 import {
   deleteProject,
   deleteReview,
@@ -172,19 +173,6 @@ function App() {
     }
   }, [authSession?.accessToken]);
 
-  const scoreTone = useMemo(() => {
-    if (!result) {
-      return 'neutral';
-    }
-    if (result.securityScore >= 80) {
-      return 'safe';
-    }
-    if (result.securityScore >= 60) {
-      return 'warning';
-    }
-    return 'danger';
-  }, [result]);
-
   const deploymentStatus = useMemo(() => {
     if (!result) {
       return '';
@@ -203,7 +191,8 @@ function App() {
       return [];
     }
 
-    return [...result.vulnerabilities].sort((a, b) => {
+    const correlatedIds = new Set(result.riskAssessment?.dependencyCorrelations?.map(item => item.vulnerabilityId) ?? []);
+    return result.vulnerabilities.filter(item => !correlatedIds.has(item.vulnerabilityId ?? null)).sort((a, b) => {
       const severityDiff = severityOrder[a.severity] - severityOrder[b.severity];
       if (severityDiff !== 0) {
         return severityDiff;
@@ -863,14 +852,16 @@ function App() {
 
         {result && (
           <section className="result-area">
+            <RiskAssessmentSection assessment={result.riskAssessment} />
             <div className="summary-grid">
               <Metric label="프로젝트명" value={result.projectName} />
               <Metric label="스캔 파일 수" value={result.scannedFileCount.toLocaleString()} />
-              <Metric label="취약점 개수" value={result.vulnerabilityCount.toLocaleString()} />
-              <Metric label="규칙 기반 보안 점수" value={`${result.securityScore}점`} tone={scoreTone} />
-              <Metric label="규칙 기반 배포 적합성" value={deploymentStatus} tone={scoreTone} />
+              <Metric label="원본 룰 탐지 수" value={result.vulnerabilityCount.toLocaleString()} />
+              <Metric label="보안 점수 (룰 기반 참고값)" value={`${result.securityScore}점`} />
+              <Metric label="기존 판정 (룰 기반 참고값)" value={deploymentStatus} />
             </div>
-            <ScaAssessmentNotice sca={result.sca} />
+            <p className="score-interpretation">점수가 높아도 분석 미완료나 의존성 위험이 있을 수 있습니다. 배포 여부는 위의 위험 기반 배포 평가를 우선 확인하세요.</p>
+            <ScaAssessmentNotice sca={result.sca} riskAssessment={result.riskAssessment} />
 
             {statusSummary && <VulnerabilityProgressPanel summary={statusSummary} />}
             {statusSummaryErrorMessage && <div className="feedback-message feedback-error status-summary-error">{statusSummaryErrorMessage}</div>}
@@ -912,7 +903,7 @@ function App() {
                     <h2>규칙 기반 취약점 목록</h2>
                     <p>심각도 순으로 정렬된 분석 결과입니다.</p>
                   </div>
-                  <span>{filteredVulnerabilities.length} / {result.vulnerabilities.length}건</span>
+                  <span>{filteredVulnerabilities.length} / {sortedVulnerabilities.length}건</span>
                 </div>
 
                 <div className="filter-bar" aria-label="severity 필터">
@@ -931,7 +922,7 @@ function App() {
                   handleStatusCommentChange,
                   (vulnerability, status) => void handleVulnerabilityStatusChange(vulnerability, status)
                 )}
-                <DependencySecuritySection sca={result.sca} />
+                <DependencySecuritySection sca={result.sca} riskAssessment={result.riskAssessment} />
               </>
             ) : (
               <AiReviewSection
@@ -1346,6 +1337,10 @@ function renderVulnerabilityList(
     return <div className="empty-state">탐지된 취약점이 없습니다.</div>;
   }
 
+  if (result.riskAssessment?.codeFindings.length === 0) {
+    return <div className="empty-state">의존성 후보는 통합된 의존성 결과와 보조 근거에서 확인할 수 있습니다.</div>;
+  }
+
   if (filteredVulnerabilities.length === 0) {
     return <div className="empty-state">선택한 severity에 해당하는 취약점이 없습니다.</div>;
   }
@@ -1372,6 +1367,9 @@ function renderVulnerabilityList(
                 <VulnerabilityStatusBadge status={status} />
               </div>
             </div>
+
+            <FindingPriority finding={result.riskAssessment?.codeFindings.find(finding =>
+              vulnerabilityId !== null && finding.vulnerabilityId === vulnerabilityId)} />
 
             <div className="status-manager">
               <label>

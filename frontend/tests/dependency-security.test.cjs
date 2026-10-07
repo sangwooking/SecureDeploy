@@ -1,17 +1,9 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const ts = require('typescript');
 const React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
 
-const source = fs.readFileSync(path.join(__dirname, '../src/components/DependencySecuritySection.tsx'), 'utf8');
-const compiled = ts.transpileModule(source, {
-  compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-}).outputText;
-const componentExports = {};
-new Function('require', 'exports', compiled)(require, componentExports);
+const componentExports = require('./load-component.cjs')('DependencySecuritySection');
 const render = (sca) => renderToStaticMarkup(React.createElement(componentExports.DependencySecuritySection, { sca }));
 const renderNotice = (sca) => renderToStaticMarkup(React.createElement(componentExports.ScaAssessmentNotice, { sca }));
 
@@ -35,7 +27,7 @@ test('renders package identity, severity and fixes while escaping advisory text'
   for (const text of ['org.example:fixture', '1.0.0', '2.0.0', 'GHSA-fixture-1', 'CVE-2099-0001', 'HIGH']) assert.ok(html.includes(text));
   assert.ok(html.includes('&lt;script&gt;'));
   assert.ok(!html.includes('javascript:'));
-  assert.ok(html.includes('현재 보안 점수와 배포 적합성에는 미반영'));
+  assert.ok(html.includes('기존 규칙 기반 점수에는 미반영'));
 });
 test('partial and unavailable results never show a clean bill of health', () => {
   for (const status of ['PARTIAL', 'UNAVAILABLE']) {
