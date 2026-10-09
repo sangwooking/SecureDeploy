@@ -1,5 +1,6 @@
 import type { RiskAssessment, ScaResult } from '../types/securityReview';
 import { FindingPriority } from './RiskAssessmentSection';
+import { ThreatIntelligenceDetails } from './ThreatIntelligenceDetails';
 
 const statusLabels: Record<ScaResult['status'], string> = {
   COMPLETE: '조회 완료',
@@ -78,6 +79,7 @@ export function DependencySecuritySection({ sca, riskAssessment }: { sca?: ScaRe
             <FindingPriority finding={riskAssessment?.dependencyFindings.find(risk =>
               risk.ecosystem === finding.ecosystem && risk.packageName === finding.packageName &&
               risk.version === finding.installedVersion && risk.advisoryId === finding.osvId)} />
+            <ThreatIntelligenceDetails finding={finding} snapshot={riskAssessment?.threatIntelligence} />
             <dl className="sca-finding-details">
               <div><dt>Installed Version</dt><dd>{finding.installedVersion}</dd></div>
               <div><dt>Vulnerability ID</dt><dd>{finding.osvId}</dd></div>

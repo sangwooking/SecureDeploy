@@ -9,6 +9,7 @@ import com.securedeploy.risk.policy.RiskPolicy;
 import com.securedeploy.risk.policy.RiskReason;
 import com.securedeploy.rule.model.RuleCategory;
 import com.securedeploy.sca.model.*;
+import com.securedeploy.threatintel.model.*;
 import java.time.Instant;
 import java.util.*;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,10 @@ public class RiskPrioritizationEngine {
 
     // Called only for a newly completed Rule Engine run, never to reinterpret history on read.
     public RiskAssessment assess(List<VulnerabilityResultResponse> code, ScaResult sca) {
+        return assess(code, sca, null);
+    }
+
+    public RiskAssessment assess(List<VulnerabilityResultResponse> code, ScaResult sca, ThreatIntelligenceSnapshot intelligence) {
         List<RiskFinding> codeFindings = new ArrayList<>();
         for (int i = 0; i < code.size(); i++) {
             var finding = code.get(i);
@@ -34,6 +39,8 @@ public class RiskPrioritizationEngine {
         List<RiskFinding> dependencies = new ArrayList<>();
         List<RiskFinding> requirements = new ArrayList<>();
         boolean scaComplete = complete(sca);
+        Set<String> threatReviewFiles = new TreeSet<>();
+        boolean threatReviewRequired = false;
         if (sca != null) {
             for (DependencyVulnerability finding : new DependencyFindingCanonicalizer().canonicalize(sca.dependencyVulnerabilities())) {
                 List<DependencyComponent> components = sca.components().stream().filter(c ->
@@ -45,7 +52,13 @@ public class RiskPrioritizationEngine {
                 DependencyFacts facts = new DependencyFacts(exact, scaComplete && exact, direct,
                         components.stream().map(DependencyComponent::scope).filter(Objects::nonNull).distinct().sorted().toList(),
                         !finding.fixedVersions().isEmpty(), finding.cvssScore());
-                var decision = policy.dependency(finding, facts);
+                List<ThreatIntelligence> signals = intelligence == null ? List.of() : CveIdentifiers.from(finding).stream()
+                        .map(intelligence.cves()::get).filter(Objects::nonNull).toList();
+                var decision = policy.dependency(finding, facts, signals);
+                if (policy.requiresThreatReview(finding, facts, signals)) {
+                    threatReviewRequired = true;
+                    threatReviewFiles.addAll(finding.sourceFiles());
+                }
                 dependencies.add(new RiskFinding(DependencyFindingCanonicalizer.identity(finding), Source.DEPENDENCY,
                         FindingCategory.DEPENDENCY, null, null, finding.ecosystem().name(), finding.packageName(),
                         finding.installedVersion(), finding.osvId(), finding.sourceFiles(), decision.priority(),
@@ -68,6 +81,11 @@ public class RiskPrioritizationEngine {
                     RiskReason.INCOMPLETE_SCA.name(), RiskReason.INCOMPLETE_SCA.message(), null));
         }
 
+        if (threatReviewRequired) requirements.add(new RiskFinding("coverage:threat-intelligence", Source.ANALYSIS,
+                FindingCategory.ANALYSIS, null, null, null, null, null, null, List.copyOf(threatReviewFiles),
+                RiskPriority.REVIEW_REQUIRED, RiskReason.INCOMPLETE_THREAT_INTELLIGENCE.name(),
+                RiskReason.INCOMPLETE_THREAT_INTELLIGENCE.message(), null));
+
         var correlated = new DependencyFindingCorrelator().correlate(code, codeFindings, dependencies, scaComplete);
         codeFindings = new ArrayList<>(correlated.codeFindings());
         List<RiskFinding> all = new ArrayList<>(codeFindings);
@@ -82,12 +100,16 @@ public class RiskPrioritizationEngine {
         Completion scaCompletion = scaComplete ? Completion.COMPLETE : sca == null ? Completion.UNKNOWN
                 : sca.status() == ScaResult.Status.UNAVAILABLE ? Completion.FAILED
                 : sca.status() == ScaResult.Status.DISABLED ? Completion.NOT_INCLUDED : Completion.PARTIAL;
-        return new RiskAssessment(2, policy.version(), Instant.now(), "RULE_ENGINE_AND_SCA", assessment,
+        boolean hasCves = sca != null && sca.dependencyVulnerabilities().stream().anyMatch(f -> !CveIdentifiers.from(f).isEmpty());
+        var threatStatus = intelligence != null ? intelligence.status() : hasCves ? ThreatIntelligenceSnapshot.Status.UNKNOWN
+                : ThreatIntelligenceSnapshot.Status.NOT_APPLICABLE;
+        boolean threatComplete = threatStatus == ThreatIntelligenceSnapshot.Status.COMPLETE || threatStatus == ThreatIntelligenceSnapshot.Status.NOT_APPLICABLE;
+        return new RiskAssessment(3, policy.version(), Instant.now(), "RULE_ENGINE_SCA_AND_THREAT_INTELLIGENCE", assessment,
                 assessmentReason(assessment, summary), new RiskAssessment.Coverage(
-                        scaComplete ? Completion.COMPLETE : Completion.PARTIAL, Completion.COMPLETE,
+                        scaComplete && threatComplete ? Completion.COMPLETE : Completion.PARTIAL, Completion.COMPLETE,
                         scaCompletion, Completion.NOT_INCLUDED,
-                        "지원 파일·정적 룰·정확한 의존성 버전 조회 범위의 판단입니다. 전체 코드, 실제 설치, 도달 가능성, 외부 노출, AI 진단은 포함하지 않습니다. READY도 절대적 안전을 보장하지 않습니다."),
-                summary, bySource, List.copyOf(codeFindings), List.copyOf(dependencies), List.copyOf(requirements), correlated.correlations());
+                        "지원 파일·정적 룰·정확한 의존성 버전과 분석 당시 악용 정보 범위의 판단입니다. 전체 코드, 실제 설치, 도달 가능성, 외부 노출, AI 진단은 포함하지 않습니다. READY도 절대적 안전을 보장하지 않습니다.", threatStatus),
+                summary, bySource, List.copyOf(codeFindings), List.copyOf(dependencies), List.copyOf(requirements), correlated.correlations(), intelligence, policy.threatThresholds());
     }
 
     private boolean complete(ScaResult sca) {

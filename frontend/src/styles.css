@@ -1940,3 +1940,17 @@ h1 {
 .assessment-ready_with_warnings .section-heading > strong { color: #854a0e; }
 .assessment-ready .section-heading > strong { color: #176442; }
 .score-interpretation { font-size: 13px; line-height: 1.6; margin: 8px 0 16px; }
+.threat-intelligence {
+  border-top: 1px solid #dce2e6;
+  margin-top: 12px;
+  padding-top: 12px;
+  overflow-wrap: anywhere;
+}
+.threat-intelligence summary { cursor: pointer; font-weight: 600; }
+.threat-intelligence p { font-size: 13px; line-height: 1.6; }
+.threat-cve { margin-top: 12px; border-bottom: 1px solid #e6e9ec; padding-bottom: 8px; }
+.threat-intelligence .threat-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.threat-facts .threat-wide { grid-column: 1 / -1; }
+@media (max-width: 700px) {
+  .threat-intelligence .threat-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

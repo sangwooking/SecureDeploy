@@ -16,6 +16,7 @@ import com.securedeploy.review.dto.SecurityReviewResponse;
 import com.securedeploy.review.dto.VulnerabilityResultResponse;
 import com.securedeploy.review.model.ReviewSourceType;
 import com.securedeploy.risk.service.RiskPrioritizationEngine;
+import com.securedeploy.threatintel.model.ThreatIntelligenceSnapshot;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,12 @@ public class ReviewPersistenceService {
     @Transactional
     public SecurityReviewResponse saveReview(ProjectEntity project, SecurityReviewResponse response, ReviewSourceType sourceType,
                                              String repositoryUrl, SnippetGroup snippetGroup) {
+        return saveReview(project, response, sourceType, repositoryUrl, snippetGroup, null);
+    }
+
+    @Transactional
+    public SecurityReviewResponse saveReview(ProjectEntity project, SecurityReviewResponse response, ReviewSourceType sourceType,
+                                             String repositoryUrl, SnippetGroup snippetGroup, ThreatIntelligenceSnapshot intelligence) {
         ReviewEntity review = new ReviewEntity(
                 response.projectName(),
                 sourceType,
@@ -75,7 +82,7 @@ public class ReviewPersistenceService {
         var assessedFindings = java.util.stream.IntStream.range(0, response.vulnerabilities().size())
                 .mapToObj(index -> response.vulnerabilities().get(index)
                         .withVulnerabilityId(savedReview.getVulnerabilities().get(index).getId())).toList();
-        savedReview.attachRiskAssessment(riskEngine.assess(assessedFindings, response.sca()));
+        savedReview.attachRiskAssessment(riskEngine.assess(assessedFindings, response.sca(), intelligence));
         reviewRepository.flush();
         return findReviewDetail(savedReview.getId());
     }

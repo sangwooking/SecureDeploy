@@ -130,7 +130,7 @@ export interface RiskAssessment {
   schemaVersion: number;
   policyVersion: string;
   assessedAt: string;
-  assessmentScope: 'RULE_ENGINE_AND_SCA';
+  assessmentScope: 'RULE_ENGINE_AND_SCA' | 'RULE_ENGINE_SCA_AND_THREAT_INTELLIGENCE';
   prioritizedDeploymentAssessment: 'BLOCKED' | 'REVIEW_REQUIRED' | 'READY_WITH_WARNINGS' | 'READY';
   assessmentReason: string;
   assessmentCoverage: {
@@ -139,6 +139,7 @@ export interface RiskAssessment {
     sca: AssessmentCompletion;
     ai: AssessmentCompletion;
     scopeNote: string;
+    threatIntelligence?: ThreatIntelligenceStatus | null;
   };
   prioritySummary: Record<RiskPriority, number>;
   prioritySummaryBySource: Record<RiskSource, Record<RiskPriority, number>>;
@@ -146,6 +147,29 @@ export interface RiskAssessment {
   dependencyFindings: RiskFinding[];
   reviewRequirements: RiskFinding[];
   dependencyCorrelations?: DependencyCorrelation[];
+  threatIntelligence?: ThreatIntelligenceSnapshot | null;
+  threatPolicy?: { blockingScore: number; blockingPercentile: number } | null;
+}
+
+export type ThreatIntelligenceStatus = 'COMPLETE' | 'PARTIAL' | 'UNAVAILABLE' | 'STALE' | 'NOT_APPLICABLE' | 'DISABLED' | 'UNKNOWN';
+export type ThreatLookupStatus = 'AVAILABLE' | 'NOT_FOUND' | 'UNAVAILABLE' | 'STALE' | 'NOT_REQUESTED';
+export interface ThreatIntelligence {
+  cve: string;
+  epss: {
+    cve: string; score: number | null; percentile: number | null; date: string | null;
+    status: ThreatLookupStatus; source: string; fetchedAt: string | null;
+  };
+  kev: {
+    cve: string; knownExploited: boolean | null; dateAdded: string | null;
+    requiredAction: string | null; dueDate: string | null; knownRansomwareCampaignUse: string | null;
+    catalogVersion: string | null; catalogReleasedAt: string | null;
+    status: ThreatLookupStatus; source: string; fetchedAt: string | null;
+  };
+}
+export interface ThreatIntelligenceSnapshot {
+  snapshotId: string; observedAt: string; status: ThreatIntelligenceStatus;
+  requestedCves: number; findingsWithoutCve: number;
+  cves: Record<string, ThreatIntelligence>; warnings: string[];
 }
 
 export interface DependencyComponent {

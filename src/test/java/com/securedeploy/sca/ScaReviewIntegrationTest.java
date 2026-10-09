@@ -60,7 +60,7 @@ class ScaReviewIntegrationTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
         assertThat(detail.path("sca")).isEqualTo(upload.path("sca"));
         assertThat(detail.path("riskAssessment")).isEqualTo(upload.path("riskAssessment"));
-        assertThat(upload.at("/riskAssessment/policyVersion").asText()).isEqualTo("risk-v1.1");
+        assertThat(upload.at("/riskAssessment/policyVersion").asText()).isEqualTo("risk-v1.2");
         assertThat(upload.at("/assessmentInterpretation/securityScoreDeterminesDeployment").asBoolean()).isFalse();
         assertThat(upload.at("/assessmentInterpretation/primaryAssessmentAvailable").asBoolean()).isTrue();
         assertThat(upload.at("/riskAssessment/dependencyFindings/0/priority").asText()).isEqualTo("SHOULD_FIX");
@@ -197,7 +197,8 @@ class ScaReviewIntegrationTest {
         assertThat(result.at("/riskAssessment/dependencyCorrelations/0/relation").asText()).isEqualTo("PACKAGE_CANDIDATE_CONTEXT");
         assertThat(result.at("/riskAssessment/dependencyCorrelations/0/vulnerabilityId").asLong())
                 .isEqualTo(result.at("/vulnerabilities/0/vulnerabilityId").asLong());
-        assertThat(result.at("/riskAssessment/prioritySummary/REVIEW_REQUIRED").asInt()).isZero();
+        assertThat(result.at("/riskAssessment/prioritySummaryBySource/CODE/REVIEW_REQUIRED").asInt()).isZero();
+        assertThat(result.at("/riskAssessment/assessmentCoverage/threatIntelligence").asText()).isEqualTo("DISABLED");
         assertThat(result.at("/riskAssessment/prioritySummary/SHOULD_FIX").asInt()).isEqualTo(1);
         JsonNode detail = json(mvc.perform(get("/api/reviews/" + result.path("reviewId").asLong())
                 .header("Authorization", "Bearer " + token)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());

@@ -26,7 +26,7 @@ public record SecurityReviewResponse(
     public AssessmentInterpretation assessmentInterpretation() {
         return new AssessmentInterpretation("riskAssessment.prioritizedDeploymentAssessment", riskAssessment != null,
                 "RULE_ENGINE_REFERENCE_ONLY", "LEGACY_RULE_ENGINE_REFERENCE", false,
-                "보안 점수는 기존 Rule Engine 중심 참고값입니다. 배포 판단은 Code, SCA 및 분석 완성도를 고려한 위험 기반 평가를 우선합니다. 위험 평가가 없으면 재분석이 필요합니다.");
+                "보안 점수는 기존 Rule Engine 중심 참고값입니다. 배포 판단은 Code, SCA, 저장된 악용 정보 및 분석 완성도를 고려한 위험 기반 평가를 우선합니다. 위험 평가가 없으면 재분석이 필요합니다.");
     }
 
     public record AssessmentInterpretation(String primaryAssessmentField, boolean primaryAssessmentAvailable,

@@ -5,12 +5,19 @@ import com.securedeploy.risk.model.RiskFinding.DependencyFacts;
 import com.securedeploy.rule.model.*;
 import com.securedeploy.sca.model.DependencyVulnerability;
 import java.util.Set;
+import java.util.List;
+import com.securedeploy.threatintel.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import static com.securedeploy.risk.model.RiskPriority.*;
 import static com.securedeploy.risk.policy.RiskReason.*;
 
 @Component
 public class DefaultRiskPolicy implements RiskPolicy {
+    private final ThreatRiskThresholds thresholds;
+    public DefaultRiskPolicy() { this(new ThreatRiskThresholds(0.5, 0.95)); }
+    @Autowired public DefaultRiskPolicy(ThreatRiskThresholds thresholds) { this.thresholds = thresholds; }
+    @Override public ThreatRiskThresholds threatThresholds() { return thresholds; }
     // Only rules with direct configuration/credential evidence are eligible to block.
     private static final Set<String> CREDENTIAL_RULES = Set.of(
             "HARDCODED_PASSWORD", "HARDCODED_SECRET", "HARDCODED_FRONTEND_SECRET", "DOCKER_SECRET_ENV");
@@ -21,7 +28,7 @@ public class DefaultRiskPolicy implements RiskPolicy {
     // A separate policy entry can promote a MEDIUM finding without rewriting its severity.
     private static final Set<String> BLOCKING_CONFIG_RULES = Set.of("GITHUB_ACTIONS_SECRET_ECHO");
 
-    @Override public String version() { return "risk-v1.1"; }
+    @Override public String version() { return "risk-v1.2"; }
 
     @Override public Decision code(VulnerabilityResultResponse f) {
         if (f.severity() == null || f.confidence() == null || f.falsePositiveRisk() == null
@@ -45,17 +52,56 @@ public class DefaultRiskPolicy implements RiskPolicy {
 
     @Override public Decision dependency(DependencyVulnerability f, DependencyFacts facts) {
         if (!facts.exactVersion() || !facts.lookupConfirmed()) return new Decision(REVIEW_REQUIRED, INCOMPLETE_SCA);
-        Severity severity = f.severity();
-        Double score = f.cvssScore();
-        if (score != null && Double.isFinite(score) && score >= 0 && score <= 10) {
-            Severity scored = score >= 9 ? Severity.CRITICAL : score >= 7 ? Severity.HIGH : score >= 4 ? Severity.MEDIUM : Severity.LOW;
-            if (severity == null || scored.ordinal() > severity.ordinal()) severity = scored;
-        }
+        Severity severity = effectiveSeverity(f);
         if (severity == null) return new Decision(REVIEW_REQUIRED, UNKNOWN_DEPENDENCY_SEVERITY);
         return switch (severity) {
             case CRITICAL -> new Decision(BLOCKING, CRITICAL_DEPENDENCY);
             case HIGH, MEDIUM -> new Decision(SHOULD_FIX, DEPENDENCY_FIX_RECOMMENDED);
             case LOW -> new Decision(INFORMATIONAL, DEPENDENCY_INFORMATIONAL);
         };
+    }
+
+    @Override public Decision dependency(DependencyVulnerability f, DependencyFacts facts, List<ThreatIntelligence> intelligence) {
+        Decision baseline = dependency(f, facts);
+        if (!facts.exactVersion() || !facts.lookupConfirmed()) return baseline;
+        var matching = matching(f, intelligence);
+        if (matching.stream().anyMatch(t -> t.kev() != null && Boolean.TRUE.equals(t.kev().knownExploited())
+                && (t.kev().status() == LookupStatus.AVAILABLE || t.kev().status() == LookupStatus.STALE))) {
+            return new Decision(BLOCKING, KNOWN_EXPLOITED_VULNERABILITY);
+        }
+        if (baseline.priority() == BLOCKING) return baseline;
+        if (effectiveSeverity(f) == Severity.HIGH && matching.stream().anyMatch(t -> highEpss(t.epss()))) {
+            return new Decision(BLOCKING, HIGH_EXPLOIT_PROBABILITY);
+        }
+        return baseline;
+    }
+
+    @Override public boolean requiresThreatReview(DependencyVulnerability f, DependencyFacts facts, List<ThreatIntelligence> intelligence) {
+        if (!facts.exactVersion() || !facts.lookupConfirmed() || dependency(f, facts, intelligence).priority() == BLOCKING) return false;
+        var ids = CveIdentifiers.from(f);
+        var matching = matching(f, intelligence);
+        if (ids.size() != matching.size()) return true;
+        return matching.stream().anyMatch(t -> t.kev() == null || t.kev().status() != LookupStatus.AVAILABLE
+                || t.kev().knownExploited() == null || (effectiveSeverity(f) == Severity.HIGH
+                && (t.epss() == null || t.epss().status() != LookupStatus.AVAILABLE)));
+    }
+
+    private List<ThreatIntelligence> matching(DependencyVulnerability f, List<ThreatIntelligence> intelligence) {
+        var ids = CveIdentifiers.from(f);
+        return intelligence.stream().filter(t -> ids.contains(t.cve())).distinct().toList();
+    }
+    private boolean highEpss(EpssData epss) {
+        return epss != null && epss.status() == LookupStatus.AVAILABLE && epss.score() != null && epss.percentile() != null
+                && epss.score() >= thresholds.blockingScore() && epss.score() <= 1
+                && epss.percentile() >= thresholds.blockingPercentile() && epss.percentile() <= 1;
+    }
+    private Severity effectiveSeverity(DependencyVulnerability f) {
+        Severity severity = f.severity();
+        Double score = f.cvssScore();
+        if (score != null && Double.isFinite(score) && score >= 0 && score <= 10) {
+            Severity scored = score >= 9 ? Severity.CRITICAL : score >= 7 ? Severity.HIGH : score >= 4 ? Severity.MEDIUM : Severity.LOW;
+            if (severity == null || scored.ordinal() > severity.ordinal()) severity = scored;
+        }
+        return severity;
     }
 }

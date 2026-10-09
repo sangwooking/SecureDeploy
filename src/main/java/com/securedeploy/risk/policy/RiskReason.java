@@ -1,6 +1,9 @@
 package com.securedeploy.risk.policy;
 
 public enum RiskReason {
+    KNOWN_EXPLOITED_VULNERABILITY("정확한 취약 버전에 연결된 CVE가 CISA KEV에 등재되어 실제 공격에서 악용된 사실이 확인되었습니다. 배포 전 조치가 필요합니다. 이 프로젝트가 공격받았다는 의미는 아닙니다."),
+    HIGH_EXPLOIT_PROBABILITY("정확한 취약 버전에서 높은 기술적 심각도와 정책 기준 이상의 EPSS score·percentile이 함께 확인되어 배포 전 조치가 필요합니다. 프로젝트별 침해 확률은 아닙니다."),
+    INCOMPLETE_THREAT_INTELLIGENCE("일부 CVE의 최신 악용 정보를 확인하지 못해 우선순위가 높아질 가능성을 배제할 수 없습니다. 기존 조치 우선순위는 유지하며 추가 검토가 필요합니다."),
     MISSING_METADATA("신뢰도, 오탐 가능성 또는 판단 근거가 누락되어 자동 우선순위를 확정할 수 없습니다."),
     UNCERTAIN_FINDING("탐지 신뢰도가 낮거나 오탐 가능성이 높아 실제 사용 문맥을 확인해야 합니다. 자동 배포 차단 근거로 사용하지 않았습니다."),
     PATTERN_REQUIRES_CONTEXT("패턴은 발견되었지만 입력 흐름·권한·실행 문맥을 확인하지 못했습니다. 실제 공격 가능성을 추가 검토해야 합니다."),

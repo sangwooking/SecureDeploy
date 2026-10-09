@@ -19,6 +19,18 @@ spring:
         format_sql: true
 
 securedeploy:
+  threat-intelligence:
+    enabled: ${THREAT_INTELLIGENCE_ENABLED:true}
+    timeout-seconds: 5
+    budget-seconds: 20
+    max-cves: 300
+    cache-ttl-seconds: 21600
+    failure-backoff-seconds: 60
+    epss-max-age-days: 2
+  risk:
+    epss:
+      blocking-score: ${EPSS_BLOCKING_SCORE:0.5}
+      blocking-percentile: ${EPSS_BLOCKING_PERCENTILE:0.95}
   sca:
     enabled: true
     timeout-seconds: 5

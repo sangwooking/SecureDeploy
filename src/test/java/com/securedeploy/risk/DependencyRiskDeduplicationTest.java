@@ -65,7 +65,8 @@ class DependencyRiskDeduplicationTest {
         assertThat(correlation.relation()).isEqualTo(DependencyCorrelation.Relation.PACKAGE_CANDIDATE_CONTEXT);
         assertThat(correlation.canonicalFindingIds()).hasSize(2);
         assertThat(correlation.observation().advisoryId()).isNull();
-        assertThat(result.prioritySummary().get(RiskPriority.REVIEW_REQUIRED)).isZero();
+        assertThat(result.prioritySummaryBySource().get(RiskFinding.Source.CODE).get(RiskPriority.REVIEW_REQUIRED)).isZero();
+        assertThat(result.reviewRequirements()).anyMatch(f -> f.reasonCode().equals("INCOMPLETE_THREAT_INTELLIGENCE"));
         assertThat(result.prioritySummary().get(RiskPriority.SHOULD_FIX)).isEqualTo(2);
     }
 
@@ -74,7 +75,7 @@ class DependencyRiskDeduplicationTest {
                 sca(ScaResult.Status.COMPLETE, advisory("OSV-1", List.of("CVE-2099-0001"), "1.0.0", "pom.xml", Severity.HIGH)));
         assertThat(result.codeFindings()).hasSize(1);
         assertThat(result.dependencyCorrelations()).isEmpty();
-        assertThat(result.prioritySummary().get(RiskPriority.REVIEW_REQUIRED)).isEqualTo(1);
+        assertThat(result.prioritySummaryBySource().get(RiskFinding.Source.CODE).get(RiskPriority.REVIEW_REQUIRED)).isEqualTo(1);
     }
 
     @Test void explicitlyMatchingCatalogCveUsesAliasIdentity() {
