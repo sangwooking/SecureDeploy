@@ -9,6 +9,11 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
 
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update ReviewEntity r set r.remediation = :snapshot where r.id = :id and r.remediation is null")
+    int saveRemediationOnce(@Param("id") Long id,
+            @Param("snapshot") com.securedeploy.ai.remediation.RemediationSnapshot snapshot);
+
     List<ReviewEntity> findAllByOrderByCreatedAtDesc();
 
     @Query("select r from ReviewEntity r left join r.project p left join p.user u where p is null or u is null or u.id = :userId order by r.createdAt desc")

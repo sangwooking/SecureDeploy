@@ -19,6 +19,12 @@ public interface AiProvider {
 
     AiProviderType providerType();
 
+    default java.util.Map<String, com.securedeploy.ai.remediation.RemediationContent> generateFindingRemediations(
+            java.util.List<com.securedeploy.ai.remediation.RemediationContext> contexts,
+            com.securedeploy.ai.remediation.RemediationPrompt prompt) {
+        throw new UnsupportedOperationException("Finding remediation is not supported by this provider");
+    }
+
     default boolean isAvailable() {
         return true;
     }

@@ -78,6 +78,12 @@ public class ReviewEntity {
     @Column(name = "risk_assessment_json", columnDefinition = "TEXT")
     private RiskAssessment riskAssessment;
 
+    @Convert(converter = com.securedeploy.ai.remediation.RemediationSnapshotConverter.class)
+    @Column(name = "remediation_snapshot_json", columnDefinition = "TEXT")
+    private com.securedeploy.ai.remediation.RemediationSnapshot remediation;
+
+    public com.securedeploy.ai.remediation.RemediationSnapshot getRemediation() { return remediation; }
+
     public void attachRiskAssessment(RiskAssessment assessment) { this.riskAssessment = assessment; }
     public RiskAssessment getRiskAssessment() { return riskAssessment; }
 

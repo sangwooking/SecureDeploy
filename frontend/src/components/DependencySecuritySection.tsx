@@ -1,4 +1,5 @@
-import type { RiskAssessment, ScaResult } from '../types/securityReview';
+import type { RiskAssessment, ScaResult, RemediationSnapshot } from '../types/securityReview';
+import { FindingRemediation } from './FindingRemediation';
 import { FindingPriority } from './RiskAssessmentSection';
 import { ThreatIntelligenceDetails } from './ThreatIntelligenceDetails';
 
@@ -23,7 +24,7 @@ export function ScaAssessmentNotice({ sca, riskAssessment }: { sca?: ScaResult |
   </div>;
 }
 
-export function DependencySecuritySection({ sca, riskAssessment }: { sca?: ScaResult | null; riskAssessment?: RiskAssessment | null }) {
+export function DependencySecuritySection({ sca, riskAssessment, remediation }: { sca?: ScaResult | null; riskAssessment?: RiskAssessment | null; remediation?: RemediationSnapshot | null }) {
   if (!sca) {
     return <section className="sca-section" aria-label="Dependency Security">
       <h2>Dependency Security</h2>
@@ -80,6 +81,9 @@ export function DependencySecuritySection({ sca, riskAssessment }: { sca?: ScaRe
               risk.ecosystem === finding.ecosystem && risk.packageName === finding.packageName &&
               risk.version === finding.installedVersion && risk.advisoryId === finding.osvId)} />
             <ThreatIntelligenceDetails finding={finding} snapshot={riskAssessment?.threatIntelligence} />
+            <FindingRemediation snapshot={remediation} finding={riskAssessment?.dependencyFindings.find(risk =>
+              risk.ecosystem === finding.ecosystem && risk.packageName === finding.packageName &&
+              risk.version === finding.installedVersion && risk.advisoryId === finding.osvId)} />
             <dl className="sca-finding-details">
               <div><dt>Installed Version</dt><dd>{finding.installedVersion}</dd></div>
               <div><dt>Vulnerability ID</dt><dd>{finding.osvId}</dd></div>

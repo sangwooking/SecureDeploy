@@ -37,15 +37,45 @@ import org.springframework.web.client.RestClient;
 @Component
 public class RealOpenAiProvider implements AiProvider {
 
+    @Override
+    public Map<String, com.securedeploy.ai.remediation.RemediationContent> generateFindingRemediations(
+            List<com.securedeploy.ai.remediation.RemediationContext> contexts,
+            com.securedeploy.ai.remediation.RemediationPrompt prompt) {
+        lastTokenUsage.remove();
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("model", aiProperties.getOpenai().getModel());
+        body.put("store", false);
+        body.put("instructions", prompt.instructions());
+        body.put("input", List.of(Map.of("role", "user", "content", prompt.untrustedData())));
+        body.put("max_output_tokens", 6_000);
+        body.put("text", Map.of("format", Map.of("type", "json_schema", "name", "finding_remediation",
+                "strict", true, "schema", com.securedeploy.ai.remediation.RemediationOutputValidator.schema(contexts))));
+        var response = sendOpenAi(body);
+        if (!"completed".equals(response.path("status").asText())) throw new IllegalStateException("Incomplete remediation response");
+        try {
+            var json = objectMapper.readTree(extractOutputText(response));
+            return com.securedeploy.ai.remediation.RemediationOutputValidator.parse(json, contexts, objectMapper);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("Invalid remediation JSON");
+        }
+    }
+
     private static final String OPENAI_BASE_URL = "https://api.openai.com/v1";
 
     private final AiProperties aiProperties;
     private final ObjectMapper objectMapper;
+    private final RestClient testClient;
     private final ThreadLocal<AiTokenUsage> lastTokenUsage = new ThreadLocal<>();
 
+    @org.springframework.beans.factory.annotation.Autowired
     public RealOpenAiProvider(AiProperties aiProperties, ObjectMapper objectMapper) {
+        this(aiProperties, objectMapper, null);
+    }
+
+    RealOpenAiProvider(AiProperties aiProperties, ObjectMapper objectMapper, RestClient testClient) {
         this.aiProperties = aiProperties;
         this.objectMapper = objectMapper;
+        this.testClient = testClient;
     }
 
     @Override
@@ -219,6 +249,12 @@ public class RealOpenAiProvider implements AiProvider {
         body.put("input", prompt);
         body.put("store", false);
 
+        return sendOpenAi(body);
+    }
+
+    private JsonNode sendOpenAi(Map<String, Object> body) {
+        if (!isAvailable()) throw new IllegalStateException("OpenAI is not configured");
+
         JsonNode response = restClient()
                 .post()
                 .uri("/responses")
@@ -236,6 +272,7 @@ public class RealOpenAiProvider implements AiProvider {
     }
 
     private RestClient restClient() {
+        if (testClient != null) return testClient;
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         Duration timeout = Duration.ofSeconds(Math.max(1, aiProperties.getOpenai().getTimeoutSeconds()));
         requestFactory.setConnectTimeout(timeout);

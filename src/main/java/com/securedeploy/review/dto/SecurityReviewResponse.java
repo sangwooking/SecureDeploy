@@ -15,8 +15,20 @@ public record SecurityReviewResponse(
         String deploymentStatus,
         List<VulnerabilityResultResponse> vulnerabilities,
         ScaResult sca,
-        RiskAssessment riskAssessment
+        RiskAssessment riskAssessment,
+        com.securedeploy.ai.remediation.RemediationSnapshot remediation
 ) {
+    public SecurityReviewResponse(Long reviewId, Long projectId, String projectName, int scannedFileCount,
+                                  int vulnerabilityCount, int securityScore, String deploymentStatus,
+                                  List<VulnerabilityResultResponse> vulnerabilities, ScaResult sca, RiskAssessment riskAssessment) {
+        this(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount, securityScore,
+                deploymentStatus, vulnerabilities, sca, riskAssessment, null);
+    }
+
+    public SecurityReviewResponse withRemediation(com.securedeploy.ai.remediation.RemediationSnapshot snapshot) {
+        return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount,
+                securityScore, deploymentStatus, vulnerabilities, sca, riskAssessment, snapshot);
+    }
     @JsonProperty("deploymentAssessmentScope")
     public String deploymentAssessmentScope() {
         return "RULE_ENGINE_ONLY";
@@ -49,7 +61,7 @@ public record SecurityReviewResponse(
 
     public SecurityReviewResponse withSca(ScaResult result) {
         return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount,
-                vulnerabilityCount, securityScore, deploymentStatus, vulnerabilities, result, riskAssessment);
+                vulnerabilityCount, securityScore, deploymentStatus, vulnerabilities, result, riskAssessment, remediation);
     }
 
     public SecurityReviewResponse withReviewId(Long reviewId) {
@@ -67,7 +79,8 @@ public record SecurityReviewResponse(
                 deploymentStatus,
                 vulnerabilities,
                 sca,
-                riskAssessment
+                riskAssessment,
+                remediation
         );
     }
 }

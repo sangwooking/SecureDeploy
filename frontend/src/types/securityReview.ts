@@ -65,6 +65,7 @@ export interface Vulnerability {
 }
 
 export interface SecurityReviewResponse {
+  remediation?: RemediationSnapshot | null;
   reviewId?: number;
   projectId?: number | null;
   projectName: string;
@@ -84,6 +85,36 @@ export interface SecurityReviewResponse {
     securityScoreDeterminesDeployment: false;
     message: string;
   };
+}
+
+export type RemediationGenerationStatus = 'GENERATED' | 'TEMPLATE' | 'UNAVAILABLE' | 'FAILED' | 'NOT_REQUESTED';
+export interface RemediationAdvice {
+  findingId: string;
+  advice: {
+    summary: string;
+    whyItMatters: string;
+    recommendedAction: string;
+    codeExample: string | null;
+    configurationExample: string | null;
+    verificationSteps: string[];
+    caution: string | null;
+    remediationConfidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  } | null;
+  provider: string;
+  model: string | null;
+  promptVersion: string;
+  generatedAt: string;
+  generationStatus: RemediationGenerationStatus;
+}
+export interface RemediationSnapshot {
+  schemaVersion: number;
+  snapshotId: string;
+  generatedAt: string;
+  generationStatus: RemediationGenerationStatus;
+  findings: RemediationAdvice[];
+  omittedFindingCount: number;
+  notices: string[];
+  usage: AiUsageResponse | null;
 }
 
 export type RiskPriority = 'BLOCKING' | 'SHOULD_FIX' | 'REVIEW_REQUIRED' | 'INFORMATIONAL';

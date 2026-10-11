@@ -1947,6 +1947,16 @@ h1 {
   overflow-wrap: anywhere;
 }
 .threat-intelligence summary { cursor: pointer; font-weight: 600; }
+.finding-remediation { border-top: 1px solid #dce2e6; padding-top: 12px; margin: 12px 0; overflow-wrap: anywhere; }
+.finding-remediation summary { cursor: pointer; font-weight: 600; line-height: 1.6; }
+.finding-remediation summary span { font-size: 12px; font-weight: 400; margin-left: 8px; }
+.finding-remediation h4 { font-size: 16px; margin: 12px 0; }
+.finding-remediation dl > div { margin: 12px 0; }
+.finding-remediation dt { font-weight: 600; font-size: 13px; }
+.finding-remediation dd { margin: 6px 0 0; line-height: 1.6; white-space: pre-wrap; }
+.finding-remediation pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f5f7f8; padding: 12px; max-width: 100%; }
+.finding-remediation ul { padding-left: 20px; }
+.remediation-notice { color: #506079; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
 .threat-intelligence p { font-size: 13px; line-height: 1.6; }
 .threat-cve { margin-top: 12px; border-bottom: 1px solid #e6e9ec; padding-bottom: 8px; }
 .threat-intelligence .threat-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }

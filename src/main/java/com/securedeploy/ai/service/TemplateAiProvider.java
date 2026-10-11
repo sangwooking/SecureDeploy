@@ -27,6 +27,15 @@ import org.springframework.stereotype.Component;
 public class TemplateAiProvider implements AiProvider {
 
     @Override
+    public Map<String, com.securedeploy.ai.remediation.RemediationContent> generateFindingRemediations(
+            List<com.securedeploy.ai.remediation.RemediationContext> contexts,
+            com.securedeploy.ai.remediation.RemediationPrompt prompt) {
+        return contexts.stream().collect(Collectors.toMap(
+                com.securedeploy.ai.remediation.RemediationContext::findingId,
+                com.securedeploy.ai.remediation.RemediationTemplates::advice));
+    }
+
+    @Override
     public AiProviderType providerType() {
         return AiProviderType.TEMPLATE;
     }

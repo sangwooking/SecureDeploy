@@ -1,6 +1,7 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { DependencySecuritySection, ScaAssessmentNotice } from './components/DependencySecuritySection';
 import { FindingPriority, RiskAssessmentSection } from './components/RiskAssessmentSection';
+import { FindingRemediation, RemediationNotice } from './components/FindingRemediation';
 import {
   deleteProject,
   deleteReview,
@@ -922,7 +923,8 @@ function App() {
                   handleStatusCommentChange,
                   (vulnerability, status) => void handleVulnerabilityStatusChange(vulnerability, status)
                 )}
-                <DependencySecuritySection sca={result.sca} riskAssessment={result.riskAssessment} />
+                <RemediationNotice snapshot={result.remediation} />
+                <DependencySecuritySection sca={result.sca} riskAssessment={result.riskAssessment} remediation={result.remediation} />
               </>
             ) : (
               <AiReviewSection
@@ -1369,6 +1371,8 @@ function renderVulnerabilityList(
             </div>
 
             <FindingPriority finding={result.riskAssessment?.codeFindings.find(finding =>
+              vulnerabilityId !== null && finding.vulnerabilityId === vulnerabilityId)} />
+            <FindingRemediation snapshot={result.remediation} finding={result.riskAssessment?.codeFindings.find(finding =>
               vulnerabilityId !== null && finding.vulnerabilityId === vulnerabilityId)} />
 
             <div className="status-manager">

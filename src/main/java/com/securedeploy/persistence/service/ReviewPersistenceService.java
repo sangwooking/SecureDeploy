@@ -131,8 +131,16 @@ public class ReviewPersistenceService {
                         .map(VulnerabilityResultResponse::from)
                         .toList(),
                 review.getScaResult(),
-                review.getRiskAssessment()
+                review.getRiskAssessment(),
+                review.getRemediation()
         );
+    }
+
+    @Transactional
+    public SecurityReviewResponse saveRemediationSnapshot(Long reviewId,
+            com.securedeploy.ai.remediation.RemediationSnapshot snapshot) {
+        reviewRepository.saveRemediationOnce(reviewId, snapshot);
+        return findReviewDetail(reviewId);
     }
 
     private void addSnippets(ReviewEntity review, SnippetGroup snippetGroup) {

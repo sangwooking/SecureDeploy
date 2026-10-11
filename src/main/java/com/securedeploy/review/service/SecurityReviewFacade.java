@@ -48,6 +48,7 @@ public class SecurityReviewFacade {
     private final CurrentUserService currentUserService;
     private final ScaService scaService;
     private final ThreatIntelligenceService threatIntelligenceService;
+    private final com.securedeploy.ai.remediation.RemediationSnapshotService remediationService;
 
     public SecurityReviewFacade(UploadService uploadService, ZipExtractService zipExtractService,
                                 GitHubRepositoryService gitHubRepositoryService,
@@ -58,7 +59,8 @@ public class SecurityReviewFacade {
                                 SnippetCollector snippetCollector,
                                 ProjectService projectService,
                                 CurrentUserService currentUserService, ScaService scaService,
-                                ThreatIntelligenceService threatIntelligenceService) {
+                                ThreatIntelligenceService threatIntelligenceService,
+                                com.securedeploy.ai.remediation.RemediationSnapshotService remediationService) {
         this.uploadService = uploadService;
         this.zipExtractService = zipExtractService;
         this.gitHubRepositoryService = gitHubRepositoryService;
@@ -72,6 +74,7 @@ public class SecurityReviewFacade {
         this.currentUserService = currentUserService;
         this.scaService = scaService;
         this.threatIntelligenceService = threatIntelligenceService;
+        this.remediationService = remediationService;
     }
 
     public SecurityReviewResponse reviewUploadedZip(MultipartFile file) {
@@ -81,7 +84,7 @@ public class SecurityReviewFacade {
             ExtractedProject extractedProject = zipExtractService.extract(archive);
             AnalysisOutcome outcome = reviewProject(extractedProject.projectName(), extractedProject.projectRoot());
             ProjectEntity project = projectService.resolveOrCreateProjectForZip(currentUserService.currentUserIdOrNull(), extractedProject.projectName());
-            return reviewPersistenceService.saveReview(project, outcome.response(), ReviewSourceType.ZIP, null, outcome.snippetGroup(), outcome.intelligence());
+            return saveWithRemediation(project, outcome, ReviewSourceType.ZIP, null);
         } finally {
             FileUtils.deleteRecursively(archive.workspacePath());
         }
@@ -93,7 +96,7 @@ public class SecurityReviewFacade {
         try {
             AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot());
             ProjectEntity project = projectService.resolveOrCreateProjectForGithub(currentUserService.currentUserIdOrNull(), clonedRepository.repositoryUrl());
-            return reviewPersistenceService.saveReview(project, outcome.response(), ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), outcome.snippetGroup(), outcome.intelligence());
+            return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl());
         } finally {
             FileUtils.deleteRecursively(clonedRepository.workspacePath());
         }
@@ -107,7 +110,7 @@ public class SecurityReviewFacade {
         try {
             ExtractedProject extractedProject = zipExtractService.extract(archive);
             AnalysisOutcome outcome = reviewProject(extractedProject.projectName(), extractedProject.projectRoot());
-            return reviewPersistenceService.saveReview(project, outcome.response(), ReviewSourceType.ZIP, null, outcome.snippetGroup(), outcome.intelligence());
+            return saveWithRemediation(project, outcome, ReviewSourceType.ZIP, null);
         } finally {
             FileUtils.deleteRecursively(archive.workspacePath());
         }
@@ -119,7 +122,7 @@ public class SecurityReviewFacade {
 
         try {
             AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot());
-            return reviewPersistenceService.saveReview(project, outcome.response(), ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), outcome.snippetGroup(), outcome.intelligence());
+            return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl());
         } finally {
             FileUtils.deleteRecursively(clonedRepository.workspacePath());
         }
@@ -127,6 +130,13 @@ public class SecurityReviewFacade {
 
     public List<ReviewHistoryResponse> findReviewHistories() {
         return reviewPersistenceService.findReviewHistories(currentUserService.currentUserIdOrNull());
+    }
+
+    private SecurityReviewResponse saveWithRemediation(ProjectEntity project, AnalysisOutcome outcome,
+                                                       ReviewSourceType type, String repositoryUrl) {
+        var saved = reviewPersistenceService.saveReview(project, outcome.response(), type, repositoryUrl,
+                outcome.snippetGroup(), outcome.intelligence());
+        return remediationService.complete(saved, outcome.snippetGroup());
     }
 
     public SecurityReviewResponse findReviewDetail(Long reviewId) {
