@@ -2,6 +2,7 @@ import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { DependencySecuritySection, ScaAssessmentNotice } from './components/DependencySecuritySection';
 import { FindingPriority, RiskAssessmentSection } from './components/RiskAssessmentSection';
 import { FindingRemediation, RemediationNotice } from './components/FindingRemediation';
+import { SemanticReviewSection } from './components/SemanticReviewSection';
 import {
   deleteProject,
   deleteReview,
@@ -126,6 +127,7 @@ function App() {
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [authErrorMessage, setAuthErrorMessage] = useState('');
   const [analysisMode, setAnalysisMode] = useState<AnalysisMode>('ZIP');
+  const [scanMode, setScanMode] = useState<'STANDARD' | 'AI_ENHANCED'>('STANDARD');
   const [activeResultTab, setActiveResultTab] = useState<ResultTab>('RESULT');
   const [activeAiSubTab, setActiveAiSubTab] = useState<AiSubTab>('VULNERABILITY_REVIEW');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -303,8 +305,8 @@ function App() {
 
     try {
       const reviewResult = analysisMode === 'ZIP'
-        ? await uploadZipForReview(selectedFile as File)
-        : await reviewGithubRepository(repositoryUrl.trim());
+        ? await uploadZipForReview(selectedFile as File, scanMode)
+        : await reviewGithubRepository(repositoryUrl.trim(), scanMode);
       setResult(reviewResult);
       setSelectedReviewId(reviewResult.reviewId ?? null);
       await loadStatusSummary(reviewResult.projectId);
@@ -722,6 +724,7 @@ function App() {
   };
 
   const handleLogout = () => {
+    setScanMode('STANDARD');
     clearStoredAuthSession();
     setAuthSession(null);
     setReviewHistory([]);
@@ -827,6 +830,11 @@ function App() {
           </div>
 
           <div className="feedback-stack">
+            <label className="semantic-opt-in">
+              <input type="checkbox" checked={scanMode === 'AI_ENHANCED'} disabled={isLoading}
+                onChange={event => setScanMode(event.target.checked ? 'AI_ENHANCED' : 'STANDARD')} />
+              AI Enhanced Scan · 마스킹된 일부 코드의 외부 AI 전송 허용 (사용량 발생 가능)
+            </label>
             {errorMessage && <div className="feedback-message feedback-error">{errorMessage}</div>}
             {successMessage && <div className="feedback-message feedback-success">{successMessage}</div>}
           </div>
@@ -854,6 +862,7 @@ function App() {
         {result && (
           <section className="result-area">
             <RiskAssessmentSection assessment={result.riskAssessment} />
+            <SemanticReviewSection snapshot={result.semanticReview} />
             <div className="summary-grid">
               <Metric label="프로젝트명" value={result.projectName} />
               <Metric label="스캔 파일 수" value={result.scannedFileCount.toLocaleString()} />

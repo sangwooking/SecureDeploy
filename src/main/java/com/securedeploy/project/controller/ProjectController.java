@@ -98,13 +98,14 @@ public class ProjectController {
 
     @PostMapping(value = "/{projectId}/reviews/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SecurityReviewResponse> uploadProjectReview(@PathVariable Long projectId,
-                                                                      @RequestPart("file") MultipartFile file) {
-        return ResponseEntity.ok(securityReviewFacade.reviewUploadedZip(projectId, file));
+                                                                      @RequestPart("file") MultipartFile file,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "STANDARD") com.securedeploy.review.model.ScanMode scanMode) {
+        return ResponseEntity.ok(securityReviewFacade.reviewUploadedZip(projectId, file, scanMode));
     }
 
     @PostMapping(value = "/{projectId}/reviews/github", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SecurityReviewResponse> reviewProjectGitHubRepository(@PathVariable Long projectId,
                                                                                 @Valid @RequestBody GithubRepositoryReviewRequest request) {
-        return ResponseEntity.ok(securityReviewFacade.reviewGitHubRepository(projectId, request.repositoryUrl()));
+        return ResponseEntity.ok(securityReviewFacade.reviewGitHubRepository(projectId, request.repositoryUrl(), request.scanMode()));
     }
 }

@@ -109,6 +109,7 @@ class RemediationReviewIntegrationTest {
         }
         return mapper.readTree(mvc.perform(multipart("/api/reviews/upload")
                 .file(new MockMultipartFile("file", "remediation-fixture.zip", "application/zip", bytes.toByteArray()))
+                .param("scanMode", "AI_ENHANCED")
                 .header("Authorization", "Bearer "+token)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
     }
 }

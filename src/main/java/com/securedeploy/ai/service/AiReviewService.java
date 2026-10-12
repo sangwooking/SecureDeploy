@@ -65,7 +65,7 @@ public class AiReviewService {
         AiProjectContext context = toProjectContext(review);
         String usagePrompt = promptBuilder.buildVulnerabilityReviewBatchPrompt(context);
 
-        GeneratedResult<List<AiReviewResponse>> generated = generateWithFallback(
+        GeneratedResult<List<AiReviewResponse>> generated = generateWithFallback(review,
                 AiFeatureType.VULNERABILITY_REVIEW,
                 usagePrompt,
                 provider -> review.getVulnerabilities().stream()
@@ -83,7 +83,7 @@ public class AiReviewService {
         AiProjectContext context = toProjectContext(review);
         String prompt = promptBuilder.buildProjectSummaryPrompt(context);
 
-        GeneratedResult<AiProjectSummaryContent> generated = generateWithFallback(
+        GeneratedResult<AiProjectSummaryContent> generated = generateWithFallback(review,
                 AiFeatureType.PROJECT_SUMMARY,
                 prompt,
                 provider -> provider.generateProjectSummary(context, prompt)
@@ -98,7 +98,7 @@ public class AiReviewService {
         AiProjectContext context = toProjectContext(review);
         String prompt = promptBuilder.buildRemediationPrompt(context);
 
-        GeneratedResult<List<AiRemediationResponse>> generated = generateWithFallback(
+        GeneratedResult<List<AiRemediationResponse>> generated = generateWithFallback(review,
                 AiFeatureType.REMEDIATION_SUGGESTION,
                 prompt,
                 provider -> provider.generateRemediationSuggestions(context, prompt)
@@ -113,7 +113,7 @@ public class AiReviewService {
         AiProjectContext context = toProjectContext(review);
         String prompt = promptBuilder.buildSecurityAuditPrompt(context);
 
-        GeneratedResult<List<AiSecurityAuditFindingResponse>> generated = generateWithFallback(
+        GeneratedResult<List<AiSecurityAuditFindingResponse>> generated = generateWithFallback(review,
                 AiFeatureType.SECURITY_AUDIT,
                 prompt,
                 provider -> provider.generateSecurityAudit(context, prompt)
@@ -129,7 +129,10 @@ public class AiReviewService {
         GeneratedResult<AiComparisonInsightResponse> generated = generateWithFallback(
                 AiFeatureType.COMPARISON_INSIGHT,
                 prompt,
-                provider -> provider.generateComparisonInsight(comparison, prompt)
+                provider -> provider.generateComparisonInsight(comparison, prompt),
+                comparison.latestReviewId()!=null && comparison.previousReviewId()!=null
+                        && permitsExternalAi(findReview(comparison.latestReviewId(), "분석 이력이 없습니다."))
+                        && permitsExternalAi(findReview(comparison.previousReviewId(), "분석 이력이 없습니다."))
         );
         return generated.value().withUsage(generated.usage());
     }
@@ -139,7 +142,7 @@ public class AiReviewService {
         ReviewEntity review = findReview(reviewId, "AI 수정 우선순위를 생성할 분석 이력을 찾을 수 없습니다.");
         AiProjectContext context = toProjectContext(review);
         String prompt = promptBuilder.buildPriorityPrompt(context);
-        GeneratedResult<List<AiPriorityItemResponse>> generated = generateWithFallback(
+        GeneratedResult<List<AiPriorityItemResponse>> generated = generateWithFallback(review,
                 AiFeatureType.PRIORITY_PLANNING,
                 prompt,
                 provider -> provider.generatePriorities(context, prompt)
@@ -152,7 +155,7 @@ public class AiReviewService {
         ReviewEntity review = findReview(reviewId, "AI 보안 개선 로드맵을 생성할 분석 이력을 찾을 수 없습니다.");
         AiProjectContext context = toProjectContext(review);
         String prompt = promptBuilder.buildSecurityRoadmapPrompt(context);
-        GeneratedResult<AiSecurityRoadmapContent> generated = generateWithFallback(
+        GeneratedResult<AiSecurityRoadmapContent> generated = generateWithFallback(review,
                 AiFeatureType.SECURITY_ROADMAP,
                 prompt,
                 provider -> provider.generateSecurityRoadmap(context, prompt)
@@ -169,8 +172,17 @@ public class AiReviewService {
         );
     }
 
-    private <T> GeneratedResult<T> generateWithFallback(AiFeatureType featureType, String prompt, Function<AiProvider, T> generator) {
-        AiProvider provider = aiProviderResolver.resolve();
+    private boolean permitsExternalAi(ReviewEntity review) {
+        // Historical NULL keeps the pre-mode explicit-request behavior. New scans always persist a mode.
+        return review.getScanMode() != com.securedeploy.review.model.ScanMode.STANDARD;
+    }
+
+    private <T> GeneratedResult<T> generateWithFallback(ReviewEntity review, AiFeatureType featureType, String prompt, Function<AiProvider, T> generator) {
+        return generateWithFallback(featureType, prompt, generator, permitsExternalAi(review));
+    }
+
+    private <T> GeneratedResult<T> generateWithFallback(AiFeatureType featureType, String prompt, Function<AiProvider, T> generator, boolean allowExternalAi) {
+        AiProvider provider = allowExternalAi ? aiProviderResolver.resolve() : aiProviderResolver.templateProvider();
         try {
             T value = generator.apply(provider);
             AiUsageResponse usage = trackUsage(featureType, provider, prompt, value);
@@ -247,6 +259,7 @@ public class AiReviewService {
     }
 
     private List<AiCodeSnippet> snippetsByType(ReviewEntity review, SnippetType type) {
+        if (!permitsExternalAi(review)) return List.of();
         return review.getSnippets().stream()
                 .filter(snippet -> snippet.getType() == type)
                 .map(this::toSnippet)

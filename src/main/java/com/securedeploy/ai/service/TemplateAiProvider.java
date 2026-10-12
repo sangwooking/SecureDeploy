@@ -27,6 +27,12 @@ import org.springframework.stereotype.Component;
 public class TemplateAiProvider implements AiProvider {
 
     @Override
+    public List<com.securedeploy.ai.semantic.SemanticCandidate.Proposal> generateSemanticReview(
+            List<com.securedeploy.ai.semantic.SecuritySlice> slices, com.securedeploy.ai.semantic.SemanticPrompt prompt) {
+        return List.of(); // Never invent semantic candidates offline.
+    }
+
+    @Override
     public Map<String, com.securedeploy.ai.remediation.RemediationContent> generateFindingRemediations(
             List<com.securedeploy.ai.remediation.RemediationContext> contexts,
             com.securedeploy.ai.remediation.RemediationPrompt prompt) {

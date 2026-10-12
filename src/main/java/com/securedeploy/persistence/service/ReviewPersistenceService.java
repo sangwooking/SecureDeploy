@@ -53,6 +53,13 @@ public class ReviewPersistenceService {
     @Transactional
     public SecurityReviewResponse saveReview(ProjectEntity project, SecurityReviewResponse response, ReviewSourceType sourceType,
                                              String repositoryUrl, SnippetGroup snippetGroup, ThreatIntelligenceSnapshot intelligence) {
+        return saveReview(project, response, sourceType, repositoryUrl, snippetGroup, intelligence, com.securedeploy.review.model.ScanMode.STANDARD);
+    }
+
+    @Transactional
+    public SecurityReviewResponse saveReview(ProjectEntity project, SecurityReviewResponse response, ReviewSourceType sourceType,
+            String repositoryUrl, SnippetGroup snippetGroup, ThreatIntelligenceSnapshot intelligence,
+            com.securedeploy.review.model.ScanMode scanMode) {
         ReviewEntity review = new ReviewEntity(
                 response.projectName(),
                 sourceType,
@@ -62,6 +69,7 @@ public class ReviewPersistenceService {
                 response.securityScore(),
                 response.deploymentStatus()
         );
+        review.assignScanMode(scanMode);
 
         if (project != null) {
             ProjectEntity managedProject = projectRepository.findById(project.getId())
@@ -132,8 +140,17 @@ public class ReviewPersistenceService {
                         .toList(),
                 review.getScaResult(),
                 review.getRiskAssessment(),
-                review.getRemediation()
+                review.getRemediation(),
+                review.getSemanticReview(),
+                review.getScanMode()
         );
+    }
+
+    @Transactional
+    public SecurityReviewResponse saveSemanticSnapshot(Long reviewId,
+            com.securedeploy.ai.semantic.SemanticSnapshot snapshot) {
+        reviewRepository.saveSemanticOnce(reviewId, snapshot);
+        return findReviewDetail(reviewId);
     }
 
     @Transactional

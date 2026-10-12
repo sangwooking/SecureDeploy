@@ -11,6 +11,13 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler({org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+            org.springframework.http.converter.HttpMessageNotReadableException.class})
+    public ResponseEntity<ErrorResponse> handleInvalidRequestFormat(Exception exception) {
+        return ResponseEntity.badRequest().body(new ErrorResponse(LocalDateTime.now(), 400, "Bad Request",
+                "요청 형식이 올바르지 않습니다. scanMode는 STANDARD 또는 AI_ENHANCED를 사용해 주세요."));
+    }
+
     @ExceptionHandler(SecureDeployException.class)
     public ResponseEntity<ErrorResponse> handleSecureDeployException(SecureDeployException exception) {
         HttpStatus status = exception.getStatus();

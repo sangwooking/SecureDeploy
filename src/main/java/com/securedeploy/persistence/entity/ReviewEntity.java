@@ -47,6 +47,14 @@ public class ReviewEntity {
     @Column(nullable = false, length = 20, columnDefinition = "varchar(20)")
     private ReviewSourceType sourceType;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "scan_mode", columnDefinition = "varchar(20)")
+    private com.securedeploy.review.model.ScanMode scanMode;
+
+    public void assignScanMode(com.securedeploy.review.model.ScanMode mode) { this.scanMode = mode; }
+    public com.securedeploy.review.model.ScanMode getScanMode() { return scanMode; }
+
     @Column(length = 500)
     private String repositoryUrl;
 
@@ -83,6 +91,12 @@ public class ReviewEntity {
     private com.securedeploy.ai.remediation.RemediationSnapshot remediation;
 
     public com.securedeploy.ai.remediation.RemediationSnapshot getRemediation() { return remediation; }
+
+    @Convert(converter = com.securedeploy.ai.semantic.SemanticSnapshotConverter.class)
+    @Column(name = "semantic_snapshot_json", columnDefinition = "TEXT")
+    private com.securedeploy.ai.semantic.SemanticSnapshot semanticReview;
+
+    public com.securedeploy.ai.semantic.SemanticSnapshot getSemanticReview() { return semanticReview; }
 
     public void attachRiskAssessment(RiskAssessment assessment) { this.riskAssessment = assessment; }
     public RiskAssessment getRiskAssessment() { return riskAssessment; }

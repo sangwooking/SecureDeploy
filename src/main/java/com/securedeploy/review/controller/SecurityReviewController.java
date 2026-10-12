@@ -53,12 +53,13 @@ public class SecurityReviewController {
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<SecurityReviewResponse> upload(@RequestPart("file") MultipartFile file) {
-        return ResponseEntity.ok(securityReviewFacade.reviewUploadedZip(file));
+    public ResponseEntity<SecurityReviewResponse> upload(@RequestPart("file") MultipartFile file,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "STANDARD") com.securedeploy.review.model.ScanMode scanMode) {
+        return ResponseEntity.ok(securityReviewFacade.reviewUploadedZip(file, scanMode));
     }
 
     @PostMapping(value = "/github", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SecurityReviewResponse> reviewGitHubRepository(@Valid @RequestBody GithubRepositoryReviewRequest request) {
-        return ResponseEntity.ok(securityReviewFacade.reviewGitHubRepository(request.repositoryUrl()));
+        return ResponseEntity.ok(securityReviewFacade.reviewGitHubRepository(request.repositoryUrl(), request.scanMode()));
     }
 }

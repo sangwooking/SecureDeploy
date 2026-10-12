@@ -10,6 +10,10 @@ import org.springframework.data.repository.query.Param;
 public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
 
     @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update ReviewEntity r set r.semanticReview = :snapshot where r.id = :id and r.semanticReview is null")
+    int saveSemanticOnce(@Param("id") Long id, @Param("snapshot") com.securedeploy.ai.semantic.SemanticSnapshot snapshot);
+
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update ReviewEntity r set r.remediation = :snapshot where r.id = :id and r.remediation is null")
     int saveRemediationOnce(@Param("id") Long id,
             @Param("snapshot") com.securedeploy.ai.remediation.RemediationSnapshot snapshot);

@@ -12,6 +12,7 @@ import type {
   ReviewComparisonResponse,
   ReviewHistoryResponse,
   SecurityReviewResponse,
+  ScanMode,
   VulnerabilityStatus,
   VulnerabilityStatusResponse,
   VulnerabilityStatusSummaryResponse,
@@ -57,9 +58,10 @@ export async function login(email: string, password: string): Promise<AuthRespon
   return parseJsonResponse<AuthResponse>(response, '로그인에 실패했습니다.');
 }
 
-export async function uploadZipForReview(file: File): Promise<SecurityReviewResponse> {
+export async function uploadZipForReview(file: File, scanMode: ScanMode = 'STANDARD'): Promise<SecurityReviewResponse> {
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('scanMode', scanMode);
 
   const response = await fetch(`${API_BASE_URL}/api/reviews/upload`, {
     method: 'POST',
@@ -70,11 +72,11 @@ export async function uploadZipForReview(file: File): Promise<SecurityReviewResp
   return parseJsonResponse<SecurityReviewResponse>(response, '프로젝트 분석 요청에 실패했습니다.');
 }
 
-export async function reviewGithubRepository(repositoryUrl: string): Promise<SecurityReviewResponse> {
+export async function reviewGithubRepository(repositoryUrl: string, scanMode: ScanMode = 'STANDARD'): Promise<SecurityReviewResponse> {
   const response = await fetch(`${API_BASE_URL}/api/reviews/github`, {
     method: 'POST',
     headers: jsonHeaders(),
-    body: JSON.stringify({ repositoryUrl }),
+    body: JSON.stringify({ repositoryUrl, scanMode }),
   });
 
   return parseJsonResponse<SecurityReviewResponse>(response, '프로젝트 분석 요청에 실패했습니다.');

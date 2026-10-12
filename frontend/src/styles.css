@@ -1964,3 +1964,12 @@ h1 {
 @media (max-width: 700px) {
   .threat-intelligence .threat-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+.semantic-review { border-top: 1px solid #d4d9dd; padding: 20px 0; overflow-wrap: anywhere; min-width: 0; }
+.semantic-review h2 { font-size: 20px; }
+.semantic-candidate { border-bottom: 1px solid #d4d9dd; padding: 16px 0; }
+.semantic-candidate h3 { font-size: 17px; margin: 0; }
+.semantic-candidate h4 { font-size: 14px; margin: 14px 0 6px; }
+.semantic-candidate p, .semantic-metadata { font-size: 14px; }
+.semantic-disclaimer { color: #565f64; font-size: 14px; }
+.semantic-opt-in { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.5; }
+.semantic-opt-in input { flex: 0 0 auto; margin-top: 3px; }

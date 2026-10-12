@@ -19,9 +19,13 @@ public class RemediationSnapshotService {
 
     // Called only after the deterministic review transaction commits, never on history reads.
     public SecurityReviewResponse complete(SecurityReviewResponse saved, SnippetGroup snippets) {
+        return complete(saved, snippets, true);
+    }
+
+    public SecurityReviewResponse complete(SecurityReviewResponse saved, SnippetGroup snippets, boolean allowExternalAi) {
         if (saved.remediation() != null) return saved;
         RemediationSnapshot snapshot;
-        try { snapshot = generator.generate(saved, snippets); }
+        try { snapshot = generator.generate(saved, snippets, allowExternalAi); }
         catch (RuntimeException failure) {
             snapshot = new RemediationSnapshot(1, UUID.randomUUID().toString(), Instant.now(),
                     RemediationAdvice.GenerationStatus.UNAVAILABLE, List.of(), 0,

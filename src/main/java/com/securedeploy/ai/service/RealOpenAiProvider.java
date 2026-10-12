@@ -38,6 +38,24 @@ import org.springframework.web.client.RestClient;
 public class RealOpenAiProvider implements AiProvider {
 
     @Override
+    public List<com.securedeploy.ai.semantic.SemanticCandidate.Proposal> generateSemanticReview(
+            List<com.securedeploy.ai.semantic.SecuritySlice> slices, com.securedeploy.ai.semantic.SemanticPrompt prompt) {
+        lastTokenUsage.remove();
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("model", aiProperties.getOpenai().getModel());
+        body.put("store", false);
+        body.put("instructions", prompt.instructions());
+        body.put("input", List.of(Map.of("role", "user", "content", prompt.untrustedData())));
+        body.put("max_output_tokens", prompt.maxOutputTokens());
+        body.put("text", Map.of("format", Map.of("type", "json_schema", "name", "semantic_review", "strict", true,
+                "schema", com.securedeploy.ai.semantic.SemanticOutputValidator.schema(slices))));
+        var response = sendOpenAi(body);
+        if (!"completed".equals(response.path("status").asText())) throw new IllegalStateException("Incomplete semantic response");
+        try { return com.securedeploy.ai.semantic.SemanticOutputValidator.parse(objectMapper.readTree(extractOutputText(response)), objectMapper); }
+        catch (JsonProcessingException invalid) { throw new IllegalArgumentException("Invalid semantic JSON"); }
+    }
+
+    @Override
     public Map<String, com.securedeploy.ai.remediation.RemediationContent> generateFindingRemediations(
             List<com.securedeploy.ai.remediation.RemediationContext> contexts,
             com.securedeploy.ai.remediation.RemediationPrompt prompt) {

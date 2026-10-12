@@ -1,6 +1,6 @@
 # SecureDeploy product direction
 
-User-approved direction, recorded 2026-10-11. This guides future phases; it does not expand the Phase 4A implementation scope.
+User-approved direction, recorded 2026-10-11. This guides future phases; each phase keeps its own bounded implementation scope.
 
 ## Product outcome
 
@@ -12,11 +12,11 @@ SecureDeploy is a security decision platform for deployment. Its central questio
 | --- | --- | --- |
 | Known pattern | Rule Engine with false-positive reduction | Extend through versioned Rule Registry / Rule Packs and positive, negative, false-positive and boundary tests. |
 | Known vulnerability | SCA / OSV / CVE / CVSS and EPSS / CISA KEV | Extend ecosystem coverage, SBOM and advisory enrichment while retaining source, date, completeness and uncertainty. |
-| Semantic / flow | Find suspicious authorization, logic and input-to-sink behavior beyond pattern matches | Future AI-assisted candidates, followed by independently validated data-flow, taint and reachability evidence. |
+| Semantic / flow | Find suspicious authorization, logic and input-to-sink behavior beyond pattern matches | Phase 4B adds bounded AI-assisted candidates; independently validated data-flow, taint and reachability evidence remains future work. |
 
 Evidence validation, false-positive reduction and deterministic risk policy connect these sources to deployment assessment. AI helps explain and remediate; it is not the source of truth for severity, blocking, finding confidence or deployment approval.
 
-## Future semantic candidate contract
+## Semantic candidate contract
 
 AI Security Candidates should be a separate source/type, initially REVIEW_REQUIRED. Preserve file, line, function/endpoint, suspected issue, reasoning, bounded context, optional source/sink/flow, and independent AI analysis confidence. The server must verify claimed files, ranges and evidence against the exact supplied context. An invalid claim is discarded or remains review-required; AI alone never escalates or lowers deterministic deployment risk.
 
@@ -26,7 +26,7 @@ A Security Slice is a small, traceable security flow, such as a transfer endpoin
 
 Never send entire archives/repositories or raw .env, private keys, API keys, JWT secrets, DB passwords or access tokens. AI requests run on the backend. All project text and external advisory prose are untrusted data, separated from privileged instructions. AI receives no shell, file-write, DB, push or deployment-decision capability.
 
-Future Standard Scan runs Rule/False Positive/SCA/TI/Risk without external AI code transfer. AI Enhanced Scan explicitly adds semantic review and contextual remediation, subject to organization policy. These product modes and user controls are not implemented in Phase 4A; current provider selection is server-wide.
+Phase 4B Standard Scan runs Rule/False Positive/SCA/TI/Risk without external AI code transfer. AI Enhanced Scan explicitly permits semantic review and contextual remediation, subject to the server's provider configuration. The mode is persisted per Review and defaults to Standard. See [Phase 4B implementation and limits](ai-semantic-review-phase4b.md), including the historical NULL-mode compatibility policy. Organization-wide consent controls remain future work.
 
 ## Follow-on analysis
 
@@ -45,4 +45,4 @@ An effective unresolved BLOCKING finding still means BLOCKED under the current p
 - Rule Registry metadata can replace rule-specific template selection without changing advice persistence or provider selection.
 - Data-flow/reachability facts must enter evidence validation and a versioned deterministic RiskPolicy first. Remediation may explain those saved facts but cannot create or override them.
 
-Implementation decisions should improve deployment judgment, false-positive quality, actionable priority or verified fixes without unnecessary structural complexity. Automatic modification, CI gates, semantic review, rule packs and flow/reachability analysis remain separately scoped phases.
+Implementation decisions should improve deployment judgment, false-positive quality, actionable priority or verified fixes without unnecessary structural complexity. Automatic modification, CI gates, rule packs and flow/reachability analysis remain separately scoped phases; Phase 4B semantic candidates never become verified risk facts on AI authority alone.

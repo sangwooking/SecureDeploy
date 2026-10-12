@@ -39,7 +39,7 @@ export interface DeleteResponse {
 
 export type VulnerabilityStatus = 'UNCHECKED' | 'ACKNOWLEDGED' | 'IN_PROGRESS' | 'RESOLVED' | 'IGNORED';
 
-export type AiFeatureType = 'VULNERABILITY_REVIEW' | 'PROJECT_SUMMARY' | 'REMEDIATION_SUGGESTION' | 'SECURITY_AUDIT' | 'COMPARISON_INSIGHT' | 'PRIORITY_PLANNING' | 'SECURITY_ROADMAP';
+export type AiFeatureType = 'VULNERABILITY_REVIEW' | 'PROJECT_SUMMARY' | 'REMEDIATION_SUGGESTION' | 'FINDING_REMEDIATION' | 'SEMANTIC_REVIEW' | 'SECURITY_AUDIT' | 'COMPARISON_INSIGHT' | 'PRIORITY_PLANNING' | 'SECURITY_ROADMAP';
 
 export type AiConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
 
@@ -65,6 +65,8 @@ export interface Vulnerability {
 }
 
 export interface SecurityReviewResponse {
+  scanMode?: ScanMode | null;
+  semanticReview?: SemanticSnapshot | null;
   remediation?: RemediationSnapshot | null;
   reviewId?: number;
   projectId?: number | null;
@@ -85,6 +87,29 @@ export interface SecurityReviewResponse {
     securityScoreDeterminesDeployment: false;
     message: string;
   };
+}
+
+export type ScanMode = 'STANDARD' | 'AI_ENHANCED';
+export interface SemanticEvidence {
+  contextId: string; filePath: string; startLine: number; endLine: number;
+  functionName: string; evidenceDescription: string;
+}
+export interface SemanticCandidate {
+  candidateId: string; sliceId: string; candidateType: string; title: string;
+  semanticAnalysisConfidence: 'HIGH' | 'MEDIUM' | 'LOW'; reason: string;
+  verificationRequired: true; reviewStatus: 'REVIEW_REQUIRED'; findingType: 'AI_SECURITY_CANDIDATE';
+  evidence: SemanticEvidence[]; verificationSteps: string[]; relatedExistingFindingIds: string[];
+  generatedAt: string; provider: string; model: string | null; promptVersion: string;
+}
+export interface SemanticSnapshot {
+  schemaVersion: number; snapshotId: string; scanMode: ScanMode;
+  semanticReviewStatus: 'NOT_REQUESTED' | 'UNAVAILABLE' | 'NO_SUPPORTED_CONTEXT' | 'COMPLETED' | 'PARTIAL' | 'FAILED' | 'REJECTED';
+  candidates: SemanticCandidate[]; existingFindingEvidence: SemanticCandidate[];
+  slices: { sliceId: string; entryPoint: string; endpoint: string; httpMethod: string; authenticationContext: string;
+    locations: { filePath: string; startLine: number; endLine: number; functionName: string }[]; limitations: string[] }[];
+  semanticSlicesAnalyzed: number; omittedSlices: number; rejectedCandidates: number; deduplicatedCandidates: number;
+  validationStatus: string; provider: string; model: string | null; promptVersion: string;
+  generatedAt: string; requestCount: number; usage: AiUsageResponse | null; notices: string[];
 }
 
 export type RemediationGenerationStatus = 'GENERATED' | 'TEMPLATE' | 'UNAVAILABLE' | 'FAILED' | 'NOT_REQUESTED';

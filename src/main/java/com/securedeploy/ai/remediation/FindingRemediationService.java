@@ -42,6 +42,10 @@ public class FindingRemediationService {
     }
 
     public RemediationSnapshot generate(SecurityReviewResponse review, SnippetGroup snippets) {
+        return generate(review, snippets, true);
+    }
+
+    public RemediationSnapshot generate(SecurityReviewResponse review, SnippetGroup snippets, boolean allowExternalAi) {
         if (review.riskAssessment() == null) return null;
         var findings = java.util.stream.Stream.concat(review.riskAssessment().codeFindings().stream(),
                 review.riskAssessment().dependencyFindings().stream())
@@ -54,11 +58,12 @@ public class FindingRemediationService {
         Map<String, RemediationContent> advice = new HashMap<>(contents);
         Set<String> generated = new HashSet<>();
         List<String> notices = new ArrayList<>();
-        var provider = resolver.resolve();
+        var provider = allowExternalAi ? resolver.resolve() : resolver.templateProvider();
         AiUsageResponse usage = null;
         var batch = new ArrayList<>(contexts.values().stream().filter(c -> c.priority() == RiskPriority.BLOCKING
                 || c.priority() == RiskPriority.SHOULD_FIX).limit(MAX_PAID_FINDINGS).toList());
-        if (properties.getProvider() == AiProviderType.OPENAI && provider.providerType() != AiProviderType.OPENAI)
+        if (!allowExternalAi) notices.add("Standard scan: template 가이드만 생성했습니다. 외부 AI를 호출하지 않았습니다.");
+        if (allowExternalAi && properties.getProvider() == AiProviderType.OPENAI && provider.providerType() != AiProviderType.OPENAI)
             notices.add("OpenAI를 사용할 수 없어 template 가이드를 저장했습니다.");
         if (provider.providerType() == AiProviderType.OPENAI && !batch.isEmpty()) {
             RemediationPrompt prompt = null;

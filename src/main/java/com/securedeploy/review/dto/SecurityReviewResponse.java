@@ -16,8 +16,30 @@ public record SecurityReviewResponse(
         List<VulnerabilityResultResponse> vulnerabilities,
         ScaResult sca,
         RiskAssessment riskAssessment,
-        com.securedeploy.ai.remediation.RemediationSnapshot remediation
+        com.securedeploy.ai.remediation.RemediationSnapshot remediation,
+        com.securedeploy.ai.semantic.SemanticSnapshot semanticReview,
+        com.securedeploy.review.model.ScanMode scanMode
 ) {
+    public SecurityReviewResponse(Long reviewId, Long projectId, String projectName, int scannedFileCount,
+                                  int vulnerabilityCount, int securityScore, String deploymentStatus,
+                                  List<VulnerabilityResultResponse> vulnerabilities, ScaResult sca, RiskAssessment riskAssessment,
+                                  com.securedeploy.ai.remediation.RemediationSnapshot remediation,
+                                  com.securedeploy.ai.semantic.SemanticSnapshot semanticReview) {
+        this(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount, securityScore,
+                deploymentStatus, vulnerabilities, sca, riskAssessment, remediation, semanticReview, null);
+    }
+    public SecurityReviewResponse(Long reviewId, Long projectId, String projectName, int scannedFileCount,
+                                  int vulnerabilityCount, int securityScore, String deploymentStatus,
+                                  List<VulnerabilityResultResponse> vulnerabilities, ScaResult sca, RiskAssessment riskAssessment,
+                                  com.securedeploy.ai.remediation.RemediationSnapshot remediation) {
+        this(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount, securityScore,
+                deploymentStatus, vulnerabilities, sca, riskAssessment, remediation, null);
+    }
+
+    public SecurityReviewResponse withSemanticReview(com.securedeploy.ai.semantic.SemanticSnapshot snapshot) {
+        return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount,
+                securityScore, deploymentStatus, vulnerabilities, sca, riskAssessment, remediation, snapshot, scanMode);
+    }
     public SecurityReviewResponse(Long reviewId, Long projectId, String projectName, int scannedFileCount,
                                   int vulnerabilityCount, int securityScore, String deploymentStatus,
                                   List<VulnerabilityResultResponse> vulnerabilities, ScaResult sca, RiskAssessment riskAssessment) {
@@ -27,7 +49,7 @@ public record SecurityReviewResponse(
 
     public SecurityReviewResponse withRemediation(com.securedeploy.ai.remediation.RemediationSnapshot snapshot) {
         return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount,
-                securityScore, deploymentStatus, vulnerabilities, sca, riskAssessment, snapshot);
+                securityScore, deploymentStatus, vulnerabilities, sca, riskAssessment, snapshot, semanticReview, scanMode);
     }
     @JsonProperty("deploymentAssessmentScope")
     public String deploymentAssessmentScope() {
@@ -61,7 +83,7 @@ public record SecurityReviewResponse(
 
     public SecurityReviewResponse withSca(ScaResult result) {
         return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount,
-                vulnerabilityCount, securityScore, deploymentStatus, vulnerabilities, result, riskAssessment, remediation);
+                vulnerabilityCount, securityScore, deploymentStatus, vulnerabilities, result, riskAssessment, remediation, semanticReview, scanMode);
     }
 
     public SecurityReviewResponse withReviewId(Long reviewId) {
@@ -80,7 +102,9 @@ public record SecurityReviewResponse(
                 vulnerabilities,
                 sca,
                 riskAssessment,
-                remediation
+                remediation,
+                semanticReview,
+                scanMode
         );
     }
 }

@@ -17,6 +17,11 @@ import java.util.Optional;
 
 public interface AiProvider {
 
+    default List<com.securedeploy.ai.semantic.SemanticCandidate.Proposal> generateSemanticReview(
+            List<com.securedeploy.ai.semantic.SecuritySlice> slices, com.securedeploy.ai.semantic.SemanticPrompt prompt) {
+        throw new UnsupportedOperationException("Semantic review is not available");
+    }
+
     AiProviderType providerType();
 
     default java.util.Map<String, com.securedeploy.ai.remediation.RemediationContent> generateFindingRemediations(
