@@ -1,6 +1,7 @@
 import type { RemediationSnapshot, RiskFinding, Vulnerability, VulnerabilityStatus } from '../types/securityReview';
 import { FindingRemediation } from './FindingRemediation';
 import { codeExplanation, priorityLabels } from './reviewPresentation';
+import { findingGuidance, needsVerification } from './findingGuidance';
 
 const statusLabels: Record<VulnerabilityStatus, string> = {
   UNCHECKED: '미확인', ACKNOWLEDGED: '확인 완료', IN_PROGRESS: '수정 중', RESOLVED: '수정 완료', IGNORED: '무시',
@@ -19,7 +20,8 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
   const id = v.vulnerabilityId;
   const status = v.status ?? 'UNCHECKED';
   const disabled = id == null || statusActions.updatingId === id;
-  const needsReview = !finding || finding.priority === 'REVIEW_REQUIRED';
+  const needsReview = needsVerification(finding, v);
+  const guidance = findingGuidance(finding, v);
   return <article className="vulnerability-item action-finding">
     <div className="vulnerability-header">
       <span className={`risk-badge risk-${finding?.priority.toLowerCase() ?? 'review_required'}`}>
@@ -27,20 +29,11 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
       </span>
       <span className="status-badge">{statusLabels[status]}</span>
     </div>
-    <h3>{codeExplanation(v).title}</h3>
+    <h3>{needsReview ? guidance.summary : codeExplanation(v).title}</h3>
     {needsReview && <p className="review-caution">실제 사용 방식과 주변 코드에 따라 위험이 달라질 수 있습니다. 먼저 해당 상황인지 확인하세요.</p>}
     <h4>{needsReview ? '내가 확인할 일' : '내가 해야 할 일'}</h4>
-    <p>{v.recommendation}</p>
-    <p className="finding-location"><strong>위치</strong> <code>{v.filePath}</code> <span className="finding-line">{v.line}행</span></p>
-    {codeExplanation(v).location && <p>{codeExplanation(v).location}</p>}
-    <details className="action-details"><summary>상세보기</summary>
-      <h4>{needsReview ? '왜 확인해야 하나요?' : '왜 문제인가요?'}</h4>
-      <p>{finding?.priorityReason ?? '이 이력에는 우선순위 평가가 없습니다. 재분석 후 배포 여부를 판단하세요.'}</p>
-      {v.analysisNote?.trim() && <><h4>판단 근거</h4><p>{v.analysisNote}</p></>}
-      <h4>수정 후 무엇을 확인하나요?</h4>
-      <p>관련 기능의 테스트를 실행하고 SecureDeploy로 다시 검사하세요. 수정 완료 표시는 저장된 배포 판단을 바꾸지 않습니다.</p>
-    </details>
-    <FindingRemediation finding={finding} snapshot={remediation} />
+    <p>{needsReview ? guidance.steps[0] : guidance.action}</p>
+    <FindingRemediation finding={finding} snapshot={remediation} vulnerability={v} />
     <details className="action-details"><summary>진행 상태와 메모</summary>
       <div className="status-manager">
         <label><span>상태</span><select aria-label="상태" value={status} disabled={disabled}
@@ -55,7 +48,11 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
       <p>메모는 상태를 변경할 때 함께 저장됩니다.</p>
     </details>
     <details className="technical-details"><summary>기술 정보 보기</summary>
+      <p className="finding-location"><strong>위치</strong> <code>{v.filePath}</code> <span className="finding-line">{v.line}행</span></p>
       <p>{v.message}</p>
+      <p>{v.recommendation}</p>
+      {finding && <p>{finding.priorityReason}</p>}
+      {v.analysisNote?.trim() && <><h4>판단 근거</h4><p>{v.analysisNote}</p></>}
       <dl className="technical-grid">
         <div><dt>Rule ID</dt><dd>{v.ruleId}</dd></div>
         <div><dt>Severity</dt><dd>{v.severity}</dd></div>

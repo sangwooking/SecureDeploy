@@ -13,9 +13,12 @@ const item = { findingId: 'code:42', provider: 'template', model: null, promptVe
   } };
 test('guide uses exact finding identity and escapes model output', () => {
   const html = render(FindingRemediation, { finding, snapshot: { findings: [item] } });
-  for (const text of ['수정 방법 자세히 보기', '무엇을 수정해야 하나요?', '수정 후 무엇을 확인하나요?', '탐지 신뢰도와 별개', '&lt;script&gt;', '${DB_PASSWORD}']) assert.ok(html.includes(text));
+  for (const text of ['AI 자세히 보기', '무엇을 수정해야 하나요?', '수정 후 무엇을 확인하나요?', '탐지 신뢰도와 별개', '&lt;script&gt;', '${DB_PASSWORD}']) assert.ok(html.includes(text));
   assert.ok(!html.includes('<script>'));
-  assert.equal(render(FindingRemediation, { finding: { findingId: 'code:43' }, snapshot: { findings: [item] } }), '');
+  const other = render(FindingRemediation, { finding: { ...finding, findingId: 'code:43' }, snapshot: { findings: [item] } });
+  assert.ok(other.includes('기본 안내'));
+  assert.ok(!other.includes('credential rotation'));
+  assert.ok(!other.includes('${DB_PASSWORD}'));
 });
 test('legacy history and unavailable generation never claim safety', () => {
   assert.ok(render(RemediationNotice, { snapshot: null }).includes('저장된 해결 방법이 없습니다'));

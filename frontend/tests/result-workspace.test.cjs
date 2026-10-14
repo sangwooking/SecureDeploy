@@ -10,13 +10,14 @@ const { DependencyFindingCard } = load('DependencyFindingCard');
 const fixture = require('./result-fixture.cjs');
 const actions = { updatingId: null, comments: {}, onComment() {}, onStatus() {} };
 const render = (result, view = 'SUMMARY') => renderToStaticMarkup(React.createElement(ReviewResultWorkspace, {
-  result, view, onViewChange() {}, statusActions: actions, reportActions: null, progress: null, aiPanel: null,
+  result, view, onViewChange() {}, statusActions: actions, reportActions: null, progress: null,
 }));
 
 test('summary prioritizes deployment assessment over a perfect legacy score, hides technical details', () => {
   const result = fixture(), before = JSON.stringify(result);
   const html = render(result);
-  for (const text of ['배포 전 수정 필요', '반드시 처리', '분석 확인 1 + AI 추가 후보 1', '가장 먼저 해야 할 일']) assert.ok(html.includes(text), text);
+  for (const text of ['프로젝트 보안 요약', '배포 전 수정 필요', '반드시 처리', 'AI 추가 후보 1건은 별도 확인', '가장 먼저 해야 할 일']) assert.ok(html.includes(text), text);
+  assert.match(html, /배포 전 직접 확인<\/span><strong>1<\/strong>/);
   for (const text of ['CVE-2099', 'HARDCODED_SECRET', 'fixture-model', 'Confidence', '100 / 100', 'AI_SECURITY_CANDIDATE']) assert.ok(!html.includes(text), text);
   assert.deepEqual(reviewCounts(result), { blocking: 1, review: 1, recommended: 1, candidates: 1 });
   assert.equal(JSON.stringify(result), before);
@@ -109,7 +110,8 @@ test('technical screen retains reference score and original snapshots without ch
   for (const text of ['100 / 100', '참고 점수는 배포 허가가 아닙니다', 'BLOCKED', 'HARDCODED_SECRET', 'CVE-2099-0001']) assert.ok(html.includes(text));
 });
 
-test('guidance resolves advice by finding identity and keeps additional AI tools available', () => {
+test('guidance resolves saved advice by finding identity without legacy generation tabs', () => {
   const html = render(fixture(), 'GUIDANCE');
-  for (const text of ['해결할 문제 선택', '코드에서 인증정보 제거', '수정 후 무엇을 확인하나요?', 'AI와 더 자세히 검토하기']) assert.ok(html.includes(text));
+  for (const text of ['해결할 문제 선택', '코드에서 인증정보 제거', '수정 후 무엇을 확인하나요?', 'AI 자세히 보기']) assert.ok(html.includes(text));
+  assert.ok(!html.includes('AI와 더 자세히 검토하기'));
 });

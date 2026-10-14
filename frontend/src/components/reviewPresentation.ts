@@ -3,11 +3,11 @@ import type { RiskAssessment, RiskFinding, RiskPriority, SecurityReviewResponse,
 export type ResultView = 'SUMMARY' | 'BLOCKING' | 'REVIEW_REQUIRED' | 'SHOULD_FIX' | 'GUIDANCE' | 'TECHNICAL' | 'PROGRESS';
 export const resultViews: { id: ResultView; label: string }[] = [
   { id: 'SUMMARY', label: '결과 요약' }, { id: 'BLOCKING', label: '반드시 처리' },
-  { id: 'REVIEW_REQUIRED', label: '확인 필요' }, { id: 'SHOULD_FIX', label: '수정 권장' },
+  { id: 'REVIEW_REQUIRED', label: '배포 전 직접 확인할 부분' }, { id: 'SHOULD_FIX', label: '수정 권장' },
   { id: 'GUIDANCE', label: '해결 방법' }, { id: 'PROGRESS', label: '변화 보기' }, { id: 'TECHNICAL', label: '기술 정보' },
 ];
 export const priorityLabels: Record<RiskPriority, string> = {
-  BLOCKING: '반드시 처리', REVIEW_REQUIRED: '확인 필요', SHOULD_FIX: '수정 권장', INFORMATIONAL: '참고 사항',
+  BLOCKING: '반드시 처리', REVIEW_REQUIRED: '배포 전 직접 확인할 부분', SHOULD_FIX: '수정 권장', INFORMATIONAL: '참고 사항',
 };
 export const deploymentLabels: Record<RiskAssessment['prioritizedDeploymentAssessment'], string> = {
   BLOCKED: '배포 전 수정 필요', REVIEW_REQUIRED: '확인 후 배포 판단 필요',
@@ -36,6 +36,9 @@ export function findingTitle(result: SecurityReviewResponse, finding: RiskFindin
 
 export function codeExplanation(v: Vulnerability): { title: string; location?: string } {
   switch (v.ruleId) {
+    case 'HARDCODED_SECRET':
+    case 'HARDCODED_FRONTEND_SECRET':
+    case 'HARDCODED_PASSWORD': return { title: '비밀번호나 API Key가 코드에 직접 들어 있을 수 있습니다.' };
     case 'DOCKER_SECRET_ENV': return { title: '비밀번호나 API Key처럼 보호해야 할 값이 파일에 직접 들어가 있을 가능성이 있습니다.', location: 'Dockerfile의 ENV 설정' };
     case 'K8S_SECRET_PLAIN_TEXT': return { title: '보호해야 할 비밀 값이 그대로 저장되어 있을 가능성이 있습니다.', location: 'Kubernetes Secret 설정 파일' };
     case 'DOCKER_ROOT_USER': return { title: '컨테이너가 너무 높은 권한으로 실행될 수 있습니다.', location: 'Dockerfile의 USER 설정' };

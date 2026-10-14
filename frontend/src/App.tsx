@@ -12,13 +12,6 @@ import {
   deleteReview,
   downloadAiReviewReport,
   downloadReviewReport,
-  fetchAiComparisonInsight,
-  fetchAiPriorities,
-  fetchAiProjectSummary,
-  fetchAiRoadmap,
-  fetchAiRemediation,
-  fetchAiReview,
-  fetchAiSecurityAudit,
   fetchLatestReviewComparison,
   fetchProjectDashboard,
   fetchReviewDetail,
@@ -33,14 +26,6 @@ import {
 } from './api/securityReviewApi';
 import type {
   AuthResponse,
-  AiComparisonInsightResponse,
-  AiPriorityResponse,
-  AiProjectSummaryResponse,
-  AiRemediationResultResponse,
-  AiReviewResultResponse,
-  AiSecurityAuditResponse,
-  AiSecurityRoadmapResponse,
-  AiUsageResponse,
   ProjectSecurityDashboardResponse,
   ReviewComparisonResponse,
   ReviewHistoryResponse,
@@ -54,7 +39,6 @@ import type {
 
 type SeverityFilter = 'ALL' | Severity;
 type AnalysisMode = 'ZIP' | 'GITHUB';
-type AiSubTab = 'VULNERABILITY_REVIEW' | 'PROJECT_SUMMARY' | 'REMEDIATION' | 'SECURITY_AUDIT' | 'PRIORITIES' | 'ROADMAP';
 
 const severityFilters: SeverityFilter[] = ['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
 
@@ -126,7 +110,6 @@ function App() {
   const [analysisMode, setAnalysisMode] = useState<AnalysisMode>('ZIP');
   const [scanMode, setScanMode] = useState<'STANDARD' | 'AI_ENHANCED'>('STANDARD');
   const [activeResultTab, setActiveResultTab] = useState<ResultView>('SUMMARY');
-  const [activeAiSubTab, setActiveAiSubTab] = useState<AiSubTab>('VULNERABILITY_REVIEW');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadPolicy, setUploadPolicy] = useState<UploadPolicy | null>(null);
   const [uploadPolicyError, setUploadPolicyError] = useState('');
@@ -138,28 +121,14 @@ function App() {
   const [reviewComparison, setReviewComparison] = useState<ReviewComparisonResponse | null>(null);
   const [projectDashboard, setProjectDashboard] = useState<ProjectSecurityDashboardResponse | null>(null);
   const [statusSummary, setStatusSummary] = useState<VulnerabilityStatusSummaryResponse | null>(null);
-  const [aiComparisonInsight, setAiComparisonInsight] = useState<AiComparisonInsightResponse | null>(null);
-  const [aiReviewResult, setAiReviewResult] = useState<AiReviewResultResponse | null>(null);
-  const [aiProjectSummary, setAiProjectSummary] = useState<AiProjectSummaryResponse | null>(null);
-  const [aiRemediationResult, setAiRemediationResult] = useState<AiRemediationResultResponse | null>(null);
-  const [aiSecurityAudit, setAiSecurityAudit] = useState<AiSecurityAuditResponse | null>(null);
-  const [aiPriorities, setAiPriorities] = useState<AiPriorityResponse | null>(null);
-  const [aiRoadmap, setAiRoadmap] = useState<AiSecurityRoadmapResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [isComparisonLoading, setIsComparisonLoading] = useState(false);
   const [isDashboardLoading, setIsDashboardLoading] = useState(false);
   const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
   const [deletingProjectId, setDeletingProjectId] = useState<number | null>(null);
-  const [isAiComparisonLoading, setIsAiComparisonLoading] = useState(false);
   const [isReportDownloading, setIsReportDownloading] = useState(false);
   const [isAiReportDownloading, setIsAiReportDownloading] = useState(false);
-  const [isAiReviewLoading, setIsAiReviewLoading] = useState(false);
-  const [isAiSummaryLoading, setIsAiSummaryLoading] = useState(false);
-  const [isAiRemediationLoading, setIsAiRemediationLoading] = useState(false);
-  const [isAiAuditLoading, setIsAiAuditLoading] = useState(false);
-  const [isAiPriorityLoading, setIsAiPriorityLoading] = useState(false);
-  const [isAiRoadmapLoading, setIsAiRoadmapLoading] = useState(false);
   const [statusUpdatingId, setStatusUpdatingId] = useState<number | null>(null);
   const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
@@ -219,25 +188,13 @@ function App() {
     }
   };
 
-  const resetAiResults = () => {
-    setAiReviewResult(null);
-    setAiProjectSummary(null);
-    setAiRemediationResult(null);
-    setAiSecurityAudit(null);
-    setAiPriorities(null);
-    setAiRoadmap(null);
-    setActiveAiSubTab('VULNERABILITY_REVIEW');
-  };
-
   const resetCurrentResult = () => {
     setRescanOpen(false);
     setResult(null);
     setSelectedReviewId(null);
-    resetAiResults();
     setActiveResultTab('SUMMARY');
     setReviewComparison(null);
     setProjectDashboard(null);
-    setAiComparisonInsight(null);
     setComparisonErrorMessage('');
     setDashboardErrorMessage('');
     setStatusSummary(null);
@@ -299,7 +256,6 @@ function App() {
     setIsLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
-    resetAiResults();
     setActiveResultTab(view);
     setRescanOpen(false);
 
@@ -332,7 +288,6 @@ function App() {
     setReviewComparison(null);
     setProjectDashboard(null);
     setDashboardErrorMessage('');
-    setAiComparisonInsight(null);
 
     try {
       const comparison = await fetchLatestReviewComparison(projectId);
@@ -380,7 +335,6 @@ function App() {
     setDashboardErrorMessage('');
     setComparisonErrorMessage('');
     setReviewComparison(null);
-    setAiComparisonInsight(null);
     setProjectDashboard(null);
 
     try {
@@ -416,7 +370,6 @@ function App() {
         setReviewComparison(null);
         setComparisonErrorMessage(error instanceof Error ? error.message : '최근 분석 비교 결과를 다시 불러오지 못했습니다.');
       }
-      setAiComparisonInsight(null);
     }
   };
 
@@ -467,7 +420,6 @@ function App() {
       } else {
         setProjectDashboard(null);
         setReviewComparison(null);
-        setAiComparisonInsight(null);
       }
       await loadReviewHistory();
       setSuccessMessage(response.message);
@@ -475,67 +427,6 @@ function App() {
       setDashboardErrorMessage(error instanceof Error ? error.message : '프로젝트를 삭제하지 못했습니다.');
     } finally {
       setDeletingProjectId(null);
-    }
-  };
-
-  const handleAiComparisonGenerate = async (projectId: number) => {
-    setIsAiComparisonLoading(true);
-    setComparisonErrorMessage('');
-    setAiComparisonInsight(null);
-
-    try {
-      const insight = await fetchAiComparisonInsight(projectId);
-      setAiComparisonInsight(insight);
-    } catch (error) {
-      setComparisonErrorMessage(error instanceof Error ? error.message : 'AI 비교 해석을 생성하지 못했습니다.');
-    } finally {
-      setIsAiComparisonLoading(false);
-    }
-  };
-
-  const handleAiPrioritiesGenerate = async () => {
-    if (!result?.reviewId) {
-      setErrorMessage('AI 수정 우선순위를 생성할 분석 결과가 없습니다.');
-      return;
-    }
-
-    setIsAiPriorityLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    try {
-      const priorities = await fetchAiPriorities(result.reviewId);
-      setAiPriorities(priorities);
-      setActiveResultTab('GUIDANCE');
-      setActiveAiSubTab('PRIORITIES');
-      setSuccessMessage('AI 수정 우선순위가 생성되었습니다.');
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'AI 수정 우선순위를 생성하지 못했습니다.');
-    } finally {
-      setIsAiPriorityLoading(false);
-    }
-  };
-
-  const handleAiRoadmapGenerate = async () => {
-    if (!result?.reviewId) {
-      setErrorMessage('AI 보안 개선 로드맵을 생성할 분석 결과가 없습니다.');
-      return;
-    }
-
-    setIsAiRoadmapLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    try {
-      const roadmap = await fetchAiRoadmap(result.reviewId);
-      setAiRoadmap(roadmap);
-      setActiveResultTab('GUIDANCE');
-      setActiveAiSubTab('ROADMAP');
-      setSuccessMessage('AI 보안 개선 로드맵이 생성되었습니다.');
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'AI 보안 개선 로드맵을 생성하지 못했습니다.');
-    } finally {
-      setIsAiRoadmapLoading(false);
     }
   };
 
@@ -566,6 +457,8 @@ function App() {
       return;
     }
 
+    if (!window.confirm('이 PDF는 기존 AI 리뷰를 새로 생성합니다. OpenAI 설정에 따라 외부 API 호출과 비용이 발생할 수 있으며, 저장된 해결 가이드를 그대로 내보내는 기능은 아닙니다. 계속할까요?')) return;
+
     setIsAiReportDownloading(true);
     setErrorMessage('');
     setSuccessMessage('');
@@ -578,98 +471,6 @@ function App() {
       setErrorMessage(error instanceof Error ? error.message : 'AI 리뷰 포함 PDF 리포트를 다운로드하지 못했습니다.');
     } finally {
       setIsAiReportDownloading(false);
-    }
-  };
-
-  const handleAiReviewGenerate = async () => {
-    if (!result?.reviewId) {
-      setErrorMessage('AI 리뷰를 생성할 분석 결과가 없습니다.');
-      return;
-    }
-
-    setIsAiReviewLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    try {
-      const generatedReview = await fetchAiReview(result.reviewId);
-      setAiReviewResult(generatedReview);
-      setActiveResultTab('GUIDANCE');
-      setActiveAiSubTab('VULNERABILITY_REVIEW');
-      setSuccessMessage('취약점별 AI 리뷰가 생성되었습니다.');
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'AI 리뷰를 생성하지 못했습니다.');
-    } finally {
-      setIsAiReviewLoading(false);
-    }
-  };
-
-  const handleAiSummaryGenerate = async () => {
-    if (!result?.reviewId) {
-      setErrorMessage('AI 종합 진단을 생성할 분석 결과가 없습니다.');
-      return;
-    }
-
-    setIsAiSummaryLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    try {
-      const summary = await fetchAiProjectSummary(result.reviewId);
-      setAiProjectSummary(summary);
-      setActiveResultTab('GUIDANCE');
-      setActiveAiSubTab('PROJECT_SUMMARY');
-      setSuccessMessage('AI 종합 진단이 생성되었습니다.');
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'AI 종합 진단을 생성하지 못했습니다.');
-    } finally {
-      setIsAiSummaryLoading(false);
-    }
-  };
-
-  const handleAiAuditGenerate = async () => {
-    if (!result?.reviewId) {
-      setErrorMessage('AI 보조 진단을 실행할 분석 결과가 없습니다.');
-      return;
-    }
-
-    setIsAiAuditLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    try {
-      const audit = await fetchAiSecurityAudit(result.reviewId);
-      setAiSecurityAudit(audit);
-      setActiveResultTab('GUIDANCE');
-      setActiveAiSubTab('SECURITY_AUDIT');
-      setSuccessMessage('AI 보조 진단이 생성되었습니다.');
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'AI 보조 진단을 실행하지 못했습니다.');
-    } finally {
-      setIsAiAuditLoading(false);
-    }
-  };
-
-  const handleAiRemediationGenerate = async () => {
-    if (!result?.reviewId) {
-      setErrorMessage('AI 수정 제안을 생성할 분석 결과가 없습니다.');
-      return;
-    }
-
-    setIsAiRemediationLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    try {
-      const remediation = await fetchAiRemediation(result.reviewId);
-      setAiRemediationResult(remediation);
-      setActiveResultTab('GUIDANCE');
-      setActiveAiSubTab('REMEDIATION');
-      setSuccessMessage('AI 수정 제안이 생성되었습니다.');
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'AI 수정 제안을 생성하지 못했습니다.');
-    } finally {
-      setIsAiRemediationLoading(false);
     }
   };
 
@@ -884,32 +685,10 @@ function App() {
               <button className="secondary-button" type="button" onClick={() => void handleReportDownload()} disabled={isReportDownloading}>
                 {isReportDownloading ? 'PDF 생성 중...' : '기본 리포트 다운로드'}
               </button>
-              {aiReviewResult && <button className="secondary-button" type="button" onClick={() => void handleAiReportDownload()} disabled={isAiReportDownloading}>
-                {isAiReportDownloading ? 'AI PDF 생성 중...' : 'AI 리뷰 포함 리포트 다운로드'}
-              </button>}
+              <button className="secondary-button" type="button" onClick={() => void handleAiReportDownload()} disabled={isAiReportDownloading}>
+                {isAiReportDownloading ? 'AI PDF 생성 중...' : 'AI 리뷰 PDF 생성·다운로드'}
+              </button>
             </> : <p>분석을 저장한 후 다운로드할 수 있습니다.</p>}
-            aiPanel={<AiReviewSection
-                activeAiSubTab={activeAiSubTab}
-                aiProjectSummary={aiProjectSummary}
-                aiRemediationResult={aiRemediationResult}
-                aiSecurityAudit={aiSecurityAudit}
-                aiPriorities={aiPriorities}
-                aiRoadmap={aiRoadmap}
-                aiReviewResult={aiReviewResult}
-                isReviewLoading={isAiReviewLoading}
-                isSummaryLoading={isAiSummaryLoading}
-                isRemediationLoading={isAiRemediationLoading}
-                isAuditLoading={isAiAuditLoading}
-                isPriorityLoading={isAiPriorityLoading}
-                isRoadmapLoading={isAiRoadmapLoading}
-                onGenerateReview={() => void handleAiReviewGenerate()}
-                onGenerateSummary={() => void handleAiSummaryGenerate()}
-                onGenerateRemediation={() => void handleAiRemediationGenerate()}
-                onGenerateAudit={() => void handleAiAuditGenerate()}
-                onGeneratePriorities={() => void handleAiPrioritiesGenerate()}
-                onGenerateRoadmap={() => void handleAiRoadmapGenerate()}
-                onTabChange={setActiveAiSubTab}
-              />}
           />
         )}
 
@@ -969,7 +748,7 @@ function App() {
 
           {projectDashboard && <ProjectSecurityDashboardPanel dashboard={projectDashboard} isDeleting={deletingProjectId === projectDashboard.projectId} onDelete={() => void handleProjectDelete(projectDashboard.projectId)} />}
 
-          {reviewComparison && <ReviewComparisonPanel comparison={reviewComparison} aiInsight={aiComparisonInsight} isAiLoading={isAiComparisonLoading} onGenerateAi={() => void handleAiComparisonGenerate(reviewComparison.projectId)} />}
+          {reviewComparison && <ReviewComparisonPanel comparison={reviewComparison} />}
         </details>
       </section>
     </main>
@@ -1185,7 +964,7 @@ function ProjectSecurityDashboardPanel({ dashboard, isDeleting, onDelete }: { da
   );
 }
 
-function ReviewComparisonPanel({ comparison, aiInsight, isAiLoading, onGenerateAi }: { comparison: ReviewComparisonResponse; aiInsight: AiComparisonInsightResponse | null; isAiLoading: boolean; onGenerateAi: () => void }) {
+function ReviewComparisonPanel({ comparison }: { comparison: ReviewComparisonResponse }) {
   const isComparable = comparison.latestReviewId && comparison.previousReviewId;
 
   if (!isComparable) {
@@ -1194,51 +973,12 @@ function ReviewComparisonPanel({ comparison, aiInsight, isAiLoading, onGenerateA
 
   if (comparison.progress) return <section className="comparison-panel">
     <ReviewProgressPanel result={{ comparison: comparison.progress }} />
-    <button type="button" className="secondary-button" onClick={onGenerateAi} disabled={isAiLoading || comparison.progress.status !== 'COMPLETE'}>
-      {isAiLoading ? 'AI 비교 해석 생성 중...' : 'AI 비교 해석'}
-    </button>
-    {aiInsight && <AiComparisonInsightCard insight={aiInsight} />}
   </section>;
 
   return <section className="comparison-panel"><h2>비교 근거 미저장</h2><p>{comparison.message}</p>
     <p>룰 기반 참고 점수 변화: {signedNumber(comparison.scoreDiff)}. 해결 여부는 판단하지 않습니다.</p></section>;
 }
 
-
-function AiComparisonInsightCard({ insight }: { insight: AiComparisonInsightResponse }) {
-  return (
-    <article className="ai-review-card ai-strategy-card">
-      <div className="ai-review-card-header">
-        <span className="rule-id">AI_COMPARISON_INSIGHT</span>
-      </div>
-      <h3>AI 재분석 비교 해석</h3>
-      <AiUsageMeta usage={insight.usage} />
-      <dl className="ai-review-detail">
-        <div>
-          <dt>overall insight</dt>
-          <dd>{insight.overallInsight}</dd>
-        </div>
-        <div>
-          <dt>improvement</dt>
-          <dd>{insight.improvementSummary}</dd>
-        </div>
-        <div>
-          <dt>remaining risk</dt>
-          <dd>{insight.remainingRiskSummary}</dd>
-        </div>
-        <div>
-          <dt>new risk</dt>
-          <dd>{insight.newRiskSummary}</dd>
-        </div>
-        <div>
-          <dt>deployment opinion</dt>
-          <dd>{insight.deploymentReadinessOpinion}</dd>
-        </div>
-      </dl>
-      <AiListCard title="다음 권장 조치" items={insight.nextRecommendedActions} />
-    </article>
-  );
-}
 
 function ComparisonList({ title, items, emptyText }: { title: string; items: ReviewComparisonResponse['resolvedVulnerabilities']; emptyText: string }) {
   return (
@@ -1319,494 +1059,6 @@ function VulnerabilityProgressPanel({ summary }: { summary: VulnerabilityStatusS
   );
 }
 
-
-interface AiReviewSectionProps {
-  activeAiSubTab: AiSubTab;
-  aiReviewResult: AiReviewResultResponse | null;
-  aiProjectSummary: AiProjectSummaryResponse | null;
-  aiRemediationResult: AiRemediationResultResponse | null;
-  aiSecurityAudit: AiSecurityAuditResponse | null;
-  aiPriorities: AiPriorityResponse | null;
-  aiRoadmap: AiSecurityRoadmapResponse | null;
-  isReviewLoading: boolean;
-  isSummaryLoading: boolean;
-  isRemediationLoading: boolean;
-  isAuditLoading: boolean;
-  isPriorityLoading: boolean;
-  isRoadmapLoading: boolean;
-  onGenerateReview: () => void;
-  onGenerateSummary: () => void;
-  onGenerateRemediation: () => void;
-  onGenerateAudit: () => void;
-  onGeneratePriorities: () => void;
-  onGenerateRoadmap: () => void;
-  onTabChange: (tab: AiSubTab) => void;
-}
-
-function AiReviewSection({
-  activeAiSubTab,
-  aiReviewResult,
-  aiProjectSummary,
-  aiRemediationResult,
-  aiSecurityAudit,
-  aiPriorities,
-  aiRoadmap,
-  isReviewLoading,
-  isSummaryLoading,
-  isRemediationLoading,
-  isAuditLoading,
-  isPriorityLoading,
-  isRoadmapLoading,
-  onGenerateReview,
-  onGenerateSummary,
-  onGenerateRemediation,
-  onGenerateAudit,
-  onGeneratePriorities,
-  onGenerateRoadmap,
-  onTabChange,
-}: AiReviewSectionProps) {
-  return (
-    <section className="ai-review-panel">
-      <div className="ai-subtab-bar" aria-label="AI 리뷰 기능 선택">
-        <button className={activeAiSubTab === 'VULNERABILITY_REVIEW' ? 'ai-subtab ai-subtab-active' : 'ai-subtab'} type="button" onClick={() => onTabChange('VULNERABILITY_REVIEW')}>
-          취약점별 AI 리뷰
-        </button>
-        <button className={activeAiSubTab === 'PROJECT_SUMMARY' ? 'ai-subtab ai-subtab-active' : 'ai-subtab'} type="button" onClick={() => onTabChange('PROJECT_SUMMARY')}>
-          AI 종합 진단
-        </button>
-        <button className={activeAiSubTab === 'REMEDIATION' ? 'ai-subtab ai-subtab-active' : 'ai-subtab'} type="button" onClick={() => onTabChange('REMEDIATION')}>
-          AI 수정 제안
-        </button>
-        <button className={activeAiSubTab === 'SECURITY_AUDIT' ? 'ai-subtab ai-subtab-active' : 'ai-subtab'} type="button" onClick={() => onTabChange('SECURITY_AUDIT')}>
-          AI 보조 진단
-        </button>
-        <button className={activeAiSubTab === 'PRIORITIES' ? 'ai-subtab ai-subtab-active' : 'ai-subtab'} type="button" onClick={() => onTabChange('PRIORITIES')}>
-          AI 수정 우선순위
-        </button>
-        <button className={activeAiSubTab === 'ROADMAP' ? 'ai-subtab ai-subtab-active' : 'ai-subtab'} type="button" onClick={() => onTabChange('ROADMAP')}>
-          AI 개선 로드맵
-        </button>
-      </div>
-
-      {activeAiSubTab === 'VULNERABILITY_REVIEW' && (
-        <VulnerabilityAiReviewSection aiReviewResult={aiReviewResult} isLoading={isReviewLoading} onGenerate={onGenerateReview} />
-      )}
-      {activeAiSubTab === 'PROJECT_SUMMARY' && (
-        <ProjectAiSummarySection aiProjectSummary={aiProjectSummary} isLoading={isSummaryLoading} onGenerate={onGenerateSummary} />
-      )}
-      {activeAiSubTab === 'REMEDIATION' && (
-        <AiRemediationSection aiRemediationResult={aiRemediationResult} isLoading={isRemediationLoading} onGenerate={onGenerateRemediation} />
-      )}
-      {activeAiSubTab === 'SECURITY_AUDIT' && (
-        <AiSecurityAuditSection aiSecurityAudit={aiSecurityAudit} isLoading={isAuditLoading} onGenerate={onGenerateAudit} />
-      )}
-      {activeAiSubTab === 'PRIORITIES' && (
-        <AiPrioritiesSection aiPriorities={aiPriorities} isLoading={isPriorityLoading} onGenerate={onGeneratePriorities} />
-      )}
-      {activeAiSubTab === 'ROADMAP' && (
-        <AiRoadmapSection aiRoadmap={aiRoadmap} isLoading={isRoadmapLoading} onGenerate={onGenerateRoadmap} />
-      )}
-    </section>
-  );
-}
-
-function VulnerabilityAiReviewSection({ aiReviewResult, isLoading, onGenerate }: { aiReviewResult: AiReviewResultResponse | null; isLoading: boolean; onGenerate: () => void }) {
-  if (!aiReviewResult) {
-    return (
-      <div className="ai-review-empty">
-        <h2>취약점별 AI 리뷰가 아직 생성되지 않았습니다.</h2>
-        <p>Rule Engine이 탐지한 취약점을 바탕으로 설명, 위험성, 공격 시나리오, 수정 방법을 생성할 수 있습니다.</p>
-        <button className="primary-button" type="button" onClick={onGenerate} disabled={isLoading}>
-          {isLoading ? 'AI 리뷰 생성 중...' : 'AI 리뷰 생성'}
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="section-heading ai-review-heading">
-        <div>
-          <h2>취약점별 AI 리뷰</h2>
-          <p>탐지된 취약점을 사람이 이해하기 쉬운 설명과 조치 기준으로 정리했습니다.</p>
-        </div>
-        <span>{aiReviewResult.reviews.length}건</span>
-      </div>
-      <AiUsageMeta usage={aiReviewResult.usage} />
-      <div className="ai-review-list">
-        {aiReviewResult.reviews.map((review, index) => (
-          <article className="ai-review-card" key={`${review.ruleId}-${index}`}>
-            <div className="ai-review-card-header">
-              <span className="rule-id">{review.ruleId}</span>
-              <span className="priority-badge">{review.priority}</span>
-            </div>
-            <h3>{review.title}</h3>
-            <dl className="ai-review-detail">
-              <div>
-                <dt>description</dt>
-                <dd>{review.description}</dd>
-              </div>
-              <div>
-                <dt>risk</dt>
-                <dd>{review.riskExplanation}</dd>
-              </div>
-              <div>
-                <dt>attack scenario</dt>
-                <dd>{review.attackScenario}</dd>
-              </div>
-              <div>
-                <dt>recommendation</dt>
-                <dd>{review.recommendation}</dd>
-              </div>
-            </dl>
-          </article>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ProjectAiSummarySection({ aiProjectSummary, isLoading, onGenerate }: { aiProjectSummary: AiProjectSummaryResponse | null; isLoading: boolean; onGenerate: () => void }) {
-  if (!aiProjectSummary) {
-    return (
-      <div className="ai-review-empty">
-        <h2>AI 종합 진단이 아직 생성되지 않았습니다.</h2>
-        <p>프로젝트 전체 점수, 취약점 분포, 배포 상태를 바탕으로 종합 보안 의견을 생성합니다.</p>
-        <button className="primary-button" type="button" onClick={onGenerate} disabled={isLoading}>
-          {isLoading ? 'AI 종합 진단 생성 중...' : 'AI 종합 진단 생성'}
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="section-heading ai-review-heading">
-        <div>
-          <h2>AI 종합 진단</h2>
-          <p>분석 결과 전체를 기준으로 배포 전 보안 상태를 요약했습니다.</p>
-        </div>
-        <time dateTime={aiProjectSummary.generatedAt}>{formatDateTime(aiProjectSummary.generatedAt)}</time>
-      </div>
-      <AiUsageMeta usage={aiProjectSummary.usage} />
-      <article className="ai-review-card ai-summary-card">
-        <dl className="ai-review-detail">
-          <div>
-            <dt>전체 보안 상태에 대한 의견</dt>
-            <dd>{aiProjectSummary.overallSecurityStatus}</dd>
-          </div>
-          <div>
-            <dt>먼저 살펴볼 영역</dt>
-            <dd>{aiProjectSummary.mostRiskyArea}</dd>
-          </div>
-          <div>
-            <dt>deployment opinion</dt>
-            <dd>{aiProjectSummary.deploymentOpinion}</dd>
-          </div>
-        </dl>
-      </article>
-      <div className="ai-two-column">
-        <AiListCard title="우선 수정 순위" items={aiProjectSummary.priorityFixes} />
-        <AiListCard title="배포 전 권장 조치" items={aiProjectSummary.preDeploymentActions} />
-      </div>
-    </div>
-  );
-}
-
-function AiRemediationSection({ aiRemediationResult, isLoading, onGenerate }: { aiRemediationResult: AiRemediationResultResponse | null; isLoading: boolean; onGenerate: () => void }) {
-  if (!aiRemediationResult) {
-    return (
-      <div className="ai-review-empty">
-        <h2>AI 수정 제안이 아직 생성되지 않았습니다.</h2>
-        <p>발견된 문제별로 검토할 설정·코드 예시와 수정 후 확인 방법을 생성합니다.</p>
-        <button className="primary-button" type="button" onClick={onGenerate} disabled={isLoading}>
-          {isLoading ? 'AI 수정 제안 생성 중...' : 'AI 수정 제안 생성'}
-        </button>
-      </div>
-    );
-  }
-
-  if (aiRemediationResult.remediations.length === 0) {
-    return <div className="empty-state">수정 제안이 필요한 취약점이 없습니다.</div>;
-  }
-
-  return (
-    <div>
-      <div className="section-heading ai-review-heading">
-        <div>
-          <h2>AI 수정 제안</h2>
-          <p>적용 전 검토가 필요한 코드·설정 예시입니다. 수정 후 테스트와 재검사로 확인하세요.</p>
-        </div>
-        <span>{aiRemediationResult.remediations.length}건</span>
-      </div>
-      <AiUsageMeta usage={aiRemediationResult.usage} />
-      <div className="ai-review-list">
-        {aiRemediationResult.remediations.map((remediation, index) => (
-          <article className="ai-review-card" key={`${remediation.ruleId}-${remediation.filePath}-${remediation.line}-${index}`}>
-            <div className="ai-review-card-header">
-              <div>
-                <span className="rule-id">{remediation.ruleId}</span>
-                <p className="ai-file-ref">{remediation.filePath}:{remediation.line}</p>
-              </div>
-              <SeverityBadge severity={remediation.severity} />
-            </div>
-            <h3>{remediation.title}</h3>
-            <dl className="ai-review-detail">
-              <div>
-                <dt>어디를 수정하나요?</dt>
-                <dd><pre className="code-example">{remediation.beforeExample}</pre></dd>
-              </div>
-              <div>
-                <dt>어떻게 수정하나요?</dt>
-                <dd><pre className="code-example">{remediation.afterExample}</pre></dd>
-              </div>
-              <div>
-                <dt>왜 이렇게 수정하나요?</dt>
-                <dd>{remediation.explanation}</dd>
-              </div>
-              <div>
-                <dt>수정 후 무엇을 확인하나요?</dt>
-                <dd>{remediation.verification}</dd>
-              </div>
-            </dl>
-          </article>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-
-function AiSecurityAuditSection({ aiSecurityAudit, isLoading, onGenerate }: { aiSecurityAudit: AiSecurityAuditResponse | null; isLoading: boolean; onGenerate: () => void }) {
-  if (!aiSecurityAudit) {
-    return (
-      <div className="ai-review-empty">
-        <h2>AI 보조 진단이 아직 실행되지 않았습니다.</h2>
-        <p>기존 코드 검사와 별도로, 코드 흐름과 구조에 대한 추가 검토 의견을 생성합니다. 확정 취약점은 아닙니다.</p>
-        <button className="primary-button" type="button" onClick={onGenerate} disabled={isLoading}>
-          {isLoading ? 'AI 보조 진단 실행 중...' : 'AI 보조 진단 실행'}
-        </button>
-      </div>
-    );
-  }
-
-  if (aiSecurityAudit.findings.length === 0) {
-    return (
-      <div>
-        <AiUsageMeta usage={aiSecurityAudit.usage} />
-        <div className="empty-state">AI가 제안한 추가 검토 항목이 없습니다.</div>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="section-heading ai-review-heading">
-        <div>
-          <h2>AI 보조 진단</h2>
-          <p>확정 취약점이 아닌, AI가 제안하는 추가 검토 의견입니다.</p>
-        </div>
-        <span>{aiSecurityAudit.findings.length}건</span>
-      </div>
-      <AiUsageMeta usage={aiSecurityAudit.usage} />
-      <ReferencedFiles files={aiSecurityAudit.referencedFiles} />
-      <div className="ai-review-list">
-        {aiSecurityAudit.findings.map((finding, index) => (
-          <article className="ai-review-card ai-audit-card" key={`${finding.title}-${index}`}>
-            <div className="ai-review-card-header">
-              <div>
-                <span className="rule-id">{finding.riskArea}</span>
-                <p className="ai-file-ref">AI 추가 검토 의견 · confidence {finding.confidence}</p>
-              </div>
-              <SeverityBadge severity={finding.severity} />
-            </div>
-            <h3>{finding.title}</h3>
-            <dl className="ai-review-detail">
-              <div>
-                <dt>reasoning</dt>
-                <dd>{finding.reasoning}</dd>
-              </div>
-              <div>
-                <dt>possible impact</dt>
-                <dd>{finding.possibleImpact}</dd>
-              </div>
-              <div>
-                <dt>recommendation</dt>
-                <dd>{finding.recommendation}</dd>
-              </div>
-            </dl>
-          </article>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-
-
-function AiPrioritiesSection({ aiPriorities, isLoading, onGenerate }: { aiPriorities: AiPriorityResponse | null; isLoading: boolean; onGenerate: () => void }) {
-  if (!aiPriorities) {
-    return (
-      <div className="ai-review-empty">
-        <h2>AI 수정 우선순위가 아직 생성되지 않았습니다.</h2>
-        <p>위험도, 배포 영향, 공격 가능성, 수정 난이도를 함께 고려해 무엇을 먼저 고칠지 정리합니다.</p>
-        <button className="primary-button" type="button" onClick={onGenerate} disabled={isLoading}>
-          {isLoading ? 'AI 수정 우선순위 생성 중...' : 'AI 수정 우선순위 생성'}
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="section-heading ai-review-heading">
-        <div>
-          <h2>AI 수정 우선순위</h2>
-          <p>수정 효과와 실무 난이도를 함께 고려한 조치 순서입니다.</p>
-        </div>
-        <span>{aiPriorities.priorities.length}건</span>
-      </div>
-      <AiUsageMeta usage={aiPriorities.usage} />
-      <div className="ai-review-list">
-        {aiPriorities.priorities.map((item) => (
-          <article className="ai-review-card ai-strategy-card" key={`${item.rank}-${item.ruleId}`}>
-            <div className="ai-review-card-header">
-              <span className="priority-badge">{item.rank}순위</span>
-              <SeverityBadge severity={item.severity} />
-            </div>
-            <h3>{item.title}</h3>
-            <dl className="ai-review-detail">
-              <div>
-                <dt>ruleId</dt>
-                <dd>{item.ruleId}</dd>
-              </div>
-              <div>
-                <dt>reason</dt>
-                <dd>{item.reason}</dd>
-              </div>
-              <div>
-                <dt>expected impact</dt>
-                <dd>{item.expectedImpact}</dd>
-              </div>
-              <div>
-                <dt>difficulty / urgency</dt>
-                <dd>{item.fixDifficulty} · {item.urgency}</dd>
-              </div>
-              <div>
-                <dt>recommended action</dt>
-                <dd>{item.recommendedAction}</dd>
-              </div>
-            </dl>
-          </article>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function AiRoadmapSection({ aiRoadmap, isLoading, onGenerate }: { aiRoadmap: AiSecurityRoadmapResponse | null; isLoading: boolean; onGenerate: () => void }) {
-  if (!aiRoadmap) {
-    return (
-      <div className="ai-review-empty">
-        <h2>AI 보안 개선 로드맵이 아직 생성되지 않았습니다.</h2>
-        <p>오늘, 이번 주, 배포 전, 장기 개선으로 나눠 실무형 개선 계획을 생성합니다.</p>
-        <button className="primary-button" type="button" onClick={onGenerate} disabled={isLoading}>
-          {isLoading ? 'AI 보안 개선 로드맵 생성 중...' : 'AI 보안 개선 로드맵 생성'}
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="section-heading ai-review-heading">
-        <div>
-          <h2>AI 보안 개선 로드맵</h2>
-          <p>분석 결과를 실제 개선 일정으로 바꾼 실행 계획입니다.</p>
-        </div>
-      </div>
-      <AiUsageMeta usage={aiRoadmap.usage} />
-      <div className="roadmap-grid">
-        <RoadmapGroup title="오늘 바로 조치" items={aiRoadmap.immediateActions} />
-        <RoadmapGroup title="이번 주 조치" items={aiRoadmap.thisWeekActions} />
-        <RoadmapGroup title="배포 전 체크" items={aiRoadmap.beforeDeploymentChecklist} />
-        <RoadmapGroup title="장기 개선" items={aiRoadmap.longTermImprovements} />
-      </div>
-    </div>
-  );
-}
-
-function RoadmapGroup({ title, items }: { title: string; items: AiSecurityRoadmapResponse['immediateActions'] }) {
-  return (
-    <section className="roadmap-group">
-      <h3>{title}</h3>
-      {items.length === 0 ? (
-        <p>제안된 항목이 없습니다.</p>
-      ) : items.map((item, index) => (
-        <article key={`${title}-${index}`}>
-          <strong>{item.title}</strong>
-          <p>{item.description}</p>
-          <dl>
-            <div>
-              <dt>reason</dt>
-              <dd>{item.reason}</dd>
-            </div>
-            <div>
-              <dt>benefit</dt>
-              <dd>{item.expectedBenefit}</dd>
-            </div>
-          </dl>
-          {item.relatedRuleIds.length > 0 && <code>{item.relatedRuleIds.join(', ')}</code>}
-        </article>
-      ))}
-    </section>
-  );
-}
-
-function ReferencedFiles({ files }: { files: string[] }) {
-  if (!files.length) {
-    return null;
-  }
-
-  return (
-    <div className="referenced-files">
-      <span>AI가 참고한 파일 영역</span>
-      <div>
-        {files.map((file) => (
-          <code key={file}>{file}</code>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function AiUsageMeta({ usage }: { usage?: AiUsageResponse }) {
-  if (!usage) {
-    return null;
-  }
-
-  return (
-    <details className="technical-details"><summary>AI 사용량 기술 정보</summary><div className="ai-usage-meta">
-      <span>provider {usage.provider}</span>
-      <span>tokens {usage.totalTokens.toLocaleString()}</span>
-      <span>cost ${Number(usage.estimatedCostUsd).toFixed(4)}</span>
-      <span>{usage.billable ? 'billable' : 'no charge'}</span>
-    </div></details>
-  );
-}
-
-function AiListCard({ title, items }: { title: string; items: string[] }) {
-  return (
-    <article className="ai-list-card">
-      <h3>{title}</h3>
-      <ul>
-        {items.map((item, index) => (
-          <li key={`${title}-${index}`}>{item}</li>
-        ))}
-      </ul>
-    </article>
-  );
-}
 
 interface MetricProps {
   label: string;

@@ -46,12 +46,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
         result.vulnerabilities[0].statusComment = payload.comment;
         return json(result.vulnerabilities[0]);
       }
-      if (path === '/api/reviews/101/ai-summary') return json({ reviewId: 101, generatedAt: '2026-10-12T00:00:00Z',
-        overallSecurityStatus: '테스트 종합 의견', mostRiskyArea: '인증정보 관리', priorityFixes: ['키 교체'],
-        preDeploymentActions: ['재검사'], deploymentOpinion: '저장된 배포 판단을 우선 확인하세요.' });
-      if (path === '/api/reviews/101/report') return route.fulfill({ status: 200, contentType: 'application/pdf', body: '%PDF-1.4\n% mock download fixture' });
-      if (path === '/api/reviews/101/ai-roadmap') return route.fulfill({ status: 503, contentType: 'application/json',
-        body: JSON.stringify({ message: '테스트용 안내: 잠시 후 다시 시도해 주세요.' }) });
+      if (path === '/api/reviews/101/report' || path === '/api/reviews/101/report/ai') return route.fulfill({ status: 200, contentType: 'application/pdf', body: '%PDF-1.4\n% mock download fixture' });
       return route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ message: 'Mock route missing' }) });
     });
     await page.goto(url);
@@ -73,12 +68,18 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
     for (const [name, width, height] of [['desktop', 1440, 1000], ['mobile', 390, 844], ['small-mobile', 320, 740]]) {
       await page.setViewportSize({ width, height });
       await navigate('결과 요약');
-      for (const section of ['결과 요약', '반드시 처리', '확인 필요', '수정 권장', '해결 방법', '기술 정보']) {
+      for (const section of ['결과 요약', '반드시 처리', '배포 전 직접 확인할 부분', '수정 권장', '해결 방법', '기술 정보']) {
         await navigate(section);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), name + ': ' + section + ' overflow');
         if (section === '반드시 처리') {
           const card = page.locator('.action-finding').first();
           assert.ok(!(await visible()).includes('Confidence'));
+          assert.ok(!(await visible()).includes('Config.java'));
+          await card.locator('.finding-remediation > summary').click();
+          for (const text of ['템플릿 가이드', '어떤 일이 생길 수 있나요?', '비용 발생', '무엇을 수정해야 하나요?', '수정 후 무엇을 확인하나요?']) assert.ok((await visible()).includes(text), text);
+          assert.ok(!(await visible()).includes('fixture-model'));
+          await page.screenshot({ path: `/private/tmp/securedeploy-ai-guide-${name}.png`, fullPage: true });
+          await card.locator('.finding-remediation > summary').click();
           await card.locator(':scope > .technical-details > summary').click();
           assert.ok((await visible()).includes('secret = <redacted>'));
           await card.locator(':scope > .technical-details > summary').click();
@@ -86,9 +87,11 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
           assert.ok((await visible()).includes('선택한 심각도'));
           await page.getByLabel('심각도', { exact: false }).selectOption('ALL');
         }
-        if (section === '확인 필요') {
+        if (section === '배포 전 직접 확인할 부분') {
           assert.equal(await page.locator('.semantic-candidate').count(), 1);
           assert.ok(!(await visible()).includes('IDOR'));
+          for (const word of ['Controller', '소유자', 'findAccount']) assert.ok(!(await visible()).includes(word), word);
+          for (const text of ['테스트 계정 A와 B', '접근이 거부되는지', '안전하다는 뜻이 아닙니다', '잠금 파일', '조회 실패']) assert.ok((await visible()).includes(text), text);
           await page.locator('.semantic-candidate .technical-details > summary').click();
           assert.ok((await visible()).includes('AI_SECURITY_CANDIDATE'));
           await page.locator('.semantic-candidate .technical-details > summary').click();
@@ -99,8 +102,8 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
           await page.getByText('업데이트 방법 보기', { exact: true }).click();
           assert.ok((await visible()).includes('호환성을 보장하지 않습니다'));
         }
-        if (['결과 요약', '반드시 처리', '확인 필요'].includes(section)) {
-          await page.screenshot({ path: `/private/tmp/securedeploy-result-${name}-${['결과 요약', '반드시 처리', '확인 필요'].indexOf(section)}.png`, fullPage: true });
+        if (['결과 요약', '반드시 처리', '배포 전 직접 확인할 부분'].includes(section)) {
+          await page.screenshot({ path: `/private/tmp/securedeploy-result-${name}-${['결과 요약', '반드시 처리', '배포 전 직접 확인할 부분'].indexOf(section)}.png`, fullPage: true });
         }
       }
     }
@@ -118,14 +121,22 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
     const download = page.waitForEvent('download');
     await page.getByRole('button', { name: '기본 리포트 다운로드', exact: true }).click();
     assert.equal((await download).suggestedFilename(), 'securedeploy-report-101.pdf');
+    page.once('dialog', async dialog => { assert.ok(dialog.message().includes('비용')); await dialog.dismiss(); });
+    await page.getByRole('button', { name: 'AI 리뷰 PDF 생성·다운로드', exact: true }).click();
+    assert.ok(!calls.some(call => call.path.endsWith('/report/ai')));
+    page.once('dialog', dialog => dialog.accept());
+    const aiDownload = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'AI 리뷰 PDF 생성·다운로드', exact: true }).click();
+    assert.equal((await aiDownload).suggestedFilename(), 'securedeploy-ai-report-101.pdf');
     await navigate('해결 방법');
-    await page.getByText('AI와 더 자세히 검토하기', { exact: true }).click();
-    await page.getByRole('button', { name: 'AI 종합 진단', exact: true }).click();
-    await page.getByRole('button', { name: 'AI 종합 진단 생성', exact: true }).click();
-    await page.getByText('테스트 종합 의견', { exact: true }).waitFor();
-    await page.getByRole('button', { name: 'AI 개선 로드맵', exact: true }).click();
-    await page.getByRole('button', { name: 'AI 보안 개선 로드맵 생성', exact: true }).click();
-    await page.getByRole('alert').filter({ hasText: '테스트용 안내' }).waitFor();
+    assert.ok((await visible()).includes('코드에서 인증정보 제거'));
+    assert.equal(await page.locator('.ai-subtab').count(), 0);
+    await page.getByLabel('해결할 문제 선택').selectOption('coverage:sca');
+    assert.ok(!(await visible()).includes('코드에서 인증정보 제거'));
+    assert.ok((await visible()).includes('기본 안내'));
+    assert.ok((await visible()).includes('안전하다는 뜻이 아닙니다'));
+    await page.getByLabel('해결할 문제 선택').selectOption('code:51');
+    assert.ok((await visible()).includes('코드에서 인증정보 제거'));
     for (const current of ['disabled', 'empty', 'legacy']) {
       scenario = current;
       await openDetails('.history-panel');
@@ -133,7 +144,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       await navigate('결과 요약');
       if (current === 'disabled') assert.ok((await visible()).includes('외부 AI 분석이 비활성화'));
       if (current === 'legacy') assert.ok((await visible()).includes('미평가'));
-      await navigate('확인 필요');
+      await navigate('배포 전 직접 확인할 부분');
       if (current === 'empty') assert.ok((await visible()).includes('후보 0건은 안전을 의미하지 않습니다'));
       if (current === 'legacy') assert.ok((await visible()).includes('우선순위가 저장되지 않은 코드 문제'));
     }
@@ -152,10 +163,12 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
     await page.getByText('선택된 코드 영역의 AI 추가 검토를 완료했습니다.', { exact: true }).waitFor();
     assert.deepEqual(errors, []);
     assert.ok(calls.some(call => call.path.endsWith('/status') && call.method === 'PATCH'));
+    assert.ok(!calls.some(call => /\/ai-(review|summary|priorities|remediation|audit|roadmap)$|compare-latest\/ai$/.test(call.path)), 'no legacy AI generation request');
+    assert.equal(calls.filter(call => call.path.endsWith('/report/ai')).length, 1, 'only explicitly confirmed mock PDF call');
     await page.getByRole('button', { name: '로그아웃', exact: true }).click();
     assert.equal(await page.evaluate(() => localStorage.getItem('securedeploy.accessToken')), null);
     console.log(JSON.stringify({ result: 'passed', viewports: ['1440', '390', '320'], views: 6,
       scenarios: ['normal', 'disabled', 'empty', 'legacy'], login: true, history: true, zip: true, github: true,
-      statusUpdate: true, pdf: true, aiSummary: true, errorFeedback: true, realApiCalls: 0 }));
+      statusUpdate: true, pdf: true, aiPdfConfirmation: true, storedGuidance: true, backendSummary: true, legacyAiRequests: 0, realApiCalls: 0 }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error.message); process.exitCode = 1; });

@@ -19,11 +19,10 @@ export function DependencyFindingCard({ dependency: dep, finding, remediation, i
       <div><dt>현재 버전</dt><dd>{dep.installedVersion}</dd></div>
       <div><dt>알려진 수정 버전</dt><dd>{dep.fixedVersions.join(', ') || '확인되지 않음'}</dd></div>
     </dl>
-    <p className="finding-location"><strong>위치</strong> <code>{dep.sourceFiles.join(', ') || '저장된 위치 없음'}</code></p>
     <details className="action-details"><summary>업데이트 방법 보기</summary>
       <h4>내가 해야 할 일</h4>
       <ol>
-        <li>위 파일에서 {dep.packageName}의 버전 선언과 실제 설치 버전을 확인하세요. 간접 의존성이면 이를 포함하는 상위 라이브러리도 확인하세요.</li>
+        <li>기술 정보의 파일에서 {dep.packageName}의 버전 선언과 실제 설치 버전을 확인하세요. 간접 의존성이면 이를 포함하는 상위 라이브러리도 확인하세요.</li>
         <li>{dep.fixedVersions.length > 0
           ? '알려진 수정 버전 중 현재 사용 계열에 맞는 버전과 호환성을 확인하여 업데이트하세요.'
           : '현재는 수정 버전을 확인하지 못했습니다. 공식 보안 공지에서 적용 가능한 조치와 버전을 확인하세요.'}</li>
@@ -36,6 +35,7 @@ export function DependencyFindingCard({ dependency: dep, finding, remediation, i
     </details>
     <FindingRemediation finding={finding} snapshot={remediation} />
     <details className="technical-details"><summary>기술 정보 보기</summary>
+      <p className="finding-location"><strong>위치</strong> <code>{dep.sourceFiles.join(', ') || '저장된 위치 없음'}</code></p>
       <dl className="technical-grid">
         <div><dt>Ecosystem</dt><dd>{dep.ecosystem}</dd></div>
         <div><dt>OSV / Advisory</dt><dd>{dep.osvId}</dd></div>

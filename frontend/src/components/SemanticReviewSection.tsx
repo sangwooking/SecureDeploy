@@ -1,5 +1,6 @@
 import type { SemanticSnapshot, SemanticCandidate } from '../types/securityReview';
 import { semanticStatusText } from './reviewPresentation';
+import { semanticGuidance } from './findingGuidance';
 
 const statuses: Record<SemanticSnapshot['semanticReviewStatus'], string> = {
   NOT_REQUESTED: '미실행', UNAVAILABLE: '분석 불가', NO_SUPPORTED_CONTEXT: '지원 코드 문맥 없음',
@@ -24,15 +25,15 @@ const candidateLabels: Record<string, string> = {
 };
 
 export function SemanticReviewSection({ snapshot }: { snapshot?: SemanticSnapshot | null }) {
-  return <section className="semantic-review" aria-label="추가 확인이 필요한 부분">
-    <div className="section-heading"><h2>추가 확인이 필요한 부분</h2>
+  return <section className="semantic-review" aria-label="AI 강화 분석 · 배포 전 직접 확인할 부분">
+    <div className="section-heading"><h2>AI 강화 분석 · 배포 전 직접 확인할 부분</h2>
       {snapshot && <span className="status-pill">{statuses[snapshot.semanticReviewStatus]}</span>}
     </div>
     <p>{semanticStatusText(snapshot)}</p>
     {!snapshot ? <p>이 분석 이력에는 저장된 추가 검토 결과가 없습니다.</p> : <>
       <p className="semantic-disclaimer">AI 보조 분석 후보이며 확정 취약점이 아닙니다. 기존 위험 기반 배포 판단과 취약점 수에는 합산하지 않습니다.</p>
       {snapshot.candidates.length > 0 ? <>
-        <strong>{snapshot.candidates.length}개 항목 확인 필요</strong>
+        <strong>{snapshot.candidates.length}개 항목 직접 확인</strong>
         {snapshot.candidates.map(candidate => <Candidate key={candidate.candidateId} candidate={candidate} />)}
       </> : <p>표시할 추가 검토 후보가 없습니다. 미실행·실패 또는 후보 0건은 안전을 의미하지 않습니다.</p>}
       {snapshot.existingFindingEvidence.length > 0 && <details>
@@ -58,18 +59,22 @@ export function SemanticReviewSection({ snapshot }: { snapshot?: SemanticSnapsho
 }
 
 function Candidate({ candidate }: { candidate: SemanticCandidate }) {
+  const guide = semanticGuidance(candidate.candidateType);
   return <article className="semantic-candidate">
-    <div className="section-heading"><h3>{candidateLabels[candidate.candidateType] ?? '추가 보안 검토가 필요한 코드입니다.'}</h3><span className="risk-badge risk-review_required">추가 검토 필요</span></div>
+    <div className="section-heading"><h3>{candidateLabels[candidate.candidateType] ?? '추가 보안 검토가 필요한 코드입니다.'}</h3><span className="risk-badge risk-review_required">배포 전 직접 확인할 부분</span></div>
     <p>이것이 반드시 취약점이라는 뜻은 아닙니다. 다른 코드 계층의 보호 조치도 함께 확인하세요.</p>
-    <h4>왜 확인해야 하나요?</h4><p>{candidate.reason}</p>
-    <h4>확인할 것</h4><ul>{candidate.verificationSteps.map((step, index) => <li key={index}>{step}</li>)}</ul>
-    <details className="action-details"><summary>관련 코드 위치와 근거 보기</summary>
+    <h4>왜 확인해야 하나요?</h4><p>{guide.summary}</p><p>{guide.risk}</p>
+    <h4>직접 이렇게 확인해 보세요</h4>
+    <p>본인이 관리하고 테스트 권한이 있는 환경에서만, 개인정보 없는 테스트 데이터로 확인하세요.</p>
+    <ol>{guide.steps.map(step => <li key={step}>{step}</li>)}</ol>
+    <h4>문제가 확인되면</h4><p>{guide.action}</p>
+    <details className="technical-details"><summary>기술 정보 보기</summary>
+    <h4>AI 원본 검토 의견</h4><p>{candidate.reason}</p>
+    <ul>{candidate.verificationSteps.map((step, index) => <li key={index}>{step}</li>)}</ul>
     <ul>{candidate.evidence.map((evidence, index) => <li key={index}>
       <code>{evidence.filePath}:{evidence.startLine}-{evidence.endLine}</code>
       <p>{evidence.functionName}</p><p>{evidence.evidenceDescription}</p>
     </li>)}</ul>
-    </details>
-    <details className="technical-details"><summary>기술 정보 보기</summary>
     <p>AI 원본 제목: {candidate.title}</p>
     <p>{candidate.candidateType} · 의미 분석 신뢰도: {candidate.semanticAnalysisConfidence} (기존 탐지 신뢰도와 별개)</p>
     <p>{candidate.findingType} · {candidate.reviewStatus}</p>

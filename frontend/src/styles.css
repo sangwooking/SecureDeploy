@@ -1988,7 +1988,7 @@ h1 {
 .report-menu { max-width: 300px; }
 .report-menu .result-actions { display: grid; gap: 8px; }
 .result-navigation { position: sticky; top: 0; z-index: 5; background: #fff; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-bottom: 1px solid #d7dfe5; margin-top: 18px; }
-.result-navigation button { border: 0; border-bottom: 3px solid transparent; background: none; color: #536273; padding: 15px 8px; font-weight: 700; cursor: pointer; }
+.result-navigation button { border: 0; border-bottom: 3px solid transparent; background: none; color: #536273; padding: 15px 8px; font-weight: 700; cursor: pointer; word-break: keep-all; }
 .result-navigation button[aria-current] { border-color: #1e6b60; color: #16574d; background: #f0f7f4; }
 .result-content { padding-top: 18px; scroll-margin-top: 64px; min-width: 0; }
 .result-content:focus { outline: none; }
