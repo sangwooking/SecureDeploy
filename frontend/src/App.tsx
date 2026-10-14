@@ -1,8 +1,12 @@
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
-import { DependencySecuritySection, ScaAssessmentNotice } from './components/DependencySecuritySection';
-import { FindingPriority, RiskAssessmentSection } from './components/RiskAssessmentSection';
-import { FindingRemediation, RemediationNotice } from './components/FindingRemediation';
-import { SemanticReviewSection } from './components/SemanticReviewSection';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import { ReviewResultWorkspace } from './components/ReviewResultWorkspace';
+import { RescanForm } from './components/RescanForm';
+import { ZipUploadGuidance } from './components/ZipUploadGuidance';
+import { validateZipUpload } from './components/zipUploadValidation';
+import type { UploadPolicy } from './types/uploadPolicy';
+import { ReviewProgressPanel } from './components/ReviewProgressPanel';
+import { deploymentLabels } from './components/reviewPresentation';
+import type { ResultView } from './components/reviewPresentation';
 import {
   deleteProject,
   deleteReview,
@@ -19,6 +23,7 @@ import {
   fetchProjectDashboard,
   fetchReviewDetail,
   fetchReviewHistory,
+  fetchUploadPolicy,
   fetchVulnerabilityStatusSummary,
   login as loginRequest,
   reviewGithubRepository,
@@ -49,15 +54,7 @@ import type {
 
 type SeverityFilter = 'ALL' | Severity;
 type AnalysisMode = 'ZIP' | 'GITHUB';
-type ResultTab = 'RESULT' | 'AI_REVIEW';
 type AiSubTab = 'VULNERABILITY_REVIEW' | 'PROJECT_SUMMARY' | 'REMEDIATION' | 'SECURITY_AUDIT' | 'PRIORITIES' | 'ROADMAP';
-
-const severityOrder: Record<Severity, number> = {
-  CRITICAL: 0,
-  HIGH: 1,
-  MEDIUM: 2,
-  LOW: 3,
-};
 
 const severityFilters: SeverityFilter[] = ['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
 
@@ -128,11 +125,15 @@ function App() {
   const [authErrorMessage, setAuthErrorMessage] = useState('');
   const [analysisMode, setAnalysisMode] = useState<AnalysisMode>('ZIP');
   const [scanMode, setScanMode] = useState<'STANDARD' | 'AI_ENHANCED'>('STANDARD');
-  const [activeResultTab, setActiveResultTab] = useState<ResultTab>('RESULT');
+  const [activeResultTab, setActiveResultTab] = useState<ResultView>('SUMMARY');
   const [activeAiSubTab, setActiveAiSubTab] = useState<AiSubTab>('VULNERABILITY_REVIEW');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadPolicy, setUploadPolicy] = useState<UploadPolicy | null>(null);
+  const [uploadPolicyError, setUploadPolicyError] = useState('');
+  const [policyReload, setPolicyReload] = useState(0);
   const [repositoryUrl, setRepositoryUrl] = useState('');
   const [result, setResult] = useState<SecurityReviewResponse | null>(null);
+  const [rescanOpen, setRescanOpen] = useState(false);
   const [reviewHistory, setReviewHistory] = useState<ReviewHistoryResponse[]>([]);
   const [reviewComparison, setReviewComparison] = useState<ReviewComparisonResponse | null>(null);
   const [projectDashboard, setProjectDashboard] = useState<ProjectSecurityDashboardResponse | null>(null);
@@ -167,7 +168,6 @@ function App() {
   const [comparisonErrorMessage, setComparisonErrorMessage] = useState('');
   const [dashboardErrorMessage, setDashboardErrorMessage] = useState('');
   const [statusSummaryErrorMessage, setStatusSummaryErrorMessage] = useState('');
-  const [severityFilter, setSeverityFilter] = useState<SeverityFilter>('ALL');
   const [statusComments, setStatusComments] = useState<Record<number, string>>({});
 
   useEffect(() => {
@@ -176,40 +176,16 @@ function App() {
     }
   }, [authSession?.accessToken]);
 
-  const deploymentStatus = useMemo(() => {
-    if (!result) {
-      return '';
+  useEffect(() => {
+    let active = true;
+    setUploadPolicy(null);
+    setUploadPolicyError('');
+    if (authSession) {
+      void fetchUploadPolicy().then(policy => { if (active) setUploadPolicy(policy); })
+        .catch(error => { if (active) setUploadPolicyError(error instanceof Error ? error.message : '업로드 제한을 불러오지 못했습니다.'); });
     }
-    if (result.securityScore >= 80) {
-      return '배포 가능';
-    }
-    if (result.securityScore >= 60) {
-      return '주의 필요';
-    }
-    return '배포 비권장';
-  }, [result]);
-
-  const sortedVulnerabilities = useMemo(() => {
-    if (!result) {
-      return [];
-    }
-
-    const correlatedIds = new Set(result.riskAssessment?.dependencyCorrelations?.map(item => item.vulnerabilityId) ?? []);
-    return result.vulnerabilities.filter(item => !correlatedIds.has(item.vulnerabilityId ?? null)).sort((a, b) => {
-      const severityDiff = severityOrder[a.severity] - severityOrder[b.severity];
-      if (severityDiff !== 0) {
-        return severityDiff;
-      }
-      return a.filePath.localeCompare(b.filePath) || a.line - b.line;
-    });
-  }, [result]);
-
-  const filteredVulnerabilities = useMemo(() => {
-    if (severityFilter === 'ALL') {
-      return sortedVulnerabilities;
-    }
-    return sortedVulnerabilities.filter((vulnerability) => vulnerability.severity === severityFilter);
-  }, [severityFilter, sortedVulnerabilities]);
+    return () => { active = false; };
+  }, [authSession?.accessToken, policyReload]);
 
   const loadReviewHistory = async () => {
     setIsHistoryLoading(true);
@@ -254,11 +230,11 @@ function App() {
   };
 
   const resetCurrentResult = () => {
+    setRescanOpen(false);
     setResult(null);
     setSelectedReviewId(null);
-    setSeverityFilter('ALL');
     resetAiResults();
-    setActiveResultTab('RESULT');
+    setActiveResultTab('SUMMARY');
     setReviewComparison(null);
     setProjectDashboard(null);
     setAiComparisonInsight(null);
@@ -279,7 +255,7 @@ function App() {
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     setSelectedFile(file);
-    setErrorMessage('');
+    setErrorMessage(file ? validateZipUpload(file, uploadPolicy) : '');
     setSuccessMessage('');
   };
 
@@ -319,13 +295,13 @@ function App() {
     }
   };
 
-  const handleHistoryClick = async (reviewId: number) => {
+  const handleHistoryClick = async (reviewId: number, view: ResultView = 'SUMMARY') => {
     setIsLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
-    setSeverityFilter('ALL');
     resetAiResults();
-    setActiveResultTab('RESULT');
+    setActiveResultTab(view);
+    setRescanOpen(false);
 
     try {
       const reviewDetail = await fetchReviewDetail(reviewId);
@@ -366,6 +342,31 @@ function App() {
     } finally {
       setIsComparisonLoading(false);
     }
+  };
+
+  const handleRescan = async (file: File | null, mode: 'STANDARD' | 'AI_ENHANCED') => {
+    if (!result?.projectId || !result.sourceType) return;
+    if (result.sourceType === 'ZIP') {
+      const error = validateZipUpload(file, uploadPolicy);
+      if (error) { setErrorMessage(error); return; }
+    }
+    setIsLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+    try {
+      const updated = result.sourceType === 'ZIP'
+        ? await uploadZipForReview(file as File, mode, result.projectId)
+        : await reviewGithubRepository(result.repositoryUrl ?? '', mode, result.projectId);
+      resetCurrentResult();
+      setResult(updated);
+      setSelectedReviewId(updated.reviewId ?? null);
+      setActiveResultTab('PROGRESS');
+      setSuccessMessage('재검사가 완료되었습니다. 저장된 이전 분석과의 변화를 확인하세요.');
+      await loadReviewHistory();
+      await loadStatusSummary(updated.projectId);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : '재검사에 실패했습니다. 이전 결과는 유지됩니다.');
+    } finally { setIsLoading(false); }
   };
 
 
@@ -505,7 +506,7 @@ function App() {
     try {
       const priorities = await fetchAiPriorities(result.reviewId);
       setAiPriorities(priorities);
-      setActiveResultTab('AI_REVIEW');
+      setActiveResultTab('GUIDANCE');
       setActiveAiSubTab('PRIORITIES');
       setSuccessMessage('AI 수정 우선순위가 생성되었습니다.');
     } catch (error) {
@@ -528,7 +529,7 @@ function App() {
     try {
       const roadmap = await fetchAiRoadmap(result.reviewId);
       setAiRoadmap(roadmap);
-      setActiveResultTab('AI_REVIEW');
+      setActiveResultTab('GUIDANCE');
       setActiveAiSubTab('ROADMAP');
       setSuccessMessage('AI 보안 개선 로드맵이 생성되었습니다.');
     } catch (error) {
@@ -593,7 +594,7 @@ function App() {
     try {
       const generatedReview = await fetchAiReview(result.reviewId);
       setAiReviewResult(generatedReview);
-      setActiveResultTab('AI_REVIEW');
+      setActiveResultTab('GUIDANCE');
       setActiveAiSubTab('VULNERABILITY_REVIEW');
       setSuccessMessage('취약점별 AI 리뷰가 생성되었습니다.');
     } catch (error) {
@@ -616,7 +617,7 @@ function App() {
     try {
       const summary = await fetchAiProjectSummary(result.reviewId);
       setAiProjectSummary(summary);
-      setActiveResultTab('AI_REVIEW');
+      setActiveResultTab('GUIDANCE');
       setActiveAiSubTab('PROJECT_SUMMARY');
       setSuccessMessage('AI 종합 진단이 생성되었습니다.');
     } catch (error) {
@@ -639,7 +640,7 @@ function App() {
     try {
       const audit = await fetchAiSecurityAudit(result.reviewId);
       setAiSecurityAudit(audit);
-      setActiveResultTab('AI_REVIEW');
+      setActiveResultTab('GUIDANCE');
       setActiveAiSubTab('SECURITY_AUDIT');
       setSuccessMessage('AI 보조 진단이 생성되었습니다.');
     } catch (error) {
@@ -662,7 +663,7 @@ function App() {
     try {
       const remediation = await fetchAiRemediation(result.reviewId);
       setAiRemediationResult(remediation);
-      setActiveResultTab('AI_REVIEW');
+      setActiveResultTab('GUIDANCE');
       setActiveAiSubTab('REMEDIATION');
       setSuccessMessage('AI 수정 제안이 생성되었습니다.');
     } catch (error) {
@@ -740,7 +741,7 @@ function App() {
 
   const validateAnalysisInput = () => {
     if (analysisMode === 'ZIP') {
-      return selectedFile ? '' : '분석할 ZIP 파일을 선택해 주세요.';
+      return validateZipUpload(selectedFile, uploadPolicy);
     }
 
     const trimmedUrl = repositoryUrl.trim();
@@ -786,8 +787,8 @@ function App() {
       <section className="workspace">
         <div className="masthead">
           <div>
-            <p className="eyebrow">SecureDeploy MVP</p>
-            <h1>Spring Boot 보안 리뷰</h1>
+            <p className="eyebrow">프로젝트 보안 관리</p>
+            <h1>SecureDeploy</h1>
           </div>
           <div className="session-box">
             <span className="status-pill">{authSession.user.name}</span>
@@ -795,13 +796,15 @@ function App() {
           </div>
         </div>
 
+        <details className="analysis-entry" open={!result || undefined}>
+          <summary>새 프로젝트 분석</summary>
         <form className="upload-panel review-panel" onSubmit={handleSubmit}>
           <div className="upload-copy">
             <h2>{analysisMode === 'ZIP' ? '프로젝트 ZIP 업로드' : 'GitHub Repository 분석'}</h2>
             <p>
               {analysisMode === 'ZIP'
-                ? 'Spring Boot 프로젝트 압축 파일을 분석해 배포 전 보안 위험을 점검합니다.'
-                : '공개 GitHub 저장소를 clone한 뒤 동일한 보안 분석 파이프라인으로 점검합니다.'}
+                ? '프로젝트 압축 파일로 배포 전 보안 위험을 점검합니다.'
+                : '공개 GitHub 저장소의 코드와 배포 설정을 점검합니다.'}
             </p>
           </div>
 
@@ -833,16 +836,18 @@ function App() {
             <label className="semantic-opt-in">
               <input type="checkbox" checked={scanMode === 'AI_ENHANCED'} disabled={isLoading}
                 onChange={event => setScanMode(event.target.checked ? 'AI_ENHANCED' : 'STANDARD')} />
-              AI Enhanced Scan · 마스킹된 일부 코드의 외부 AI 전송 허용 (사용량 발생 가능)
+              AI 강화 분석 · 기존 검사에 더해 제한된 코드 영역을 추가 검토합니다. 선택하면 마스킹된 코드 일부가 외부 AI로 전송될 수 있으며 사용량이 발생할 수 있습니다.
             </label>
-            {errorMessage && <div className="feedback-message feedback-error">{errorMessage}</div>}
-            {successMessage && <div className="feedback-message feedback-success">{successMessage}</div>}
           </div>
 
-          <button className="primary-button" type="submit" disabled={isLoading}>
+          {analysisMode === 'ZIP' && <ZipUploadGuidance policy={uploadPolicy} error={uploadPolicyError} onRetry={() => setPolicyReload(value => value + 1)} />}
+          <button className="primary-button" type="submit" disabled={isLoading || (analysisMode === 'ZIP' && !uploadPolicy)}>
             {isLoading ? '분석 중...' : '분석 시작'}
           </button>
         </form>
+        </details>
+        {errorMessage && <div role="alert" className="feedback-message feedback-error">{errorMessage}</div>}
+        {successMessage && <div role="status" className="feedback-message feedback-success">{successMessage}</div>}
 
         {isLoading && (
           <section className="loading-panel" aria-live="polite">
@@ -859,84 +864,31 @@ function App() {
 
         {!isLoading && !result && <section className="empty-state empty-initial">아직 분석 결과가 없습니다.</section>}
 
-        {result && (
-          <section className="result-area">
-            <RiskAssessmentSection assessment={result.riskAssessment} />
-            <SemanticReviewSection snapshot={result.semanticReview} />
-            <div className="summary-grid">
-              <Metric label="프로젝트명" value={result.projectName} />
-              <Metric label="스캔 파일 수" value={result.scannedFileCount.toLocaleString()} />
-              <Metric label="원본 룰 탐지 수" value={result.vulnerabilityCount.toLocaleString()} />
-              <Metric label="보안 점수 (룰 기반 참고값)" value={`${result.securityScore}점`} />
-              <Metric label="기존 판정 (룰 기반 참고값)" value={deploymentStatus} />
-            </div>
-            <p className="score-interpretation">점수가 높아도 분석 미완료나 의존성 위험이 있을 수 있습니다. 배포 여부는 위의 위험 기반 배포 평가를 우선 확인하세요.</p>
-            <ScaAssessmentNotice sca={result.sca} riskAssessment={result.riskAssessment} />
-
-            {statusSummary && <VulnerabilityProgressPanel summary={statusSummary} />}
-            {statusSummaryErrorMessage && <div className="feedback-message feedback-error status-summary-error">{statusSummaryErrorMessage}</div>}
-
-            <div className="section-heading result-heading">
-              <div>
-                <h2>{activeResultTab === 'RESULT' ? '분석 결과' : 'AI 보안 리뷰'}</h2>
-                <p>{selectedReviewId ? `분석 이력 #${selectedReviewId} 상세 결과입니다.` : '현재 분석 결과입니다.'}</p>
-              </div>
-              <div className="result-actions">
-                {result.reviewId && (
-                  <>
-                    <button className="secondary-button" type="button" onClick={() => void handleReportDownload()} disabled={isReportDownloading}>
-                      {isReportDownloading ? 'PDF 생성 중...' : '기본 리포트 다운로드'}
-                    </button>
-                    {aiReviewResult && (
-                      <button className="secondary-button" type="button" onClick={() => void handleAiReportDownload()} disabled={isAiReportDownloading}>
-                        {isAiReportDownloading ? 'AI PDF 생성 중...' : 'AI 리뷰 포함 리포트 다운로드'}
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="result-tab-bar" aria-label="결과 화면 전환">
-              <button className={activeResultTab === 'RESULT' ? 'result-tab result-tab-active' : 'result-tab'} type="button" onClick={() => setActiveResultTab('RESULT')}>
-                분석 결과
+        {result && !isLoading && (
+          <ReviewResultWorkspace key={result.reviewId ?? 'current'} result={result} view={activeResultTab}
+            onViewChange={setActiveResultTab}
+            rescanActions={result.projectId && result.sourceType ? <>
+              <div className="result-actions"><button className="secondary-button" type="button" onClick={() => setRescanOpen(!rescanOpen)} aria-expanded={rescanOpen}>다시 검사</button></div>
+              {rescanOpen && <RescanForm result={result} uploadPolicy={uploadPolicy} policyError={uploadPolicyError}
+                onRetryPolicy={() => setPolicyReload(value => value + 1)} onCancel={() => setRescanOpen(false)} onScan={(file, mode) => void handleRescan(file, mode)} />}
+            </> : undefined}
+            statusActions={{
+              updatingId: statusUpdatingId, comments: statusComments, onComment: handleStatusCommentChange,
+              onStatus: (vulnerability, status) => void handleVulnerabilityStatusChange(vulnerability, status),
+            }}
+            progress={<>
+              {statusSummary && <VulnerabilityProgressPanel summary={statusSummary} />}
+              {statusSummaryErrorMessage && <p role="alert" className="error-message">{statusSummaryErrorMessage}</p>}
+            </>}
+            reportActions={result.reviewId ? <>
+              <button className="secondary-button" type="button" onClick={() => void handleReportDownload()} disabled={isReportDownloading}>
+                {isReportDownloading ? 'PDF 생성 중...' : '기본 리포트 다운로드'}
               </button>
-              <button className={activeResultTab === 'AI_REVIEW' ? 'result-tab result-tab-active' : 'result-tab'} type="button" onClick={() => setActiveResultTab('AI_REVIEW')}>
-                AI 리뷰
-              </button>
-            </div>
-
-            {activeResultTab === 'RESULT' ? (
-              <>
-                <div className="section-heading vulnerability-heading">
-                  <div>
-                    <h2>규칙 기반 취약점 목록</h2>
-                    <p>심각도 순으로 정렬된 분석 결과입니다.</p>
-                  </div>
-                  <span>{filteredVulnerabilities.length} / {sortedVulnerabilities.length}건</span>
-                </div>
-
-                <div className="filter-bar" aria-label="severity 필터">
-                  {severityFilters.map((filter) => (
-                    <button className={severityFilter === filter ? 'filter-button filter-button-active' : 'filter-button'} type="button" key={filter} onClick={() => setSeverityFilter(filter)}>
-                      {filter === 'ALL' ? '전체' : filter}
-                    </button>
-                  ))}
-                </div>
-
-                {renderVulnerabilityList(
-                  result,
-                  filteredVulnerabilities,
-                  statusUpdatingId,
-                  statusComments,
-                  handleStatusCommentChange,
-                  (vulnerability, status) => void handleVulnerabilityStatusChange(vulnerability, status)
-                )}
-                <RemediationNotice snapshot={result.remediation} />
-                <DependencySecuritySection sca={result.sca} riskAssessment={result.riskAssessment} remediation={result.remediation} />
-              </>
-            ) : (
-              <AiReviewSection
+              {aiReviewResult && <button className="secondary-button" type="button" onClick={() => void handleAiReportDownload()} disabled={isAiReportDownloading}>
+                {isAiReportDownloading ? 'AI PDF 생성 중...' : 'AI 리뷰 포함 리포트 다운로드'}
+              </button>}
+            </> : <p>분석을 저장한 후 다운로드할 수 있습니다.</p>}
+            aiPanel={<AiReviewSection
                 activeAiSubTab={activeAiSubTab}
                 aiProjectSummary={aiProjectSummary}
                 aiRemediationResult={aiRemediationResult}
@@ -957,16 +909,16 @@ function App() {
                 onGeneratePriorities={() => void handleAiPrioritiesGenerate()}
                 onGenerateRoadmap={() => void handleAiRoadmapGenerate()}
                 onTabChange={setActiveAiSubTab}
-              />
-            )}
-          </section>
+              />}
+          />
         )}
 
-        <section className="history-panel">
+        <details className="history-panel" open={!result || undefined}>
+          <summary>분석 이력 ({reviewHistory.length})</summary>
           <div className="section-heading history-heading">
             <div>
               <h2>분석 이력</h2>
-              <p>저장된 분석 결과를 다시 열어볼 수 있습니다.</p>
+              <p>저장된 분석 결과를 확인하거나, 새 프로젝트 분석에서 수정한 코드를 다시 검사하세요.</p>
             </div>
             <button className="secondary-button" type="button" onClick={() => void loadReviewHistory()} disabled={isHistoryLoading}>
               {isHistoryLoading ? '불러오는 중...' : '새로고침'}
@@ -991,13 +943,15 @@ function App() {
                       <span className="source-badge">{history.sourceType}</span>
                     </div>
                     <div className="history-meta">
-                      <span>취약점 {history.vulnerabilityCount}건</span>
-                      <span>{history.securityScore}점</span>
-                      <span>{history.deploymentStatus}</span>
+                      <span>코드 탐지 {history.vulnerabilityCount}건</span>
+                      <span>참고 점수 {history.securityScore}점</span>
+                      <span>{history.riskSummary ? deploymentLabels[history.riskSummary.deploymentAssessment] : '위험 평가 미저장'}</span>
+                      {history.riskSummary && <span>반드시 처리 {history.riskSummary.prioritySummary.BLOCKING}건</span>}
                       <time dateTime={history.createdAt}>{formatDateTime(history.createdAt)}</time>
                     </div>
                   </button>
                   <div className="history-actions">
+                    {history.comparisonAvailable && <button className="compare-button" type="button" onClick={() => void handleHistoryClick(history.reviewId, 'PROGRESS')} disabled={isLoading}>변화 보기</button>}
                     <button className="compare-button" type="button" onClick={() => void handleProjectDashboardOpen(history.projectId)} disabled={isDashboardLoading}>
                       {isDashboardLoading ? '로딩 중...' : '보안 대시보드'}
                     </button>
@@ -1016,7 +970,7 @@ function App() {
           {projectDashboard && <ProjectSecurityDashboardPanel dashboard={projectDashboard} isDeleting={deletingProjectId === projectDashboard.projectId} onDelete={() => void handleProjectDelete(projectDashboard.projectId)} />}
 
           {reviewComparison && <ReviewComparisonPanel comparison={reviewComparison} aiInsight={aiComparisonInsight} isAiLoading={isAiComparisonLoading} onGenerateAi={() => void handleAiComparisonGenerate(reviewComparison.projectId)} />}
-        </section>
+        </details>
       </section>
     </main>
   );
@@ -1185,9 +1139,10 @@ function ProjectSecurityDashboardPanel({ dashboard, isDeleting, onDelete }: { da
 
         <article className="dashboard-card comparison-summary-card">
           <h3>최근 분석 비교 요약</h3>
+          {comparison?.latestReviewId && <p className="dashboard-note">{comparison.message}</p>}
           {comparison?.latestReviewId ? (
             <div className="comparison-summary-grid">
-              <Metric label="점수 변화" value={signedNumber(comparison.scoreDiff)} tone={comparison.scoreDiff >= 0 ? 'safe' : 'danger'} />
+              <Metric label="참고 점수 변화" value={signedNumber(comparison.scoreDiff)} tone={comparison.scoreDiff >= 0 ? 'safe' : 'danger'} />
               <Metric label="해결" value={`${comparison.resolvedCount}건`} tone="safe" />
               <Metric label="신규" value={`${comparison.newCount}건`} tone={comparison.newCount === 0 ? 'safe' : 'danger'} />
               <Metric label="지속" value={`${comparison.persistedCount}건`} tone={comparison.persistedCount === 0 ? 'safe' : 'warning'} />
@@ -1237,30 +1192,16 @@ function ReviewComparisonPanel({ comparison, aiInsight, isAiLoading, onGenerateA
     return <div className="comparison-panel empty-state">{comparison.message}</div>;
   }
 
-  return (
-    <section className="comparison-panel">
-      <div className="section-heading comparison-heading">
-        <div>
-          <h2>최근 분석 비교</h2>
-          <p>최신 분석 #{comparison.latestReviewId}와 직전 분석 #{comparison.previousReviewId}의 변화입니다.</p>
-        </div>
-      </div>
-      <button className="secondary-button" type="button" onClick={onGenerateAi} disabled={isAiLoading}>
-        {isAiLoading ? 'AI 비교 해석 생성 중...' : 'AI 비교 해석'}
-      </button>
-      {aiInsight && <AiComparisonInsightCard insight={aiInsight} />}
-      <div className="comparison-metrics">
-        <Metric label="점수 변화" value={signedNumber(comparison.scoreDiff)} tone={comparison.scoreDiff >= 0 ? 'safe' : 'danger'} />
-        <Metric label="취약점 변화" value={signedNumber(comparison.vulnerabilityCountDiff)} tone={comparison.vulnerabilityCountDiff <= 0 ? 'safe' : 'danger'} />
-        <Metric label="해결" value={`${comparison.resolvedVulnerabilities.length}건`} tone="safe" />
-        <Metric label="신규" value={`${comparison.newVulnerabilities.length}건`} tone={comparison.newVulnerabilities.length === 0 ? 'safe' : 'danger'} />
-        <Metric label="지속" value={`${comparison.persistedVulnerabilities.length}건`} tone={comparison.persistedVulnerabilities.length === 0 ? 'safe' : 'warning'} />
-      </div>
-      <ComparisonList title="해결된 취약점" items={comparison.resolvedVulnerabilities} emptyText="해결된 취약점이 없습니다." />
-      <ComparisonList title="새로 생긴 취약점" items={comparison.newVulnerabilities} emptyText="새로 생긴 취약점이 없습니다." />
-      <ComparisonList title="지속 취약점" items={comparison.persistedVulnerabilities} emptyText="지속 취약점이 없습니다." />
-    </section>
-  );
+  if (comparison.progress) return <section className="comparison-panel">
+    <ReviewProgressPanel result={{ comparison: comparison.progress }} />
+    <button type="button" className="secondary-button" onClick={onGenerateAi} disabled={isAiLoading || comparison.progress.status !== 'COMPLETE'}>
+      {isAiLoading ? 'AI 비교 해석 생성 중...' : 'AI 비교 해석'}
+    </button>
+    {aiInsight && <AiComparisonInsightCard insight={aiInsight} />}
+  </section>;
+
+  return <section className="comparison-panel"><h2>비교 근거 미저장</h2><p>{comparison.message}</p>
+    <p>룰 기반 참고 점수 변화: {signedNumber(comparison.scoreDiff)}. 해결 여부는 판단하지 않습니다.</p></section>;
 }
 
 
@@ -1334,140 +1275,6 @@ function ComparisonList({ title, items, emptyText }: { title: string; items: Rev
 
 function signedNumber(value: number) {
   return value > 0 ? `+${value}` : `${value}`;
-}
-
-function renderVulnerabilityList(
-  result: SecurityReviewResponse,
-  filteredVulnerabilities: SecurityReviewResponse['vulnerabilities'],
-  statusUpdatingId: number | null,
-  statusComments: Record<number, string>,
-  onStatusCommentChange: (vulnerabilityId: number, comment: string) => void,
-  onStatusChange: (vulnerability: Vulnerability, status: VulnerabilityStatus) => void
-) {
-  if (result.vulnerabilities.length === 0) {
-    return <div className="empty-state">탐지된 취약점이 없습니다.</div>;
-  }
-
-  if (result.riskAssessment?.codeFindings.length === 0) {
-    return <div className="empty-state">의존성 후보는 통합된 의존성 결과와 보조 근거에서 확인할 수 있습니다.</div>;
-  }
-
-  if (filteredVulnerabilities.length === 0) {
-    return <div className="empty-state">선택한 severity에 해당하는 취약점이 없습니다.</div>;
-  }
-
-  return (
-    <div className="vulnerability-list">
-      {filteredVulnerabilities.map((vulnerability, index) => {
-        const vulnerabilityId = vulnerability.vulnerabilityId ?? null;
-        const status = vulnerability.status ?? 'UNCHECKED';
-        const isUpdating = vulnerabilityId !== null && statusUpdatingId === vulnerabilityId;
-        const comment = vulnerabilityId !== null
-          ? statusComments[vulnerabilityId] ?? vulnerability.statusComment ?? ''
-          : vulnerability.statusComment ?? '';
-
-        return (
-          <article className={`vulnerability-item vulnerability-${vulnerability.severity.toLowerCase()}`} key={`${vulnerability.ruleId}-${vulnerability.filePath}-${vulnerability.line}-${index}`}>
-            <div className="vulnerability-header">
-              <div>
-                <span className="rule-id">{vulnerability.ruleId}</span>
-                <h3>{vulnerability.message}</h3>
-              </div>
-              <div className="vulnerability-badges">
-                <SeverityBadge severity={vulnerability.severity} />
-                <VulnerabilityStatusBadge status={status} />
-              </div>
-            </div>
-
-            <FindingPriority finding={result.riskAssessment?.codeFindings.find(finding =>
-              vulnerabilityId !== null && finding.vulnerabilityId === vulnerabilityId)} />
-            <FindingRemediation snapshot={result.remediation} finding={result.riskAssessment?.codeFindings.find(finding =>
-              vulnerabilityId !== null && finding.vulnerabilityId === vulnerabilityId)} />
-
-            <div className="status-manager">
-              <label>
-                <span>상태</span>
-                <select value={status} disabled={!vulnerabilityId || isUpdating} onChange={(event) => onStatusChange(vulnerability, event.target.value as VulnerabilityStatus)}>
-                  {vulnerabilityStatuses.map((item) => (
-                    <option key={item} value={item}>{vulnerabilityStatusLabels[item]}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span>메모</span>
-                <input
-                  type="text"
-                  value={comment}
-                  placeholder="예: 다음 배포에서 수정 예정"
-                  disabled={!vulnerabilityId || isUpdating}
-                  onChange={(event) => vulnerabilityId && onStatusCommentChange(vulnerabilityId, event.target.value)}
-                />
-              </label>
-              {isUpdating && <span className="status-updating">저장 중...</span>}
-            </div>
-
-            <dl className="detail-grid">
-              <div>
-                <dt>category</dt>
-                <dd>{vulnerability.category}</dd>
-              </div>
-              <div className="file-path-cell">
-                <dt>filePath</dt>
-                <dd>{vulnerability.filePath}</dd>
-              </div>
-              <div className="line-cell">
-                <dt>line</dt>
-                <dd>{vulnerability.line}</dd>
-              </div>
-            </dl>
-
-            {(vulnerability.falsePositiveRisk || vulnerability.confidence || vulnerability.analysisNote) && (
-              <section className="false-positive-meta" aria-label="탐지 판단 정보">
-                <div className="judgment-meta-grid">
-                  <div className="judgment-meta-item" title="SecureDeploy가 탐지 결과를 얼마나 신뢰하는지 나타냅니다.">
-                    <span>신뢰도</span>
-                    <strong className={`judgment-value judgment-confidence-${vulnerability.confidence?.toLowerCase() ?? 'unknown'}`}>{vulnerability.confidence
-                      ? `${confidenceLabels[vulnerability.confidence]} · ${vulnerability.confidence}`
-                      : '정보 없음'}</strong>
-                  </div>
-                  <div className="judgment-meta-item" title="실제 취약점이 아닐 가능성을 나타냅니다.">
-                    <span>오탐 가능성</span>
-                    <strong className={`judgment-value judgment-risk-${vulnerability.falsePositiveRisk?.toLowerCase() ?? 'unknown'}`}>{vulnerability.falsePositiveRisk
-                      ? `${falsePositiveRiskLabels[vulnerability.falsePositiveRisk]} · ${vulnerability.falsePositiveRisk}`
-                      : '정보 없음'}</strong>
-                  </div>
-                </div>
-                <p className="judgment-meta-help">신뢰도는 탐지 확신 수준, 오탐 가능성은 실제 취약점이 아닐 가능성입니다.</p>
-                {vulnerability.analysisNote?.trim() && (
-                  <div className="analysis-note">
-                    <strong>판단 근거</strong>
-                    <p>{vulnerability.analysisNote}</p>
-                  </div>
-                )}
-              </section>
-            )}
-
-            <div className="message-block">
-              <span>message</span>
-              <p>{vulnerability.message}</p>
-            </div>
-
-            {vulnerability.evidence && (
-              <div className="evidence-block">
-                <span>evidence</span>
-                <code>{vulnerability.evidence}</code>
-              </div>
-            )}
-
-            <div className="recommendation">
-              <span>recommendation</span>
-              <p>{vulnerability.recommendation}</p>
-            </div>
-          </article>
-        );
-      })}
-    </div>
-  );
 }
 
 function updateVulnerabilityInResult(result: SecurityReviewResponse, updated: VulnerabilityStatusResponse): SecurityReviewResponse {
@@ -1685,11 +1492,11 @@ function ProjectAiSummarySection({ aiProjectSummary, isLoading, onGenerate }: { 
       <article className="ai-review-card ai-summary-card">
         <dl className="ai-review-detail">
           <div>
-            <dt>overall status</dt>
+            <dt>전체 보안 상태에 대한 의견</dt>
             <dd>{aiProjectSummary.overallSecurityStatus}</dd>
           </div>
           <div>
-            <dt>risky area</dt>
+            <dt>먼저 살펴볼 영역</dt>
             <dd>{aiProjectSummary.mostRiskyArea}</dd>
           </div>
           <div>
@@ -1711,7 +1518,7 @@ function AiRemediationSection({ aiRemediationResult, isLoading, onGenerate }: { 
     return (
       <div className="ai-review-empty">
         <h2>AI 수정 제안이 아직 생성되지 않았습니다.</h2>
-        <p>탐지된 취약점별로 안전한 설정 또는 코드 예시와 검증 방법을 생성합니다.</p>
+        <p>발견된 문제별로 검토할 설정·코드 예시와 수정 후 확인 방법을 생성합니다.</p>
         <button className="primary-button" type="button" onClick={onGenerate} disabled={isLoading}>
           {isLoading ? 'AI 수정 제안 생성 중...' : 'AI 수정 제안 생성'}
         </button>
@@ -1728,7 +1535,7 @@ function AiRemediationSection({ aiRemediationResult, isLoading, onGenerate }: { 
       <div className="section-heading ai-review-heading">
         <div>
           <h2>AI 수정 제안</h2>
-          <p>취약점별 안전한 코드/설정 예시와 확인 방법입니다.</p>
+          <p>적용 전 검토가 필요한 코드·설정 예시입니다. 수정 후 테스트와 재검사로 확인하세요.</p>
         </div>
         <span>{aiRemediationResult.remediations.length}건</span>
       </div>
@@ -1746,19 +1553,19 @@ function AiRemediationSection({ aiRemediationResult, isLoading, onGenerate }: { 
             <h3>{remediation.title}</h3>
             <dl className="ai-review-detail">
               <div>
-                <dt>before</dt>
+                <dt>어디를 수정하나요?</dt>
                 <dd><pre className="code-example">{remediation.beforeExample}</pre></dd>
               </div>
               <div>
-                <dt>after</dt>
+                <dt>어떻게 수정하나요?</dt>
                 <dd><pre className="code-example">{remediation.afterExample}</pre></dd>
               </div>
               <div>
-                <dt>explanation</dt>
+                <dt>왜 이렇게 수정하나요?</dt>
                 <dd>{remediation.explanation}</dd>
               </div>
               <div>
-                <dt>verification</dt>
+                <dt>수정 후 무엇을 확인하나요?</dt>
                 <dd>{remediation.verification}</dd>
               </div>
             </dl>
@@ -1775,7 +1582,7 @@ function AiSecurityAuditSection({ aiSecurityAudit, isLoading, onGenerate }: { ai
     return (
       <div className="ai-review-empty">
         <h2>AI 보조 진단이 아직 실행되지 않았습니다.</h2>
-        <p>Rule Engine 확정 탐지와 별도로, 논리적·구조적 보안 위험에 대한 추가 검토 의견을 생성합니다.</p>
+        <p>기존 코드 검사와 별도로, 코드 흐름과 구조에 대한 추가 검토 의견을 생성합니다. 확정 취약점은 아닙니다.</p>
         <button className="primary-button" type="button" onClick={onGenerate} disabled={isLoading}>
           {isLoading ? 'AI 보조 진단 실행 중...' : 'AI 보조 진단 실행'}
         </button>
@@ -1979,12 +1786,12 @@ function AiUsageMeta({ usage }: { usage?: AiUsageResponse }) {
   }
 
   return (
-    <div className="ai-usage-meta">
+    <details className="technical-details"><summary>AI 사용량 기술 정보</summary><div className="ai-usage-meta">
       <span>provider {usage.provider}</span>
       <span>tokens {usage.totalTokens.toLocaleString()}</span>
       <span>cost ${Number(usage.estimatedCostUsd).toFixed(4)}</span>
       <span>{usage.billable ? 'billable' : 'no charge'}</span>
-    </div>
+    </div></details>
   );
 }
 

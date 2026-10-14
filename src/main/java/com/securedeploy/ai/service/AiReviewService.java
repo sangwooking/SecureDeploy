@@ -125,6 +125,11 @@ public class AiReviewService {
 
     @Transactional(readOnly = true)
     public AiComparisonInsightResponse generateComparisonInsight(ReviewComparisonResponse comparison) {
+        if (comparison.progress() == null || comparison.progress().status()
+                != com.securedeploy.project.progress.ReviewProgressSnapshot.Status.COMPLETE) {
+            throw new com.securedeploy.global.error.SecureDeployException(org.springframework.http.HttpStatus.CONFLICT,
+                    "비교 범위가 불완전하거나 저장된 비교가 없습니다. 변화 보기에서 확인 불가 항목을 먼저 확인해 주세요.");
+        }
         String prompt = promptBuilder.buildComparisonInsightPrompt(comparison);
         GeneratedResult<AiComparisonInsightResponse> generated = generateWithFallback(
                 AiFeatureType.COMPARISON_INSIGHT,

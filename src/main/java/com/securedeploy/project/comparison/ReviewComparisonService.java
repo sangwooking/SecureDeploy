@@ -4,16 +4,11 @@ import com.securedeploy.auth.service.CurrentUserService;
 import com.securedeploy.global.error.SecureDeployException;
 import com.securedeploy.persistence.entity.ProjectEntity;
 import com.securedeploy.persistence.entity.ReviewEntity;
-import com.securedeploy.persistence.entity.VulnerabilityEntity;
 import com.securedeploy.persistence.repository.ProjectRepository;
 import com.securedeploy.persistence.repository.ReviewRepository;
 import com.securedeploy.project.dto.ComparedVulnerabilityResponse;
 import com.securedeploy.project.dto.ReviewComparisonResponse;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,27 +44,13 @@ public class ReviewComparisonService {
         ReviewEntity latest = reviews.get(0);
         ReviewEntity previous = reviews.get(1);
 
-        Map<String, VulnerabilityEntity> latestMap = toComparisonMap(latest.getVulnerabilities());
-        Map<String, VulnerabilityEntity> previousMap = toComparisonMap(previous.getVulnerabilities());
-
-        List<ComparedVulnerabilityResponse> resolved = previousMap.entrySet().stream()
-                .filter(entry -> !latestMap.containsKey(entry.getKey()))
-                .map(Map.Entry::getValue)
-                .map(ComparedVulnerabilityResponse::from)
-                .toList();
-
-        List<ComparedVulnerabilityResponse> newlyDetected = latestMap.entrySet().stream()
-                .filter(entry -> !previousMap.containsKey(entry.getKey()))
-                .map(Map.Entry::getValue)
-                .map(ComparedVulnerabilityResponse::from)
-                .toList();
-
-        List<ComparedVulnerabilityResponse> persisted = latestMap.entrySet().stream()
-                .filter(entry -> previousMap.containsKey(entry.getKey()))
-                .map(Map.Entry::getValue)
-                .map(ComparedVulnerabilityResponse::from)
-                .toList();
-
+        var snapshot = latest.getComparison();
+        if (snapshot != null && !java.util.Objects.equals(snapshot.baselineReviewId(), previous.getId())) {
+            return ReviewComparisonResponse.notComparable(projectId, "기준 이력이 변경되었습니다. 분석 상세의 저장된 변화 보기를 확인하세요.");
+        }
+        List<ComparedVulnerabilityResponse> resolved = changes(snapshot, com.securedeploy.project.progress.ReviewProgressSnapshot.Change.RESOLVED);
+        List<ComparedVulnerabilityResponse> newlyDetected = changes(snapshot, com.securedeploy.project.progress.ReviewProgressSnapshot.Change.NEW);
+        List<ComparedVulnerabilityResponse> persisted = changes(snapshot, com.securedeploy.project.progress.ReviewProgressSnapshot.Change.REMAINING);
         return new ReviewComparisonResponse(
                 projectId,
                 latest.getId(),
@@ -80,33 +61,24 @@ public class ReviewComparisonService {
                 latest.getVulnerabilityCount(),
                 previous.getVulnerabilityCount(),
                 latest.getVulnerabilityCount() - previous.getVulnerabilityCount(),
-                "최신 분석 결과와 직전 분석 결과를 비교했습니다.",
+                snapshot == null ? "과거 이력에는 비교 범위가 저장되지 않았습니다. 숫자는 참고값이며 해결 여부는 판단할 수 없습니다." : snapshot.message(),
                 resolved,
                 newlyDetected,
-                persisted
+                persisted,
+                snapshot
         );
     }
 
-    private Map<String, VulnerabilityEntity> toComparisonMap(List<VulnerabilityEntity> vulnerabilities) {
-        return vulnerabilities.stream()
-                .collect(Collectors.toMap(
-                        this::comparisonKey,
-                        Function.identity(),
-                        (first, ignored) -> first,
-                        LinkedHashMap::new
-                ));
-    }
-
-    private String comparisonKey(VulnerabilityEntity vulnerability) {
-        return normalize(vulnerability.getRuleId())
-                + "|" + normalize(vulnerability.getFilePath())
-                + "|" + normalize(vulnerability.getEvidence());
-    }
-
-    private String normalize(String value) {
-        if (value == null || value.isBlank()) {
-            return "";
-        }
-        return value.trim().replaceAll("\\s+", " ").toLowerCase();
+    private List<ComparedVulnerabilityResponse> changes(
+            com.securedeploy.project.progress.ReviewProgressSnapshot snapshot,
+            com.securedeploy.project.progress.ReviewProgressSnapshot.Change status) {
+        if (snapshot == null) return List.of();
+        return snapshot.findings().stream().filter(e -> e.status() == status)
+                .map(e -> e.after() == null ? e.before() : e.after())
+                .map(com.securedeploy.project.progress.ReviewProgressSnapshot.Finding::code)
+                .filter(java.util.Objects::nonNull)
+                .map(v -> new ComparedVulnerabilityResponse(v.ruleId(), v.category(), v.severity(), v.filePath(),
+                        v.line(), v.message(), v.recommendation(), v.evidence(), v.falsePositiveRisk(),
+                        v.confidence(), v.analysisNote())).toList();
     }
 }

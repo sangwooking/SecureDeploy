@@ -1,0 +1,71 @@
+import type { RemediationSnapshot, RiskFinding, Vulnerability, VulnerabilityStatus } from '../types/securityReview';
+import { FindingRemediation } from './FindingRemediation';
+import { codeExplanation, priorityLabels } from './reviewPresentation';
+
+const statusLabels: Record<VulnerabilityStatus, string> = {
+  UNCHECKED: '미확인', ACKNOWLEDGED: '확인 완료', IN_PROGRESS: '수정 중', RESOLVED: '수정 완료', IGNORED: '무시',
+};
+export interface FindingStatusActions {
+  updatingId: number | null;
+  comments: Record<number, string>;
+  onComment: (id: number, comment: string) => void;
+  onStatus: (vulnerability: Vulnerability, status: VulnerabilityStatus) => void;
+}
+
+export function CodeFindingCard({ vulnerability: v, finding, remediation, statusActions }: {
+  vulnerability: Vulnerability; finding?: RiskFinding; remediation?: RemediationSnapshot | null;
+  statusActions: FindingStatusActions;
+}) {
+  const id = v.vulnerabilityId;
+  const status = v.status ?? 'UNCHECKED';
+  const disabled = id == null || statusActions.updatingId === id;
+  const needsReview = !finding || finding.priority === 'REVIEW_REQUIRED';
+  return <article className="vulnerability-item action-finding">
+    <div className="vulnerability-header">
+      <span className={`risk-badge risk-${finding?.priority.toLowerCase() ?? 'review_required'}`}>
+        {finding ? priorityLabels[finding.priority] : '우선순위 미평가'}
+      </span>
+      <span className="status-badge">{statusLabels[status]}</span>
+    </div>
+    <h3>{codeExplanation(v).title}</h3>
+    {needsReview && <p className="review-caution">실제 사용 방식과 주변 코드에 따라 위험이 달라질 수 있습니다. 먼저 해당 상황인지 확인하세요.</p>}
+    <h4>{needsReview ? '내가 확인할 일' : '내가 해야 할 일'}</h4>
+    <p>{v.recommendation}</p>
+    <p className="finding-location"><strong>위치</strong> <code>{v.filePath}</code> <span className="finding-line">{v.line}행</span></p>
+    {codeExplanation(v).location && <p>{codeExplanation(v).location}</p>}
+    <details className="action-details"><summary>상세보기</summary>
+      <h4>{needsReview ? '왜 확인해야 하나요?' : '왜 문제인가요?'}</h4>
+      <p>{finding?.priorityReason ?? '이 이력에는 우선순위 평가가 없습니다. 재분석 후 배포 여부를 판단하세요.'}</p>
+      {v.analysisNote?.trim() && <><h4>판단 근거</h4><p>{v.analysisNote}</p></>}
+      <h4>수정 후 무엇을 확인하나요?</h4>
+      <p>관련 기능의 테스트를 실행하고 SecureDeploy로 다시 검사하세요. 수정 완료 표시는 저장된 배포 판단을 바꾸지 않습니다.</p>
+    </details>
+    <FindingRemediation finding={finding} snapshot={remediation} />
+    <details className="action-details"><summary>진행 상태와 메모</summary>
+      <div className="status-manager">
+        <label><span>상태</span><select aria-label="상태" value={status} disabled={disabled}
+          onChange={event => statusActions.onStatus(v, event.target.value as VulnerabilityStatus)}>
+          {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select></label>
+        <label><span>메모</span><input type="text" disabled={disabled} placeholder="예: 다음 배포에서 수정 예정"
+          value={id != null ? statusActions.comments[id] ?? v.statusComment ?? '' : v.statusComment ?? ''}
+          onChange={event => id != null && statusActions.onComment(id, event.target.value)} /></label>
+        {id != null && statusActions.updatingId === id && <span role="status">저장 중...</span>}
+      </div>
+      <p>메모는 상태를 변경할 때 함께 저장됩니다.</p>
+    </details>
+    <details className="technical-details"><summary>기술 정보 보기</summary>
+      <p>{v.message}</p>
+      <dl className="technical-grid">
+        <div><dt>Rule ID</dt><dd>{v.ruleId}</dd></div>
+        <div><dt>Severity</dt><dd>{v.severity}</dd></div>
+        <div><dt>Category</dt><dd>{v.category}</dd></div>
+        <div><dt>Confidence · 신뢰도</dt><dd>{v.confidence ?? '정보 없음'}</dd></div>
+        <div><dt>False Positive Risk · 오탐 가능성</dt><dd>{v.falsePositiveRisk ?? '정보 없음'}</dd></div>
+        {finding && <div><dt>Priority / Reason code</dt><dd>{finding.priority} / {finding.reasonCode}</dd></div>}
+      </dl>
+      <p>신뢰도는 탐지 확신 수준, 오탐 가능성은 실제 취약점이 아닐 가능성입니다.</p>
+      {v.evidence && <div className="evidence-block"><span>Evidence (API 제공 값)</span><code>{v.evidence}</code></div>}
+    </details>
+  </article>;
+}

@@ -1,0 +1,40 @@
+import { useState, type FormEvent } from 'react';
+import type { ScanMode, SecurityReviewResponse } from '../types/securityReview';
+import type { UploadPolicy } from '../types/uploadPolicy';
+import { validateZipUpload } from './zipUploadValidation';
+import { ZipUploadGuidance } from './ZipUploadGuidance';
+
+export function RescanForm({ result, onScan, onCancel, uploadPolicy = null, policyError, onRetryPolicy }: {
+  result: SecurityReviewResponse; onScan: (file: File | null, mode: ScanMode) => void; onCancel: () => void;
+  uploadPolicy?: UploadPolicy | null; policyError?: string; onRetryPolicy?: () => void;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+  const [mode, setMode] = useState<ScanMode>('STANDARD');
+  const [error, setError] = useState('');
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    if (result.sourceType === 'ZIP') {
+      const message = validateZipUpload(file, uploadPolicy);
+      if (message) { setError(message); return; }
+    }
+    onScan(file, mode);
+  };
+  return <form className="rescan-form" onSubmit={submit} aria-label="프로젝트 다시 검사">
+    <h3>{result.projectName} 다시 검사</h3>
+    <p>같은 프로젝트에 새 분석 이력으로 저장합니다. 비교 기준은 분석 저장 시점의 가장 최근 이력입니다.</p>
+    {result.sourceType === 'ZIP' ? <label>수정된 프로젝트 ZIP을 다시 업로드하세요.
+      <input type="file" accept=".zip" required onChange={event => {
+        const selected = event.target.files?.[0] ?? null;
+        setFile(selected); setError(selected ? validateZipUpload(selected, uploadPolicy) : '');
+      }} />
+    </label> : <p className="finding-location">최신 상태를 가져올 저장소: <strong>{result.repositoryUrl}</strong></p>}
+    {result.sourceType === 'ZIP' && <ZipUploadGuidance policy={uploadPolicy} error={policyError} onRetry={onRetryPolicy} />}
+    <label>분석 모드 <select value={mode} onChange={event => setMode(event.target.value as ScanMode)}>
+      <option value="STANDARD">기본 분석</option><option value="AI_ENHANCED">AI 강화 분석</option>
+    </select></label>
+    {mode === 'AI_ENHANCED' && <p>선별·마스킹된 코드가 외부 AI에 전달될 수 있으며 API 비용이 발생할 수 있습니다.</p>}
+    {error && <p role="alert" className="error-message">{error}</p>}
+    <div className="result-actions"><button type="submit" disabled={result.sourceType === 'ZIP' && !uploadPolicy}>대상 확인 후 다시 검사</button>
+      <button type="button" className="secondary-button" onClick={onCancel}>취소</button></div>
+  </form>;
+}

@@ -64,7 +64,14 @@ export interface Vulnerability {
   statusComment?: string | null;
 }
 
+export type { ProgressAssessment, ReviewProgressSnapshot } from './reviewProgress';
+import type { ProgressAssessment, ReviewProgressSnapshot } from './reviewProgress';
+
 export interface SecurityReviewResponse {
+  sourceType?: 'ZIP' | 'GITHUB' | null;
+  repositoryUrl?: string | null;
+  createdAt?: string | null;
+  comparison?: ReviewProgressSnapshot | null;
   scanMode?: ScanMode | null;
   semanticReview?: SemanticSnapshot | null;
   remediation?: RemediationSnapshot | null;
@@ -343,6 +350,8 @@ export interface ProjectSecurityDashboardResponse {
 }
 
 export interface ReviewHistoryResponse {
+  riskSummary?: ProgressAssessment | null;
+  comparisonAvailable?: boolean;
   reviewId: number;
   projectId?: number | null;
   projectName: string;
@@ -448,6 +457,7 @@ export interface ComparedVulnerabilityResponse {
 }
 
 export interface ReviewComparisonResponse {
+  progress?: ReviewProgressSnapshot | null;
   projectId: number;
   latestReviewId?: number | null;
   previousReviewId?: number | null;

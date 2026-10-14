@@ -38,7 +38,7 @@ test('partial and unavailable results never show a clean bill of health', () => 
   }
 });
 test('old reviews and unknown severity have explicit unavailable states', () => {
-  assert.ok(render(null).includes('SCA 결과가 없습니다'));
+  assert.ok(render(null).includes('라이브러리 검사 결과가 없습니다'));
   const data = fixture();
   data.dependencyVulnerabilities[0].severity = null;
   data.dependencyVulnerabilities[0].fixedVersions = [];
@@ -52,17 +52,16 @@ test('unresolved declarations remain visible', () => {
     ecosystem: 'NPM', packageName: 'fixture', version: '^1.0.0', scope: 'dependencies',
     direct: true, sourceFile: 'package.json', line: 0, versionResolution: 'RANGE',
   }] }));
-  assert.ok(html.includes('버전 확인이 필요한 의존성'));
+  assert.ok(html.includes('버전 확인이 필요한 라이브러리'));
   assert.ok(html.includes('^1.0.0'));
 });
 
 test('deployment summary distinguishes incomplete SCA from the legacy rule score', () => {
   for (const status of ['PARTIAL', 'UNAVAILABLE', 'DISABLED', 'NO_MANIFEST']) {
     const html = renderNotice(fixture({ status, dependencyVulnerabilities: [] }));
-    assert.ok(html.includes('의존성 보안 확인 미완료'));
+    assert.ok(html.includes('라이브러리 보안 확인이 완료되지 않았습니다'));
     assert.ok(html.includes('안전 여부는 확인되지 않았습니다'));
-    assert.ok(html.includes('규칙 기반 결과'));
   }
-  assert.ok(renderNotice(fixture()).includes('의존성 취약점 1건 확인'));
-  assert.ok(renderNotice(null).includes('의존성 보안 확인 미완료'));
+  assert.equal(renderNotice(fixture()), '');
+  assert.ok(renderNotice(null).includes('라이브러리 보안 확인이 완료되지 않았습니다'));
 });

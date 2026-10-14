@@ -50,7 +50,7 @@ public class GitHubRepositoryService {
         }
     }
 
-    private String validateAndNormalizeUrl(String repositoryUrl) {
+    public String validateAndNormalizeUrl(String repositoryUrl) {
         if (repositoryUrl == null || repositoryUrl.isBlank()) {
             throw new SecureDeployException(HttpStatus.BAD_REQUEST, "GitHub Repository URL은 필수입니다.");
         }

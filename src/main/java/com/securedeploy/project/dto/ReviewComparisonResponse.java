@@ -15,7 +15,8 @@ public record ReviewComparisonResponse(
         String message,
         List<ComparedVulnerabilityResponse> resolvedVulnerabilities,
         List<ComparedVulnerabilityResponse> newVulnerabilities,
-        List<ComparedVulnerabilityResponse> persistedVulnerabilities
+        List<ComparedVulnerabilityResponse> persistedVulnerabilities,
+        com.securedeploy.project.progress.ReviewProgressSnapshot progress
 ) {
 
     public static ReviewComparisonResponse notComparable(Long projectId, String message) {
@@ -32,7 +33,7 @@ public record ReviewComparisonResponse(
                 message,
                 List.of(),
                 List.of(),
-                List.of()
+                List.of(), null
         );
     }
 }

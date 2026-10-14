@@ -13,12 +13,12 @@ const item = { findingId: 'code:42', provider: 'template', model: null, promptVe
   } };
 test('guide uses exact finding identity and escapes model output', () => {
   const html = render(FindingRemediation, { finding, snapshot: { findings: [item] } });
-  for (const text of ['AI 해결 가이드', '권장 수정', '수정 후 확인', '탐지 신뢰도와 별개', '&lt;script&gt;', '${DB_PASSWORD}']) assert.ok(html.includes(text));
+  for (const text of ['수정 방법 자세히 보기', '무엇을 수정해야 하나요?', '수정 후 무엇을 확인하나요?', '탐지 신뢰도와 별개', '&lt;script&gt;', '${DB_PASSWORD}']) assert.ok(html.includes(text));
   assert.ok(!html.includes('<script>'));
   assert.equal(render(FindingRemediation, { finding: { findingId: 'code:43' }, snapshot: { findings: [item] } }), '');
 });
 test('legacy history and unavailable generation never claim safety', () => {
-  assert.ok(render(RemediationNotice, { snapshot: null }).includes('저장된 AI 해결 가이드가 없습니다'));
+  assert.ok(render(RemediationNotice, { snapshot: null }).includes('저장된 해결 방법이 없습니다'));
   const html = render(FindingRemediation, { finding, snapshot: { findings: [{ ...item, advice: null, generationStatus: 'UNAVAILABLE' }] } });
   assert.ok(html.includes('생성 불가'));
   assert.ok(!html.includes('SAFE'));
@@ -33,7 +33,7 @@ test('review-needed guide retains verification and template provenance', () => {
 });
 test('cost and omitted findings remain explicit', () => {
   const html = render(RemediationNotice, { snapshot: { notices: ['template fallback'], omittedFindingCount: 4, usage: { provider: 'OPENAI', totalTokens: 200 } } });
-  assert.ok(html.includes('4개 Finding'));
+  assert.ok(html.includes('4개 문제'));
   assert.ok(html.includes('200 tokens'));
   assert.ok(html.includes('비용 추정 미산정'));
 });

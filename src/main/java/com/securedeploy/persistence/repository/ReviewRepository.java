@@ -9,6 +9,13 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
 
+    Optional<ReviewEntity> findTopByProjectIdOrderByCreatedAtDescIdDesc(Long projectId);
+
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update ReviewEntity r set r.comparison = :snapshot where r.id = :id and r.comparison is null")
+    int saveComparisonOnce(@Param("id") Long id,
+            @Param("snapshot") com.securedeploy.project.progress.ReviewProgressSnapshot snapshot);
+
     @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update ReviewEntity r set r.semanticReview = :snapshot where r.id = :id and r.semanticReview is null")
     int saveSemanticOnce(@Param("id") Long id, @Param("snapshot") com.securedeploy.ai.semantic.SemanticSnapshot snapshot);

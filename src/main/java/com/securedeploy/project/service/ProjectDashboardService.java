@@ -158,7 +158,7 @@ public class ProjectDashboardService {
 
     private ComparisonSummary comparisonSummary(Long projectId) {
         ReviewComparisonResponse comparison = reviewComparisonService.compareLatest(projectId);
-        if (comparison.latestReviewId() == null || comparison.previousReviewId() == null) {
+        if (comparison.latestReviewId() == null || comparison.previousReviewId() == null || comparison.progress() == null) {
             return new ComparisonSummary(
                     null,
                     null,
@@ -176,9 +176,10 @@ public class ProjectDashboardService {
                 comparison.latestReviewId(),
                 comparison.scoreDiff(),
                 comparison.vulnerabilityCountDiff(),
-                comparison.resolvedVulnerabilities().size(),
-                comparison.newVulnerabilities().size(),
-                comparison.persistedVulnerabilities().size(),
+                comparison.progress().counts().get(com.securedeploy.project.progress.ReviewProgressSnapshot.Change.RESOLVED).intValue(),
+                comparison.progress().counts().get(com.securedeploy.project.progress.ReviewProgressSnapshot.Change.NEW).intValue(),
+                comparison.progress().counts().get(com.securedeploy.project.progress.ReviewProgressSnapshot.Change.REMAINING).intValue()
+                        + comparison.progress().counts().get(com.securedeploy.project.progress.ReviewProgressSnapshot.Change.CHANGED).intValue(),
                 comparison.message()
         );
     }

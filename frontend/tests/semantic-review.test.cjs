@@ -14,12 +14,12 @@ const snapshot = { scanMode: 'AI_ENHANCED', semanticReviewStatus: 'COMPLETED', c
   requestCount: 1, usage: { totalTokens: 150 }, notices: ['fixture notice'] };
 test('semantic candidates stay separate and render escaped grounded evidence', () => {
   const html = render(snapshot);
-  for (const value of ['AI 보안 추가 검토', '확정 취약점이 아닙니다', '1개 항목 확인 필요', 'REVIEW REQUIRED',
+  for (const value of ['추가 확인이 필요한 부분', '확정 취약점이 아닙니다', '1개 항목 확인 필요', '기술 정보 보기',
     '의미 분석 신뢰도: MEDIUM', 'UserController.java:7-12', '공통 authorization 확인', '&lt;script&gt;', '150 tokens']) assert.ok(html.includes(value), value);
   assert.ok(!html.includes('<script>'));
 });
 test('legacy, standard, failure and empty completion never imply safe', () => {
-  assert.ok(render(null).includes('저장된 Semantic Review가 없습니다'));
+  assert.ok(render(null).includes('저장된 추가 검토 결과가 없습니다'));
   for (const status of ['NOT_REQUESTED', 'FAILED', 'UNAVAILABLE', 'REJECTED', 'NO_SUPPORTED_CONTEXT', 'COMPLETED']) {
     const html=render({ ...snapshot, semanticReviewStatus: status, candidates: [] });
     assert.ok(html.includes('안전을 의미하지 않습니다'));

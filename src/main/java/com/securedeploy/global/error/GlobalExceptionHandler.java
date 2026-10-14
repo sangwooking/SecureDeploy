@@ -1,6 +1,7 @@
 package com.securedeploy.global.error;
 
 import java.time.LocalDateTime;
+import com.securedeploy.upload.service.UploadPolicy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,6 +11,11 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private final UploadPolicy uploadPolicy;
+
+    public GlobalExceptionHandler(UploadPolicy uploadPolicy) {
+        this.uploadPolicy = uploadPolicy;
+    }
 
     @ExceptionHandler({org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
             org.springframework.http.converter.HttpMessageNotReadableException.class})
@@ -27,9 +33,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception) {
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(status)
-                .body(new ErrorResponse(LocalDateTime.now(), status.value(), status.getReasonPhrase(), "업로드 가능한 파일 크기를 초과했습니다. 50MB 이하의 ZIP 파일을 업로드해 주세요."));
+        return handleSecureDeployException(uploadPolicy.reject("MULTIPART_LIMIT", HttpStatus.PAYLOAD_TOO_LARGE,
+                uploadPolicy.uploadLimitMessage(), -1, 0, 0));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

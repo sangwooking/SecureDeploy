@@ -60,6 +60,13 @@ public class ReviewPersistenceService {
     public SecurityReviewResponse saveReview(ProjectEntity project, SecurityReviewResponse response, ReviewSourceType sourceType,
             String repositoryUrl, SnippetGroup snippetGroup, ThreatIntelligenceSnapshot intelligence,
             com.securedeploy.review.model.ScanMode scanMode) {
+        return saveReview(project, response, sourceType, repositoryUrl, snippetGroup, intelligence, scanMode, null);
+    }
+
+    @Transactional
+    public SecurityReviewResponse saveReview(ProjectEntity project, SecurityReviewResponse response, ReviewSourceType sourceType,
+            String repositoryUrl, SnippetGroup snippetGroup, ThreatIntelligenceSnapshot intelligence,
+            com.securedeploy.review.model.ScanMode scanMode, com.securedeploy.project.progress.ComparisonContext context) {
         ReviewEntity review = new ReviewEntity(
                 response.projectName(),
                 sourceType,
@@ -72,10 +79,15 @@ public class ReviewPersistenceService {
         review.assignScanMode(scanMode);
 
         if (project != null) {
-            ProjectEntity managedProject = projectRepository.findById(project.getId())
+            ProjectEntity managedProject = projectRepository.findForReviewCreation(project.getId())
                     .orElseThrow(() -> new SecureDeployException(HttpStatus.NOT_FOUND, "프로젝트를 찾을 수 없습니다."));
             managedProject.touch();
             review.assignProject(managedProject);
+            if (context != null) {
+                Long baseline = reviewRepository.findTopByProjectIdOrderByCreatedAtDescIdDesc(project.getId())
+                        .map(ReviewEntity::getId).orElse(null);
+                review.attachComparisonContext(context.withBaseline(baseline));
+            }
         }
 
         response.vulnerabilities().stream()
@@ -142,7 +154,8 @@ public class ReviewPersistenceService {
                 review.getRiskAssessment(),
                 review.getRemediation(),
                 review.getSemanticReview(),
-                review.getScanMode()
+                review.getScanMode(),
+                review.getSourceType(), review.getRepositoryUrl(), review.getCreatedAt(), review.getComparison()
         );
     }
 

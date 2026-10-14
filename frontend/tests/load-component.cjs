@@ -5,7 +5,8 @@ const ts = require('typescript');
 const cache = new Map();
 module.exports = function loadComponent(name) {
   if (cache.has(name)) return cache.get(name);
-  const source = fs.readFileSync(path.join(__dirname, '../src/components', name + '.tsx'), 'utf8');
+  const base = path.join(__dirname, '../src/components', name);
+  const source = fs.readFileSync(fs.existsSync(base + '.tsx') ? base + '.tsx' : base + '.ts', 'utf8');
   const compiled = ts.transpileModule(source, {
     compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;

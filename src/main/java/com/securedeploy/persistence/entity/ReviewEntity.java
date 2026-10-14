@@ -31,6 +31,18 @@ import java.util.List;
 @Table(name = "reviews")
 public class ReviewEntity {
 
+    @Convert(converter = com.securedeploy.project.progress.ComparisonContextConverter.class)
+    @Column(name = "comparison_context_json", columnDefinition = "TEXT")
+    private com.securedeploy.project.progress.ComparisonContext comparisonContext;
+
+    @Convert(converter = com.securedeploy.project.progress.ReviewProgressSnapshotConverter.class)
+    @Column(name = "comparison_snapshot_json", columnDefinition = "TEXT")
+    private com.securedeploy.project.progress.ReviewProgressSnapshot comparison;
+
+    public com.securedeploy.project.progress.ComparisonContext getComparisonContext() { return comparisonContext; }
+    public void attachComparisonContext(com.securedeploy.project.progress.ComparisonContext context) { comparisonContext = context; }
+    public com.securedeploy.project.progress.ReviewProgressSnapshot getComparison() { return comparison; }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

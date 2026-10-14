@@ -150,6 +150,18 @@ public class ProjectService {
         return ProjectDetailResponse.from(project, latestReview);
     }
 
+    @Transactional(readOnly = true)
+    public ProjectEntity findOwnedProjectForRescan(Long projectId, Long userId, ReviewSourceType type) {
+        ProjectEntity project = findProject(projectId);
+        if (userId == null || project.getUser() == null || !project.getUser().getId().equals(userId)) {
+            throw new SecureDeployException(HttpStatus.FORBIDDEN, "본인 소유 프로젝트만 다시 검사할 수 있습니다.");
+        }
+        if (project.getSourceType() != type) {
+            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "등록된 프로젝트와 같은 분석 방식을 사용해 주세요.");
+        }
+        return project;
+    }
+
     private ProjectEntity createUserProject(Long userId, String name, ReviewSourceType sourceType, String repositoryUrl) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new SecureDeployException(HttpStatus.UNAUTHORIZED, "사용자 정보를 찾을 수 없습니다. 다시 로그인해 주세요."));

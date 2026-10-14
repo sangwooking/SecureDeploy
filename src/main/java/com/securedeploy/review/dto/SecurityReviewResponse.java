@@ -18,8 +18,20 @@ public record SecurityReviewResponse(
         RiskAssessment riskAssessment,
         com.securedeploy.ai.remediation.RemediationSnapshot remediation,
         com.securedeploy.ai.semantic.SemanticSnapshot semanticReview,
-        com.securedeploy.review.model.ScanMode scanMode
+        com.securedeploy.review.model.ScanMode scanMode,
+        com.securedeploy.review.model.ReviewSourceType sourceType,
+        String repositoryUrl,
+        java.time.LocalDateTime createdAt,
+        com.securedeploy.project.progress.ReviewProgressSnapshot comparison
 ) {
+    public SecurityReviewResponse(Long reviewId, Long projectId, String projectName, int scannedFileCount,
+            int vulnerabilityCount, int securityScore, String deploymentStatus,
+            List<VulnerabilityResultResponse> vulnerabilities, ScaResult sca, RiskAssessment riskAssessment,
+            com.securedeploy.ai.remediation.RemediationSnapshot remediation,
+            com.securedeploy.ai.semantic.SemanticSnapshot semanticReview, com.securedeploy.review.model.ScanMode scanMode) {
+        this(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount, securityScore, deploymentStatus,
+                vulnerabilities, sca, riskAssessment, remediation, semanticReview, scanMode, null, null, null, null);
+    }
     public SecurityReviewResponse(Long reviewId, Long projectId, String projectName, int scannedFileCount,
                                   int vulnerabilityCount, int securityScore, String deploymentStatus,
                                   List<VulnerabilityResultResponse> vulnerabilities, ScaResult sca, RiskAssessment riskAssessment,
@@ -38,7 +50,8 @@ public record SecurityReviewResponse(
 
     public SecurityReviewResponse withSemanticReview(com.securedeploy.ai.semantic.SemanticSnapshot snapshot) {
         return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount,
-                securityScore, deploymentStatus, vulnerabilities, sca, riskAssessment, remediation, snapshot, scanMode);
+                securityScore, deploymentStatus, vulnerabilities, sca, riskAssessment, remediation, snapshot, scanMode,
+                sourceType, repositoryUrl, createdAt, comparison);
     }
     public SecurityReviewResponse(Long reviewId, Long projectId, String projectName, int scannedFileCount,
                                   int vulnerabilityCount, int securityScore, String deploymentStatus,
@@ -49,7 +62,8 @@ public record SecurityReviewResponse(
 
     public SecurityReviewResponse withRemediation(com.securedeploy.ai.remediation.RemediationSnapshot snapshot) {
         return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount,
-                securityScore, deploymentStatus, vulnerabilities, sca, riskAssessment, snapshot, semanticReview, scanMode);
+                securityScore, deploymentStatus, vulnerabilities, sca, riskAssessment, snapshot, semanticReview, scanMode,
+                sourceType, repositoryUrl, createdAt, comparison);
     }
     @JsonProperty("deploymentAssessmentScope")
     public String deploymentAssessmentScope() {
@@ -83,7 +97,8 @@ public record SecurityReviewResponse(
 
     public SecurityReviewResponse withSca(ScaResult result) {
         return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount,
-                vulnerabilityCount, securityScore, deploymentStatus, vulnerabilities, result, riskAssessment, remediation, semanticReview, scanMode);
+                vulnerabilityCount, securityScore, deploymentStatus, vulnerabilities, result, riskAssessment, remediation, semanticReview, scanMode,
+                sourceType, repositoryUrl, createdAt, comparison);
     }
 
     public SecurityReviewResponse withReviewId(Long reviewId) {
@@ -104,7 +119,7 @@ public record SecurityReviewResponse(
                 riskAssessment,
                 remediation,
                 semanticReview,
-                scanMode
+                scanMode, sourceType, repositoryUrl, createdAt, comparison
         );
     }
 }

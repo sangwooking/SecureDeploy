@@ -295,9 +295,13 @@ public class PromptBuilder {
 
 
     public String buildComparisonInsightPrompt(com.securedeploy.project.dto.ReviewComparisonResponse comparison) {
-        return """
+        String scope = comparison.progress() == null ? "No comparable snapshot. Do not claim improvement or safety."
+                : "Saved deterministic assessments (authoritative): before=" + comparison.progress().assessmentBefore()
+                + "; after=" + comparison.progress().assessmentAfter() + "; canonical change counts=" + comparison.progress().counts();
+        return scope + "\nScores are legacy reference values, not deployment permission. NEW means newly observed, not caused by edits. "
+                + "AI candidates are separate and their disappearance is not resolution. Code lists below are only a subset of canonical findings.\n" + """
                 You are a security improvement consultant for SecureDeploy.
-                Rule Engine findings are confirmed by the tool. Your role is to interpret the comparison and recommend next steps.
+                Interpret stored observations and their uncertainty; do not claim security proof or invent findings.
                 Return only valid JSON. Do not wrap it in markdown.
 
                 Required JSON shape:

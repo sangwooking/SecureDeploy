@@ -54,6 +54,8 @@ public class SecurityReviewFacade {
     private final com.securedeploy.ai.remediation.RemediationSnapshotService remediationService;
     private final SecuritySliceCollector sliceCollector;
     private final SemanticSnapshotService semanticService;
+    private final com.securedeploy.project.progress.ComparisonContextCollector comparisonCollector;
+    private final com.securedeploy.project.progress.ReviewProgressService progressService;
 
     public SecurityReviewFacade(UploadService uploadService, ZipExtractService zipExtractService,
                                 GitHubRepositoryService gitHubRepositoryService,
@@ -66,7 +68,9 @@ public class SecurityReviewFacade {
                                 CurrentUserService currentUserService, ScaService scaService,
                                 ThreatIntelligenceService threatIntelligenceService,
                                 com.securedeploy.ai.remediation.RemediationSnapshotService remediationService,
-                                SecuritySliceCollector sliceCollector, SemanticSnapshotService semanticService) {
+                                SecuritySliceCollector sliceCollector, SemanticSnapshotService semanticService,
+                                com.securedeploy.project.progress.ComparisonContextCollector comparisonCollector,
+                                com.securedeploy.project.progress.ReviewProgressService progressService) {
         this.uploadService = uploadService;
         this.zipExtractService = zipExtractService;
         this.gitHubRepositoryService = gitHubRepositoryService;
@@ -83,6 +87,8 @@ public class SecurityReviewFacade {
         this.remediationService = remediationService;
         this.sliceCollector = sliceCollector;
         this.semanticService = semanticService;
+        this.comparisonCollector = comparisonCollector;
+        this.progressService = progressService;
     }
 
     public SecurityReviewResponse reviewUploadedZip(MultipartFile file) {
@@ -124,7 +130,7 @@ public class SecurityReviewFacade {
     }
 
     public SecurityReviewResponse reviewUploadedZip(Long projectId, MultipartFile file, ScanMode scanMode) {
-        ProjectEntity project = projectService.findProjectByIdAndUser(projectId, currentUserService.currentUserIdOrNull());
+        ProjectEntity project = projectService.findOwnedProjectForRescan(projectId, currentUserService.currentUserIdOrNull(), ReviewSourceType.ZIP);
         UploadedArchive archive = uploadService.saveZip(file);
 
         try {
@@ -141,7 +147,12 @@ public class SecurityReviewFacade {
     }
 
     public SecurityReviewResponse reviewGitHubRepository(Long projectId, String repositoryUrl, ScanMode scanMode) {
-        ProjectEntity project = projectService.findProjectByIdAndUser(projectId, currentUserService.currentUserIdOrNull());
+        ProjectEntity project = projectService.findOwnedProjectForRescan(projectId, currentUserService.currentUserIdOrNull(), ReviewSourceType.GITHUB);
+        String requested = gitHubRepositoryService.validateAndNormalizeUrl(repositoryUrl).replaceFirst("\\.git$", "");
+        String registered = gitHubRepositoryService.validateAndNormalizeUrl(project.getRepositoryUrl()).replaceFirst("\\.git$", "");
+        if (!requested.equalsIgnoreCase(registered)) {
+            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "등록된 GitHub 저장소만 다시 검사할 수 있습니다.");
+        }
         ClonedRepository clonedRepository = gitHubRepositoryService.clonePublicRepository(repositoryUrl);
 
         try {
@@ -159,9 +170,9 @@ public class SecurityReviewFacade {
     private SecurityReviewResponse saveWithRemediation(ProjectEntity project, AnalysisOutcome outcome,
                                                        ReviewSourceType type, String repositoryUrl, ScanMode scanMode) {
         var saved = reviewPersistenceService.saveReview(project, outcome.response(), type, repositoryUrl,
-                outcome.snippetGroup(), outcome.intelligence(), scanMode);
+                outcome.snippetGroup(), outcome.intelligence(), scanMode, outcome.comparisonContext());
         var guided = remediationService.complete(saved, outcome.snippetGroup(), scanMode == ScanMode.AI_ENHANCED);
-        return semanticService.complete(guided, scanMode, outcome.slices());
+        return progressService.complete(semanticService.complete(guided, scanMode, outcome.slices()));
     }
 
     public SecurityReviewResponse findReviewDetail(Long reviewId) {
@@ -190,10 +201,12 @@ public class SecurityReviewFacade {
                 slices = new SecuritySliceCollector.Collection(List.of(), 0, List.of("Java slice indexing unavailable."), false);
             }
         }
-        return new AnalysisOutcome(response.withSca(sca), snippetGroup, threatIntelligenceService.enrich(sca), slices);
+        return new AnalysisOutcome(response.withSca(sca), snippetGroup, threatIntelligenceService.enrich(sca), slices,
+                comparisonCollector.collect(projectStructure));
     }
 
     private record AnalysisOutcome(SecurityReviewResponse response, SnippetGroup snippetGroup, ThreatIntelligenceSnapshot intelligence,
-                                   SecuritySliceCollector.Collection slices) {
+                                   SecuritySliceCollector.Collection slices,
+                                   com.securedeploy.project.progress.ComparisonContext comparisonContext) {
     }
 }

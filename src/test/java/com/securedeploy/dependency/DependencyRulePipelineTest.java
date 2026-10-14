@@ -27,7 +27,7 @@ class DependencyRulePipelineTest {
     @Test
     void sampleDependencyProjectIsCollectedAndDetected() throws Exception {
         Path sampleProject = createSampleDependencyProject();
-        ProjectScanner scanner = new ProjectScanner(new ProjectFileCollector());
+        ProjectScanner scanner = new ProjectScanner(new ProjectFileCollector(), new com.securedeploy.global.config.FileStorageProperties());
         ProjectStructure structure = scanner.scan(sampleProject);
 
         assertThat(structure.analysisFiles())

@@ -38,6 +38,7 @@ class SemanticReviewIntegrationTest {
     @TempDir Path temp;
     String token;
     @BeforeEach void setup() throws Exception {
+        when(github.validateAndNormalizeUrl(anyString())).thenCallRealMethod();
         when(openai.isAvailable()).thenReturn(true);
         when(openai.providerType()).thenReturn(AiProviderType.OPENAI);
         when(openai.consumeLastTokenUsage()).thenReturn(Optional.empty());

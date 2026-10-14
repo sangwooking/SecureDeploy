@@ -3,8 +3,9 @@ spring:
     name: securedeploy-backend
   servlet:
     multipart:
-      max-file-size: 50MB
-      max-request-size: 50MB
+      max-file-size: 200MB
+      max-request-size: 205MB
+      file-size-threshold: 0B
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/securedeploy}
     username: ${DB_USERNAME:securedeploy}
@@ -39,6 +40,11 @@ securedeploy:
     max-advisories: 100
   storage:
     temp-dir: ${java.io.tmpdir}/securedeploy
+    max-expanded-size: 1GB
+    max-archive-entries: 50000
+    max-analysis-file-size: 32MB
+    max-analysis-total-size: 128MB
+    max-analysis-lines: 500000
   ai:
     provider: ${AI_PROVIDER:template}
     usage-tracking-enabled: true

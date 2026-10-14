@@ -1,6 +1,8 @@
 package com.securedeploy.sca.parser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.securedeploy.project.model.*;
+import com.securedeploy.project.service.ProjectIgnorePolicy;
+import java.nio.file.Path;
 import com.securedeploy.sca.model.*;
 import java.util.*;
 import org.springframework.stereotype.Component;
@@ -17,8 +19,7 @@ public class ScaManifestCollector {
     public Inventory collect(ProjectStructure structure) {
         List<ProjectFile> files = structure.analysisFiles().stream()
                 .filter(f -> MANIFESTS.contains(name(f.relativePath())))
-                .filter(f -> !Arrays.stream(f.relativePath().split("/")).anyMatch(
-                        Set.of("node_modules", ".git", "build", "dist", "coverage")::contains))
+                .filter(f -> !ProjectIgnorePolicy.ignores(Path.of(f.relativePath())))
                 .sorted(Comparator.comparing(ProjectFile::relativePath)).toList();
         List<String> warnings = new ArrayList<>();
         Map<String, List<DependencyComponent>> parsed = new LinkedHashMap<>();

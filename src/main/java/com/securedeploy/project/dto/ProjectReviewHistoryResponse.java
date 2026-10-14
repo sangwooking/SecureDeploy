@@ -14,7 +14,9 @@ public record ProjectReviewHistoryResponse(
         int vulnerabilityCount,
         int securityScore,
         String deploymentStatus,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        com.securedeploy.project.progress.ReviewProgressSnapshot.Assessment riskSummary,
+        boolean comparisonAvailable
 ) {
 
     public static ProjectReviewHistoryResponse from(ReviewEntity review) {
@@ -29,7 +31,9 @@ public record ProjectReviewHistoryResponse(
                 review.getVulnerabilityCount(),
                 review.getSecurityScore(),
                 review.getDeploymentStatus(),
-                review.getCreatedAt()
+                review.getCreatedAt(),
+                com.securedeploy.project.progress.ProgressComparisonEngine.assessment(review),
+                review.getComparison() != null && review.getComparison().baselineReviewId() != null
         );
     }
 }

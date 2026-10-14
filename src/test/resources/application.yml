@@ -10,8 +10,9 @@ spring:
     open-in-view: false
   servlet:
     multipart:
-      max-file-size: 50MB
-      max-request-size: 50MB
+      max-file-size: 200MB
+      max-request-size: 205MB
+      file-size-threshold: 0B
 
 securedeploy:
   threat-intelligence:

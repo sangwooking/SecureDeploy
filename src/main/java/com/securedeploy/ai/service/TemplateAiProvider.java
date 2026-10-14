@@ -179,25 +179,23 @@ public class TemplateAiProvider implements AiProvider {
             );
         }
 
-        String improvement = comparison.scoreDiff() >= 0
-                ? "보안 점수가 " + comparison.scoreDiff() + "점 개선되었습니다. 해결된 취약점 " + comparison.resolvedVulnerabilities().size() + "건을 우선 확인하세요."
-                : "보안 점수가 " + Math.abs(comparison.scoreDiff()) + "점 하락했습니다. 신규 취약점과 지속 취약점을 먼저 검토해야 합니다.";
-        String newRisk = comparison.newVulnerabilities().isEmpty()
-                ? "새로 생긴 취약점은 없습니다. 현재 변경은 위험을 추가로 만들지는 않은 것으로 보입니다."
-                : "새로 생긴 취약점 " + comparison.newVulnerabilities().size() + "건이 있습니다. 최근 수정 또는 설정 변경의 부작용일 수 있습니다.";
-
-        return new AiComparisonInsightResponse(
-                comparison.projectId(),
-                comparison.latestReviewId(),
-                comparison.previousReviewId(),
-                "최신 분석과 직전 분석을 비교한 결과, 점수 변화는 " + comparison.scoreDiff() + "점이고 취약점 개수 변화는 " + comparison.vulnerabilityCountDiff() + "건입니다.",
-                improvement,
-                "지속 취약점 " + comparison.persistedVulnerabilities().size() + "건은 아직 해결되지 않은 반복 위험입니다.",
-                newRisk,
-                comparison.latestSecurityScore() >= 80 ? "현재 점수 기준 배포 가능에 가깝지만 지속 취약점은 배포 전 확인이 필요합니다." : "현재 점수 기준 배포 전 추가 수정이 권장됩니다.",
-                List.of("지속 취약점을 먼저 제거하세요.", "신규 취약점은 최근 변경 내역과 연결해 원인을 확인하세요.", "재분석 후 점수와 취약점 개수 변화가 개선됐는지 확인하세요."),
-                null
-        );
+        var snapshot = comparison.progress();
+        if (snapshot == null) return new AiComparisonInsightResponse(comparison.projectId(), comparison.latestReviewId(),
+                comparison.previousReviewId(), "저장된 비교 근거가 없습니다.", "개선 여부를 판단할 수 없습니다.",
+                "잔여 위험을 비교할 수 없습니다.", "신규 여부를 판단할 수 없습니다.", "참고 점수로 배포를 허가하지 않습니다.",
+                List.of("같은 프로젝트에서 다시 검사하세요."), null);
+        var counts = snapshot.counts();
+        return new AiComparisonInsightResponse(comparison.projectId(), comparison.latestReviewId(), comparison.previousReviewId(),
+                "저장된 분석 범위의 관찰 결과를 비교했습니다. 완전한 안전을 의미하지 않습니다.",
+                "현재 비교 가능한 검사에서 더 이상 관찰되지 않은 문제: " + counts.get(com.securedeploy.project.progress.ReviewProgressSnapshot.Change.RESOLVED) + "건",
+                "계속 확인된 문제: " + counts.get(com.securedeploy.project.progress.ReviewProgressSnapshot.Change.REMAINING)
+                        + "건, 상태가 달라진 문제: " + counts.get(com.securedeploy.project.progress.ReviewProgressSnapshot.Change.CHANGED) + "건",
+                "이번에 새로 관찰된 문제: " + counts.get(com.securedeploy.project.progress.ReviewProgressSnapshot.Change.NEW)
+                        + "건. 최근 코드 수정이 원인이라는 뜻은 아닙니다.",
+                "저장된 현재 위험 기반 배포 판단: " + snapshot.assessmentAfter().deploymentAssessment()
+                        + ". 룰 기반 점수는 참고값이며 AI 의견이 배포 판단을 변경하지 않습니다.",
+                List.of("현재 반드시 처리 항목을 먼저 확인하세요.", "남은 문제와 새로 관찰된 문제의 해결 가이드를 확인하세요.",
+                        "수정 후 같은 프로젝트에서 다시 검사하세요."), null);
     }
 
     @Override

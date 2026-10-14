@@ -17,6 +17,7 @@ import type {
   VulnerabilityStatusResponse,
   VulnerabilityStatusSummaryResponse,
 } from '../types/securityReview';
+import type { UploadPolicy } from '../types/uploadPolicy';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
 
@@ -58,12 +59,21 @@ export async function login(email: string, password: string): Promise<AuthRespon
   return parseJsonResponse<AuthResponse>(response, '로그인에 실패했습니다.');
 }
 
-export async function uploadZipForReview(file: File, scanMode: ScanMode = 'STANDARD'): Promise<SecurityReviewResponse> {
+export async function fetchUploadPolicy(): Promise<UploadPolicy> {
+  const response = await fetch(`${API_BASE_URL}/api/reviews/upload-policy`, { headers: authHeaders() });
+  const policy = await parseJsonResponse<UploadPolicy>(response, '업로드 제한을 불러오지 못했습니다. 다시 확인해 주세요.');
+  if (!Number.isSafeInteger(policy.maxZipBytes) || policy.maxZipBytes <= 0 || !policy.maxZipLabel || !policy.folderHint) {
+    throw new Error('업로드 제한 정보가 올바르지 않습니다. 다시 확인해 주세요.');
+  }
+  return policy;
+}
+
+export async function uploadZipForReview(file: File, scanMode: ScanMode = 'STANDARD', projectId?: number): Promise<SecurityReviewResponse> {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('scanMode', scanMode);
 
-  const response = await fetch(`${API_BASE_URL}/api/reviews/upload`, {
+  const response = await fetch(`${API_BASE_URL}${projectId == null ? '/api/reviews' : `/api/projects/${projectId}/reviews`}/upload`, {
     method: 'POST',
     headers: authHeaders(),
     body: formData,
@@ -72,8 +82,8 @@ export async function uploadZipForReview(file: File, scanMode: ScanMode = 'STAND
   return parseJsonResponse<SecurityReviewResponse>(response, '프로젝트 분석 요청에 실패했습니다.');
 }
 
-export async function reviewGithubRepository(repositoryUrl: string, scanMode: ScanMode = 'STANDARD'): Promise<SecurityReviewResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/reviews/github`, {
+export async function reviewGithubRepository(repositoryUrl: string, scanMode: ScanMode = 'STANDARD', projectId?: number): Promise<SecurityReviewResponse> {
+  const response = await fetch(`${API_BASE_URL}${projectId == null ? '/api/reviews' : `/api/projects/${projectId}/reviews`}/github`, {
     method: 'POST',
     headers: jsonHeaders(),
     body: JSON.stringify({ repositoryUrl, scanMode }),
