@@ -31,10 +31,7 @@ public class ReviewComparisonService {
     public ReviewComparisonResponse compareLatest(Long projectId) {
         ProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new SecureDeployException(HttpStatus.NOT_FOUND, "프로젝트를 찾을 수 없습니다."));
-        Long userId = currentUserService.currentUserIdOrNull();
-        if (project.getUser() != null && userId != null && !project.getUser().getId().equals(userId)) {
-            throw new SecureDeployException(HttpStatus.FORBIDDEN, "이 프로젝트에 접근할 권한이 없습니다.");
-        }
+        com.securedeploy.auth.service.ProjectOwnership.requireOwner(project, currentUserService.currentUserId());
 
         List<ReviewEntity> reviews = reviewRepository.findTop2WithVulnerabilitiesByProjectId(projectId);
         if (reviews.size() < 2) {

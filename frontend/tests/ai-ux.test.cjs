@@ -63,7 +63,8 @@ test('generated, template, unavailable and missing snapshots retain honest prove
 });
 
 test('result navigation has no legacy AI generation handlers; compatibility APIs remain', () => {
-  const app = fs.readFileSync(path.join(__dirname, '../src/App.tsx'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '../src/App.tsx'), 'utf8')
+    + fs.readFileSync(path.join(__dirname, '../src/components/ProjectReviewResult.tsx'), 'utf8');
   assert.doesNotMatch(app, /fetchAi(?:Review|ProjectSummary|Remediation|SecurityAudit|Priorities|Roadmap|ComparisonInsight)/);
   assert.doesNotMatch(app, /AiReviewSection|activeAiSubTab/);
   assert.ok(app.includes('window.confirm'));

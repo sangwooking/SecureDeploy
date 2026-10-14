@@ -3,6 +3,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const fixture = require('../progress-fixture.cjs');
+const workspaceFixture = require('./workspace-fixture.cjs');
 const url = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 (async () => {
@@ -17,6 +18,8 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       if (!path.startsWith('/api/')) return parsed.origin === new URL(url).origin ? route.continue() : route.abort();
       calls.push({ path, data: req.postData() });
       const json = data => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(data) });
+      const workspace = workspaceFixture(path, current);
+      if (workspace) return json(workspace);
       if (path === '/api/reviews/upload-policy') return json(require('../upload-policy-fixture.cjs'));
       if (path === '/api/auth/login') return json({ accessToken: 'fake-progress-test-only', tokenType: 'Bearer', user: { id: 1, email: 'test@example.invalid', name: 'Fixture' } });
       if (path === '/api/reviews') return json([{ ...current, riskSummary: current.comparison?.assessmentAfter, comparisonAvailable: !!current.comparison }]);
@@ -33,7 +36,9 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
     await page.getByLabel('이메일', { exact: true }).fill('test@example.invalid');
     await page.getByLabel('비밀번호', { exact: true }).fill('fake-password-for-browser-test');
     await page.locator('.auth-submit').click();
-    await page.locator('.history-actions').getByRole('button', { name: '변화 보기', exact: true }).click();
+    await page.getByRole('link', { name: '프로젝트 열기', exact: true }).click();
+    await page.getByRole('navigation', { name: '프로젝트 메뉴' }).getByRole('link', { name: '분석 이력', exact: true }).click();
+    await page.getByRole('link', { name: '변화 보기', exact: true }).click();
     const nav = () => page.getByRole('navigation', { name: '분석 결과 메뉴' });
     for (const width of [1440, 390, 320]) {
       await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 });
@@ -51,34 +56,35 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.screenshot({ path: `/private/tmp/securedeploy-progress-${width}.png`, fullPage: true });
     }
-    await page.getByRole('button', { name: '다시 검사', exact: true }).click();
+    await page.getByRole('button', { name: '다시 검사하기', exact: true }).click();
     await page.locator('.rescan-form input[type=file]').setInputFiles({ name: 'renamed-fixed.zip', mimeType: 'application/zip', buffer: Buffer.from('synthetic never-uploaded-source') });
     await page.getByRole('button', { name: '대상 확인 후 다시 검사', exact: true }).click();
-    await page.getByText('재검사가 완료되었습니다. 저장된 이전 분석과의 변화를 확인하세요.', { exact: true }).waitFor();
+    await page.getByText('재검사를 완료했습니다. 이전 분석과 현재 분석의 변화를 확인하세요.', { exact: true }).waitFor();
     assert.ok(calls.some(c => c.path === '/api/projects/7/reviews/upload' && c.data.includes('renamed-fixed.zip')));
     fail = true;
-    await page.getByRole('button', { name: '다시 검사', exact: true }).click();
+    await page.getByRole('button', { name: '다시 검사하기', exact: true }).click();
     await page.locator('.rescan-form input[type=file]').setInputFiles({ name: 'failed.zip', mimeType: 'application/zip', buffer: Buffer.from('synthetic') });
     await page.getByRole('button', { name: '대상 확인 후 다시 검사', exact: true }).click();
     await page.getByRole('alert').filter({ hasText: '테스트용 재검사 실패' }).waitFor();
+    await page.getByRole('navigation', { name: '프로젝트 메뉴' }).getByRole('link', { name: '발견된 문제', exact: true }).click();
+    await nav().getByRole('button', { name: '변화 보기', exact: true }).click();
     await page.locator('.security-progress').waitFor();
     fail = false;
     current.sourceType = 'GITHUB'; current.repositoryUrl = 'https://github.com/fixture/progress';
-    await page.locator('.history-panel > summary').click();
-    await page.locator('.history-item').click();
-    await page.getByRole('button', { name: '다시 검사', exact: true }).click();
+    await page.reload();
+    await page.getByRole('button', { name: '다시 검사하기', exact: true }).click();
     assert.ok((await page.locator('.rescan-form').innerText()).includes(current.repositoryUrl));
     assert.equal(await page.locator('.rescan-form input[type=file]').count(), 0);
     await page.getByRole('button', { name: '대상 확인 후 다시 검사', exact: true }).click();
-    await page.getByText('재검사가 완료되었습니다. 저장된 이전 분석과의 변화를 확인하세요.', { exact: true }).waitFor();
+    await page.getByText('재검사를 완료했습니다. 이전 분석과 현재 분석의 변화를 확인하세요.', { exact: true }).waitFor();
     assert.ok(calls.some(c => c.path.endsWith('/reviews/github') && JSON.parse(c.data).repositoryUrl === current.repositoryUrl));
     // Replay a real MockMvc upload->persistence->API response, if the backend tests have produced it.
     const recorded = '../build/progress-review-fixture.json';
     if (fs.existsSync(recorded)) {
       current = JSON.parse(fs.readFileSync(recorded, 'utf8'));
-      if (!(await page.locator('.history-panel').evaluate(el => el.open))) await page.locator('.history-panel > summary').click();
-      await page.getByRole('button', { name: '새로고침', exact: true }).click();
-      await page.locator('.history-actions').getByRole('button', { name: '변화 보기', exact: true }).click();
+      await page.goto(`${url}/#/projects/${current.projectId}/findings?review=${current.reviewId}&view=PROGRESS`);
+      await page.reload();
+      await page.locator('.security-progress').waitFor();
       assert.ok((await page.locator('.security-progress').innerText()).includes('해결된 문제 1'));
     }
     assert.deepEqual(errors, []);

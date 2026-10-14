@@ -2084,3 +2084,33 @@ h1 {
 }
 .zip-upload-guidance { margin: 12px 0; font-size: 14px; overflow-wrap: anywhere; }
 .zip-upload-guidance p { margin: 6px 0; line-height: 1.5; }
+.workspace-navigation, .project-navigation { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #d7dfe5; padding: 12px 0; }
+.workspace-navigation a, .project-navigation a { padding: 10px 12px; color: #334b59; text-decoration: none; border-bottom: 3px solid transparent; word-break: keep-all; }
+.workspace-navigation a[aria-current], .project-navigation a[aria-current] { color: #16574d; border-color: #1e6b60; font-weight: 700; }
+.workspace-content { padding-top: 24px; min-width: 0; }
+.workspace-content h2 { font-size: 22px; line-height: 1.5; }
+.workspace-content h3 { font-size: 18px; line-height: 1.5; }
+.workspace-content p, .workspace-content li { line-height: 1.7; }
+.workspace-content p, .workspace-content h2, .workspace-content h3, .workspace-content dd { overflow-wrap: anywhere; }
+.workspace-content a { color: #176150; }
+.workspace-content a:focus-visible { outline: 3px solid #287eac; outline-offset: 3px; }
+.workspace-section { padding: 20px 0; border-bottom: 1px solid #d7dfe5; min-width: 0; }
+.workspace-project-row, .workspace-history-row { padding: 20px 0; border-bottom: 1px solid #d7dfe5; min-width: 0; }
+.workspace-project-row .section-heading { align-items: start; }
+.workspace-counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+.workspace-counts dt { font-size: 13px; color: #526270; }
+.workspace-counts dd { font-size: 24px; font-weight: 700; margin: 8px 0 0; }
+.dashboard-counts { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 20px 0; border-block: 1px solid #d7dfe5; }
+.workspace-content fieldset { padding: 0; margin: 0; border: 0; min-width: 0; }
+.workspace-history-row .history-item { display: inline; padding: 8px 0; background: none; border: 0; }
+.workspace-content .result-actions { flex-wrap: wrap; align-items: center; gap: 16px; }
+.workspace-content .result-workspace { padding-inline: 0; border: 0; box-shadow: none; }
+.workspace-content .semantic-opt-in { display: flex; gap: 8px; align-items: center; padding: 16px 0; }
+.workspace-content .file-drop { overflow-wrap: anywhere; }
+@media (max-width: 700px) {
+  .workspace-content .section-heading { flex-direction: column; gap: 12px; }
+  .dashboard-counts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workspace-navigation a, .project-navigation a { padding: 8px 6px; font-size: 13px; }
+  .workspace-counts dd { font-size: 20px; }
+  .workspace-content h2 { font-size: 20px; }
+}

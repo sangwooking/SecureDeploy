@@ -5,7 +5,8 @@ import { validateZipUpload } from './zipUploadValidation';
 import { ZipUploadGuidance } from './ZipUploadGuidance';
 
 export function RescanForm({ result, onScan, onCancel, uploadPolicy = null, policyError, onRetryPolicy }: {
-  result: SecurityReviewResponse; onScan: (file: File | null, mode: ScanMode) => void; onCancel: () => void;
+  result: Pick<SecurityReviewResponse, 'projectId' | 'projectName' | 'sourceType' | 'repositoryUrl'>;
+  onScan: (file: File | null, mode: ScanMode) => void; onCancel: () => void;
   uploadPolicy?: UploadPolicy | null; policyError?: string; onRetryPolicy?: () => void;
 }) {
   const [file, setFile] = useState<File | null>(null);

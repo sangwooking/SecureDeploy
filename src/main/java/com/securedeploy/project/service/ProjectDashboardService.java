@@ -50,9 +50,7 @@ public class ProjectDashboardService {
     public ProjectSecurityDashboardResponse getDashboard(Long projectId, Long userId) {
         ProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new SecureDeployException(HttpStatus.NOT_FOUND, "프로젝트를 찾을 수 없습니다."));
-        if (project.getUser() != null && userId != null && !project.getUser().getId().equals(userId)) {
-            throw new SecureDeployException(HttpStatus.FORBIDDEN, "이 프로젝트에 접근할 권한이 없습니다.");
-        }
+        com.securedeploy.auth.service.ProjectOwnership.requireOwner(project, userId);
 
         List<ReviewEntity> reviewsDesc = reviewRepository.findAllWithVulnerabilitiesByProjectIdOrderByCreatedAtDesc(projectId);
         ReviewEntity latestReview = reviewsDesc.isEmpty() ? null : reviewsDesc.get(0);

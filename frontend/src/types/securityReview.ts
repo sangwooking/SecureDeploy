@@ -350,6 +350,7 @@ export interface ProjectSecurityDashboardResponse {
 }
 
 export interface ReviewHistoryResponse {
+  findingCount?: number | null;
   riskSummary?: ProgressAssessment | null;
   comparisonAvailable?: boolean;
   reviewId: number;

@@ -84,7 +84,7 @@ public class ProjectService {
     @Transactional
     public ProjectEntity resolveOrCreateProjectForZip(Long userId, String projectName) {
         if (userId == null) {
-            return resolveOrCreateProjectForZip(projectName);
+            throw new SecureDeployException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
         return projectRepository.findFirstByNameAndSourceTypeAndUserIdOrderByUpdatedAtDesc(projectName, ReviewSourceType.ZIP, userId)
                 .orElseGet(() -> createUserProject(userId, projectName, ReviewSourceType.ZIP, null));
@@ -99,7 +99,7 @@ public class ProjectService {
     @Transactional
     public ProjectEntity resolveOrCreateProjectForGithub(Long userId, String repositoryUrl) {
         if (userId == null) {
-            return resolveOrCreateProjectForGithub(repositoryUrl);
+            throw new SecureDeployException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
         return projectRepository.findByRepositoryUrlAndUserId(repositoryUrl, userId)
                 .orElseGet(() -> createUserProject(userId, resolveRepositoryName(repositoryUrl), ReviewSourceType.GITHUB, repositoryUrl));
@@ -134,17 +134,12 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public ProjectEntity findProjectByIdAndUser(Long projectId, Long userId) {
         ProjectEntity project = findProject(projectId);
-        if (project.getUser() == null) {
-            return project;
-        }
-        if (project.getUser().getId().equals(userId)) {
-            return project;
-        }
-        throw new SecureDeployException(HttpStatus.FORBIDDEN, "이 프로젝트에 접근할 권한이 없습니다.");
+        com.securedeploy.auth.service.ProjectOwnership.requireOwner(project, userId);
+        return project;
     }
 
     private ProjectDetailResponse toDetail(ProjectEntity project) {
-        ProjectReviewHistoryResponse latestReview = reviewRepository.findTopByProjectIdOrderByCreatedAtDesc(project.getId())
+        ProjectReviewHistoryResponse latestReview = reviewRepository.findTopByProjectIdOrderByCreatedAtDescIdDesc(project.getId())
                 .map(ProjectReviewHistoryResponse::from)
                 .orElse(null);
         return ProjectDetailResponse.from(project, latestReview);

@@ -16,7 +16,8 @@ public record ProjectReviewHistoryResponse(
         String deploymentStatus,
         LocalDateTime createdAt,
         com.securedeploy.project.progress.ReviewProgressSnapshot.Assessment riskSummary,
-        boolean comparisonAvailable
+        boolean comparisonAvailable,
+        Long findingCount
 ) {
 
     public static ProjectReviewHistoryResponse from(ReviewEntity review) {
@@ -33,7 +34,8 @@ public record ProjectReviewHistoryResponse(
                 review.getDeploymentStatus(),
                 review.getCreatedAt(),
                 com.securedeploy.project.progress.ProgressComparisonEngine.assessment(review),
-                review.getComparison() != null && review.getComparison().baselineReviewId() != null
+                review.getComparison() != null && review.getComparison().baselineReviewId() != null,
+                review.getRiskAssessment() == null ? null : review.getRiskAssessment().prioritySummary().values().stream().mapToLong(Long::longValue).sum()
         );
     }
 }

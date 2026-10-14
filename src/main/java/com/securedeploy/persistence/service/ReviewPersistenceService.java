@@ -117,7 +117,7 @@ public class ReviewPersistenceService {
     @Transactional(readOnly = true)
     public List<ReviewHistoryResponse> findReviewHistories(Long userId) {
         if (userId == null) {
-            return findReviewHistories();
+            throw new SecureDeployException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
         return reviewRepository.findAllAccessibleByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(ReviewHistoryResponse::from)

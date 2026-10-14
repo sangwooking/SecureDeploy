@@ -28,7 +28,7 @@ module.exports = function resultFixture() {
       functionName: 'findAccount(long)', evidenceDescription: '서비스 호출 전후의 권한 확인이 필요합니다.' }],
     verificationSteps: ['다른 계층에서 로그인 사용자와 리소스 소유자를 비교하는지 확인하세요.'],
     relatedExistingFindingIds: [], generatedAt: date, provider: 'openai', model: 'fixture-model', promptVersion: 'fixture-v1' };
-  return { reviewId: 101, projectId: null, projectName: '사용자 흐름 테스트 프로젝트', scanMode: 'AI_ENHANCED', scannedFileCount: 8,
+  return { reviewId: 101, projectId: 7, sourceType: 'ZIP', createdAt: date, projectName: '사용자 흐름 테스트 프로젝트', scanMode: 'AI_ENHANCED', scannedFileCount: 8,
     vulnerabilityCount: 2, securityScore: 100, deploymentStatus: '배포 가능', vulnerabilities: [code,
       { ...code, vulnerabilityId: 52, ruleId: 'DEBUG_ENABLED', message: '개발 설정 확인', category: 'CONFIGURATION',
         filePath: 'application.yml', line: 1, severity: 'LOW', confidence: 'LOW', falsePositiveRisk: 'HIGH', analysisNote: null }],

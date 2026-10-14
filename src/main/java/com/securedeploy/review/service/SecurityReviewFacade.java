@@ -101,7 +101,7 @@ public class SecurityReviewFacade {
         try {
             ExtractedProject extractedProject = zipExtractService.extract(archive);
             AnalysisOutcome outcome = reviewProject(extractedProject.projectName(), extractedProject.projectRoot(), scanMode);
-            ProjectEntity project = projectService.resolveOrCreateProjectForZip(currentUserService.currentUserIdOrNull(), extractedProject.projectName());
+            ProjectEntity project = projectService.resolveOrCreateProjectForZip(currentUserService.currentUserId(), extractedProject.projectName());
             return saveWithRemediation(project, outcome, ReviewSourceType.ZIP, null, scanMode);
         } finally {
             FileUtils.deleteRecursively(archive.workspacePath());
@@ -117,7 +117,7 @@ public class SecurityReviewFacade {
 
         try {
             AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot(), scanMode);
-            ProjectEntity project = projectService.resolveOrCreateProjectForGithub(currentUserService.currentUserIdOrNull(), clonedRepository.repositoryUrl());
+            ProjectEntity project = projectService.resolveOrCreateProjectForGithub(currentUserService.currentUserId(), clonedRepository.repositoryUrl());
             return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), scanMode);
         } finally {
             FileUtils.deleteRecursively(clonedRepository.workspacePath());
@@ -130,7 +130,7 @@ public class SecurityReviewFacade {
     }
 
     public SecurityReviewResponse reviewUploadedZip(Long projectId, MultipartFile file, ScanMode scanMode) {
-        ProjectEntity project = projectService.findOwnedProjectForRescan(projectId, currentUserService.currentUserIdOrNull(), ReviewSourceType.ZIP);
+        ProjectEntity project = projectService.findOwnedProjectForRescan(projectId, currentUserService.currentUserId(), ReviewSourceType.ZIP);
         UploadedArchive archive = uploadService.saveZip(file);
 
         try {
@@ -147,7 +147,7 @@ public class SecurityReviewFacade {
     }
 
     public SecurityReviewResponse reviewGitHubRepository(Long projectId, String repositoryUrl, ScanMode scanMode) {
-        ProjectEntity project = projectService.findOwnedProjectForRescan(projectId, currentUserService.currentUserIdOrNull(), ReviewSourceType.GITHUB);
+        ProjectEntity project = projectService.findOwnedProjectForRescan(projectId, currentUserService.currentUserId(), ReviewSourceType.GITHUB);
         String requested = gitHubRepositoryService.validateAndNormalizeUrl(repositoryUrl).replaceFirst("\\.git$", "");
         String registered = gitHubRepositoryService.validateAndNormalizeUrl(project.getRepositoryUrl()).replaceFirst("\\.git$", "");
         if (!requested.equalsIgnoreCase(registered)) {
@@ -164,7 +164,7 @@ public class SecurityReviewFacade {
     }
 
     public List<ReviewHistoryResponse> findReviewHistories() {
-        return reviewPersistenceService.findReviewHistories(currentUserService.currentUserIdOrNull());
+        return reviewPersistenceService.findReviewHistories(currentUserService.currentUserId());
     }
 
     private SecurityReviewResponse saveWithRemediation(ProjectEntity project, AnalysisOutcome outcome,
@@ -176,7 +176,7 @@ public class SecurityReviewFacade {
     }
 
     public SecurityReviewResponse findReviewDetail(Long reviewId) {
-        return reviewPersistenceService.findReviewDetail(reviewId, currentUserService.currentUserIdOrNull());
+        return reviewPersistenceService.findReviewDetail(reviewId, currentUserService.currentUserId());
     }
 
     private AnalysisOutcome reviewProject(String projectName, Path projectRoot, ScanMode scanMode) {

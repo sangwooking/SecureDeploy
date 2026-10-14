@@ -27,14 +27,14 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
 
     List<ReviewEntity> findAllByOrderByCreatedAtDesc();
 
-    @Query("select r from ReviewEntity r left join r.project p left join p.user u where p is null or u is null or u.id = :userId order by r.createdAt desc")
+    @Query("select r from ReviewEntity r join r.project p where p.user.id = :userId order by r.createdAt desc, r.id desc")
     List<ReviewEntity> findAllAccessibleByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
     List<ReviewEntity> findAllByProjectIdOrderByCreatedAtDesc(Long projectId);
 
     Optional<ReviewEntity> findTopByProjectIdOrderByCreatedAtDesc(Long projectId);
 
-    @Query("select distinct r from ReviewEntity r left join fetch r.vulnerabilities where r.project.id = :projectId order by r.createdAt desc")
+    @Query("select distinct r from ReviewEntity r left join fetch r.vulnerabilities where r.project.id = :projectId order by r.createdAt desc, r.id desc")
     List<ReviewEntity> findAllWithVulnerabilitiesByProjectIdOrderByCreatedAtDesc(@Param("projectId") Long projectId);
 
     default List<ReviewEntity> findTop2WithVulnerabilitiesByProjectId(Long projectId) {
@@ -45,4 +45,18 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
 
     @Query("select distinct r from ReviewEntity r left join fetch r.vulnerabilities where r.id = :id")
     Optional<ReviewEntity> findByIdWithVulnerabilities(@Param("id") Long id);
+
+    @Query("select r from ReviewEntity r join fetch r.project p where p.user.id = :userId and not exists "
+            + "(select newer.id from ReviewEntity newer where newer.project.id = p.id and "
+            + "(newer.createdAt > r.createdAt or (newer.createdAt = r.createdAt and newer.id > r.id))) order by r.createdAt desc, r.id desc")
+    List<ReviewEntity> findLatestByOwner(@Param("userId") Long userId);
+
+    interface ProjectReviewCount {
+        Long getProjectId();
+        long getReviewCount();
+    }
+
+    @Query("select r.project.id as projectId, count(r) as reviewCount from ReviewEntity r "
+            + "where r.project.user.id = :userId group by r.project.id")
+    List<ProjectReviewCount> countReviewsByOwner(@Param("userId") Long userId);
 }

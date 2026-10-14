@@ -122,9 +122,17 @@ class ProjectAndReviewDeleteServiceTest {
     }
 
     private ProjectEntity saveProject(UserEntity user, String name) {
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        new com.securedeploy.auth.security.AuthenticatedUser(user.getId(), user.getEmail(), user.getName()), null, java.util.List.of()));
         ProjectEntity project = new ProjectEntity(name, ReviewSourceType.ZIP, null);
         project.assignUser(user);
         return projectRepository.save(project);
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void clearAuthentication() {
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
     }
 
     private ReviewEntity saveReview(ProjectEntity project, int score, int vulnerabilityCount, String deploymentStatus, String ruleId) {

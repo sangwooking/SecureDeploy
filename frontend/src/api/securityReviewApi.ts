@@ -18,10 +18,26 @@ import type {
   VulnerabilityStatusSummaryResponse,
 } from '../types/securityReview';
 import type { UploadPolicy } from '../types/uploadPolicy';
+import type { ProjectDetail, WorkspaceResponse } from '../types/workspace';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
 
 const ACCESS_TOKEN_STORAGE_KEY = 'securedeploy.accessToken';
+
+export async function fetchWorkspace(): Promise<WorkspaceResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/workspace`, { headers: authHeaders() });
+  return parseJsonResponse<WorkspaceResponse>(response, '내 대시보드를 불러오지 못했습니다.');
+}
+
+export async function fetchProjectDetail(projectId: number): Promise<ProjectDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, { headers: authHeaders() });
+  return parseJsonResponse<ProjectDetail>(response, '프로젝트를 불러오지 못했습니다.');
+}
+
+export async function fetchProjectReviews(projectId: number): Promise<ReviewHistoryResponse[]> {
+  const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/reviews`, { headers: authHeaders() });
+  return parseJsonResponse<ReviewHistoryResponse[]>(response, '프로젝트 분석 이력을 불러오지 못했습니다.');
+}
 
 function authHeaders(): HeadersInit {
   const accessToken = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);

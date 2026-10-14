@@ -3,6 +3,7 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const fixture = require('../result-fixture.cjs');
+const workspaceFixture = require('./workspace-fixture.cjs');
 const url = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 (async () => {
@@ -27,6 +28,8 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       }
       calls.push({ path, method: request.method() });
       const json = data => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(data) });
+      const workspace = workspaceFixture(path, responseFixture());
+      if (workspace) return json(workspace);
       if (path === '/api/reviews/upload-policy') return json(require('../upload-policy-fixture.cjs'));
       if (path === '/api/auth/login') return json({ accessToken: 'ui-fixture-not-a-real-token', tokenType: 'Bearer',
         user: { id: 1, email: 'ui@example.invalid', name: '테스트 사용자' } });
@@ -34,6 +37,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       if (path === '/api/reviews/101') return json(responseFixture());
       if (path === '/api/reviews/upload' || path === '/api/reviews/github') {
         const enhanced = request.postData()?.includes('AI_ENHANCED');
+        assert.equal(enhanced, path === '/api/reviews/github', 'ZIP defaults to STANDARD; GitHub uses the explicit AI opt-in');
         const data = responseFixture();
         if (!enhanced) { data.scanMode = 'STANDARD'; data.semanticReview = { ...data.semanticReview, scanMode: 'STANDARD',
           semanticReviewStatus: 'NOT_REQUESTED', candidates: [], semanticSlicesAnalyzed: 0, requestCount: 0 }; }
@@ -53,7 +57,8 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
     await page.getByLabel('이메일', { exact: true }).fill('ui@example.invalid');
     await page.getByLabel('비밀번호', { exact: true }).fill('fake-ui-test-password');
     await page.locator('.auth-submit').click();
-    await page.locator('.history-item').click();
+    await page.getByRole('link', { name: '프로젝트 열기', exact: true }).click();
+    await page.getByRole('navigation', { name: '프로젝트 메뉴' }).getByRole('link', { name: '발견된 문제', exact: true }).click();
     const navigate = async name => {
       await page.getByRole('navigation', { name: '분석 결과 메뉴' }).getByRole('button', { name, exact: true }).click();
       await page.waitForTimeout(60);
@@ -63,6 +68,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       const element = page.locator(selector);
       if (!(await element.evaluate(el => el.open))) await element.locator(':scope > summary').click();
     };
+    await navigate('결과 요약');
     assert.ok((await visible()).includes('배포 전 수정 필요'));
     for (const word of ['CVE-', 'HARDCODED_SECRET', 'fixture-model', 'Confidence']) assert.ok(!(await visible()).includes(word));
     for (const [name, width, height] of [['desktop', 1440, 1000], ['mobile', 390, 844], ['small-mobile', 320, 740]]) {
@@ -139,8 +145,10 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
     assert.ok((await visible()).includes('코드에서 인증정보 제거'));
     for (const current of ['disabled', 'empty', 'legacy']) {
       scenario = current;
-      await openDetails('.history-panel');
+      await page.getByRole('navigation', { name: '프로젝트 메뉴' }).getByRole('link', { name: '분석 이력', exact: true }).click();
       await page.locator('.history-item').click();
+      await page.waitForTimeout(100);
+      await page.reload();
       await navigate('결과 요약');
       if (current === 'disabled') assert.ok((await visible()).includes('외부 AI 분석이 비활성화'));
       if (current === 'legacy') assert.ok((await visible()).includes('미평가'));
@@ -149,18 +157,21 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       if (current === 'legacy') assert.ok((await visible()).includes('우선순위가 저장되지 않은 코드 문제'));
     }
     scenario = 'normal';
-    await openDetails('.analysis-entry');
+    await page.getByRole('navigation', { name: '앱 메뉴' }).getByRole('link', { name: '새 프로젝트', exact: true }).click();
     const checkbox = page.getByRole('checkbox');
     assert.equal(await checkbox.isChecked(), false);
     await page.locator('input[type=file]').setInputFiles({ name: 'ui-fixture.zip', mimeType: 'application/zip', buffer: Buffer.from('not sent to backend') });
     await page.getByRole('button', { name: '분석 시작', exact: true }).click();
-    await page.getByText('기본 분석으로 진행하여 AI 추가 코드 검토는 실행하지 않았습니다.', { exact: true }).waitFor();
-    await openDetails('.analysis-entry');
+    // The project overview is the destination; detail re-fetches the stored snapshot.
+    await page.getByRole('navigation', { name: '프로젝트 메뉴' }).waitFor();
+    assert.ok(calls.some(c => c.path === '/api/reviews/upload'));
+    await page.getByRole('navigation', { name: '앱 메뉴' }).getByRole('link', { name: '새 프로젝트', exact: true }).click();
     await page.getByRole('button', { name: 'GitHub URL 입력', exact: true }).click();
     await page.getByLabel('Repository URL', { exact: true }).fill('https://github.com/example/ui-only-fixture');
     await checkbox.check();
     await page.getByRole('button', { name: '분석 시작', exact: true }).click();
-    await page.getByText('선택된 코드 영역의 AI 추가 검토를 완료했습니다.', { exact: true }).waitFor();
+    await page.getByRole('navigation', { name: '프로젝트 메뉴' }).waitFor();
+    assert.ok(calls.some(c => c.path === '/api/reviews/github'));
     assert.deepEqual(errors, []);
     assert.ok(calls.some(call => call.path.endsWith('/status') && call.method === 'PATCH'));
     assert.ok(!calls.some(call => /\/ai-(review|summary|priorities|remediation|audit|roadmap)$|compare-latest\/ai$/.test(call.path)), 'no legacy AI generation request');

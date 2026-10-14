@@ -1,7 +1,6 @@
 package com.securedeploy.auth.service;
 
 import com.securedeploy.global.error.SecureDeployException;
-import com.securedeploy.persistence.entity.ProjectEntity;
 import com.securedeploy.persistence.entity.ReviewEntity;
 import com.securedeploy.persistence.repository.ReviewRepository;
 import org.springframework.http.HttpStatus;
@@ -26,13 +25,6 @@ public class ReviewAccessService {
     }
 
     public void validateReviewAccess(ReviewEntity review) {
-        Long userId = currentUserService.currentUserIdOrNull();
-        ProjectEntity project = review.getProject();
-        if (project == null || project.getUser() == null) {
-            return;
-        }
-        if (userId == null || !project.getUser().getId().equals(userId)) {
-            throw new SecureDeployException(HttpStatus.FORBIDDEN, "이 분석 결과에 접근할 권한이 없습니다.");
-        }
+        ProjectOwnership.requireOwner(review.getProject(), currentUserService.currentUserId());
     }
 }
