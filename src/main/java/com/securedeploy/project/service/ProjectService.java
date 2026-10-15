@@ -101,8 +101,17 @@ public class ProjectService {
         if (userId == null) {
             throw new SecureDeployException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
-        return projectRepository.findByRepositoryUrlAndUserId(repositoryUrl, userId)
-                .orElseGet(() -> createUserProject(userId, resolveRepositoryName(repositoryUrl), ReviewSourceType.GITHUB, repositoryUrl));
+        String canonical = com.securedeploy.github.model.GitHubRepositoryUrl.parse(repositoryUrl).canonicalUrl();
+        var matches = projectRepository.findAllByUserIdOrderByUpdatedAtDesc(userId).stream()
+                .filter(p -> p.getSourceType() == ReviewSourceType.GITHUB && sameRepository(p.getRepositoryUrl(), canonical)).toList();
+        if (matches.size() > 1) throw new SecureDeployException(HttpStatus.CONFLICT,
+                "같은 GitHub 저장소로 등록된 프로젝트가 여러 개입니다. 내 프로젝트에서 재검사할 대상을 선택해 주세요.");
+        return matches.isEmpty() ? createUserProject(userId, resolveRepositoryName(canonical), ReviewSourceType.GITHUB, canonical) : matches.get(0);
+    }
+
+    private boolean sameRepository(String existing, String canonical) {
+        try { return com.securedeploy.github.model.GitHubRepositoryUrl.parse(existing).canonicalUrl().equals(canonical); }
+        catch (SecureDeployException invalidLegacyUrl) { return false; }
     }
 
 

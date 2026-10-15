@@ -16,7 +16,8 @@ public record ReviewHistoryResponse(
         String deploymentStatus,
         LocalDateTime createdAt,
         com.securedeploy.project.progress.ReviewProgressSnapshot.Assessment riskSummary,
-        boolean comparisonAvailable
+        boolean comparisonAvailable,
+        com.securedeploy.github.model.GitHubSourceSnapshot sourceMetadata
 ) {
 
     public static ReviewHistoryResponse from(ReviewEntity entity) {
@@ -32,7 +33,8 @@ public record ReviewHistoryResponse(
                 entity.getDeploymentStatus(),
                 entity.getCreatedAt(),
                 com.securedeploy.project.progress.ProgressComparisonEngine.assessment(entity),
-                entity.getComparison() != null && entity.getComparison().baselineReviewId() != null
+                entity.getComparison() != null && entity.getComparison().baselineReviewId() != null,
+                entity.getSourceMetadata()
         );
     }
 }

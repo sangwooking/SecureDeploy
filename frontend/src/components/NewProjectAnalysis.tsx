@@ -46,6 +46,7 @@ export function NewProjectAnalysis({ policy, policyError, retryPolicy, onComplet
         <label className="semantic-opt-in"><input type="checkbox" checked={enhanced} onChange={event => setEnhanced(event.target.checked)} />AI 강화 분석</label>
         {enhanced && <p>선별·마스킹된 코드 일부가 외부 AI에 전달될 수 있으며 API 비용이 발생할 수 있습니다.</p>}
         {mode === 'ZIP' && <ZipUploadGuidance policy={policy} error={policyError} onRetry={retryPolicy} />}
+        {mode === 'GITHUB' && <p>현재는 공개 GitHub 저장소만 지원합니다. 저장소의 기본 branch를 분석하며, submodule과 Git LFS 원본은 가져오지 않습니다.</p>}
         <button className="primary-button" type="submit" disabled={busy || (mode === 'ZIP' && !policy)}>{busy ? '분석 중...' : '분석 시작'}</button>
       </fieldset>
       {busy && <p role="status">프로젝트를 분석하고 저장하고 있습니다. 완료될 때까지 기다려 주세요.</p>}

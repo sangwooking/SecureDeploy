@@ -77,6 +77,7 @@ public class ReviewPersistenceService {
                 response.deploymentStatus()
         );
         review.assignScanMode(scanMode);
+        review.attachSourceMetadata(response.sourceMetadata());
 
         if (project != null) {
             ProjectEntity managedProject = projectRepository.findForReviewCreation(project.getId())
@@ -155,7 +156,7 @@ public class ReviewPersistenceService {
                 review.getRemediation(),
                 review.getSemanticReview(),
                 review.getScanMode(),
-                review.getSourceType(), review.getRepositoryUrl(), review.getCreatedAt(), review.getComparison()
+                review.getSourceType(), review.getRepositoryUrl(), review.getCreatedAt(), review.getComparison(), review.getSourceMetadata()
         );
     }
 

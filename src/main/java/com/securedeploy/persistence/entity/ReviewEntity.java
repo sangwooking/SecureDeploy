@@ -31,6 +31,16 @@ import java.util.List;
 @Table(name = "reviews")
 public class ReviewEntity {
 
+    @Convert(converter = com.securedeploy.github.model.GitHubSourceSnapshotConverter.class)
+    @Column(name = "source_metadata_json", columnDefinition = "TEXT")
+    private com.securedeploy.github.model.GitHubSourceSnapshot sourceMetadata;
+
+    public com.securedeploy.github.model.GitHubSourceSnapshot getSourceMetadata() { return sourceMetadata; }
+    public void attachSourceMetadata(com.securedeploy.github.model.GitHubSourceSnapshot value) {
+        if (sourceMetadata != null) throw new IllegalStateException("Source snapshot is immutable");
+        sourceMetadata = value;
+    }
+
     @Convert(converter = com.securedeploy.project.progress.ComparisonContextConverter.class)
     @Column(name = "comparison_context_json", columnDefinition = "TEXT")
     private com.securedeploy.project.progress.ComparisonContext comparisonContext;

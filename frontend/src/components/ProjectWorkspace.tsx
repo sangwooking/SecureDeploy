@@ -8,6 +8,7 @@ import { allRiskFindings, findingTitle, priorityLabels } from './reviewPresentat
 import { projectLink, projectTabs, type WorkspaceRoute } from './workspaceRoute';
 import { ProjectReviewResult } from './ProjectReviewResult';
 import { RescanForm } from './RescanForm';
+import { GitHubSourceInfo } from './GitHubSourceInfo';
 
 export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDeleted }: {
   route: Extract<WorkspaceRoute, { page: 'project' }>; policy: UploadPolicy | null; policyError: string;
@@ -87,13 +88,14 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
     {error && <p role="alert" className="error-message">{error}</p>}
     {busy && <p role="status">요청을 처리하고 있습니다. 잠시 기다려 주세요.</p>}
     {route.tab === 'overview' && <section className="workspace-section">
+      {project.sourceType === 'GITHUB' && project.latestReview && <GitHubSourceInfo source={project.latestReview.sourceMetadata} />}
       <h2>현재 보안 상태</h2><PriorityCounts assessment={project.latestReview?.riskSummary} />
       <h3>최근 변화</h3><ProgressBrief progress={latestSelected && review?.comparison ? review.comparison : null} />
       <h3>가장 먼저 처리할 문제</h3>
       {first.length && review ? <ol className="next-actions">{first.map(f => <li key={f.findingId}><a href={projectLink(project.projectId, 'findings', undefined, f.priority === 'INFORMATIONAL' ? 'SHOULD_FIX' : f.priority)}>{priorityLabels[f.priority]} · {findingTitle(review, f)}</a></li>)}</ol>
         : <p>{review ? '저장된 위험 평가 항목이 없습니다. 분석 완성도를 확인하세요.' : '아직 분석 결과가 없습니다.'}</p>}
       {project.latestReview?.riskSummary && <p>AI 추가 후보 {project.latestReview.riskSummary.semanticCandidateCount}건은 배포 판단과 별도로 직접 확인하세요.</p>}
-      <div className="result-actions"><a href={projectLink(project.projectId, 'findings')}>발견된 문제 보기</a><a href={projectLink(project.projectId, 'rescan')}>다시 검사하기</a></div>
+      <div className="result-actions"><a href={projectLink(project.projectId, 'findings')}>발견된 문제 보기</a><a href={projectLink(project.projectId, 'rescan')}>{project.sourceType === 'GITHUB' ? 'GitHub 다시 검사' : '다시 검사하기'}</a></div>
     </section>}
     {route.tab === 'findings' && <section className="workspace-section">
       {review ? <>
@@ -107,6 +109,7 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
       {!history.length && <p>저장된 분석 결과가 없습니다.</p>}
       <div className="history-list">{history.map(item => <article className="workspace-history-row" key={item.reviewId}>
         <h3>분석 #{item.reviewId} · {dateLabel(item.createdAt)}</h3><p>{item.sourceType} · {reviewStatus(item)}</p>
+        {item.sourceType === 'GITHUB' && <GitHubSourceInfo source={item.sourceMetadata} compact />}
         <PriorityCounts assessment={item.riskSummary} />
         <p>위험 평가 항목 {item.findingCount ?? '미평가'}건 · AI 추가 후보 {item.riskSummary?.semanticCandidateCount ?? '미평가'}건 (별도)</p>
         <div className="result-actions"><a className="history-item" href={projectLink(project.projectId, 'findings', item.reviewId, 'SUMMARY')}>결과 보기</a>

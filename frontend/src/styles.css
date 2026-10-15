@@ -2114,3 +2114,5 @@ h1 {
   .workspace-counts dd { font-size: 20px; }
   .workspace-content h2 { font-size: 20px; }
 }
+.github-source { min-width: 0; overflow-wrap: anywhere; }
+.github-source code { white-space: normal; overflow-wrap: anywhere; }

@@ -1,108 +1,63 @@
 package com.securedeploy.github.service;
 
-import com.securedeploy.github.model.ClonedRepository;
+import com.securedeploy.github.model.*;
 import com.securedeploy.global.config.FileStorageProperties;
 import com.securedeploy.global.error.SecureDeployException;
 import com.securedeploy.global.util.FileUtils;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Locale;
-import java.util.UUID;
-import java.util.regex.Pattern;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
+import java.nio.file.*;
+import java.time.Instant;
+import java.util.concurrent.Semaphore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GitHubRepositoryService {
+    private static final Logger LOG = LoggerFactory.getLogger(GitHubRepositoryService.class);
+    private final FileStorageProperties storage;
+    private final GitHubSourceProperties properties;
+    private final GitHubSnapshotFetcher fetcher;
+    private final GitTreeExporter exporter;
+    private final Semaphore slots = new Semaphore(2);
 
-    private static final Pattern GITHUB_PATH_PATTERN = Pattern.compile("^/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\\.git)?/?$");
-
-    private final FileStorageProperties storageProperties;
-
-    public GitHubRepositoryService(FileStorageProperties storageProperties) {
-        this.storageProperties = storageProperties;
+    public GitHubRepositoryService(FileStorageProperties storage, GitHubSourceProperties properties,
+            GitHubSnapshotFetcher fetcher, GitTreeExporter exporter) {
+        this.storage = storage; this.properties = properties; this.fetcher = fetcher; this.exporter = exporter;
     }
+    public String validateAndNormalizeUrl(String input) { return GitHubRepositoryUrl.parse(input).canonicalUrl(); }
 
-    public ClonedRepository clonePublicRepository(String repositoryUrl) {
-        String normalizedUrl = validateAndNormalizeUrl(repositoryUrl);
-        String repositoryName = resolveRepositoryName(normalizedUrl);
-        Path workspacePath = null;
-
-        try {
-            Path baseDir = Path.of(storageProperties.getTempDir()).toAbsolutePath().normalize();
-            workspacePath = Files.createDirectories(baseDir.resolve("github-" + UUID.randomUUID()));
-            Path repositoryRoot = workspacePath.resolve(repositoryName).normalize();
-
-            cloneRepository(normalizedUrl, repositoryRoot);
-            return new ClonedRepository(repositoryName, normalizedUrl, workspacePath, repositoryRoot);
-        } catch (IOException exception) {
-            throw new SecureDeployException(HttpStatus.INTERNAL_SERVER_ERROR, "GitHub 저장소 분석용 임시 디렉터리를 생성할 수 없습니다.");
-        } catch (RuntimeException exception) {
-            FileUtils.deleteRecursively(workspacePath);
-            throw exception;
-        }
-    }
-
-    public String validateAndNormalizeUrl(String repositoryUrl) {
-        if (repositoryUrl == null || repositoryUrl.isBlank()) {
-            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "GitHub Repository URL은 필수입니다.");
-        }
-
-        String trimmedUrl = repositoryUrl.strip();
-        URI uri;
-        try {
-            uri = new URI(trimmedUrl);
-        } catch (URISyntaxException exception) {
-            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "잘못된 GitHub Repository URL입니다.");
-        }
-
-        String scheme = uri.getScheme();
-        String host = uri.getHost();
-        String path = uri.getPath();
-        if (!"https".equalsIgnoreCase(scheme)
-                || host == null
-                || uri.getUserInfo() != null
-                || uri.getQuery() != null
-                || uri.getFragment() != null
-                || !"github.com".equalsIgnoreCase(host)
-                || path == null
-                || !GITHUB_PATH_PATTERN.matcher(path).matches()) {
-            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "https://github.com/{owner}/{repository}.git 형식의 공개 저장소 URL만 지원합니다.");
-        }
-
-        String normalizedPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
-        return "https://github.com" + normalizedPath;
-    }
-
-    private String resolveRepositoryName(String normalizedUrl) {
-        String repositoryName = normalizedUrl.substring(normalizedUrl.lastIndexOf('/') + 1);
-        if (repositoryName.toLowerCase(Locale.ROOT).endsWith(".git")) {
-            repositoryName = repositoryName.substring(0, repositoryName.length() - 4);
-        }
-        return repositoryName.replaceAll("[^A-Za-z0-9_.-]", "_");
-    }
-
-    private void cloneRepository(String repositoryUrl, Path repositoryRoot) {
-        try (Git ignored = Git.cloneRepository()
-                .setURI(repositoryUrl)
-                .setDirectory(repositoryRoot.toFile())
-                .setCloneAllBranches(false)
-                .setTimeout(30)
-                .call()) {
-            // JGit closes repository resources through try-with-resources.
-        } catch (InvalidRemoteException exception) {
-            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "잘못된 GitHub 저장소 URL입니다.");
-        } catch (TransportException exception) {
-            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "GitHub 저장소에 접근할 수 없습니다. URL, 공개 저장소 여부, 네트워크 상태를 확인해 주세요.");
-        } catch (GitAPIException exception) {
-            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "GitHub 저장소를 가져오는 중 오류가 발생했습니다. 저장소 URL을 확인한 뒤 다시 시도해 주세요.");
+    public ClonedRepository clonePublicRepository(String input) {
+        GitHubRepositoryUrl url = GitHubRepositoryUrl.parse(input);
+        if (!slots.tryAcquire()) throw new SecureDeployException(HttpStatus.TOO_MANY_REQUESTS, "GitHub 분석 요청이 많습니다. 잠시 후 다시 시도해 주세요.");
+        Path workspace = null;
+        boolean complete = false;
+        try (var budget = new CloneBudget(properties)) {
+            Instant started = Instant.now();
+            Path base = Files.createDirectories(Path.of(storage.getTempDir()).toAbsolutePath().normalize());
+            workspace = Files.createTempDirectory(base, "github-");
+            Path gitDirectory = workspace.resolve("objects.git");
+            Path root = Files.createDirectory(workspace.resolve("source")).toRealPath();
+            GitHubSnapshotFetcher.Revision revision;
+            try { revision = fetcher.fetch(url, gitDirectory, budget); }
+            catch (Exception failed) { budget.check(); throw failed; }
+            var exported = exporter.export(gitDirectory, root, revision.commitSha(), budget);
+            budget.check();
+            var metadata = new GitHubSourceSnapshot(url.owner(), url.repository(), url.canonicalUrl(),
+                    revision.branch(), revision.commitSha(), revision.commitSha().substring(0, 7), exported.commitTimestamp(),
+                    started, Instant.now(), null, 1, exported.submodules(), exported.lfsPointers(), exported.symlinks(), exported.limitations());
+            complete = true;
+            return new ClonedRepository(url.repository(), url.canonicalUrl(), workspace, root, metadata);
+        } catch (SecureDeployException rejected) {
+            LOG.info("GitHub source collection rejected");
+            throw rejected;
+        } catch (Exception failed) {
+            // No remote message, URL, credentials, stack trace, or repository content in diagnostics.
+            LOG.warn("GitHub source collection failed: {}", failed.getClass().getSimpleName());
+            throw new SecureDeployException(HttpStatus.BAD_GATEWAY, "GitHub에서 프로젝트를 가져오지 못했습니다. 공개 저장소 URL을 확인하고 잠시 후 다시 시도해 주세요.");
+        } finally {
+            if (!complete) FileUtils.deleteRecursively(workspace);
+            slots.release();
         }
     }
 }

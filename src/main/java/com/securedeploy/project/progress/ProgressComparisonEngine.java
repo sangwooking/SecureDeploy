@@ -69,7 +69,8 @@ public class ProgressComparisonEngine {
                 before == null ? baseline : before.getId(), after.getId(), before == null ? null : before.getCreatedAt(),
                 after.getCreatedAt(), Instant.now(), status,
                 status == Status.COMPLETE ? "비교 가능한 분석 범위의 변화입니다." : "비교할 수 없는 범위가 있습니다. 배포 판단과 함께 확인하세요.",
-                assessment(before), assessment(after), counts, List.copyOf(entries), List.copyOf(ai), notices);
+                assessment(before), assessment(after), counts, List.copyOf(entries), List.copyOf(ai), notices,
+                before == null ? null : before.getSourceMetadata(), after.getSourceMetadata());
     }
 
     public static Assessment assessment(ReviewEntity review) {

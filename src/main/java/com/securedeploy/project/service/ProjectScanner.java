@@ -47,8 +47,10 @@ public class ProjectScanner {
                     var type = fileCollector.resolveAnalysisFileType(path);
                     if (type.isPresent()) {
                         if (files.size() >= limits.getMaxArchiveEntries()) throw analysisLimit();
-                        files.add(new ProjectFile(path, projectRoot.relativize(path).toString().replace('\\', '/'),
-                                type.get(), readLines(path, budget)));
+                        var lines = readLines(path, budget);
+                        // ZIPs can also contain LFS pointers; a pointer is never actual source code.
+                        if (!lines.isEmpty() && lines.get(0).equals("version https://git-lfs.github.com/spec/v1")) return FileVisitResult.CONTINUE;
+                        files.add(new ProjectFile(path, projectRoot.relativize(path).toString().replace('\\', '/'), type.get(), lines));
                     }
                     return FileVisitResult.CONTINUE;
                 }

@@ -66,9 +66,11 @@ export interface Vulnerability {
 
 export type { ProgressAssessment, ReviewProgressSnapshot } from './reviewProgress';
 import type { ProgressAssessment, ReviewProgressSnapshot } from './reviewProgress';
+import type { GitHubSourceMetadata } from './githubSource';
 
 export interface SecurityReviewResponse {
   sourceType?: 'ZIP' | 'GITHUB' | null;
+  sourceMetadata?: GitHubSourceMetadata | null;
   repositoryUrl?: string | null;
   createdAt?: string | null;
   comparison?: ReviewProgressSnapshot | null;
@@ -350,6 +352,7 @@ export interface ProjectSecurityDashboardResponse {
 }
 
 export interface ReviewHistoryResponse {
+  sourceMetadata?: GitHubSourceMetadata | null;
   findingCount?: number | null;
   riskSummary?: ProgressAssessment | null;
   comparisonAvailable?: boolean;

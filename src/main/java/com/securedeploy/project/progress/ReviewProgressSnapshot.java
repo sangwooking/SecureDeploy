@@ -14,7 +14,9 @@ public record ReviewProgressSnapshot(int comparisonSchemaVersion, Long projectId
         Long currentReviewId, LocalDateTime baselineAnalyzedAt, LocalDateTime currentAnalyzedAt,
         Instant generatedAt, Status status, String message, Assessment assessmentBefore,
         Assessment assessmentAfter, Map<Change, Long> counts, List<Entry> findings,
-        List<AiEntry> aiChanges, List<String> notices) {
+        List<AiEntry> aiChanges, List<String> notices,
+        com.securedeploy.github.model.GitHubSourceSnapshot sourceBefore,
+        com.securedeploy.github.model.GitHubSourceSnapshot sourceAfter) {
     public enum Status { COMPLETE, PARTIAL, UNAVAILABLE, NO_BASELINE }
     public enum Change { RESOLVED, REMAINING, NEW, CHANGED, UNAVAILABLE }
     public enum AiChange { REMAINING, NEW, NOT_REOBSERVED, UNAVAILABLE }

@@ -7,6 +7,7 @@ import { FindingRemediation, RemediationNotice } from './FindingRemediation';
 import { RiskAssessmentSection } from './RiskAssessmentSection';
 import { SemanticReviewSection } from './SemanticReviewSection';
 import { ReviewProgressPanel } from './ReviewProgressPanel';
+import { GitHubSourceInfo } from './GitHubSourceInfo';
 import { findingGuidance } from './findingGuidance';
 import { allRiskFindings, deploymentLabels, findingTitle, priorityLabels, resultViews, reviewCounts,
   semanticStatusText, vulnerabilityForFinding, type ResultView } from './reviewPresentation';
@@ -40,6 +41,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
         <p>{result.reviewId ? `분석 #${result.reviewId}` : '현재 분석'} · {result.scannedFileCount}개 파일 검사</p></div>
       <details className="report-menu"><summary>리포트 다운로드</summary><div className="result-actions">{reportActions}</div></details>
     </header>
+    {result.sourceType === 'GITHUB' && <GitHubSourceInfo source={result.sourceMetadata} compact />}
     {rescanActions}
     <nav className="result-navigation" aria-label="분석 결과 메뉴">
       {resultViews.map(item => <button key={item.id} type="button" aria-current={view === item.id ? 'page' : undefined}
@@ -111,6 +113,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
       </>}
       {view === 'TECHNICAL' && <>
         <h2>기술 정보</h2>
+        {result.sourceType === 'GITHUB' && <GitHubSourceInfo source={result.sourceMetadata} />}
         <dl className="reference-score"><div><dt>보안 점수 · 룰 기반 참고값</dt><dd>{result.securityScore} / 100</dd></div>
           <div><dt>기존 판정 · 참고용</dt><dd>{result.deploymentStatus}</dd></div>
           <div><dt>원본 룰 탐지 수</dt><dd>{result.vulnerabilityCount}</dd></div></dl>

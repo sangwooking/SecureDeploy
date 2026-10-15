@@ -118,7 +118,7 @@ public class SecurityReviewFacade {
         try {
             AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot(), scanMode);
             ProjectEntity project = projectService.resolveOrCreateProjectForGithub(currentUserService.currentUserId(), clonedRepository.repositoryUrl());
-            return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), scanMode);
+            return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), scanMode, clonedRepository.sourceMetadata());
         } finally {
             FileUtils.deleteRecursively(clonedRepository.workspacePath());
         }
@@ -153,11 +153,11 @@ public class SecurityReviewFacade {
         if (!requested.equalsIgnoreCase(registered)) {
             throw new SecureDeployException(HttpStatus.BAD_REQUEST, "등록된 GitHub 저장소만 다시 검사할 수 있습니다.");
         }
-        ClonedRepository clonedRepository = gitHubRepositoryService.clonePublicRepository(repositoryUrl);
+        ClonedRepository clonedRepository = gitHubRepositoryService.clonePublicRepository(project.getRepositoryUrl());
 
         try {
             AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot(), scanMode);
-            return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), scanMode);
+            return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), scanMode, clonedRepository.sourceMetadata());
         } finally {
             FileUtils.deleteRecursively(clonedRepository.workspacePath());
         }
@@ -169,7 +169,14 @@ public class SecurityReviewFacade {
 
     private SecurityReviewResponse saveWithRemediation(ProjectEntity project, AnalysisOutcome outcome,
                                                        ReviewSourceType type, String repositoryUrl, ScanMode scanMode) {
-        var saved = reviewPersistenceService.saveReview(project, outcome.response(), type, repositoryUrl,
+        return saveWithRemediation(project, outcome, type, repositoryUrl, scanMode, null);
+    }
+
+    private SecurityReviewResponse saveWithRemediation(ProjectEntity project, AnalysisOutcome outcome,
+            ReviewSourceType type, String repositoryUrl, ScanMode scanMode,
+            com.securedeploy.github.model.GitHubSourceSnapshot source) {
+        var response = source == null ? outcome.response() : outcome.response().withSourceMetadata(source.analyzedNow());
+        var saved = reviewPersistenceService.saveReview(project, response, type, repositoryUrl,
                 outcome.snippetGroup(), outcome.intelligence(), scanMode, outcome.comparisonContext());
         var guided = remediationService.complete(saved, outcome.snippetGroup(), scanMode == ScanMode.AI_ENHANCED);
         return progressService.complete(semanticService.complete(guided, scanMode, outcome.slices()));

@@ -11,7 +11,7 @@ public class ProjectFileCollector {
     public Optional<ProjectFileType> resolveAnalysisFileType(Path path) {
         String fileName = path.getFileName().toString();
         String lowerName = fileName.toLowerCase();
-        String normalizedPath = path.toString().replace('\\', '/').toLowerCase();
+        String normalizedPath = "/" + path.toString().replace('\\', '/').toLowerCase(java.util.Locale.ROOT);
 
         if ("dockerfile".equals(lowerName)) {
             return Optional.of(ProjectFileType.DOCKERFILE);

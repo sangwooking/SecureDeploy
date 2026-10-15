@@ -20,6 +20,10 @@ spring:
         format_sql: true
 
 securedeploy:
+  github:
+    timeout-seconds: 60
+    max-download-size: 200MB
+    max-requests: 12
   threat-intelligence:
     enabled: ${THREAT_INTELLIGENCE_ENABLED:true}
     timeout-seconds: 5

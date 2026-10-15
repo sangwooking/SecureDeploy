@@ -1,4 +1,5 @@
 import type { RiskAssessment, RiskFinding, RiskPriority, SemanticCandidate, Vulnerability } from './securityReview';
+import type { GitHubSourceMetadata } from './githubSource';
 
 export type ProgressChange = 'RESOLVED' | 'REMAINING' | 'NEW' | 'CHANGED' | 'UNAVAILABLE';
 export interface ProgressAssessment {
@@ -13,6 +14,8 @@ export interface ProgressEntry {
   currentVersions: string[]; note: string;
 }
 export interface ReviewProgressSnapshot {
+  sourceBefore?: GitHubSourceMetadata | null;
+  sourceAfter?: GitHubSourceMetadata | null;
   comparisonSchemaVersion: number; projectId: number; baselineReviewId: number | null; currentReviewId: number;
   baselineAnalyzedAt: string | null; currentAnalyzedAt: string; generatedAt: string;
   status: 'COMPLETE' | 'PARTIAL' | 'UNAVAILABLE' | 'NO_BASELINE'; message: string;

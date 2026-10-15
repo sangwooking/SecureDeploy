@@ -3,6 +3,7 @@ import type { SecurityReviewResponse } from '../types/securityReview';
 import type { ProgressChange, ProgressFinding } from '../types/reviewProgress';
 import { codeExplanation, deploymentLabels, priorityLabels } from './reviewPresentation';
 import { FindingRemediation } from './FindingRemediation';
+import { GitHubCommitComparison } from './GitHubSourceInfo';
 
 const labels: Record<ProgressChange, string> = {
   RESOLVED: '해결된 문제', REMAINING: '아직 남아 있는 문제', NEW: '새로 발견된 문제',
@@ -19,6 +20,7 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
   return <section className="security-progress" aria-label="보안 상태 변화">
     <h2>보안 상태 변화</h2>
     <p>{snapshot.message}</p>
+    <GitHubCommitComparison before={snapshot.sourceBefore} after={snapshot.sourceAfter} />
     <div className="progress-assessments">
       {[{ label: '이전', value: before, id: snapshot.baselineReviewId, date: snapshot.baselineAnalyzedAt },
         { label: '현재', value: after, id: snapshot.currentReviewId, date: snapshot.currentAnalyzedAt }].map(item =>
