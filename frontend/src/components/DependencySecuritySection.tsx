@@ -1,5 +1,7 @@
 import type { RiskAssessment, ScaResult, RemediationSnapshot } from '../types/securityReview';
 import { DependencyFindingCard } from './DependencyFindingCard';
+import { IncompleteDependencyCard } from './IncompleteDependencyCard';
+import { dependencyText } from './dependencyGuidance';
 
 const statusLabels: Record<ScaResult['status'], string> = {
   COMPLETE: '조회 완료', PARTIAL: '일부만 확인됨', UNAVAILABLE: '조회하지 못함',
@@ -11,8 +13,9 @@ export function ScaAssessmentNotice({ sca }: { sca?: ScaResult | null; riskAsses
   return <p className="review-caution">라이브러리 보안 확인이 완료되지 않았습니다. 미조회·미해결 항목의 안전 여부는 확인되지 않았습니다.</p>;
 }
 
-export function DependencySecuritySection({ sca, riskAssessment, remediation }: {
+export function DependencySecuritySection({ sca, riskAssessment, remediation, reviewId }: {
   sca?: ScaResult | null; riskAssessment?: RiskAssessment | null; remediation?: RemediationSnapshot | null;
+  reviewId?: number | null;
 }) {
   if (!sca) return <section className="sca-section" aria-label="사용 중인 라이브러리 문제">
     <h2>사용 중인 라이브러리 문제</h2><p>이 분석 이력에는 라이브러리 검사 결과가 없습니다. 재분석이 필요합니다.</p>
@@ -41,11 +44,19 @@ export function DependencySecuritySection({ sca, riskAssessment, remediation }: 
         finding.packageName === dep.packageName && finding.version === dep.installedVersion && finding.advisoryId === dep.osvId)}
     />)}</div>
     {unresolved.length > 0 && <details><summary>버전 확인이 필요한 라이브러리 ({unresolved.length}개 위치)</summary>
-      <ul>{unresolved.map((component, index) => <li key={index}>{component.packageName} · {component.version ?? '버전 없음'}
-        <p>{component.sourceFile} · {component.versionResolution}</p></li>)}</ul>
+      <div className="vulnerability-list">{unresolved.map((component, index) => {
+        const finding = riskAssessment?.reviewRequirements.find(f => f.reasonCode === 'UNRESOLVED_VERSION'
+          && f.ecosystem === component.ecosystem && f.packageName === component.packageName && f.version === component.version);
+        return <IncompleteDependencyCard key={`${reviewId}:${index}`} reviewId={finding ? reviewId : null} finding={finding ?? {
+          findingId: `component:${index}`, source: 'DEPENDENCY', findingCategory: 'DEPENDENCY',
+          vulnerabilityId: null, ruleId: null, ecosystem: component.ecosystem, packageName: component.packageName,
+          version: component.version, advisoryId: null, sourceFiles: [component.sourceFile],
+          priority: 'REVIEW_REQUIRED', reasonCode: 'UNRESOLVED_VERSION', priorityReason: '현재 정적 분석 범위에서 이름 또는 정확한 버전을 확인하지 못했습니다.', dependencyFacts: null,
+        }} />;
+      })}</div>
     </details>}
     {!!sca.warnings.length && <details><summary>조회 중 확인하지 못한 정보</summary>
-      <ul>{sca.warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul>
+      <ul>{sca.warnings.map((warning, index) => <li key={index}>{dependencyText(warning)}</li>)}</ul>
     </details>}
   </section>;
 }

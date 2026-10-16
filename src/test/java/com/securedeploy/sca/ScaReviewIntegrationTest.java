@@ -213,6 +213,92 @@ class ScaReviewIntegrationTest {
         assertThat(unmatched.path("securityScore")).isEqualTo(result.path("securityScore"));
         assertThat(unmatched.path("deploymentStatus")).isEqualTo(result.path("deploymentStatus"));
     }
+    @Test void supplementalLookupIsUserProvidedAndNeverRewritesAnyReviewSnapshot() throws Exception {
+        String token = signup();
+        JsonNode before = upload(token, Map.of("package.json", "{\"dependencies\":{\"lodash\":\"^4.0.0\"}}"));
+        JsonNode input = supplementalInput(before, "lodash", "4.17.10");
+        String riskBefore = jdbc.queryForObject("select risk_assessment_json from reviews where id = ?", String.class, before.path("reviewId").asLong());
+        JsonNode extra = supplement(token, before, input, 200);
+        assertThat(extra.path("provenance").asText()).isEqualTo("USER_PROVIDED");
+        assertThat(extra.path("status").asText()).isEqualTo("COMPLETE");
+        assertThat(extra.at("/findings/0/fixedVersions/0").asText()).isEqualTo("4.17.21");
+        assertUnchanged(token, before);
+        assertThat(jdbc.queryForObject("select risk_assessment_json from reviews where id = ?", String.class, before.path("reviewId").asLong())).isEqualTo(riskBefore);
+        verify(provider).lookup(argThat(cs -> cs.size() == 1 && cs.get(0).packageName().equals("lodash")
+                && cs.get(0).version().equals("4.17.10") && cs.get(0).sourceFile().equals("user-provided")));
+    }
+
+    @Test void supplementalInputRejectsInjectionRangesIdentityChangesAndOtherOwners() throws Exception {
+        String token = signup();
+        JsonNode before = upload(token, Map.of("package.json", "{\"dependencies\":{\"lodash\":\"^4.0.0\"}}"));
+        supplement(signup(), before, supplementalInput(before, "lodash", "4.17.10"), 403);
+        for (String version : List.of("^4.0.0", "https://example.invalid", "1.0.0;echo", "1".repeat(129), "<script>")) {
+            supplement(token, before, supplementalInput(before, "lodash", version), 400);
+        }
+        supplement(token, before, supplementalInput(before, "different-library", "1.0.0"), 400);
+        supplement(token, before, supplementalInput(before, "<script>", "1.0.0"), 400);
+        var forged = supplementalInput(before, "lodash", "4.17.10");
+        ((com.fasterxml.jackson.databind.node.ObjectNode) forged).put("findingId", "coverage:sca");
+        supplement(token, before, forged, 400);
+        mvc.perform(post("/api/reviews/" + before.path("reviewId").asLong() + "/dependencies/supplemental-lookup")
+                .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(forged)))
+                .andExpect(status().isUnauthorized());
+        verifyNoInteractions(provider);
+        assertUnchanged(token, before);
+    }
+
+    @Test void missingPackageUsesStoredEcosystemAndFailureIsNeverComplete() throws Exception {
+        String token = signup();
+        JsonNode before = upload(token, Map.of("android/app/build.gradle.kts", "dependencies { implementation(libs.example.library) }"));
+        assertThat(before.at("/sca/components/0/packageName").asText()).isEqualTo("<unresolved-package>");
+        assertThat(before.at("/sca/components/0/version").isNull()).isTrue();
+        var input = supplementalInput(before, "org.example:library", "1.0.0");
+        doThrow(new IllegalStateException("offline fixture")).when(provider).lookup(anyList());
+        assertThat(supplement(token, before, input, 200).path("status").asText()).isEqualTo("UNAVAILABLE");
+        doAnswer(invocation -> {
+            List<DependencyComponent> components = invocation.getArgument(0);
+            DependencyComponent c = components.get(0);
+            assertThat(c.ecosystem()).isEqualTo(ScaEcosystem.MAVEN);
+            return new VulnerabilityDataSource.LookupResult(List.of(), Set.of(c.identity()), false, List.of());
+        }).when(provider).lookup(anyList());
+        JsonNode noHits = supplement(token, before, input, 200);
+        assertThat(noHits.path("status").asText()).isEqualTo("COMPLETE");
+        assertThat(noHits.path("findings")).isEmpty();
+        assertUnchanged(token, before);
+    }
+
+    @Test void supplementalLookupPreservesPartialResultsAndLimitsRepeatRequests() throws Exception {
+        String token = signup();
+        JsonNode before = upload(token, Map.of("package.json", "{\"dependencies\":{\"lodash\":\"^4.0.0\"}}"));
+        var input = supplementalInput(before, "lodash", "4.17.10");
+        doAnswer(invocation -> {
+            List<DependencyComponent> components = invocation.getArgument(0);
+            DependencyComponent c = components.get(0);
+            var partial = new DependencyVulnerability(c.ecosystem(), c.packageName(), c.version(), "TEST-partial",
+                    List.of(), "Offline advisory", null, null, List.of(), List.of(), null, null, List.of(), List.of());
+            return new VulnerabilityDataSource.LookupResult(List.of(partial), Set.of(c.identity()), true, List.of("Offline details"));
+        }).when(provider).lookup(anyList());
+        for (int i = 0; i < 6; i++) assertThat(supplement(token, before, input, 200).path("status").asText()).isEqualTo("PARTIAL");
+        supplement(token, before, input, 429);
+        verify(provider, times(6)).lookup(anyList());
+        assertUnchanged(token, before);
+    }
+
+    private JsonNode supplementalInput(JsonNode review, String name, String version) {
+        return mapper.valueToTree(Map.of("findingId", review.at("/riskAssessment/reviewRequirements/0/findingId").asText(),
+                "packageName", name, "version", version));
+    }
+    private JsonNode supplement(String token, JsonNode review, JsonNode input, int expected) throws Exception {
+        return json(mvc.perform(post("/api/reviews/" + review.path("reviewId").asLong() + "/dependencies/supplemental-lookup")
+                .header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(input)))
+                .andExpect(status().is(expected)).andReturn().getResponse().getContentAsByteArray());
+    }
+    private void assertUnchanged(String token, JsonNode before) throws Exception {
+        JsonNode after = json(mvc.perform(get("/api/reviews/" + before.path("reviewId").asLong())
+                .header("Authorization", "Bearer " + token)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        assertThat(after).isEqualTo(before);
+    }
+
     private String signup() throws Exception {
         var request = mapper.writeValueAsBytes(Map.of("email", "sca-" + UUID.randomUUID() + "@test.invalid",
                 "password", "Fake-test-password-1234", "name", "SCA Test"));

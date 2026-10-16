@@ -2116,3 +2116,13 @@ h1 {
 }
 .github-source { min-width: 0; overflow-wrap: anywhere; }
 .github-source code { white-space: normal; overflow-wrap: anywhere; }
+.dependency-lookup-form fieldset { border: 0; padding: 0; margin: 12px 0; min-width: 0; max-width: 640px; display: grid; gap: 8px; }
+.dependency-lookup-form input { width: 100%; min-width: 0; min-height: 42px; padding: 0 12px; box-sizing: border-box; border: 1px solid #c7d2e1; border-radius: 6px; color: #172033; background: #fff; }
+.dependency-lookup-form input:focus { border-color: #1e6b60; outline: 3px solid rgba(30, 107, 96, 0.14); }
+.dependency-lookup-form input[readonly] { background: #f1f5f3; color: #35423c; }
+.dependency-lookup-form p { margin: 0 0 8px; }
+.supplemental-result { border-top: 1px solid #cbd5d1; margin-top: 16px; padding-top: 12px; overflow-wrap: anywhere; }
+.incomplete-dependency dd, .incomplete-dependency li { overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  .incomplete-dependency .dependency-versions { grid-template-columns: 1fr; }
+}

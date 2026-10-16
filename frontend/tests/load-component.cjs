@@ -13,7 +13,9 @@ module.exports = function loadComponent(name) {
   const exports = {};
   cache.set(name, exports);
   new Function('require', 'exports', compiled)(
-    specifier => specifier.startsWith('./') ? loadComponent(specifier.slice(2)) : require(specifier), exports,
+    specifier => specifier === '../api/securityReviewApi'
+      ? { lookupSupplementalDependency: () => { throw new Error('Network is forbidden in SSR tests; use the intercepted browser suite.'); } }
+      : specifier.startsWith('./') ? loadComponent(specifier.slice(2)) : require(specifier), exports,
   );
   return exports;
 };

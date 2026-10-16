@@ -103,7 +103,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
           await page.locator('.semantic-candidate .technical-details > summary').click();
         }
         if (section === '수정 권장') {
-          assert.ok((await visible()).includes('알려진 수정 버전'));
+          assert.ok((await visible()).includes('수정이 확인된 버전'));
           assert.ok(!(await visible()).includes('CVE-2099'));
           await page.getByText('업데이트 방법 보기', { exact: true }).click();
           assert.ok((await visible()).includes('호환성을 보장하지 않습니다'));

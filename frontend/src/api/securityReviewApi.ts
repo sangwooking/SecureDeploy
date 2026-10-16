@@ -18,11 +18,19 @@ import type {
   VulnerabilityStatusSummaryResponse,
 } from '../types/securityReview';
 import type { UploadPolicy } from '../types/uploadPolicy';
+import type { SupplementalDependencyRequest, SupplementalDependencyResponse } from '../types/dependencyGuidance';
 import type { ProjectDetail, WorkspaceResponse } from '../types/workspace';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
 
 const ACCESS_TOKEN_STORAGE_KEY = 'securedeploy.accessToken';
+
+export async function lookupSupplementalDependency(reviewId: number, input: SupplementalDependencyRequest): Promise<SupplementalDependencyResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/reviews/${reviewId}/dependencies/supplemental-lookup`, {
+    method: 'POST', headers: jsonHeaders(), body: JSON.stringify(input),
+  });
+  return parseJsonResponse<SupplementalDependencyResponse>(response, '라이브러리 정보를 확인하지 못했습니다. 잠시 후 다시 확인해 주세요.');
+}
 
 export async function fetchWorkspace(): Promise<WorkspaceResponse> {
   const response = await fetch(`${API_BASE_URL}/api/workspace`, { headers: authHeaders() });

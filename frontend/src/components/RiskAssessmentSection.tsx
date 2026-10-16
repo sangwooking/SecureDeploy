@@ -1,4 +1,5 @@
 import type { RiskAssessment, RiskFinding, RiskPriority } from '../types/securityReview';
+import { dependencyText, dependencyGuidance, incompleteDependency } from './dependencyGuidance';
 
 const priorityLabels: Record<RiskPriority, string> = {
   BLOCKING: '배포 전 필수 조치', SHOULD_FIX: '수정 권장',
@@ -58,7 +59,7 @@ export function RiskAssessmentSection({ assessment }: { assessment?: RiskAssessm
     {assessment.reviewRequirements.length > 0 && <details className="risk-requirements">
       <summary>분석 공백·버전 확인 항목 ({assessment.reviewRequirements.length})</summary>
       {assessment.reviewRequirements.map(finding => <div key={finding.findingId} className="risk-requirement">
-        <strong>{finding.packageName ? `${finding.packageName} ${finding.version ?? ''}` : finding.findingId === 'coverage:threat-intelligence' ? 'Threat Intelligence 확인 범위' : 'SCA 분석 범위'}</strong>
+        <strong>{incompleteDependency(finding) ? dependencyGuidance(finding).title : finding.packageName ? `${dependencyText(finding.packageName)} ${dependencyText(finding.version)}` : finding.findingId === 'coverage:threat-intelligence' ? 'Threat Intelligence 확인 범위' : 'SCA 분석 범위'}</strong>
         <FindingPriority finding={finding} />
         {finding.sourceFiles.length > 0 && <p>{finding.sourceFiles.join(', ')}</p>}
       </div>)}

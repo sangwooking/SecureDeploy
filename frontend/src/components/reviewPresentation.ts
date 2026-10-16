@@ -1,4 +1,5 @@
 import type { RiskAssessment, RiskFinding, RiskPriority, SecurityReviewResponse, SemanticSnapshot, Vulnerability } from '../types/securityReview';
+import { dependencyGuidance, dependencyText, incompleteDependency } from './dependencyGuidance';
 
 export type ResultView = 'SUMMARY' | 'BLOCKING' | 'REVIEW_REQUIRED' | 'SHOULD_FIX' | 'GUIDANCE' | 'TECHNICAL' | 'PROGRESS';
 export const resultViews: { id: ResultView; label: string }[] = [
@@ -27,7 +28,11 @@ export function vulnerabilityForFinding(result: SecurityReviewResponse, finding:
 }
 
 export function findingTitle(result: SecurityReviewResponse, finding: RiskFinding): string {
-  if (finding.source === 'DEPENDENCY') return `${finding.packageName ?? '라이브러리'} ${finding.version ?? ''} 업데이트 검토`;
+  if (incompleteDependency(finding)) {
+    const guide = dependencyGuidance(finding);
+    return guide.name ? `${guide.name} · 실제 사용 버전 확인` : `${guide.title} (${guide.location})`;
+  }
+  if (finding.source === 'DEPENDENCY') return `${dependencyText(finding.packageName)} ${dependencyText(finding.version)} 업데이트 검토`;
   if (finding.source === 'ANALYSIS') return finding.packageName
     ? `${finding.packageName}의 실제 사용 버전 확인` : '배포 판단에 필요한 분석 정보 확인';
   const vulnerability = vulnerabilityForFinding(result, finding);

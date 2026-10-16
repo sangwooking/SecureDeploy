@@ -44,7 +44,7 @@ test('old reviews and unknown severity have explicit unavailable states', () => 
   data.dependencyVulnerabilities[0].fixedVersions = [];
   const html = render(data);
   assert.ok(html.includes('미확인'));
-  assert.ok(html.includes('확인되지 않음'));
+  assert.ok(html.includes('확인하지 못했습니다'));
   assert.ok(!html.includes('severity-low'));
 });
 test('unresolved declarations remain visible', () => {

@@ -1,6 +1,8 @@
 import type { RemediationSnapshot, RiskFinding, RemediationGenerationStatus, Vulnerability } from '../types/securityReview';
 import { findingGuidance, needsVerification } from './findingGuidance';
 import { priorityLabels } from './reviewPresentation';
+import { incompleteDependency } from './dependencyGuidance';
+import { DependencyVerificationDetails } from './IncompleteDependencyCard';
 
 const labels: Record<RemediationGenerationStatus, string> = {
   GENERATED: 'AI 생성', TEMPLATE: '템플릿 가이드', UNAVAILABLE: '생성 불가', FAILED: '생성 실패', NOT_REQUESTED: '생성 대상 아님',
@@ -21,6 +23,10 @@ export function FindingRemediation({ finding, snapshot, vulnerability, expanded 
   finding?: RiskFinding; snapshot?: RemediationSnapshot | null; vulnerability?: Vulnerability; expanded?: boolean;
 }) {
   if (!finding) return null;
+  if (incompleteDependency(finding)) return <details className="finding-remediation" open={expanded || undefined}>
+    <summary>AI 자세히 보기 <span>정보 확인 안내</span></summary>
+    <DependencyVerificationDetails finding={finding} />
+  </details>;
   const item = snapshot?.findings.find(entry => entry.findingId === finding?.findingId);
   const advice = item?.advice;
   const manual = findingGuidance(finding, vulnerability);

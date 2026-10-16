@@ -8,6 +8,14 @@ import java.util.List;
 public final class RemediationTemplates {
     private RemediationTemplates() { }
     public static RemediationContent advice(RemediationContext context) {
+        if (context.findingCategory() == FindingCategory.DEPENDENCY && context.dependency() == null && context.ruleId() == null
+                && context.priority() == RiskPriority.REVIEW_REQUIRED) {
+            return new RemediationContent("라이브러리 이름과 정확한 사용 버전 확인", "라이브러리 정보가 부족하여 취약 여부를 확정할 수 없습니다.",
+                    "표시된 설정 파일에서 라이브러리 이름과 실제 사용 버전을 확인하세요. 현재 정보만으로 정확한 수정 버전이나 보안 공지를 안내할 수 없습니다.",
+                    null, null, List.of("라이브러리 설정 및 잠금 파일에서 이름과 실제 버전을 확인하세요.",
+                    "추가 정보 조회는 사용자 입력에 대한 참고 결과입니다. 실제 프로젝트 수정 후 빌드·기능 테스트와 SecureDeploy 재검사를 수행하세요."),
+                    "미확인은 안전이나 취약 확정을 뜻하지 않습니다. 이름·버전·수정 버전을 추측하지 않습니다.", AiConfidence.LOW);
+        }
         if (context.priority() == RiskPriority.REVIEW_REQUIRED) {
             return new RemediationContent("실제 사용 문맥 확인이 필요합니다", context.priorityReason(),
                     "자동 판단 정보가 부족합니다. 해당 코드의 실행 여부, 외부 입력 경로, 인증/인가 및 기존 방어 처리를 먼저 확인하세요.",

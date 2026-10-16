@@ -29,6 +29,17 @@ class RemediationGroundingTest {
                     .isInstanceOf(RemediationValidationException.class).hasMessage("UNSUPPORTED_VERSION_REFERENCE");
         }
     }
+    @Test void unresolvedDependencyTemplateRequestsFactsWithoutInventingFixes() {
+        var unresolved = new RemediationContext("unresolved:fixture", FindingCategory.DEPENDENCY, null,
+                null, RiskPriority.REVIEW_REQUIRED, "버전 미확인", null, null, "build.gradle.kts", null,
+                null, null, null, null);
+        var advice = RemediationTemplates.advice(unresolved);
+        assertThat(advice.recommendedAction()).contains("이름과 실제 사용 버전", "안내할 수 없습니다");
+        assertThat(advice.codeExample()).isNull();
+        assertThat(advice.configurationExample()).isNull();
+        assertThat(advice.summary()).doesNotContain("unresolved-package", "최신 버전");
+        assertThat(advice.verificationSteps()).anyMatch(step -> step.contains("재검사"));
+    }
     private RemediationContent advice(String explanation) {
         return new RemediationContent("Synthetic advice", explanation, "Verify the official advisory", "", "",
                 List.of("Run regression tests and rescan"), "Verify compatibility", AiConfidence.MEDIUM);

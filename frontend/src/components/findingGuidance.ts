@@ -1,4 +1,5 @@
 import type { RiskFinding, Vulnerability } from '../types/securityReview';
+import { dependencyGuidance, dependencyText, incompleteDependency } from './dependencyGuidance';
 
 export interface ManualGuidance {
   summary: string;
@@ -14,6 +15,11 @@ export function needsVerification(finding?: RiskFinding, vulnerability?: Vulnera
 }
 
 export function findingGuidance(finding?: RiskFinding, vulnerability?: Vulnerability): ManualGuidance {
+  if (finding && incompleteDependency(finding)) {
+    const guide = dependencyGuidance(finding);
+    return { summary: guide.title, risk: guide.reason, steps: guide.steps,
+      action: '이름과 정확한 사용 버전이 확인되기 전에는 수정 버전을 안내할 수 없습니다. 실제 프로젝트를 확인하고 다시 검사하세요.' };
+  }
   const rule = vulnerability?.ruleId ?? finding?.ruleId ?? '';
   if (finding?.source === 'ANALYSIS') {
     const version = finding.reasonCode === 'UNRESOLVED_VERSION';
@@ -31,7 +37,7 @@ export function findingGuidance(finding?: RiskFinding, vulnerability?: Vulnerabi
     };
   }
   if (finding?.source === 'DEPENDENCY') return {
-    summary: `${finding.packageName ?? '사용 중인 라이브러리'}의 보안 업데이트를 검토하세요.`,
+    summary: `${dependencyText(finding.packageName)}의 보안 업데이트를 검토하세요.`,
     risk: '알려진 문제가 있는 기능을 서비스에서 사용한다면 정보 노출이나 서비스 장애로 이어질 수 있습니다. 실제 도달 가능성은 별도 확인이 필요합니다.',
     steps: ['실제 설치 버전과 해당 보안 공지의 영향 범위를 확인하세요.', '호환되는 수정 버전으로 갱신하고 잠금 파일도 반영하세요.', '관련 기능 테스트 후 SecureDeploy로 다시 검사하세요.'],
     action: '기술 정보의 보안 공지와 수정 버전을 참고하세요. 표시된 버전이 모든 보안 문제의 해결을 보장하지는 않습니다.',

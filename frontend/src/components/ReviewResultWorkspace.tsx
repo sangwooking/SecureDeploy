@@ -9,6 +9,8 @@ import { SemanticReviewSection } from './SemanticReviewSection';
 import { ReviewProgressPanel } from './ReviewProgressPanel';
 import { GitHubSourceInfo } from './GitHubSourceInfo';
 import { findingGuidance } from './findingGuidance';
+import { incompleteDependency, dependencyText } from './dependencyGuidance';
+import { IncompleteDependencyCard } from './IncompleteDependencyCard';
 import { allRiskFindings, deploymentLabels, findingTitle, priorityLabels, resultViews, reviewCounts,
   semanticStatusText, vulnerabilityForFinding, type ResultView } from './reviewPresentation';
 
@@ -97,7 +99,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
             <LegacyCodeList result={result} statusActions={statusActions} />
           </details>}
           <details className="coverage-details"><summary>라이브러리 조회와 분석 범위 확인</summary>
-            <DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} />
+            <DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} />
           </details>
           <SemanticReviewSection snapshot={result.semanticReview} />
         </>}
@@ -120,7 +122,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
         <p>참고 점수는 배포 허가가 아닙니다. 배포 여부는 ‘결과 요약’의 판단을 우선 확인하세요.</p>
         <details><summary>저장된 배포 평가와 분석 범위</summary><RiskAssessmentSection assessment={assessment} /></details>
         <details><summary>코드에서 발견된 문제 · 원본과 판단 근거</summary><LegacyCodeList result={result} statusActions={statusActions} /></details>
-        <details><summary>사용 중인 라이브러리 문제 · 보안 공지와 악용 정보</summary><DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} /></details>
+        <details><summary>사용 중인 라이브러리 문제 · 보안 공지와 악용 정보</summary><DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} /></details>
         <details><summary>AI 추가 검토 기록</summary><SemanticReviewSection snapshot={result.semanticReview} /></details>
         <RemediationNotice snapshot={result.remediation} />
       </>}
@@ -143,6 +145,8 @@ function FindingCollection({ result, findings, statusActions }: {
     </select><span>{sorted.length}건</span></label>
     {!sorted.length && <p className="result-empty">{findings.length ? '선택한 심각도에 해당하는 문제가 없습니다.' : '이 분류에 저장된 문제가 없습니다.'}</p>}
     <div className="vulnerability-list">{sorted.slice(currentPage * 6, currentPage * 6 + 6).map(finding => {
+      if (incompleteDependency(finding)) return <IncompleteDependencyCard key={`${result.reviewId}:${finding.findingId}`}
+        finding={finding} reviewId={result.reviewId} />;
       const vulnerability = vulnerabilityForFinding(result, finding);
       if (finding.source === 'CODE' && vulnerability) return <CodeFindingCard key={finding.findingId} vulnerability={vulnerability}
         finding={finding} remediation={result.remediation} statusActions={statusActions} />;
@@ -154,8 +158,8 @@ function FindingCollection({ result, findings, statusActions }: {
         <h3>{guide.summary}</h3><p>{guide.risk}</p>
         <h4>직접 이렇게 확인해 보세요</h4><ol>{guide.steps.map(step => <li key={step}>{step}</li>)}</ol>
         <FindingRemediation finding={finding} snapshot={result.remediation} />
-        <details className="technical-details"><summary>기술 정보 보기</summary><p>{finding.findingId} · {finding.reasonCode}</p>
-          <p>{finding.priorityReason}</p><p className="finding-location">{finding.sourceFiles.join(', ')}</p></details>
+        <details className="technical-details"><summary>기술 정보 보기</summary><p>{dependencyText(finding.findingId)} · {finding.reasonCode}</p>
+          <p>{dependencyText(finding.priorityReason)}</p><p className="finding-location">{dependencyText(finding.sourceFiles.join(', '))}</p></details>
       </article>;
     })}</div>
     {sorted.length > 6 && <nav className="finding-pagination" aria-label="문제 목록 페이지">
@@ -193,8 +197,10 @@ function Guidance({ result, findings }: { result: SecurityReviewResponse; findin
       <select id="guidance-finding" value={finding.findingId} onChange={event => setSelected(event.target.value)}>
         {ordered.map(item => <option key={item.findingId} value={item.findingId}>{priorityLabels[item.priority]} · {findingTitle(result, item)}</option>)}
       </select>
-      <h3>{findingTitle(result, finding)}</h3>
-      <FindingRemediation key={finding.findingId} finding={finding} snapshot={result.remediation} vulnerability={vulnerability} expanded />
+      {incompleteDependency(finding)
+        ? <IncompleteDependencyCard key={`${result.reviewId}:${finding.findingId}`} finding={finding} reviewId={result.reviewId} />
+        : <><h3>{findingTitle(result, finding)}</h3>
+          <FindingRemediation key={finding.findingId} finding={finding} snapshot={result.remediation} vulnerability={vulnerability} expanded /></>}
     </> : <p>문제별 해결 방법을 연결할 우선순위 평가가 없습니다. 저장된 원본 결과를 참고하거나 재분석하세요.</p>}
     <RemediationNotice snapshot={result.remediation} />
   </section>;
