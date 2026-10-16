@@ -31,6 +31,16 @@ import java.util.List;
 @Table(name = "reviews")
 public class ReviewEntity {
 
+    @Convert(converter = com.securedeploy.analysis.typescript.ServerAnalysisConverter.class)
+    @Column(name = "server_analysis_json", columnDefinition = "TEXT")
+    private com.securedeploy.analysis.typescript.ServerAnalysisSnapshot serverAnalysis;
+
+    public com.securedeploy.analysis.typescript.ServerAnalysisSnapshot getServerAnalysis() { return serverAnalysis; }
+    public void attachServerAnalysis(com.securedeploy.analysis.typescript.ServerAnalysisSnapshot value) {
+        if (serverAnalysis != null) throw new IllegalStateException("Server analysis snapshot is immutable");
+        serverAnalysis = value;
+    }
+
     @Convert(converter = com.securedeploy.project.coverage.CoverageLedgerConverter.class)
     @Column(name = "coverage_ledger_json", columnDefinition = "TEXT")
     private com.securedeploy.project.coverage.CoverageLedger coverage;

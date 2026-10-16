@@ -20,6 +20,11 @@ spring:
         format_sql: true
 
 securedeploy:
+  typescript:
+    enabled: ${TYPESCRIPT_ANALYSIS_ENABLED:true}
+    node-executable: ${TYPESCRIPT_NODE_EXECUTABLE:node}
+    analyzer-directory: ${TYPESCRIPT_ANALYZER_DIRECTORY:analyzers/typescript}
+    timeout-seconds: 8
   github:
     timeout-seconds: 60
     max-download-size: 200MB

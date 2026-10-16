@@ -29,4 +29,8 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    inputs.files(fileTree('analyzers/typescript') {
+        include '**/*.mjs', 'package.json', 'package-lock.json'
+        exclude 'node_modules/**'
+    }).withPropertyName('typeScriptAnalyzer').withPathSensitivity(PathSensitivity.RELATIVE)
 }

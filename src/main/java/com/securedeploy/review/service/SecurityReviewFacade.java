@@ -59,6 +59,7 @@ public class SecurityReviewFacade {
     private final com.securedeploy.project.progress.ComparisonContextCollector comparisonCollector;
     private final com.securedeploy.project.progress.ReviewProgressService progressService;
     private final com.securedeploy.github.app.PrivateGitHubSourceService privateGitHubSources;
+    private final com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer typeScriptAnalyzer;
 
     public SecurityReviewFacade(UploadService uploadService, ZipExtractService zipExtractService,
                                 GitHubRepositoryService gitHubRepositoryService,
@@ -74,7 +75,8 @@ public class SecurityReviewFacade {
                                 SecuritySliceCollector sliceCollector, SemanticSnapshotService semanticService,
                                 com.securedeploy.project.progress.ComparisonContextCollector comparisonCollector,
                                 com.securedeploy.project.progress.ReviewProgressService progressService,
-                                com.securedeploy.github.app.PrivateGitHubSourceService privateGitHubSources) {
+                                com.securedeploy.github.app.PrivateGitHubSourceService privateGitHubSources,
+                                com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer typeScriptAnalyzer) {
         this.uploadService = uploadService;
         this.zipExtractService = zipExtractService;
         this.gitHubRepositoryService = gitHubRepositoryService;
@@ -94,6 +96,7 @@ public class SecurityReviewFacade {
         this.comparisonCollector = comparisonCollector;
         this.progressService = progressService;
         this.privateGitHubSources = privateGitHubSources;
+        this.typeScriptAnalyzer = typeScriptAnalyzer;
     }
 
     public SecurityReviewResponse reviewUploadedZip(MultipartFile file) {
@@ -245,8 +248,9 @@ public class SecurityReviewFacade {
             }
         }
         var intelligence = threatIntelligenceService.enrich(sca);
+        var serverAnalysis = typeScriptAnalyzer.analyze(projectStructure);
         var coverage = com.securedeploy.project.coverage.CoverageSummary.complete(projectStructure.coverage(), sourceExclusions, sca, intelligence);
-        return new AnalysisOutcome(response.withSca(sca).withCoverage(coverage), snippetGroup, intelligence, slices,
+        return new AnalysisOutcome(response.withSca(sca).withServerAnalysis(serverAnalysis).withCoverage(serverAnalysis.attachCoverage(coverage)), snippetGroup, intelligence, slices,
                 comparisonCollector.collect(projectStructure));
     }
 

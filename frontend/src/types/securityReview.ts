@@ -70,6 +70,7 @@ import type { GitHubSourceMetadata } from './githubSource';
 
 export interface SecurityReviewResponse {
   coverage?: import('./analysisCoverage').CoverageLedger | null;
+  serverAnalysis?: import('./serverAnalysis').ServerAnalysisSnapshot | null;
   sourceType?: 'ZIP' | 'GITHUB' | null;
   sourceMetadata?: GitHubSourceMetadata | null;
   repositoryUrl?: string | null;

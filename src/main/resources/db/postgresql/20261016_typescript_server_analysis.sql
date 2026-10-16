@@ -1,0 +1,3 @@
+BEGIN;
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS server_analysis_json TEXT;
+COMMIT;

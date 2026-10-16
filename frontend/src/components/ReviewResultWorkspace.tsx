@@ -4,6 +4,7 @@ import { CodeFindingCard, type FindingStatusActions } from './CodeFindingCard';
 import { DependencyFindingCard } from './DependencyFindingCard';
 import { DependencyActionGroups } from './DependencyContextDetails';
 import { AnalysisCoverageSection } from './AnalysisCoverageSection';
+import { ServerAnalysisSection } from './ServerAnalysisSection';
 import { DependencySecuritySection, ScaAssessmentNotice } from './DependencySecuritySection';
 import { FindingRemediation, RemediationNotice } from './FindingRemediation';
 import { RiskAssessmentSection } from './RiskAssessmentSection';
@@ -70,6 +71,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
         </section>
         <AnalysisCoverageSection coverage={result.coverage} sca={result.sca} semantic={result.semanticReview} />
         <DependencyActionGroups sca={result.sca} />
+        <ServerAnalysisSection snapshot={result.serverAnalysis} compact />
         <section className="next-actions"><h3>가장 먼저 해야 할 일</h3>
           {assessment ? <>
             <ol>{(['BLOCKING', 'REVIEW_REQUIRED', 'SHOULD_FIX'] as const).filter(priority => assessment.prioritySummary[priority] > 0).map(priority => {
@@ -106,6 +108,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
             <DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} />
           </details>
           <SemanticReviewSection snapshot={result.semanticReview} />
+          <ServerAnalysisSection snapshot={result.serverAnalysis} />
         </>}
         {view === 'SHOULD_FIX' && assessment && <details className="coverage-details"><summary>참고 사항 ({assessment.prioritySummary.INFORMATIONAL}건)</summary>
           <FindingCollection result={result} findings={findings.filter(f => f.priority === 'INFORMATIONAL')} statusActions={statusActions} />
@@ -129,6 +132,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
         <details><summary>코드에서 발견된 문제 · 원본과 판단 근거</summary><LegacyCodeList result={result} statusActions={statusActions} /></details>
         <details><summary>사용 중인 라이브러리 문제 · 보안 공지와 악용 정보</summary><DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} /></details>
         <details><summary>AI 추가 검토 기록</summary><SemanticReviewSection snapshot={result.semanticReview} /></details>
+        <ServerAnalysisSection snapshot={result.serverAnalysis} />
         <RemediationNotice snapshot={result.remediation} />
       </>}
     </div>
