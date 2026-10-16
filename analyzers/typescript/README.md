@@ -33,7 +33,7 @@ They are stored separately from Rule findings/Risk/score and comparison counts.
 Legacy snapshots stay null. Runtime/parser failures are explicit, never a clean scan.
 Run `npm test` here, then backend `gradle test` and frontend tests/build.
 
-`ts-server-v2` connects only HIGH-confidence input-to-query paths with a matching
+`ts-server-v3` connects only HIGH-confidence input-to-query paths with a matching
 execution-call observation to `validatedFindings`. A sink has one version-scoped
 finding identity and retains all validated input paths. Unknown transformations,
 unmodeled guards, partial control flow and unexecuted prepare calls remain candidates.
@@ -42,3 +42,17 @@ arbitrary validators cannot. Known string/array length is numeric, not arbitrary
 Execution observations are syntax evidence, not proof of a deployed D1 binding or
 successful attack. Findings have REVIEW_REQUIRED priority but do not enter risk or
 legacy comparison counts (`NOT_COMPARED`). Old snapshots are not promoted on read.
+
+Version 3 captures scalar expression results before later side effects, evaluates
+references/receivers before RHS/arguments, and isolates conditional branch state.
+Logical/nullish operators short-circuit when known and join possible states otherwise.
+Block shadowing, var bindings, named function aliases and parameter/object defaults
+are bounded models, not a JavaScript interpreter. Unknown closures invalidate their
+syntactically observed writes. Heap writes/joins, callbacks, loops and exceptions
+remain partial; uncertainty is never evidence of a safe transformation.
+
+The fixed quality set in test/quality-cases.mjs was authored before implementation
+changes, separately from focused regressions. It labels SQL input flow, not successful
+exploitation: 8 input-flow cases, 7 safe-flow cases, 5 expected abstentions. This is
+an internal evaluation set, not an independently authored or whole-project benchmark.
+Results, failure diagnostics and coverage contain no target source or literal values.

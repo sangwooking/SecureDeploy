@@ -1,28 +1,48 @@
 import ts from 'typescript';
 import path from 'node:path';
 
-export const VERSION = 'ts-server-v2';
+export const VERSION = 'ts-server-v3';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
 const unknown = () => ({ unknown: true, trace: [] });
 const value = (tag, trace = [], extra = {}) => ({ tag, trace, ...extra });
 const constant = text => value('constant', [], { constant: text });
+const hasConstant = v => v.tag === 'constant' && Object.hasOwn(v, 'constant') && !v.unknown;
+const truth = v => hasConstant(v) ? Boolean(v.constant) : v.ref || v.tag === 'function' ? true : undefined;
+const nullish = v => hasConstant(v) ? v.constant == null : v.ref || ['function', 'numeric', 'boolean', 'allowlistedIdentifier'].includes(v.tag) ? false : undefined;
+function addition(left, right) {
+  if (hasConstant(left) && hasConstant(right)) {
+    const combined = left.constant + right.constant;
+    if (typeof combined !== 'string' || combined.length <= 1000) return constant(combined);
+  }
+  const combined = union(left, right);
+  const { constant: ignored, ...withoutConstant } = combined;
+  return withoutConstant;
+}
 function union(...values) {
+  if (!values.length) return unknown();
   if (values.length === 1) return values[0];
   const allTrace = values.flatMap(v => v?.trace ?? []).filter((v, i, a) =>
     a.findIndex(w => JSON.stringify(w) === JSON.stringify(v)) === i);
   const trace = allTrace.slice(0, 20);
   const same = values.length && values.every(v => v === values[0]);
   if (same) return values[0];
-  return { trace, unknown: allTrace.length > 20 || values.some(v => v?.unknown),
+  const refs = values.filter(v => v?.ref).map(v => v.ref);
+  const mixedRefs = refs.length && !values.every(v => v?.ref === refs[0]);
+  const merged = { trace, unknown: allTrace.length > 20 || values.some(v => v?.unknown) || Boolean(mixedRefs),
     predicateInput: values.some(v => v?.predicateInput) ? {
       trace: values.flatMap(v => (v?.predicateInput ?? v)?.trace ?? []).slice(0, 20),
       unknown: values.some(v => (v?.predicateInput ?? v)?.unknown)
     } : undefined,
     traceTruncated: allTrace.length > 20 || values.some(v => v?.traceTruncated),
-    ref: values.length && values.every(v => v?.ref && v.ref === values[0]?.ref) ? values[0].ref : undefined,
+    ref: refs.length && !mixedRefs ? refs[0] : undefined,
+    effects: [...new Set(values.flatMap(v => v?.effects ?? []))],
+    target: values.every(v => v?.target && v.target === values[0]?.target) ? values[0].target : undefined,
     tag: values.length && values.every(v => v?.tag === values[0]?.tag) ? values[0]?.tag : undefined };
+  if (values.every(v => hasConstant(v) && Object.is(v.constant, values[0].constant))) merged.constant = values[0].constant;
+  if (mixedRefs) merged.trace = union(...values.map(v => ({ trace: [...(v.trace ?? []), ...(v.ref?.trace ?? [])], unknown: true }))).trace;
+  return merged;
 }
 const unwrap = node => {
   while (node && (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isNonNullExpression(node)
@@ -107,7 +127,7 @@ export function analyze(input, overrides = {}) {
           mod.declared.add(d.name.text);
           const init = unwrap(d.initializer);
           if (init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init))) register(d.name.text, init, exported);
-          else if (init && (ts.isStringLiteral(init) || ts.isNumericLiteral(init)) && (s.declarationList.flags & ts.NodeFlags.Const)) mod.constants.set(d.name.text, constant(init.text));
+          else if (init && (ts.isStringLiteral(init) || ts.isNumericLiteral(init)) && (s.declarationList.flags & ts.NodeFlags.Const)) mod.constants.set(d.name.text, constant(ts.isNumericLiteral(init) ? Number(init.text) : init.text));
         }
       }
       for (const s of ast.statements) {
@@ -147,7 +167,7 @@ export function analyze(input, overrides = {}) {
   function property(base, key, node, state) {
     const { mod, fn } = state;
     if (base.ref?.properties?.has(key)) return { ...base.ref.properties.get(key), unknown: base.ref.unknown || base.ref.properties.get(key).unknown };
-    if (base.ref) return { trace: base.ref.trace, unknown: true };
+    if (base.ref) return base.ref.unknown ? { trace: base.ref.trace, unknown: true } : constant(undefined);
     if (base.tag === 'context') {
       if (key === 'request') return value('request');
       if (key === 'env') return value('env');
@@ -168,42 +188,165 @@ export function analyze(input, overrides = {}) {
     if (ts.isIdentifier(name)) state.vars.set(name.text, v);
     else if (ts.isObjectBindingPattern(name)) for (const e of name.elements) {
       if (e.dotDotDotToken) { note(state.mod, 'REST_BINDING_UNSUPPORTED'); bind(e.name, { ...v, unknown: true }, state); }
-      else bind(e.name, property(v, e.propertyName?.getText() ?? e.name.getText(), e, state), state);
+      else {
+        const keyNode = e.propertyName;
+        const key = keyNode && ts.isComputedPropertyName(keyNode) ? expr(keyNode.expression, state)
+          : constant(keyNode?.text ?? e.name.getText());
+        if (!hasConstant(key)) note(state.mod, 'DYNAMIC_BINDING_KEY_UNRESOLVED');
+        const selected = hasConstant(key) ? property(v, String(key.constant), e, state) : { ...union(v, key), unknown: true };
+        bind(e.name, defaultValue(selected, e.initializer, state), state);
+      }
     } else note(state.mod, 'ARRAY_BINDING_UNSUPPORTED');
+  }
+  function numeric(inputs, node, state) {
+    state.context.defenses.push(loc(node, state.mod, 'NUMERIC_CONVERSION', state.fn));
+    const incoming = union(...inputs);
+    if (inputs.some(v => v.unknown || v.ref)) {
+      note(state.mod, 'NUMERIC_COERCION_PARTIAL');
+      return { ...incoming, tag: 'numeric', unknown: true, constant: undefined };
+    }
+    return value('numeric');
+  }
+  function referenceOf(original, state) {
+    const node = unwrap(original), { mod, fn } = state;
+    if (ts.isIdentifier(node)) return {
+      read: () => expr(node, state),
+      write: (v, target) => target.vars.set(node.text, step(v, loc(node, mod, 'ASSIGNMENT', fn), mod))
+    };
+    if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
+      const receiver = expr(node.expression, state);
+      const key = ts.isPropertyAccessExpression(node) ? constant(node.name.text) : expr(node.argumentExpression, state);
+      return {
+        read: () => hasConstant(key) ? property(receiver, String(key.constant), node, state) : { ...union(receiver, key), unknown: true },
+        write: (v, target) => {
+          note(mod, 'PROPERTY_WRITE_UNRESOLVED');
+          const ref = target.forkRefs?.get(receiver.ref) ?? receiver.ref;
+          if (ref) { ref.unknown = true; ref.trace = union({ trace: ref.trace }, v).trace; ref.properties.clear(); }
+          else target.uncertain = true;
+        }
+      };
+    }
+    note(mod, 'ASSIGNMENT_TARGET_UNSUPPORTED');
+    return { read: () => unknown(), write: () => { state.uncertain = true; } };
+  }
+  function defaultValue(selected, initializer, state) {
+    if (!initializer || hasConstant(selected) && selected.constant !== undefined) return selected;
+    if (hasConstant(selected)) return expr(initializer, state);
+    const skipped = fork(state), taken = fork(state);
+    const fallback = expr(initializer, taken);
+    mergeVars(state, [skipped, taken]);
+    return union(selected, fallback);
+  }
+  function writtenNames(node, state) {
+    const effects = new Set();
+    const scan = n => {
+      tick(state.mod);
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment
+          && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment) {
+        let target = unwrap(n.left);
+        while (ts.isPropertyAccessExpression(target) || ts.isElementAccessExpression(target)) target = unwrap(target.expression);
+        if (ts.isIdentifier(target)) effects.add(target.text);
+      }
+      if ((ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n))
+          && [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(n.operator) && ts.isIdentifier(n.operand)) effects.add(n.operand.text);
+      ts.forEachChild(n, scan);
+    };
+    scan(node);
+    return [...effects];
+  }
+  function invalidateWrites(names, state, incoming = unknown()) {
+    for (const name of names) {
+      const old = state.vars.get(name);
+      if (!old) continue;
+      state.vars.set(name, { ...union(old, incoming), unknown: true, constant: undefined });
+      if (old.ref) { old.ref.unknown = true; old.ref.trace = union({ trace: old.ref.trace }, incoming).trace; old.ref.properties.clear(); }
+    }
+  }
+  function unsupportedClosure(node, state) {
+    note(state.mod, 'CALLBACK_FLOW_UNSUPPORTED');
+    return { ...unknown(), effects: writtenNames(node, state) };
   }
   function expr(original, state) {
     const node = unwrap(original);
     if (!node) return unknown();
-    const { mod, fn, vars } = state;
+    const { mod, fn } = state;
     tick(mod);
-    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isNumericLiteral(node)) return constant(node.text);
-    if (ts.isIdentifier(node)) return vars.get(node.text) ?? mod.constants.get(node.text) ?? unknown();
+    if ((node.flags & ts.NodeFlags.OptionalChain) && state.optionalNode !== node) {
+      note(mod, 'OPTIONAL_CHAIN_PARTIAL');
+      const skipped = fork(state), taken = { ...fork(state), optionalNode: node, uncertain: true };
+      const result = expr(node, taken);
+      mergeVars(state, [skipped, taken]);
+      return { ...union(result, constant(undefined)), unknown: true };
+    }
+    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return constant(node.text);
+    if (ts.isNumericLiteral(node)) return constant(Number(node.text));
+    if (ts.isIdentifier(node)) {
+      const found = state.vars.get(node.text) ?? mod.constants.get(node.text);
+      if (found?.uninitialized) { note(mod, 'LEXICAL_READ_BEFORE_INITIALIZATION'); return unknown(); }
+      if (found) return found;
+      const target = resolve(mod, node.text);
+      if (target) return value('function', [], { target });
+      if (node.text === 'undefined' && !mod.declared.has(node.text) && !mod.imports.has(node.text)) return constant(undefined);
+      return unknown();
+    }
     if (ts.isAwaitExpression(node)) return expr(node.expression, state);
     if (ts.isPropertyAccessExpression(node)) return property(expr(node.expression, state), node.name.text, node, state);
     if (ts.isElementAccessExpression(node)) {
+      const base = expr(node.expression, state);
       const key = expr(node.argumentExpression, state);
-      if (key.constant != null) return property(expr(node.expression, state), key.constant, node, state);
-      note(mod, 'DYNAMIC_PROPERTY_UNRESOLVED'); return { ...union(expr(node.expression, state), key), unknown: true };
+      if (hasConstant(key)) return property(base, String(key.constant), node, state);
+      note(mod, 'DYNAMIC_PROPERTY_UNRESOLVED'); return { ...union(base, key), unknown: true };
     }
-    if (ts.isTemplateExpression(node)) return step(union(...node.templateSpans.map(s => expr(s.expression, state))), loc(node, mod, 'SQL_STRING_CONSTRUCTION', fn), mod);
-    if (ts.isConditionalExpression(node)) { expr(node.condition, state); return union(expr(node.whenTrue, state), expr(node.whenFalse, state)); }
+    if (ts.isTemplateExpression(node)) {
+      let combined = constant(node.head.text);
+      for (const span of node.templateSpans) combined = addition(addition(combined, expr(span.expression, state)), constant(span.literal.text));
+      return step(combined, loc(node, mod, 'SQL_STRING_CONSTRUCTION', fn), mod);
+    }
+    if (ts.isConditionalExpression(node)) {
+      const condition = expr(node.condition, state), decision = truth(condition);
+      if (decision !== undefined) return expr(decision ? node.whenTrue : node.whenFalse, state);
+      const a = fork(state), b = fork(state);
+      guardBranches(node.condition, condition, a, b);
+      const left = expr(node.whenTrue, a), right = expr(node.whenFalse, b);
+      mergeVars(state, [a, b]); return union(left, right);
+    }
     if (ts.isBinaryExpression(node)) {
-      const right = expr(node.right, state);
-      if (node.operatorToken.kind === ts.SyntaxKind.EqualsToken || node.operatorToken.kind === ts.SyntaxKind.PlusEqualsToken) {
-        const v = node.operatorToken.kind === ts.SyntaxKind.PlusEqualsToken ? union(expr(node.left, state), right) : right;
-        if (ts.isIdentifier(node.left)) vars.set(node.left.text, step(v, loc(node.left, mod, 'ASSIGNMENT', fn), mod));
-        else {
-          note(mod, 'PROPERTY_WRITE_UNRESOLVED');
-          if (ts.isPropertyAccessExpression(node.left) || ts.isElementAccessExpression(node.left)) {
-            const receiver = expr(node.left.expression, state);
-            receiver.unknown = true; receiver.trace = union(receiver, v).trace;
-            if (receiver.ref) { receiver.ref.unknown = true; receiver.ref.trace = union(receiver, v).trace; receiver.ref.properties.clear(); }
-          }
-        }
-        return v;
-      }
-      const left = expr(node.left, state);
       const op = node.operatorToken.kind;
+      const assignment = op >= ts.SyntaxKind.FirstAssignment && op <= ts.SyntaxKind.LastAssignment;
+      // Capture the reference (and old compound-assignment value) before RHS effects.
+      const reference = assignment ? referenceOf(node.left, state) : undefined;
+      const left = op === ts.SyntaxKind.EqualsToken ? undefined : assignment ? reference.read() : expr(node.left, state);
+      const logical = new Map([[ts.SyntaxKind.AmpersandAmpersandToken, 'AND'], [ts.SyntaxKind.BarBarToken, 'OR'],
+        [ts.SyntaxKind.QuestionQuestionToken, 'NULLISH'], [ts.SyntaxKind.AmpersandAmpersandEqualsToken, 'AND'],
+        [ts.SyntaxKind.BarBarEqualsToken, 'OR'], [ts.SyntaxKind.QuestionQuestionEqualsToken, 'NULLISH']]).get(op);
+      if (logical) {
+        const condition = logical === 'NULLISH' ? nullish(left) : truth(left);
+        const takeRight = condition === undefined ? undefined : logical === 'OR' ? !condition : condition;
+        if (takeRight === false) return left;
+        if (takeRight === true) {
+          const right = expr(node.right, state); if (assignment) reference.write(right, state); return right;
+        }
+        const skip = fork(state), take = fork(state);
+        if (logical !== 'NULLISH') {
+          if (logical === 'AND') guardBranches(node.left, left, take, skip);
+          else guardBranches(node.left, left, skip, take);
+        }
+        const right = expr(node.right, take);
+        if (assignment) reference.write(right, take);
+        mergeVars(state, [skip, take]);
+        return union(left, right);
+      }
+      const right = expr(node.right, state);
+      if (op === ts.SyntaxKind.EqualsToken) { reference.write(right, state); return right; }
+      if (op === ts.SyntaxKind.CommaToken) return right;
+      if (op === ts.SyntaxKind.PlusEqualsToken) {
+        const combined = step(addition(left, right), loc(node, mod, 'SQL_STRING_CONSTRUCTION', fn), mod);
+        reference.write(combined, state); return combined;
+      }
+      if (assignment) {
+        const converted = numeric([left, right], node, state);
+        reference.write(converted, state); return converted;
+      }
       if ([ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken,
         ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.LessThanToken, ts.SyntaxKind.GreaterThanToken,
         ts.SyntaxKind.LessThanEqualsToken, ts.SyntaxKind.GreaterThanEqualsToken, ts.SyntaxKind.InKeyword,
@@ -214,9 +357,9 @@ export function analyze(input, overrides = {}) {
       if ([ts.SyntaxKind.MinusToken, ts.SyntaxKind.AsteriskToken, ts.SyntaxKind.SlashToken, ts.SyntaxKind.PercentToken,
         ts.SyntaxKind.AsteriskAsteriskToken, ts.SyntaxKind.LessThanLessThanToken, ts.SyntaxKind.GreaterThanGreaterThanToken,
         ts.SyntaxKind.GreaterThanGreaterThanGreaterThanToken, ts.SyntaxKind.AmpersandToken, ts.SyntaxKind.BarToken,
-        ts.SyntaxKind.CaretToken].includes(op)) return value('numeric');
+        ts.SyntaxKind.CaretToken].includes(op)) return numeric([left, right], node, state);
       const combined = union(left, right);
-      return op === ts.SyntaxKind.PlusToken ? step(combined, loc(node, mod, 'SQL_STRING_CONSTRUCTION', fn), mod) : combined;
+      return op === ts.SyntaxKind.PlusToken ? step(addition(left, right), loc(node, mod, 'SQL_STRING_CONSTRUCTION', fn), mod) : combined;
     }
     if (ts.isObjectLiteralExpression(node)) {
       const properties = new Map();
@@ -229,34 +372,39 @@ export function analyze(input, overrides = {}) {
           if (ts.isSpreadAssignment(p)) spread = union(spread, expr(p.expression, state));
         }
       }
-      return value('object', spread.trace, { unknown: incomplete, ref: { properties, unknown: incomplete, trace: spread.trace } });
+      return value('object', spread.trace, { unknown: incomplete, ref: { properties, unknown: incomplete,
+        trace: union(spread, ...properties.values()).trace } });
     }
     if (ts.isArrayLiteralExpression(node)) return union(...node.elements.map(e => expr(e, state)));
     if (ts.isNewExpression(node) || ts.isCallExpression(node)) {
-      const callee = unwrap(node.expression), args = (node.arguments ?? []).map(a => expr(a, state));
-      let receiverInput;
+      const callee = unwrap(node.expression);
+      const receiverInput = ts.isPropertyAccessExpression(callee) ? expr(callee.expression, state) : undefined;
+      const callable = receiverInput ? undefined : expr(callee, state);
+      const global = ts.isIdentifier(callee) && !state.vars.has(callee.text) && !mod.imports.has(callee.text) && !mod.declared.has(callee.text);
+      const args = (node.arguments ?? []).map(a => expr(a, state));
       if (ts.isIdentifier(callee)) {
-        const target = resolve(mod, callee.text);
-        if (target && !vars.has(callee.text)) {
+        const target = callable?.target;
+        if (target && ts.isCallExpression(node)) {
           const passed = args.map(a => step(a, loc(node, mod, 'FUNCTION_ARGUMENT', fn), mod));
           return invoke(target, passed, state.depth + 1, state.context, state.stack, state.uncertain);
         }
-        if (!vars.has(callee.text) && !mod.imports.has(callee.text) && !mod.declared.has(callee.text)) {
+        if (global) {
           if (callee.text === 'URL') return value('url', args[0]?.trace ?? [], { unknown: args[0]?.unknown });
           if (callee.text === 'URLSearchParams') return value('query', args[0]?.trace ?? [], { unknown: args[0]?.unknown });
-          if (['Number', 'parseInt', 'parseFloat'].includes(callee.text)) {
-            state.context.defenses.push(loc(node, mod, 'NUMERIC_CONVERSION', fn)); return value('numeric');
+          if (ts.isCallExpression(node) && ['Number', 'parseInt', 'parseFloat'].includes(callee.text)) {
+            return numeric(args, node, state);
           }
         }
       }
       if (ts.isPropertyAccessExpression(callee)) {
-        const receiver = expr(callee.expression, state), method = callee.name.text;
-        receiverInput = receiver;
+        const receiver = receiverInput, method = callee.name.text;
         if (receiver.tag === 'request' && ['json', 'text', 'formData'].includes(method)) return value('input', [loc(node, mod, 'REQUEST_BODY', fn)], { unknown: receiver.unknown, inputShape: method === 'text' ? 'STRING' : undefined });
         if (receiver.tag === 'query' && ['get', 'getAll'].includes(method)) return value('input', receiver.trace.length ? [loc(node, mod, 'QUERY_PARAMETER', fn)] : [], { unknown: receiver.unknown, inputShape: method === 'get' ? 'STRING' : 'ARRAY' });
         if (receiver.tag === 'input' && method === 'get') return receiver;
         if (receiver.tag === 'database' && method === 'prepare') {
           const sql = { ...(args[0] ?? unknown()) };
+          // A partial control path does not erase a directly observed literal/bound query.
+          // Unknown value writes are tracked separately in the variable/heap state.
           if (state.uncertain && sql.trace.length || receiver.unknown) sql.unknown = true;
           const usage = { kind: sql.trace.length ? 'INPUT_IN_QUERY' : sql.unknown ? 'UNRESOLVED_QUERY' : 'STATIC_QUERY',
             location: loc(node, mod, 'D1_PREPARE', fn), trace: sql.trace, defenses: [],
@@ -296,6 +444,9 @@ export function analyze(input, overrides = {}) {
       }
       // Unknown calls preserve input provenance, but do not prove sanitizer correctness or a complete path.
       const incoming = union(...args, ...(receiverInput ? [receiverInput] : []));
+      for (const callback of [callable, ...args]) if (callback?.effects?.length) {
+        invalidateWrites(callback.effects, state, incoming); note(mod, 'CLOSURE_SIDE_EFFECTS_UNRESOLVED');
+      }
       for (const argument of [...args, ...(receiverInput ? [receiverInput] : [])]) if (argument.ref) {
         argument.ref.unknown = true; argument.ref.trace = union(argument, incoming).trace;
         argument.ref.properties.clear();
@@ -306,24 +457,54 @@ export function analyze(input, overrides = {}) {
     if (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) {
       const operand = expr(node.operand, state);
       if (node.operator === ts.SyntaxKind.ExclamationToken)
-        return typeof operand.constant === 'boolean' ? constant(!operand.constant)
+        return truth(operand) !== undefined ? constant(!truth(operand))
           : value('boolean', [], { predicateInput: operand.predicateInput ?? (operand.unknown ? operand : undefined) });
-      state.context.defenses.push(loc(node, mod, 'NUMERIC_CONVERSION', fn));
-      if ([ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(node.operator) && ts.isIdentifier(node.operand)) vars.set(node.operand.text, value('numeric'));
-      return value('numeric');
+      if (hasConstant(operand)) {
+        if (node.operator === ts.SyntaxKind.PlusToken) return constant(+operand.constant);
+        if (node.operator === ts.SyntaxKind.MinusToken) return constant(-operand.constant);
+        if (node.operator === ts.SyntaxKind.TildeToken) return constant(~operand.constant);
+      }
+      const converted = numeric([operand], node, state);
+      if ([ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(node.operator) && ts.isIdentifier(node.operand)) state.vars.set(node.operand.text, converted);
+      return converted;
     }
     if (node.kind === ts.SyntaxKind.TrueKeyword) return constant(true);
     if (node.kind === ts.SyntaxKind.FalseKeyword) return constant(false);
     if (node.kind === ts.SyntaxKind.NullKeyword) return constant(null);
-    if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) { note(mod, 'CALLBACK_FLOW_UNSUPPORTED'); return unknown(); }
-    note(mod, 'EXPRESSION_UNSUPPORTED'); return unknown();
+    if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) return unsupportedClosure(node, state);
+    note(mod, 'EXPRESSION_UNSUPPORTED'); invalidateWrites(writtenNames(node, state), state); state.uncertain = true; return unknown();
   }
-  const fork = state => ({ ...state, vars: new Map(state.vars) });
+  // Scalars are immutable snapshots. A branch gets a separate heap, preserving aliases inside it.
+  function fork(state) {
+    const refs = new Map();
+    const clone = v => {
+      if (!v.ref) return v;
+      if (!refs.has(v.ref)) {
+        const copy = { ...v.ref, properties: new Map() }; refs.set(v.ref, copy);
+        for (const [key, property] of v.ref.properties) { tick(state.mod); copy.properties.set(key, clone(property)); }
+      }
+      return { ...v, ref: refs.get(v.ref) };
+    };
+    return { ...state, vars: new Map([...state.vars].map(([name, v]) => [name, clone(v)])), forkRefs: refs };
+  }
   function mergeVars(state, branches) {
     const merged = new Map();
-    for (const key of new Set(branches.flatMap(b => [...b.vars.keys()]))) merged.set(key, union(...branches.map(b => b.vars.get(key) ?? unknown())));
+    for (const key of new Set(branches.flatMap(b => [...b.vars.keys()]))) {
+      tick(state.mod);
+      const alternatives = branches.map(b => b.vars.get(key) ?? unknown());
+      if (alternatives.some(v => v.ref) && !alternatives.every(v => v.ref === alternatives[0].ref)) note(state.mod, 'OBJECT_BRANCH_MERGE_PARTIAL');
+      merged.set(key, union(...alternatives));
+    }
     state.vars = merged;
     state.uncertain = state.uncertain || branches.some(b => b.uncertain);
+  }
+  function guardBranches(node, condition, yes, no) {
+    const predicate = condition.predicateInput ?? condition;
+    if (predicate.unknown && predicate.trace.length) for (const branch of [yes, no]) {
+      for (const [name, v] of branch.vars) if (v.trace.some(t => predicate.trace.some(c => JSON.stringify(c) === JSON.stringify(t))))
+        branch.vars.set(name, { ...v, unknown: true });
+    }
+    refineAllowlist(node, true, yes); refineAllowlist(node, false, no);
   }
   // Only inline literal identifier lists/strict comparisons narrow values, never arbitrary validators.
   function allowedIdentifier(condition, truth, depth = 0) {
@@ -369,7 +550,9 @@ export function analyze(input, overrides = {}) {
       for (const s of node.statements) if (ts.isVariableStatement(s)) {
         if (s.declarationList.flags & ts.NodeFlags.BlockScoped) s.declarationList.declarations.forEach(d => names(d.name));
         else note(mod, 'VAR_HOISTING_PARTIAL');
-      }
+      } else if ((ts.isFunctionDeclaration(s) || ts.isClassDeclaration(s)) && s.name) locals.add(s.name.text);
+      for (const name of locals) state.vars.set(name, { ...unknown(), uninitialized: true });
+      for (const s of node.statements) if (ts.isFunctionDeclaration(s) && s.name) state.vars.set(s.name.text, unsupportedClosure(s, state));
       const restore = () => { for (const name of locals) { if (prior.has(name)) state.vars.set(name, prior.get(name)); else state.vars.delete(name); } };
       const returns = [];
       for (const s of node.statements) { const r = statement(s, state); returns.push(...r.values); if (r.stops) { restore(); return { values: returns, stops: true }; } }
@@ -377,7 +560,8 @@ export function analyze(input, overrides = {}) {
       return { values: returns, stops: false };
     }
     if (ts.isVariableStatement(node)) for (const d of node.declarationList.declarations) {
-      const v = expr(d.initializer, state);
+      if (!d.initializer && !(node.declarationList.flags & ts.NodeFlags.BlockScoped) && ts.isIdentifier(d.name) && state.vars.has(d.name.text)) continue;
+      const v = d.initializer ? expr(d.initializer, state) : constant(undefined);
       bind(d.name, step(v, loc(d, mod, 'VARIABLE', fn), mod), state);
     }
     else if (ts.isExpressionStatement(node)) expr(node.expression, state);
@@ -385,17 +569,12 @@ export function analyze(input, overrides = {}) {
     else if (ts.isThrowStatement(node)) { expr(node.expression, state); return { values: [], stops: true }; }
     else if (ts.isIfStatement(node)) {
       const condition = expr(node.expression, state);
-      if (condition.constant === true) return statement(node.thenStatement, state);
-      if (condition.constant === false) return node.elseStatement ? statement(node.elseStatement, state) : { values: [], stops: false };
+      if (truth(condition) === true) return statement(node.thenStatement, state);
+      if (truth(condition) === false) return node.elseStatement ? statement(node.elseStatement, state) : { values: [], stops: false };
       state.context.checks.push(loc(node.expression, mod, 'CONDITIONAL_CHECK', fn));
       const a = fork(state), b = fork(state);
       // A validator we cannot model may restrict this input; do not promote it as an unguarded path.
-      const predicate = condition.predicateInput ?? condition;
-      if (predicate.unknown && predicate.trace.length) for (const branch of [a, b]) {
-        for (const [name, v] of branch.vars) if (v.trace.some(t => predicate.trace.some(c => JSON.stringify(c) === JSON.stringify(t))))
-          branch.vars.set(name, { ...v, unknown: true });
-      }
-      refineAllowlist(node.expression, true, a); refineAllowlist(node.expression, false, b);
+      guardBranches(node.expression, condition, a, b);
       const ar = statement(node.thenStatement, a);
       const br = node.elseStatement ? statement(node.elseStatement, b) : { values: [], stops: false };
       if (ar.stops || br.stops) state.context.defenses.push(loc(node, mod, 'EARLY_EXIT_BRANCH_PRESENT', fn));
@@ -406,8 +585,12 @@ export function analyze(input, overrides = {}) {
       note(mod, 'LOOP_FLOW_PARTIAL');
       const branch = { ...fork(state), uncertain: true };
       if (node.initializer && ts.isVariableDeclarationList(node.initializer)) for (const d of node.initializer.declarations) bind(d.name, unknown(), branch);
+      else if (node.initializer) expr(node.initializer, branch);
+      if (node.condition) expr(node.condition, branch);
       if (node.expression) expr(node.expression, branch);
-      const r = statement(node.statement, branch); mergeVars(state, [state, branch]); return { ...r, stops: false };
+      const r = statement(node.statement, branch);
+      if (node.incrementor) expr(node.incrementor, branch);
+      mergeVars(state, [state, branch]); return { ...r, stops: false };
     } else if (ts.isTryStatement(node)) {
       note(mod, 'EXCEPTION_FLOW_PARTIAL');
       const a = { ...fork(state), uncertain: true }, b = { ...fork(state), uncertain: true }, ar = statement(node.tryBlock, a);
@@ -422,7 +605,9 @@ export function analyze(input, overrides = {}) {
         for (const s of clause.statements) { const r = statement(s, branch); returns.push(...r.values); if (r.stops) break; }
       }
       mergeVars(state, branches); return { values: returns, stops: false };
-    } else if (![ts.SyntaxKind.EmptyStatement, ts.SyntaxKind.BreakStatement].includes(node.kind)) note(mod, 'STATEMENT_UNSUPPORTED');
+    } else if (![ts.SyntaxKind.EmptyStatement, ts.SyntaxKind.BreakStatement, ts.SyntaxKind.FunctionDeclaration].includes(node.kind)) {
+      note(mod, 'STATEMENT_UNSUPPORTED'); invalidateWrites(writtenNames(node, state), state); state.uncertain = true;
+    }
     return { values: [], stops: false };
   }
   function invoke(fn, args, depth, context, stack, uncertain = false) {
@@ -432,11 +617,37 @@ export function analyze(input, overrides = {}) {
     }
     tick(mod); mod.visited.add(fn); mod.record.functionsAnalyzed = mod.visited.size;
     const state = { mod, fn, vars: new Map(), depth, context, uncertain, stack: new Set([...stack, fn]) };
-    node.parameters.forEach((p, i) => bind(p.name, args[i] ?? unknown(), state));
+    const names = (binding, callback) => {
+      if (ts.isIdentifier(binding)) callback(binding.text);
+      else if (ts.isObjectBindingPattern(binding) || ts.isArrayBindingPattern(binding))
+        binding.elements.forEach(e => { if (e.name) names(e.name, callback); });
+    };
+    // Hoist var bindings without executing initializers or descending into other functions.
+    const hoist = n => {
+      tick(mod);
+      if (n !== node && ts.isFunctionLike(n)) return;
+      if (ts.isVariableDeclarationList(n) && !(n.flags & ts.NodeFlags.BlockScoped))
+        n.declarations.forEach(d => names(d.name, name => state.vars.set(name, constant(undefined))));
+      ts.forEachChild(n, hoist);
+    };
+    if (node.body) hoist(node.body);
+    node.parameters.forEach(p => names(p.name, name => state.vars.set(name, { ...unknown(), uninitialized: true })));
+    node.parameters.forEach((p, i) => {
+      if (p.dotDotDotToken) note(mod, 'REST_PARAMETER_UNSUPPORTED');
+      bind(p.name, p.dotDotDotToken ? { ...union(...args.slice(i)), unknown: true }
+        : defaultValue(args[i] ?? constant(undefined), p.initializer, state), state);
+    });
     if (!node.body) return unknown();
     if (!ts.isBlock(node.body)) return expr(node.body, state);
     const r = statement(node.body, state);
-    return r.values.length ? union(...r.values) : unknown();
+    // Branch-local heap copies cannot prove a mutation-free return to the caller.
+    if (mod.record.limitations.has('PROPERTY_WRITE_UNRESOLVED') || mod.record.limitations.has('CLOSURE_SIDE_EFFECTS_UNRESOLVED')) {
+      for (const arg of args) if (arg.ref) {
+        arg.ref.unknown = true; arg.ref.trace = union({ trace: arg.ref.trace }, ...args).trace; arg.ref.properties.clear();
+        note(mod, 'CALLER_HEAP_EFFECTS_PARTIAL');
+      }
+    }
+    return union(...r.values, ...(!r.stops ? [constant(undefined)] : []));
   }
   for (const mod of modules.values()) for (const entry of mod.entries) {
     const context = { entry: loc(entry.fn.node, mod, entry.kind, entry.fn), checks: [], defenses: [], resources: [] };

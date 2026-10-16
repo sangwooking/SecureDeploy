@@ -33,7 +33,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
             List<Location> resources, String conclusion, List<String> limitations) { }
 
     public static ServerAnalysisSnapshot unavailable(String status, List<FileCoverage> files, String reason) {
-        return new ServerAnalysisSnapshot(1, "ts-server-v2", null, status, files, List.of(), List.of(), List.of(), List.of(reason));
+        return new ServerAnalysisSnapshot(1, "ts-server-v3", null, status, files, List.of(), List.of(), List.of(), List.of(reason));
     }
 
     public CoverageLedger attachCoverage(CoverageLedger ledger) {

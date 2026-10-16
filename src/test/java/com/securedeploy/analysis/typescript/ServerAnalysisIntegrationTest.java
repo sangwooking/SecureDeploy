@@ -38,6 +38,22 @@ class ServerAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void correctedStatePersistsWithoutChangingRiskOrCountingAFalselyResolvedIssue() throws Exception {
+        String token = signup();
+        String start = "export default { fetch(request,env) { let id=new URL(request.url).searchParams.get('id'); ";
+        var before = upload(token, start + "return env.DB.prepare(id + (id='0')).all(); }}");
+        var after = upload(token, start + "return env.DB.prepare((id='0') + id).all(); }}");
+        assertThat(before.at("/serverAnalysis/validatedFindings")).hasSize(1);
+        assertThat(after.at("/serverAnalysis/validatedFindings")).isEmpty();
+        assertThat(after.at("/comparison/counts/RESOLVED").isIntegralNumber()).isTrue();
+        assertThat(after.at("/comparison/counts/RESOLVED").asInt()).isZero();
+        assertThat(after.path("securityScore")).isEqualTo(before.path("securityScore"));
+        assertThat(after.at("/riskAssessment/prioritySummary")).isEqualTo(before.at("/riskAssessment/prioritySummary"));
+        assertThat(after.at("/riskAssessment/prioritizedDeploymentAssessment")).isEqualTo(before.at("/riskAssessment/prioritizedDeploymentAssessment"));
+        assertThat(detail(token, before.path("reviewId").asLong()).path("serverAnalysis")).isEqualTo(before.path("serverAnalysis"));
+        assertThat(detail(token, after.path("reviewId").asLong()).path("serverAnalysis")).isEqualTo(after.path("serverAnalysis"));
+    }
+
     @Test void zipPublicAndPrivateShareEvidencePersistenceAndCleanupWithoutChangingRisk() throws Exception {
         String token = signup();
         var zip = upload(token, TypeScriptServerAnalyzerTest.UNSAFE);

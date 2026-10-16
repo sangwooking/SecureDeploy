@@ -27,6 +27,19 @@ class FalsePositiveAnalyzerTest {
     private final FalsePositiveAnalyzer analyzer = new FalsePositiveAnalyzer();
 
     @Test
+    void exclusionReasonIsInspectableWithoutRetainingSourceInTheDecision() {
+        String payload = "data:image/png;base64," + "A".repeat(700);
+        String source = "const imageToken='" + payload + "';";
+        var file = new ProjectFile(Path.of("image.ts"), "image.ts", ProjectFileType.TYPESCRIPT, List.of(source));
+        var match = frontendSecret("image.ts", "imageToken=<redacted>", Severity.HIGH);
+        var decision = analyzer.decide(new FalsePositiveContext(match, file, source));
+        assertThat(decision.action()).isEqualTo(FalsePositiveAction.EXCLUDE);
+        assertThat(decision.analysisNote()).contains("data URL");
+        assertThat(decision.toString()).doesNotContain(payload, source);
+        assertThat(analyzer.analyze(new ProjectStructure(Path.of("."), List.of(file)), List.of(match))).isEmpty();
+    }
+
+    @Test
     void excludesBase64ImageDataUrlFromSecretFindings() {
         String line = "export const imageData = 'data:image/png;base64," + "A".repeat(700) + "';";
         RuleMatch match = frontendSecret("src/assets/imageData.ts", line, Severity.HIGH);

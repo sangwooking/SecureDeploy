@@ -8,6 +8,28 @@ import static com.securedeploy.analysis.typescript.TypeScriptServerAnalyzerTest.
 class ServerFlowFindingTest {
     final TypeScriptServerAnalyzer analyzer = new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties());
 
+    @Test void expressionStateCorrectionReachesValidatedFindingsWithoutChangingTheirPolicy() {
+        String start = "export default { fetch(request,env) { let id = new URL(request.url).searchParams.get('id'); ";
+        var unsafe = analyzer.analyze(project(start + "return env.DB.prepare(id + (id = '0')).all(); }}"));
+        var safe = analyzer.analyze(project(start + "return env.DB.prepare((id = '0') + id).all(); }}"));
+        assertThat(unsafe.analyzerVersion()).isEqualTo("ts-server-v3");
+        assertThat(unsafe.validatedFindings()).hasSize(1).allSatisfy(f -> {
+            assertThat(f.priority().name()).isEqualTo("REVIEW_REQUIRED");
+            assertThat(f.comparisonPolicy()).isEqualTo("NOT_COMPARED");
+        });
+        assertThat(safe.validatedFindings()).isEmpty();
+    }
+
+    @Test void v2SnapshotsRemainImmutableAndAreNotReconnectedByTheNewAnalyzer() {
+        var converter = new ServerAnalysisConverter();
+        var snapshot = analyzer.analyze(project(UNSAFE));
+        String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v3", "ts-server-v2");
+        var old = converter.convertToEntityAttribute(previous);
+        assertThat(old.analyzerVersion()).isEqualTo("ts-server-v2");
+        assertThat(converter.convertToDatabaseColumn(old)).isEqualTo(previous);
+        assertThat(old.validatedFindings()).allSatisfy(f -> assertThat(f.comparisonPolicy()).isEqualTo("NOT_COMPARED"));
+    }
+
     @Test void knownInputQueryAndExecutionBecomeOneSupplementalFinding() {
         var result = analyzer.analyze(project(UNSAFE));
         var finding = result.validatedFindings().get(0);
