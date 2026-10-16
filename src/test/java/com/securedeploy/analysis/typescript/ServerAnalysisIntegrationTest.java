@@ -43,6 +43,11 @@ class ServerAnalysisIntegrationTest {
         var zip = upload(token, TypeScriptServerAnalyzerTest.UNSAFE);
         var safe = upload(token, TypeScriptServerAnalyzerTest.SAFE);
         assertThat(zip.at("/serverAnalysis/findings")).hasSize(1);
+        assertThat(zip.at("/serverAnalysis/validatedFindings")).hasSize(1);
+        assertThat(zip.at("/serverAnalysis/validatedFindings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(zip.at("/serverAnalysis/validatedFindings/0/comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        assertThat(zip.at("/serverAnalysis/validatedFindings/0/executionLocations")).isNotEmpty();
+        assertThat(safe.at("/serverAnalysis/validatedFindings")).isEmpty();
         assertThat(safe.at("/serverAnalysis/findings")).isEmpty();
         for (String key : List.of("securityScore", "vulnerabilityCount", "deploymentStatus")) assertThat(zip.path(key)).isEqualTo(safe.path(key));
         for (String key : List.of("prioritySummary", "prioritizedDeploymentAssessment", "codeFindings"))
@@ -61,7 +66,8 @@ class ServerAnalysisIntegrationTest {
         assertThat(publicRoot).doesNotExist(); assertThat(privateRoot).doesNotExist();
         long id = zip.path("reviewId").asLong();
         assertThat(detail(token, id).path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
-        assertThat(jdbc.queryForObject("select server_analysis_json from reviews where id=?", String.class, id)).contains("TS_SQL_INPUT_FLOW").doesNotContain("SELECT *");
+        assertThat(jdbc.queryForObject("select server_analysis_json from reviews where id=?", String.class, id))
+                .contains("TS_SQL_INPUT_FLOW", "ts-flow:", "verificationSteps").doesNotContain("SELECT *");
         mvc.perform(get("/api/reviews/" + id).header("Authorization", "Bearer " + signup())).andExpect(status().isForbidden());
         mvc.perform(get("/api/reviews").header("Authorization", "Bearer " + token)).andExpect(status().isOk());
         mvc.perform(get("/api/reviews/" + id + "/report").header("Authorization", "Bearer " + token)).andExpect(status().isOk());

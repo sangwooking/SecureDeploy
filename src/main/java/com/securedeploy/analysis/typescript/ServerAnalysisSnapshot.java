@@ -8,7 +8,14 @@ import com.securedeploy.project.coverage.CoverageLedger;
 /** Structural evidence is deliberately outside the legacy score and risk policy. */
 public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
         String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
-        List<AuthorizationContext> authorizationContexts, List<String> limitations) {
+        List<AuthorizationContext> authorizationContexts, List<String> limitations,
+        List<ServerFlowFinding> validatedFindings) {
+    public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
+            String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
+            List<AuthorizationContext> authorizationContexts, List<String> limitations) {
+        this(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses,
+                authorizationContexts, limitations, null);
+    }
     public record Location(String filePath, int line, int column, String functionName, String kind) { }
     public record FileCoverage(String filePath, String parseStatus, String flowStatus, int entrypoints,
             int functionsAnalyzed, int prepareCallSites, int tracedPrepareCallSites, List<String> limitations) {
@@ -21,12 +28,12 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
             Location source, Location sink, List<Location> flow, List<Location> defenses,
             List<String> limitations, String message, String recommendation) { }
     public record SqlUse(String kind, Location location, List<Location> trace, List<Location> defenses,
-            List<String> limitations, boolean executionObserved) { }
+            List<String> limitations, boolean executionObserved, List<Location> executionLocations) { }
     public record AuthorizationContext(Location entry, List<Location> checks, List<Location> defenses,
             List<Location> resources, String conclusion, List<String> limitations) { }
 
     public static ServerAnalysisSnapshot unavailable(String status, List<FileCoverage> files, String reason) {
-        return new ServerAnalysisSnapshot(1, "ts-server-v1", null, status, files, List.of(), List.of(), List.of(), List.of(reason));
+        return new ServerAnalysisSnapshot(1, "ts-server-v2", null, status, files, List.of(), List.of(), List.of(), List.of(reason));
     }
 
     public CoverageLedger attachCoverage(CoverageLedger ledger) {

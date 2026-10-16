@@ -32,3 +32,13 @@ Results contain locations and observation codes, not source or string literals.
 They are stored separately from Rule findings/Risk/score and comparison counts.
 Legacy snapshots stay null. Runtime/parser failures are explicit, never a clean scan.
 Run `npm test` here, then backend `gradle test` and frontend tests/build.
+
+`ts-server-v2` connects only HIGH-confidence input-to-query paths with a matching
+execution-call observation to `validatedFindings`. A sink has one version-scoped
+finding identity and retains all validated input paths. Unknown transformations,
+unmodeled guards, partial control flow and unexecuted prepare calls remain candidates.
+Inline literal identifier allowlists and strict literal comparisons can narrow values;
+arbitrary validators cannot. Known string/array length is numeric, not arbitrary JSON fields.
+Execution observations are syntax evidence, not proof of a deployed D1 binding or
+successful attack. Findings have REVIEW_REQUIRED priority but do not enter risk or
+legacy comparison counts (`NOT_COMPARED`). Old snapshots are not promoted on read.

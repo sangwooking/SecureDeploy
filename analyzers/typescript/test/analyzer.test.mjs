@@ -139,3 +139,83 @@ test('long traces retain the original source and explicitly lower completeness',
   assert.equal(r.findings[0].confidence, 'MEDIUM');
   assert.ok(r.findings[0].limitations.includes('TRACE_DETAILS_TRUNCATED'));
 });
+
+test('paired SQL cases distinguish direct, template, variable, local and imported input from bound values', () => {
+  for (const expression of ['input', '`SELECT * FROM t WHERE id=${input}`', '"SELECT * FROM t WHERE id=" + input', 'identity(input)']) {
+    const prefix = 'function identity(x) { return x; } ';
+    const unsafe = run(prefix + worker(`${source} const sql = ${expression}; return env.DB.prepare(sql).all();`));
+    const safe = run(prefix + worker(`${source} const id = ${expression}; return env.DB.prepare('SELECT * FROM t WHERE id=?').bind(id).all();`));
+    assert.equal(unsafe.findings.length, 1, expression);
+    assert.equal(unsafe.findings[0].confidence, 'HIGH', expression);
+    assert.equal(safe.findings.length, 0, expression);
+    assert.equal(safe.sqlUses[0].kind, 'PARAMETERIZED_QUERY');
+  }
+});
+test('inline identifier allowlist with an exit narrows SQL; checking without rejecting does not', () => {
+  const check = '["id","title"].includes(input)';
+  for (const body of [`if (!${check}) return new Response(null, {status:400});`, `if (${check}) { return env.DB.prepare('SELECT * FROM t ORDER BY ' + input).all(); } return;`]) {
+    const r = run(worker(`${source} ${body} return env.DB.prepare('SELECT * FROM t ORDER BY ' + input).all();`));
+    assert.equal(r.findings.length, 0);
+    assert.ok(r.authorizationContexts[0].defenses.some(d=>d.kind==='LITERAL_IDENTIFIER_ALLOWLIST'));
+  }
+  for (const checkOnly of [`${check};`, `if (!${check}) console.log('invalid');`,
+    `const allowed=['id','title']; if(!allowed.includes(input)) return;`,
+    `if(!['id', 'unsafe identifier;'].includes(input)) return;`]) {
+    assert.equal(run(worker(`${source} ${checkOnly} return env.DB.prepare('SELECT * FROM t ORDER BY ' + input).all();`)).findings.length, 1);
+  }
+});
+test('reassignment and nonterminating branches do not inherit allowlist protection', () => {
+  const r = run(worker(`let input = new URL(request.url).searchParams.get('id'); if(!['id'].includes(input)) return;
+    input = (await request.json()).id; return env.DB.prepare(input).all();`));
+  assert.equal(r.findings[0].source.kind, 'REQUEST_BODY');
+});
+test('unresolved validators are neither assumed safe nor promoted as proven unguarded flows', () => {
+  for (const guard of ['if(!isValid(input)) return;', 'const allowed=["id","title"]; if(!allowed.includes(input)) return;',
+    'if(isValid(input) !== true) return;', 'if(!isValid(input) || !input) return;']) {
+    const r = run(worker(`${source} ${guard} return env.DB.prepare('SELECT * FROM t ORDER BY ' + input).all();`));
+    assert.equal(r.findings[0].confidence, 'MEDIUM');
+    assert.ok(r.findings[0].limitations.includes('QUERY_HAS_UNRESOLVED_VALUES'));
+  }
+});
+test('strict literal equality allowlists narrow values; mixed or coercive guards do not', () => {
+  for (const guard of ['if(input !== "id" && input !== "title") return;', 'if(!(input === "id" || input === "title")) return;']) {
+    assert.equal(run(worker(`${source} ${guard} return env.DB.prepare('SELECT * FROM t ORDER BY ' + input).all();`)).findings.length, 0);
+  }
+  for (const condition of ['input === "id" || other === "title"', 'input == "id"', 'input === "id" || true']) {
+    assert.equal(run(worker(`${source} if(${condition}) return env.DB.prepare('SELECT * FROM t ORDER BY ' + input).all();`)).findings.length, 1);
+  }
+});
+test('unknown URL transformation, object spread and mutating calls never claim static safe SQL', () => {
+  const cases = [
+    `const id = new URL(transform(request.url)).searchParams.get('id'); return env.DB.prepare(id).all();`,
+    `const body = await request.json(); const copied = {...body}; return env.DB.prepare(copied.sql).all();`,
+    `${source} const obj = {sql:'SELECT 1'}; mutate(obj,input); return env.DB.prepare(obj.sql).all();`,
+  ];
+  for (const code of cases) {
+    const r = run(worker(code));
+    assert.equal(r.sqlUses[0].kind, 'INPUT_IN_QUERY');
+    assert.equal(r.findings[0].confidence, 'MEDIUM');
+  }
+  const unknown = run(worker('const body = {...externalConfig}; return env.DB.prepare(body.sql).all();'));
+  assert.equal(unknown.sqlUses[0].kind, 'UNRESOLVED_QUERY');
+});
+test('partial control flow cannot be promoted to a fully tracked candidate', () => {
+  for (const code of ['for(let i=0;i<3;i++){env.DB.prepare(input).all();}',
+    'try { env.DB.prepare(input).all(); } catch {}', 'switch(input){case "x":env.DB.prepare(input).all();break;}']) {
+    const r = run(worker(source + code));
+    assert.equal(r.findings[0].confidence, 'MEDIUM');
+    assert.ok(r.findings[0].limitations.includes('QUERY_HAS_UNRESOLVED_VALUES'));
+  }
+});
+test('scheduled cleanup is unsupported, not a dangerous SQL finding', () => {
+  const r = run('export default {fetch(request,env){return new Response("ok")}, scheduled(event,env,ctx){ctx.waitUntil(cleanup(env))}}; function cleanup(env){return env.DB.prepare("DELETE FROM t WHERE expiry < ?").bind(1).run()}');
+  assert.equal(r.findings.length, 0);
+  assert.equal(r.files[0].prepareCallSites, 1);
+  assert.equal(r.files[0].tracedPrepareCallSites, 0);
+  assert.ok(r.files[0].limitations.includes('SCHEDULED_ENTRY_NOT_SUPPORTED'));
+});
+test('known string length is numeric, but an arbitrary JSON length property is untrusted', () => {
+  assert.equal(run(worker(`${source} return env.DB.prepare('SELECT * FROM t LIMIT ' + input.length).all();`)).findings.length, 0);
+  const json = run(worker(`const body = await request.json(); return env.DB.prepare('SELECT * FROM t LIMIT ' + body.length).all();`));
+  assert.equal(json.findings.length, 1);
+});

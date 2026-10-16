@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import path from 'node:path';
 
-export const VERSION = 'ts-server-v1';
+export const VERSION = 'ts-server-v2';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -16,6 +16,10 @@ function union(...values) {
   const same = values.length && values.every(v => v === values[0]);
   if (same) return values[0];
   return { trace, unknown: allTrace.length > 20 || values.some(v => v?.unknown),
+    predicateInput: values.some(v => v?.predicateInput) ? {
+      trace: values.flatMap(v => (v?.predicateInput ?? v)?.trace ?? []).slice(0, 20),
+      unknown: values.some(v => (v?.predicateInput ?? v)?.unknown)
+    } : undefined,
     traceTruncated: allTrace.length > 20 || values.some(v => v?.traceTruncated),
     ref: values.length && values.every(v => v?.ref && v.ref === values[0]?.ref) ? values[0].ref : undefined,
     tag: values.length && values.every(v => v?.tag === values[0]?.tag) ? values[0]?.tag : undefined };
@@ -110,7 +114,10 @@ export function analyze(input, overrides = {}) {
         if (!ts.isExportAssignment(s)) continue;
         const obj = unwrap(s.expression);
         if (obj && ts.isObjectLiteralExpression(obj)) for (const p of obj.properties) {
-          if (p.name?.getText(ast) !== 'fetch') continue;
+          if (p.name?.getText(ast) !== 'fetch') {
+            if (p.name?.getText(ast) === 'scheduled') note(mod, 'SCHEDULED_ENTRY_NOT_SUPPORTED');
+            continue;
+          }
           let fn;
           if (ts.isMethodDeclaration(p)) fn = register('fetch', p);
           else if (ts.isPropertyAssignment(p)) {
@@ -140,20 +147,21 @@ export function analyze(input, overrides = {}) {
   function property(base, key, node, state) {
     const { mod, fn } = state;
     if (base.ref?.properties?.has(key)) return { ...base.ref.properties.get(key), unknown: base.ref.unknown || base.ref.properties.get(key).unknown };
-    if (base.ref?.unknown) return { trace: base.ref.trace, unknown: true };
+    if (base.ref) return { trace: base.ref.trace, unknown: true };
     if (base.tag === 'context') {
       if (key === 'request') return value('request');
       if (key === 'env') return value('env');
       if (key === 'params') return value('route', [loc(node, mod, 'ROUTE_PARAMETER', fn)]);
       if (key === 'data') return value('contextData', [], { unknown: true });
     }
-    if (base.tag === 'env') return value('database');
+    if (base.tag === 'env') return value('database', [], { unknown: base.unknown });
     if (base.tag === 'contextData' && ['user', 'session', 'principal'].includes(key)) {
       state.context.checks.push(loc(node, mod, 'LOGIN_CONTEXT_REFERENCE', fn));
     }
-    if (base.tag === 'request' && key === 'url') return value('urlText', [loc(node, mod, 'REQUEST_URL', fn)]);
-    if (base.tag === 'url' && key === 'searchParams') return value('query', base.trace);
-    if (base.tag === 'url' && key === 'pathname') return value('input', base.trace);
+    if (base.tag === 'request' && key === 'url') return value('urlText', [loc(node, mod, 'REQUEST_URL', fn)], { unknown: base.unknown });
+    if (base.tag === 'url' && key === 'searchParams') return value('query', base.trace, { unknown: base.unknown });
+    if (base.tag === 'url' && key === 'pathname') return value('input', base.trace, { unknown: base.unknown });
+    if (key === 'length' && !base.unknown && ['STRING', 'ARRAY'].includes(base.inputShape)) return value('numeric');
     return { ...base, constant: undefined };
   }
   function bind(name, v, state) {
@@ -177,7 +185,7 @@ export function analyze(input, overrides = {}) {
       if (key.constant != null) return property(expr(node.expression, state), key.constant, node, state);
       note(mod, 'DYNAMIC_PROPERTY_UNRESOLVED'); return { ...union(expr(node.expression, state), key), unknown: true };
     }
-    if (ts.isTemplateExpression(node)) return union(...node.templateSpans.map(s => expr(s.expression, state)));
+    if (ts.isTemplateExpression(node)) return step(union(...node.templateSpans.map(s => expr(s.expression, state))), loc(node, mod, 'SQL_STRING_CONSTRUCTION', fn), mod);
     if (ts.isConditionalExpression(node)) { expr(node.condition, state); return union(expr(node.whenTrue, state), expr(node.whenFalse, state)); }
     if (ts.isBinaryExpression(node)) {
       const right = expr(node.right, state);
@@ -199,21 +207,29 @@ export function analyze(input, overrides = {}) {
       if ([ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken,
         ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.LessThanToken, ts.SyntaxKind.GreaterThanToken,
         ts.SyntaxKind.LessThanEqualsToken, ts.SyntaxKind.GreaterThanEqualsToken, ts.SyntaxKind.InKeyword,
-        ts.SyntaxKind.InstanceOfKeyword].includes(op)) return value('boolean');
+        ts.SyntaxKind.InstanceOfKeyword].includes(op)) {
+        const incoming = union(left, right);
+        return value('boolean', [], { predicateInput: incoming.predicateInput ?? (incoming.unknown ? incoming : undefined) });
+      }
       if ([ts.SyntaxKind.MinusToken, ts.SyntaxKind.AsteriskToken, ts.SyntaxKind.SlashToken, ts.SyntaxKind.PercentToken,
         ts.SyntaxKind.AsteriskAsteriskToken, ts.SyntaxKind.LessThanLessThanToken, ts.SyntaxKind.GreaterThanGreaterThanToken,
         ts.SyntaxKind.GreaterThanGreaterThanGreaterThanToken, ts.SyntaxKind.AmpersandToken, ts.SyntaxKind.BarToken,
         ts.SyntaxKind.CaretToken].includes(op)) return value('numeric');
-      return union(left, right);
+      const combined = union(left, right);
+      return op === ts.SyntaxKind.PlusToken ? step(combined, loc(node, mod, 'SQL_STRING_CONSTRUCTION', fn), mod) : combined;
     }
     if (ts.isObjectLiteralExpression(node)) {
       const properties = new Map();
+      let incomplete = false, spread = unknown();
       for (const p of node.properties) {
         if (ts.isPropertyAssignment(p) && !ts.isComputedPropertyName(p.name)) properties.set(p.name.getText().replace(/^['"]|['"]$/g, ''), expr(p.initializer, state));
         else if (ts.isShorthandPropertyAssignment(p)) properties.set(p.name.text, expr(p.name, state));
-        else note(mod, 'OBJECT_MEMBER_UNRESOLVED');
+        else {
+          note(mod, 'OBJECT_MEMBER_UNRESOLVED'); incomplete = true;
+          if (ts.isSpreadAssignment(p)) spread = union(spread, expr(p.expression, state));
+        }
       }
-      return value('object', [], { ref: { properties, unknown: false, trace: [] } });
+      return value('object', spread.trace, { unknown: incomplete, ref: { properties, unknown: incomplete, trace: spread.trace } });
     }
     if (ts.isArrayLiteralExpression(node)) return union(...node.elements.map(e => expr(e, state)));
     if (ts.isNewExpression(node) || ts.isCallExpression(node)) {
@@ -223,11 +239,11 @@ export function analyze(input, overrides = {}) {
         const target = resolve(mod, callee.text);
         if (target && !vars.has(callee.text)) {
           const passed = args.map(a => step(a, loc(node, mod, 'FUNCTION_ARGUMENT', fn), mod));
-          return invoke(target, passed, state.depth + 1, state.context, state.stack);
+          return invoke(target, passed, state.depth + 1, state.context, state.stack, state.uncertain);
         }
         if (!vars.has(callee.text) && !mod.imports.has(callee.text) && !mod.declared.has(callee.text)) {
-          if (callee.text === 'URL') return value('url', args[0]?.trace ?? []);
-          if (callee.text === 'URLSearchParams') return value('query', args[0]?.trace ?? []);
+          if (callee.text === 'URL') return value('url', args[0]?.trace ?? [], { unknown: args[0]?.unknown });
+          if (callee.text === 'URLSearchParams') return value('query', args[0]?.trace ?? [], { unknown: args[0]?.unknown });
           if (['Number', 'parseInt', 'parseFloat'].includes(callee.text)) {
             state.context.defenses.push(loc(node, mod, 'NUMERIC_CONVERSION', fn)); return value('numeric');
           }
@@ -236,14 +252,15 @@ export function analyze(input, overrides = {}) {
       if (ts.isPropertyAccessExpression(callee)) {
         const receiver = expr(callee.expression, state), method = callee.name.text;
         receiverInput = receiver;
-        if (receiver.tag === 'request' && ['json', 'text', 'formData'].includes(method)) return value('input', [loc(node, mod, 'REQUEST_BODY', fn)]);
-        if (receiver.tag === 'query' && ['get', 'getAll'].includes(method)) return value('input', receiver.trace.length ? [loc(node, mod, 'QUERY_PARAMETER', fn)] : []);
+        if (receiver.tag === 'request' && ['json', 'text', 'formData'].includes(method)) return value('input', [loc(node, mod, 'REQUEST_BODY', fn)], { unknown: receiver.unknown, inputShape: method === 'text' ? 'STRING' : undefined });
+        if (receiver.tag === 'query' && ['get', 'getAll'].includes(method)) return value('input', receiver.trace.length ? [loc(node, mod, 'QUERY_PARAMETER', fn)] : [], { unknown: receiver.unknown, inputShape: method === 'get' ? 'STRING' : 'ARRAY' });
         if (receiver.tag === 'input' && method === 'get') return receiver;
         if (receiver.tag === 'database' && method === 'prepare') {
-          const sql = args[0] ?? unknown();
+          const sql = { ...(args[0] ?? unknown()) };
+          if (state.uncertain && sql.trace.length || receiver.unknown) sql.unknown = true;
           const usage = { kind: sql.trace.length ? 'INPUT_IN_QUERY' : sql.unknown ? 'UNRESOLVED_QUERY' : 'STATIC_QUERY',
             location: loc(node, mod, 'D1_PREPARE', fn), trace: sql.trace, defenses: [],
-            limitations: sql.unknown ? ['QUERY_HAS_UNRESOLVED_VALUES'] : [], executionObserved: false };
+            limitations: sql.unknown ? ['QUERY_HAS_UNRESOLVED_VALUES'] : [], executionObserved: false, executionLocations: [] };
           append(result.sqlUses, usage, mod);
           state.context.resources.push(usage.location);
           if (sql.trace.length) append(result.findings, { ruleId: 'TS_SQL_INPUT_FLOW', kind: 'SQL_INPUT_TO_QUERY',
@@ -267,20 +284,30 @@ export function analyze(input, overrides = {}) {
             }
             return receiver;
           }
-          if (['first', 'all', 'run', 'raw'].includes(method)) { receiver.usage.executionObserved = true; return unknown(); }
+          if (['first', 'all', 'run', 'raw'].includes(method)) {
+            receiver.usage.executionObserved = true;
+            if (state.uncertain && !receiver.usage.limitations.includes('EXECUTION_PATH_PARTIAL')) receiver.usage.limitations.push('EXECUTION_PATH_PARTIAL');
+            if (receiver.usage.executionLocations.length < 20) receiver.usage.executionLocations.push(loc(node, mod, 'SQL_EXECUTION_CALL', fn));
+            return unknown();
+          }
         }
         if (method === 'batch' && receiver.tag === 'database') return unknown();
         if (['includes', 'test'].includes(method)) state.context.defenses.push(loc(node, mod, 'VALIDATION_EXPRESSION_PRESENT', fn));
       }
       // Unknown calls preserve input provenance, but do not prove sanitizer correctness or a complete path.
       const incoming = union(...args, ...(receiverInput ? [receiverInput] : []));
+      for (const argument of [...args, ...(receiverInput ? [receiverInput] : [])]) if (argument.ref) {
+        argument.ref.unknown = true; argument.ref.trace = union(argument, incoming).trace;
+        argument.ref.properties.clear();
+      }
       note(mod, 'CALL_TARGET_UNRESOLVED');
       return { ...incoming, unknown: true };
     }
     if (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) {
       const operand = expr(node.operand, state);
       if (node.operator === ts.SyntaxKind.ExclamationToken)
-        return typeof operand.constant === 'boolean' ? constant(!operand.constant) : value('boolean');
+        return typeof operand.constant === 'boolean' ? constant(!operand.constant)
+          : value('boolean', [], { predicateInput: operand.predicateInput ?? (operand.unknown ? operand : undefined) });
       state.context.defenses.push(loc(node, mod, 'NUMERIC_CONVERSION', fn));
       if ([ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(node.operator) && ts.isIdentifier(node.operand)) vars.set(node.operand.text, value('numeric'));
       return value('numeric');
@@ -296,6 +323,41 @@ export function analyze(input, overrides = {}) {
     const merged = new Map();
     for (const key of new Set(branches.flatMap(b => [...b.vars.keys()]))) merged.set(key, union(...branches.map(b => b.vars.get(key) ?? unknown())));
     state.vars = merged;
+    state.uncertain = state.uncertain || branches.some(b => b.uncertain);
+  }
+  // Only inline literal identifier lists/strict comparisons narrow values, never arbitrary validators.
+  function allowedIdentifier(condition, truth, depth = 0) {
+    if (depth > 3) return;
+    let node = unwrap(condition);
+    if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.ExclamationToken) {
+      truth = !truth; node = unwrap(node.operand);
+    }
+    if (ts.isBinaryExpression(node)) {
+      const op = node.operatorToken.kind;
+      if ((op === ts.SyntaxKind.BarBarToken && truth) || (op === ts.SyntaxKind.AmpersandAmpersandToken && !truth)) {
+        const a = allowedIdentifier(node.left, truth, depth + 1), b = allowedIdentifier(node.right, truth, depth + 1);
+        return a && a === b ? a : undefined;
+      }
+      if ([ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(op)
+          && truth === (op === ts.SyntaxKind.EqualsEqualsEqualsToken)) {
+        const a = unwrap(node.left), b = unwrap(node.right);
+        const name = ts.isIdentifier(a) ? a : b, literal = name === a ? b : a;
+        if (ts.isIdentifier(name) && ts.isStringLiteral(literal) && /^[A-Za-z_][A-Za-z0-9_]*$/.test(literal.text)) return name.text;
+      }
+      return;
+    }
+    if (!truth || !ts.isCallExpression(node) || !ts.isPropertyAccessExpression(node.expression)
+        || node.expression.name.text !== 'includes' || node.arguments.length !== 1) return;
+    const list = unwrap(node.expression.expression), input = unwrap(node.arguments[0]);
+    if (!ts.isArrayLiteralExpression(list) || !ts.isIdentifier(input) || !list.elements.length || list.elements.length > 30
+        || !list.elements.every(e => ts.isStringLiteral(e) && /^[A-Za-z_][A-Za-z0-9_]*$/.test(e.text))) return;
+    return input.text;
+  }
+  function refineAllowlist(condition, truth, state) {
+    const name = allowedIdentifier(condition, truth);
+    if (!name) return;
+    state.vars.set(name, value('allowlistedIdentifier'));
+    state.context.defenses.push(loc(condition, state.mod, 'LITERAL_IDENTIFIER_ALLOWLIST', state.fn));
   }
   function statement(node, state) {
     const { mod, fn } = state;
@@ -326,7 +388,15 @@ export function analyze(input, overrides = {}) {
       if (condition.constant === true) return statement(node.thenStatement, state);
       if (condition.constant === false) return node.elseStatement ? statement(node.elseStatement, state) : { values: [], stops: false };
       state.context.checks.push(loc(node.expression, mod, 'CONDITIONAL_CHECK', fn));
-      const a = fork(state), b = fork(state), ar = statement(node.thenStatement, a);
+      const a = fork(state), b = fork(state);
+      // A validator we cannot model may restrict this input; do not promote it as an unguarded path.
+      const predicate = condition.predicateInput ?? condition;
+      if (predicate.unknown && predicate.trace.length) for (const branch of [a, b]) {
+        for (const [name, v] of branch.vars) if (v.trace.some(t => predicate.trace.some(c => JSON.stringify(c) === JSON.stringify(t))))
+          branch.vars.set(name, { ...v, unknown: true });
+      }
+      refineAllowlist(node.expression, true, a); refineAllowlist(node.expression, false, b);
+      const ar = statement(node.thenStatement, a);
       const br = node.elseStatement ? statement(node.elseStatement, b) : { values: [], stops: false };
       if (ar.stops || br.stops) state.context.defenses.push(loc(node, mod, 'EARLY_EXIT_BRANCH_PRESENT', fn));
       const continuing = [!ar.stops && a, !br.stops && b].filter(Boolean);
@@ -334,13 +404,13 @@ export function analyze(input, overrides = {}) {
       return { values: [...ar.values, ...br.values], stops: ar.stops && br.stops };
     } else if (ts.isForStatement(node) || ts.isForOfStatement(node) || ts.isForInStatement(node) || ts.isWhileStatement(node) || ts.isDoStatement(node)) {
       note(mod, 'LOOP_FLOW_PARTIAL');
-      const branch = fork(state);
+      const branch = { ...fork(state), uncertain: true };
       if (node.initializer && ts.isVariableDeclarationList(node.initializer)) for (const d of node.initializer.declarations) bind(d.name, unknown(), branch);
       if (node.expression) expr(node.expression, branch);
       const r = statement(node.statement, branch); mergeVars(state, [state, branch]); return { ...r, stops: false };
     } else if (ts.isTryStatement(node)) {
       note(mod, 'EXCEPTION_FLOW_PARTIAL');
-      const a = fork(state), b = fork(state), ar = statement(node.tryBlock, a);
+      const a = { ...fork(state), uncertain: true }, b = { ...fork(state), uncertain: true }, ar = statement(node.tryBlock, a);
       const br = node.catchClause ? statement(node.catchClause.block, b) : { values: [], stops: false };
       mergeVars(state, [a, b]); if (node.finallyBlock) statement(node.finallyBlock, state);
       return { values: [...ar.values, ...br.values], stops: false };
@@ -348,20 +418,20 @@ export function analyze(input, overrides = {}) {
       note(mod, 'SWITCH_FLOW_PARTIAL'); expr(node.expression, state);
       const branches = [fork(state)]; const returns = [];
       for (const clause of node.caseBlock.clauses) {
-        const branch = fork(state); branches.push(branch);
+        const branch = { ...fork(state), uncertain: true }; branches.push(branch);
         for (const s of clause.statements) { const r = statement(s, branch); returns.push(...r.values); if (r.stops) break; }
       }
       mergeVars(state, branches); return { values: returns, stops: false };
     } else if (![ts.SyntaxKind.EmptyStatement, ts.SyntaxKind.BreakStatement].includes(node.kind)) note(mod, 'STATEMENT_UNSUPPORTED');
     return { values: [], stops: false };
   }
-  function invoke(fn, args, depth, context, stack) {
+  function invoke(fn, args, depth, context, stack, uncertain = false) {
     const { mod, node } = fn;
     if (depth > limits.maxDepth || stack.has(fn)) {
       note(mod, 'CALL_DEPTH_EXCEEDED'); return { ...union(...args), unknown: true };
     }
     tick(mod); mod.visited.add(fn); mod.record.functionsAnalyzed = mod.visited.size;
-    const state = { mod, fn, vars: new Map(), depth, context, stack: new Set([...stack, fn]) };
+    const state = { mod, fn, vars: new Map(), depth, context, uncertain, stack: new Set([...stack, fn]) };
     node.parameters.forEach((p, i) => bind(p.name, args[i] ?? unknown(), state));
     if (!node.body) return unknown();
     if (!ts.isBlock(node.body)) return expr(node.body, state);

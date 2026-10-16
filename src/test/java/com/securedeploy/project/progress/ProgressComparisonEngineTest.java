@@ -108,6 +108,20 @@ class ProgressComparisonEngineTest {
         assertThat(converter.convertToEntityAttribute(converter.convertToDatabaseColumn(snapshot))).isEqualTo(snapshot);
         assertThat(converter.convertToEntityAttribute(null)).isNull();
     }
+    @Test void structuralVersionChangeOrDisappearanceDoesNotBecomeAResolvedFinding() {
+        var before = review(1, sca(ScaResult.Status.COMPLETE, List.of()));
+        var after = review(2, sca(ScaResult.Status.COMPLETE, List.of()));
+        var location = new com.securedeploy.analysis.typescript.ServerAnalysisSnapshot.Location("worker.ts", 1, 1, "fetch", "D1_PREPARE");
+        var finding = new com.securedeploy.analysis.typescript.ServerAnalysisSnapshot.Finding("TS_SQL_INPUT_FLOW", "SQL_INPUT_TO_QUERY", "HIGH", "REVIEW_REQUIRED",
+                location, location, List.of(location), List.of(), List.of(), "Synthetic", "Bind values");
+        before.attachServerAnalysis(new com.securedeploy.analysis.typescript.ServerAnalysisSnapshot(1, "ts-server-v1", "6.0.3", "PARTIAL",
+                List.of(), List.of(finding), List.of(), List.of(), List.of()));
+        after.attachServerAnalysis(com.securedeploy.analysis.typescript.ServerAnalysisSnapshot.unavailable("TIMEOUT", List.of(), "ANALYZER_TIMEOUT"));
+        var result = engine.compare(before, after);
+        assertThat(result.counts()).containsEntry(Change.RESOLVED, 0L).containsEntry(Change.NEW, 0L);
+        assertThat(result.findings()).isEmpty();
+        assertThat(result.notices()).anyMatch(n -> n.contains("서버 코드 흐름 Finding"));
+    }
     ReviewEntity review(long id, ScaResult sca, VulnerabilityEntity... vulnerabilities) {
         var review = new ReviewEntity("test", ReviewSourceType.ZIP, null, 2, vulnerabilities.length, 100, "reference");
         ReflectionTestUtils.setField(review, "id", id);

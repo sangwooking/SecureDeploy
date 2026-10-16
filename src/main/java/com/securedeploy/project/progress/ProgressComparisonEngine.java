@@ -62,6 +62,8 @@ public class ProgressComparisonEngine {
         }
         notices.add("새 분석 완료 시 저장한 비교입니다. 과거 분석 삭제나 외부 보안 공지 변경으로 다시 계산하지 않습니다.");
         notices.add("AI 후보의 미관찰은 취약점 해결 또는 안전 판정이 아닙니다.");
+        if (after.getServerAnalysis() != null || before != null && before.getServerAnalysis() != null)
+            notices.add("서버 코드 흐름 Finding은 별도 검토 항목이며 이 비교의 해결·신규 건수에 포함하지 않습니다. 분석기 버전 변경이나 미검사를 해결로 처리하지 않습니다.");
         var counts = new EnumMap<Change, Long>(Change.class);
         for (Change change : Change.values()) counts.put(change, entries.stream().filter(e -> e.status() == change).count());
         Long baseline = after.getComparisonContext() == null ? null : after.getComparisonContext().baselineReviewId();

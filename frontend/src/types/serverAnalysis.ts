@@ -1,4 +1,10 @@
 export interface AnalysisLocation { filePath: string; line: number; column?: number; functionName: string; kind: string }
+export interface ServerFlowFinding {
+  findingId: string; sourceType: 'TYPESCRIPT_DATA_FLOW'; analyzerVersion: string; ruleId: string;
+  priority: 'REVIEW_REQUIRED'; comparisonPolicy: 'NOT_COMPARED'; location: AnalysisLocation;
+  evidence: ServerAnalysisSnapshot['findings']; executionLocations: AnalysisLocation[];
+  title: string; riskExplanation: string; recommendedAction: string; verificationSteps: string[];
+}
 export interface ServerAnalysisSnapshot {
   schemaVersion: number;
   analyzerVersion: string;
@@ -9,8 +15,9 @@ export interface ServerAnalysisSnapshot {
   findings: { ruleId: string; kind: string; confidence: string; disposition: string;
     source: AnalysisLocation; sink: AnalysisLocation; flow: AnalysisLocation[]; defenses: AnalysisLocation[];
     limitations: string[]; message: string; recommendation: string }[];
+  validatedFindings?: ServerFlowFinding[] | null;
   sqlUses: { kind: string; location: AnalysisLocation; trace: AnalysisLocation[]; defenses: AnalysisLocation[];
-    limitations: string[]; executionObserved: boolean }[];
+    limitations: string[]; executionObserved: boolean; executionLocations?: AnalysisLocation[] | null }[];
   authorizationContexts: { entry: AnalysisLocation; checks: AnalysisLocation[]; defenses: AnalysisLocation[];
     resources: AnalysisLocation[]; conclusion: string; limitations: string[] }[];
   limitations: string[];

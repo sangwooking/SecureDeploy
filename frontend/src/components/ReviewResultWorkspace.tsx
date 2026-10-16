@@ -67,7 +67,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
               <small>AI 추가 후보 {counts.candidates}건은 별도 확인</small></button>
             <button type="button" onClick={() => navigate('SHOULD_FIX')}><span>수정 권장</span><strong>{counts.recommended ?? '미평가'}</strong></button>
           </div>
-          <p className="decision-disclaimer">분석 당시의 판단입니다. 미발견이 완전한 안전을 뜻하지 않으며, AI 추가 후보는 배포 판단에 합산하지 않습니다.</p>
+          <p className="decision-disclaimer">분석 당시의 판단입니다. 미발견이 완전한 안전을 뜻하지 않으며, AI 추가 후보와 서버 코드 흐름 검토 항목은 배포 판단에 합산하지 않습니다.</p>
         </section>
         <AnalysisCoverageSection coverage={result.coverage} sca={result.sca} semantic={result.semanticReview} />
         <DependencyActionGroups sca={result.sca} />
@@ -82,6 +82,8 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
             })}</ol>
             {assessment.prioritySummary.BLOCKING === 0 && assessment.prioritySummary.REVIEW_REQUIRED === 0 && assessment.prioritySummary.SHOULD_FIX === 0 && <p>분석된 범위에서 필수 처리 또는 수정 권장 문제가 보고되지 않았습니다. 분석 범위와 추가 확인 사항을 함께 확인하세요.</p>}
             {counts.candidates > 0 && <p>AI가 제안한 {counts.candidates}개 확인 항목은 ‘배포 전 직접 확인할 부분’에서 별도로 검토하세요.</p>}
+            {(result.serverAnalysis?.validatedFindings?.length ?? 0) > 0 && <p>서버 코드 흐름 근거가 연결된 검토 항목 {result.serverAnalysis!.validatedFindings!.length}건이 있습니다.
+              <button className="secondary-button" type="button" onClick={() => navigate('REVIEW_REQUIRED')}>입력 경로와 수정 방법 확인</button></p>}
             {assessment.prioritySummary.INFORMATIONAL > 0 && <p>참고 사항 {assessment.prioritySummary.INFORMATIONAL}건은 ‘수정 권장’에서 별도로 확인할 수 있습니다.</p>}
           </> : <button className="secondary-button" type="button" onClick={() => navigate('REVIEW_REQUIRED')}>저장된 문제 확인</button>}
         </section>
