@@ -11,19 +11,30 @@ public class NpmManifestParser {
 
     public List<DependencyComponent> parseManifest(ProjectFile file) throws Exception {
         JsonNode root = read(file);
+        var lines = JsonSourceLines.read(mapper, file);
         List<DependencyComponent> result = new ArrayList<>();
         for (String section : SECTIONS) {
             if (root.has(section) && !root.get(section).isObject()) throw new IllegalArgumentException("Invalid dependency section");
             root.path(section).fields().forEachRemaining(e -> {
                 String spec = e.getValue().asText();
                 String name = spec.startsWith("npm:") ? aliasName(spec) : e.getKey();
-                result.add(VersionClassifier.component(ScaEcosystem.NPM, name, spec, section, true, file.relativePath(), 0));
+                int line = lines.getOrDefault("/" + section + "/" + JsonSourceLines.key(e.getKey()), 0);
+                var component = VersionClassifier.component(ScaEcosystem.NPM, name, spec, section, true, file.relativePath(), line);
+                String declared = component.version();
+                if (declared != null && !declared.matches("[vV0-9xX.*~^<>=|+()\\[\\] ,_-]+")) declared = "<unresolved-spec>";
+                var path = new DependencyContext.DependencyPath(com.securedeploy.project.coverage.CoverageRecorder.safePath(file.relativePath()), line,
+                        section, component.packageName(), declared, true, section.equals("optionalDependencies"), section.equals("peerDependencies"), List.of());
+                result.add(component.withContext(new DependencyContext(1, "UNKNOWN", "NOT_ANALYZED", "", 0, List.of(), false,
+                        List.of(path), List.of("Manifest 선언만 확인했습니다. 사용 가능한 lockfile 근거가 없어 실제 설치 경로와 환경을 확인하지 못했습니다.")), line));
             });
         }
         return result;
     }
 
     public List<DependencyComponent> parseLock(ProjectFile file) throws Exception {
+        return parseLock(file, List.of());
+    }
+    public List<DependencyComponent> parseLock(ProjectFile file, List<ProjectFile> files) throws Exception {
         JsonNode root = read(file);
         int version = root.path("lockfileVersion").asInt();
         JsonNode packages = root.path("packages");
@@ -35,6 +46,8 @@ public class NpmManifestParser {
         packages.fields().forEachRemaining(entry -> {
             String owner = entry.getKey();
             if (!entry.getValue().isObject()) throw new IllegalArgumentException("Invalid locked package");
+            for (String section : SECTIONS) if (entry.getValue().has(section) && !entry.getValue().path(section).isObject())
+                throw new IllegalArgumentException("Invalid locked dependency section");
             boolean directOwner = !owner.contains("node_modules");
             for (String section : SECTIONS) entry.getValue().path(section).fieldNames().forEachRemaining(name -> {
                 String parent = owner;
@@ -59,6 +72,7 @@ public class NpmManifestParser {
             });
         });
         List<DependencyComponent> result = new ArrayList<>();
+        Map<String, DependencyContext> contexts = new NpmDependencyGraph(mapper).collect(file, files, aliasNames);
         result.addAll(missing);
         packages.fields().forEachRemaining(entry -> {
             String path = entry.getKey();
@@ -71,8 +85,10 @@ public class NpmManifestParser {
             if (!resolved.isEmpty() && !resolved.startsWith("https://registry.npmjs.org/")) installed = null;
             String scope = pkg.path("dev").asBoolean() ? "devDependencies"
                     : pkg.path("optional").asBoolean() ? "optionalDependencies" : "dependencies";
+            var context = contexts.get(path);
             result.add(VersionClassifier.component(ScaEcosystem.NPM, name, installed, scope,
-                    packages.has("") ? directPaths.contains(path) : null, file.relativePath(), 0));
+                    packages.has("") ? directPaths.contains(path) : null, file.relativePath(), context == null ? 0 : context.lockLine())
+                    .withContext(context, context == null ? 0 : context.lockLine()));
         });
         return result;
     }

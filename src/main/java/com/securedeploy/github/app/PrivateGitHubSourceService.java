@@ -24,7 +24,7 @@ public class PrivateGitHubSourceService {
             if (!selected.repositoryUrl().equals(confirmed.repositoryUrl())) throw GitHubAppException.denied();
             complete = true;
             return new ClonedRepository(clone.repositoryName(), clone.repositoryUrl(), clone.workspacePath(), clone.repositoryRoot(),
-                    clone.sourceMetadata().withAccess(repository, installation, confirmed.privateRepository()));
+                    clone.sourceMetadata().withAccess(repository, installation, confirmed.privateRepository()), clone.sourceExclusions());
         } finally {
             client.revokeInstallation(token);
             if (!complete && clone != null) FileUtils.deleteRecursively(clone.workspacePath());

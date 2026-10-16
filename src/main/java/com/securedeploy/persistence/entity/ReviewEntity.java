@@ -31,6 +31,16 @@ import java.util.List;
 @Table(name = "reviews")
 public class ReviewEntity {
 
+    @Convert(converter = com.securedeploy.project.coverage.CoverageLedgerConverter.class)
+    @Column(name = "coverage_ledger_json", columnDefinition = "TEXT")
+    private com.securedeploy.project.coverage.CoverageLedger coverage;
+
+    public com.securedeploy.project.coverage.CoverageLedger getCoverage() { return coverage; }
+    public void attachCoverage(com.securedeploy.project.coverage.CoverageLedger value) {
+        if (coverage != null) throw new IllegalStateException("Coverage snapshot is immutable");
+        coverage = value;
+    }
+
     @Convert(converter = com.securedeploy.github.model.GitHubSourceSnapshotConverter.class)
     @Column(name = "source_metadata_json", columnDefinition = "TEXT")
     private com.securedeploy.github.model.GitHubSourceSnapshot sourceMetadata;

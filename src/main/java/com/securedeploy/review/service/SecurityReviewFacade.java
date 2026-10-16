@@ -10,6 +10,8 @@ import com.securedeploy.github.service.GitHubRepositoryService;
 import com.securedeploy.global.util.FileUtils;
 import com.securedeploy.persistence.service.ReviewPersistenceService;
 import com.securedeploy.project.model.ProjectStructure;
+import com.securedeploy.project.coverage.CoverageException;
+import com.securedeploy.project.coverage.CoverageSummary;
 import com.securedeploy.project.service.ProjectScanner;
 import com.securedeploy.project.service.ProjectService;
 import com.securedeploy.review.dto.ReviewHistoryResponse;
@@ -103,7 +105,7 @@ public class SecurityReviewFacade {
 
         try {
             ExtractedProject extractedProject = zipExtractService.extract(archive);
-            AnalysisOutcome outcome = reviewProject(extractedProject.projectName(), extractedProject.projectRoot(), scanMode);
+            AnalysisOutcome outcome = reviewProject(extractedProject.projectName(), extractedProject.projectRoot(), scanMode, extractedProject.sourceExclusions());
             ProjectEntity project = projectService.resolveOrCreateProjectForZip(currentUserService.currentUserId(), extractedProject.projectName());
             return saveWithRemediation(project, outcome, ReviewSourceType.ZIP, null, scanMode);
         } finally {
@@ -119,7 +121,7 @@ public class SecurityReviewFacade {
         ClonedRepository clonedRepository = gitHubRepositoryService.clonePublicRepository(repositoryUrl);
 
         try {
-            AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot(), scanMode);
+            AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot(), scanMode, clonedRepository.sourceExclusions());
             ProjectEntity project = projectService.resolveOrCreateProjectForGithub(currentUserService.currentUserId(), clonedRepository.repositoryUrl());
             return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), scanMode, clonedRepository.sourceMetadata());
         } finally {
@@ -138,7 +140,7 @@ public class SecurityReviewFacade {
 
         try {
             ExtractedProject extractedProject = zipExtractService.extract(archive);
-            AnalysisOutcome outcome = reviewProject(extractedProject.projectName(), extractedProject.projectRoot(), scanMode);
+            AnalysisOutcome outcome = reviewProject(extractedProject.projectName(), extractedProject.projectRoot(), scanMode, extractedProject.sourceExclusions());
             return saveWithRemediation(project, outcome, ReviewSourceType.ZIP, null, scanMode);
         } finally {
             FileUtils.deleteRecursively(archive.workspacePath());
@@ -162,7 +164,7 @@ public class SecurityReviewFacade {
         ClonedRepository clonedRepository = gitHubRepositoryService.clonePublicRepository(project.getRepositoryUrl());
 
         try {
-            AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot(), scanMode);
+            AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot(), scanMode, clonedRepository.sourceExclusions());
             return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), scanMode, clonedRepository.sourceMetadata());
         } finally {
             FileUtils.deleteRecursively(clonedRepository.workspacePath());
@@ -182,7 +184,7 @@ public class SecurityReviewFacade {
         }
         ClonedRepository clone = privateGitHubSources.collect(userId, installationId, repositoryId);
         try {
-            AnalysisOutcome outcome = reviewProject(clone.repositoryName(), clone.repositoryRoot(), scanMode);
+            AnalysisOutcome outcome = reviewProject(clone.repositoryName(), clone.repositoryRoot(), scanMode, clone.sourceExclusions());
             ProjectEntity project = projectService.resolveConnectedGitHubProject(userId, projectId, clone.sourceMetadata());
             return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clone.repositoryUrl(), scanMode, clone.sourceMetadata());
         } finally { FileUtils.deleteRecursively(clone.workspacePath()); }
@@ -207,13 +209,26 @@ public class SecurityReviewFacade {
         return reviewPersistenceService.findReviewDetail(reviewId, currentUserService.currentUserId());
     }
 
-    private AnalysisOutcome reviewProject(String projectName, Path projectRoot, ScanMode scanMode) {
-        ProjectStructure projectStructure = projectScanner.scan(projectRoot);
-        if (projectStructure.analysisFiles().isEmpty()) {
-            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "분석 가능한 파일을 찾지 못했습니다. Spring Boot 또는 React/Vite 프로젝트의 .java, .js, .ts, .tsx, 설정 파일, package.json, pom.xml, build.gradle, Dockerfile 또는 배포 설정 파일이 포함되어 있는지 확인해 주세요.");
+    private AnalysisOutcome reviewProject(String projectName, Path projectRoot, ScanMode scanMode,
+            com.securedeploy.project.coverage.CoverageLedger sourceExclusions) {
+        ProjectStructure projectStructure;
+        try { projectStructure = projectScanner.scan(projectRoot); }
+        catch (CoverageException failure) {
+            throw new CoverageException(failure.getStatus(), failure.getMessage(), CoverageSummary.failure(failure.coverage(), sourceExclusions, "FILE_COLLECTION"));
         }
-        List<RuleMatch> rawMatches = ruleEngine.execute(new RuleExecutionContext(projectStructure));
-        List<RuleMatch> matches = falsePositiveAnalyzer.analyze(projectStructure, rawMatches);
+        if (projectStructure.analysisFiles().isEmpty()) {
+            throw new CoverageException(HttpStatus.BAD_REQUEST, "분석 가능한 파일을 찾지 못했습니다. 지원하는 코드 또는 설정 파일이 포함되어 있는지 확인해 주세요. 미지원 영역을 안전으로 판단하지 않습니다.", CoverageSummary.failure(projectStructure.coverage(), sourceExclusions, "FILE_COLLECTION"));
+        }
+        List<RuleMatch> rawMatches;
+        try { rawMatches = ruleEngine.execute(new RuleExecutionContext(projectStructure)); }
+        catch (RuntimeException failure) {
+            throw new CoverageException(HttpStatus.INTERNAL_SERVER_ERROR, "코드 패턴 검사를 완료하지 못했습니다.", CoverageSummary.failure(projectStructure.coverage(), sourceExclusions, "RULE_ENGINE"));
+        }
+        List<RuleMatch> matches;
+        try { matches = falsePositiveAnalyzer.analyze(projectStructure, rawMatches); }
+        catch (RuntimeException failure) {
+            throw new CoverageException(HttpStatus.INTERNAL_SERVER_ERROR, "탐지 신뢰도 검토를 완료하지 못했습니다.", CoverageSummary.failure(projectStructure.coverage(), sourceExclusions, "FALSE_POSITIVE"));
+        }
         SnippetGroup snippetGroup = snippetCollector.collect(projectStructure);
 
         SecurityReviewResponse response = securityReviewService.createResponse(
@@ -229,7 +244,9 @@ public class SecurityReviewFacade {
                 slices = new SecuritySliceCollector.Collection(List.of(), 0, List.of("Java slice indexing unavailable."), false);
             }
         }
-        return new AnalysisOutcome(response.withSca(sca), snippetGroup, threatIntelligenceService.enrich(sca), slices,
+        var intelligence = threatIntelligenceService.enrich(sca);
+        var coverage = com.securedeploy.project.coverage.CoverageSummary.complete(projectStructure.coverage(), sourceExclusions, sca, intelligence);
+        return new AnalysisOutcome(response.withSca(sca).withCoverage(coverage), snippetGroup, intelligence, slices,
                 comparisonCollector.collect(projectStructure));
     }
 

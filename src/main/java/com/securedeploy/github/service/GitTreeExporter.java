@@ -18,7 +18,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class GitTreeExporter {
-    public record Result(Instant commitTimestamp, int submodules, int lfsPointers, int symlinks, List<String> limitations) { }
+    public record Result(Instant commitTimestamp, int submodules, int lfsPointers, int symlinks, List<String> limitations,
+                         com.securedeploy.project.coverage.CoverageLedger sourceExclusions) { }
     private final FileStorageProperties limits;
     private final ProjectFileCollector collector;
     public GitTreeExporter(FileStorageProperties limits, ProjectFileCollector collector) { this.limits = limits; this.collector = collector; }
@@ -27,6 +28,7 @@ public class GitTreeExporter {
         long bytes = 0, textBytes = 0;
         int entries = 0, submodules = 0, lfs = 0, symlinks = 0;
         boolean modulesFile = false;
+        var excluded = new com.securedeploy.project.coverage.CoverageRecorder();
         try (Repository repository = new FileRepositoryBuilder().setGitDir(gitDirectory.toFile()).setBare().build();
              RevWalk revisions = new RevWalk(repository); TreeWalk tree = new TreeWalk(repository)) {
             var commit = revisions.parseCommit(ObjectId.fromString(sha));
@@ -37,15 +39,26 @@ public class GitTreeExporter {
                 Path relative = safePath(tree.getPathString());
                 FileMode mode = tree.getFileMode(0);
                 if (tree.isSubtree()) { tree.enterSubtree(); continue; }
-                if (mode.equals(FileMode.GITLINK)) { submodules++; continue; }
-                if (mode.equals(FileMode.SYMLINK)) { symlinks++; continue; }
+                if (mode.equals(FileMode.GITLINK)) {
+                    submodules++;
+                    excluded.record(relative.toString(), "DIRECTORY", null, "EXCLUDED", "SUBMODULE_NOT_ENUMERATED");
+                    excluded.incomplete();
+                    continue;
+                }
+                if (mode.equals(FileMode.SYMLINK)) {
+                    symlinks++; excluded.record(relative.toString(), "FILE", null, "EXCLUDED", "SYMLINK"); continue;
+                }
                 if (!mode.equals(FileMode.REGULAR_FILE) && !mode.equals(FileMode.EXECUTABLE_FILE)) throw new IOException("Unsupported Git mode");
                 ObjectLoader blob = repository.open(tree.getObjectId(0), Constants.OBJ_BLOB);
                 if (blob.getSize() > limits.getMaxExpandedSize().toBytes() - bytes) throw limit();
                 bytes += blob.getSize();
                 if (relative.toString().equals(".gitmodules")) modulesFile = true;
-                if (ProjectIgnorePolicy.ignores(relative) || containsGitDirectory(relative)) continue;
-                if (blob.getSize() <= 1024 && isLfsPointer(blob.getBytes(1024))) { lfs++; continue; }
+                if (ProjectIgnorePolicy.ignores(relative) || containsGitDirectory(relative)) {
+                    excluded.record(relative.toString(), "FILE", null, "EXCLUDED", "DIRECTORY_POLICY"); continue;
+                }
+                if (blob.getSize() <= 1024 && isLfsPointer(blob.getBytes(1024))) {
+                    lfs++; excluded.record(relative.toString(), "FILE", null, "EXCLUDED", "LFS_POINTER"); continue;
+                }
                 if (collector.resolveAnalysisFileType(relative).isPresent()) {
                     if (blob.getSize() > limits.getMaxAnalysisFileSize().toBytes()
                             || blob.getSize() > limits.getMaxAnalysisTotalSize().toBytes() - textBytes) throw limit();
@@ -63,7 +76,7 @@ public class GitTreeExporter {
             if (submodules > 0 || modulesFile) notes.add("Submodule은 이번 분석에 포함되지 않았습니다. 외부 저장소를 자동으로 가져오지 않습니다.");
             if (lfs > 0) notes.add("Git LFS pointer의 실제 파일 내용은 가져오지 않았으며 분석에서 제외했습니다.");
             if (symlinks > 0) notes.add("심볼릭 링크는 따라가지 않으며 분석에서 제외했습니다.");
-            return new Result(Instant.ofEpochSecond(commit.getCommitTime()), submodules, lfs, symlinks, List.copyOf(notes));
+            return new Result(Instant.ofEpochSecond(commit.getCommitTime()), submodules, lfs, symlinks, List.copyOf(notes), excluded.snapshot());
         }
     }
     static boolean isLfsPointer(byte[] bytes) {

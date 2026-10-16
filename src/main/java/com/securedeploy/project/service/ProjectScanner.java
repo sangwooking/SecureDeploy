@@ -5,6 +5,7 @@ import com.securedeploy.global.error.SecureDeployException;
 import com.securedeploy.project.model.ProjectFile;
 import com.securedeploy.project.model.ProjectStructure;
 import com.securedeploy.upload.service.UploadPolicy;
+import com.securedeploy.project.coverage.*;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -29,36 +30,69 @@ public class ProjectScanner {
     }
 
     public ProjectStructure scan(Path projectRoot) {
+        return scan(projectRoot, null);
+    }
+
+    public ProjectStructure scan(Path projectRoot, CoverageLedger sourceExclusions) {
         List<ProjectFile> files = new ArrayList<>();
         ScanBudget budget = new ScanBudget();
+        CoverageRecorder ledger = new CoverageRecorder();
+        ledger.merge(sourceExclusions);
         try {
             Files.walkFileTree(projectRoot, new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-                    return ProjectIgnorePolicy.ignores(projectRoot.relativize(dir))
-                            ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
+                    if (ProjectIgnorePolicy.ignores(projectRoot.relativize(dir))) {
+                        ledger.record(projectRoot.relativize(dir).toString(), "DIRECTORY", null, "EXCLUDED", "DIRECTORY_POLICY_SUBTREE_NOT_ENUMERATED");
+                        ledger.incomplete();
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                    return FileVisitResult.CONTINUE;
                 }
 
                 @Override
                 public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+                    String relative = projectRoot.relativize(path).toString().replace('\\', '/');
                     if (!attrs.isRegularFile() || ProjectIgnorePolicy.ignores(projectRoot.relativize(path))) {
+                        ledger.record(relative, "FILE", null, "EXCLUDED", attrs.isSymbolicLink() ? "SYMLINK" : "DIRECTORY_POLICY");
                         return FileVisitResult.CONTINUE;
                     }
                     var type = fileCollector.resolveAnalysisFileType(path);
                     if (type.isPresent()) {
-                        if (files.size() >= limits.getMaxArchiveEntries()) throw analysisLimit();
-                        var lines = readLines(path, budget);
+                        List<String> lines;
+                        try {
+                            if (files.size() >= limits.getMaxArchiveEntries()) throw analysisLimit();
+                            lines = readLines(path, budget);
+                        } catch (SecureDeployException limit) {
+                            ledger.record(relative, "FILE", type.get().name(), "LIMIT_EXCEEDED", "TEXT_BUDGET");
+                            ledger.incomplete();
+                            throw new CoverageException(limit.getStatus(), limit.getMessage(), ledger.snapshot());
+                        } catch (IOException unreadable) {
+                            ledger.record(relative, "FILE", type.get().name(), "FAILED", "TEXT_READ_OR_ENCODING");
+                            ledger.incomplete();
+                            throw new CoverageException(HttpStatus.BAD_REQUEST, "분석 대상 텍스트를 읽지 못해 분석을 중단했습니다. 인코딩과 파일을 확인해 주세요.", ledger.snapshot());
+                        }
                         // ZIPs can also contain LFS pointers; a pointer is never actual source code.
-                        if (!lines.isEmpty() && lines.get(0).equals("version https://git-lfs.github.com/spec/v1")) return FileVisitResult.CONTINUE;
+                        if (!lines.isEmpty() && lines.get(0).equals("version https://git-lfs.github.com/spec/v1")) {
+                            ledger.record(relative, "FILE", type.get().name(), "EXCLUDED", "LFS_POINTER");
+                            return FileVisitResult.CONTINUE;
+                        }
+                        ledger.record(relative, "FILE", type.get().name(), "SELECTED", "PATTERN_ANALYSIS_INPUT");
                         files.add(new ProjectFile(path, projectRoot.relativize(path).toString().replace('\\', '/'), type.get(), lines));
-                    }
+                    } else ledger.record(relative, "FILE", null, "UNSUPPORTED", "NO_SUPPORTED_ANALYZER");
                     return FileVisitResult.CONTINUE;
                 }
+                @Override public FileVisitResult visitFileFailed(Path path, IOException failure) {
+                    ledger.record(projectRoot.relativize(path).toString(), "FILE", null, "FAILED", "FILE_READ");
+                    ledger.incomplete();
+                    throw new CoverageException(HttpStatus.BAD_REQUEST, "파일을 읽지 못해 분석을 중단했습니다.", ledger.snapshot());
+                }
             });
-            return new ProjectStructure(projectRoot, files);
+            return new ProjectStructure(projectRoot, files, ledger.snapshot());
         } catch (IOException exception) {
-            throw new SecureDeployException(HttpStatus.BAD_REQUEST,
-                    "분석 대상 파일을 읽을 수 없습니다. 텍스트 파일의 인코딩과 프로젝트 구성을 확인해 주세요.");
+            ledger.incomplete();
+            throw new CoverageException(HttpStatus.BAD_REQUEST,
+                    "분석 대상 파일을 읽을 수 없습니다. 텍스트 파일의 인코딩과 프로젝트 구성을 확인해 주세요.", ledger.snapshot());
         }
     }
 

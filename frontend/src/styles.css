@@ -2122,6 +2122,13 @@ h1 {
   .workspace-content h2 { font-size: 20px; }
 }
 .github-source { min-width: 0; overflow-wrap: anywhere; }
+.coverage-file-list { padding-left: 20px; }
+.coverage-file-list li { padding: 8px 0; border-bottom: 1px solid #d7dfe5; }
+.coverage-file-list span { display: block; color: #526270; font-size: 13px; }
+.analysis-coverage-brief, .dependency-context, .dependency-actions { min-width: 0; overflow-wrap: anywhere; }
+.analysis-coverage-brief code, .dependency-context code, .dependency-actions code { white-space: normal; overflow-wrap: anywhere; }
+.dependency-context { padding-block: 12px; border-bottom: 1px solid #d7dfe5; }
+.dependency-actions { padding-block: 16px; border-block: 1px solid #d7dfe5; }
 .github-source code { white-space: normal; overflow-wrap: anywhere; }
 .dependency-lookup-form fieldset { border: 0; padding: 0; margin: 12px 0; min-width: 0; max-width: 640px; display: grid; gap: 8px; }
 .dependency-lookup-form input { width: 100%; min-width: 0; min-height: 42px; padding: 0 12px; box-sizing: border-box; border: 1px solid #c7d2e1; border-radius: 6px; color: #172033; background: #fff; }

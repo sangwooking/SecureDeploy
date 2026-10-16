@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { RiskFinding, SecurityReviewResponse, Severity } from '../types/securityReview';
 import { CodeFindingCard, type FindingStatusActions } from './CodeFindingCard';
 import { DependencyFindingCard } from './DependencyFindingCard';
+import { DependencyActionGroups } from './DependencyContextDetails';
+import { AnalysisCoverageSection } from './AnalysisCoverageSection';
 import { DependencySecuritySection, ScaAssessmentNotice } from './DependencySecuritySection';
 import { FindingRemediation, RemediationNotice } from './FindingRemediation';
 import { RiskAssessmentSection } from './RiskAssessmentSection';
@@ -40,7 +42,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
   return <section ref={root} className="result-area result-workspace" aria-label="프로젝트 분석 결과">
     <header className="result-workspace-header">
       <div><p className="eyebrow">프로젝트 보안 상태</p><h2>{result.projectName}</h2>
-        <p>{result.reviewId ? `분석 #${result.reviewId}` : '현재 분석'} · {result.scannedFileCount}개 파일 검사</p></div>
+        <p>{result.reviewId ? `분석 #${result.reviewId}` : '현재 분석'} · {result.scannedFileCount}개 파일 패턴 검사</p></div>
       <details className="report-menu"><summary>리포트 다운로드</summary><div className="result-actions">{reportActions}</div></details>
     </header>
     {result.sourceType === 'GITHUB' && <GitHubSourceInfo source={result.sourceMetadata} compact />}
@@ -66,6 +68,8 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
           </div>
           <p className="decision-disclaimer">분석 당시의 판단입니다. 미발견이 완전한 안전을 뜻하지 않으며, AI 추가 후보는 배포 판단에 합산하지 않습니다.</p>
         </section>
+        <AnalysisCoverageSection coverage={result.coverage} sca={result.sca} semantic={result.semanticReview} />
+        <DependencyActionGroups sca={result.sca} />
         <section className="next-actions"><h3>가장 먼저 해야 할 일</h3>
           {assessment ? <>
             <ol>{(['BLOCKING', 'REVIEW_REQUIRED', 'SHOULD_FIX'] as const).filter(priority => assessment.prioritySummary[priority] > 0).map(priority => {
@@ -120,6 +124,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
           <div><dt>기존 판정 · 참고용</dt><dd>{result.deploymentStatus}</dd></div>
           <div><dt>원본 룰 탐지 수</dt><dd>{result.vulnerabilityCount}</dd></div></dl>
         <p>참고 점수는 배포 허가가 아닙니다. 배포 여부는 ‘결과 요약’의 판단을 우선 확인하세요.</p>
+        <AnalysisCoverageSection coverage={result.coverage} sca={result.sca} semantic={result.semanticReview} />
         <details><summary>저장된 배포 평가와 분석 범위</summary><RiskAssessmentSection assessment={assessment} /></details>
         <details><summary>코드에서 발견된 문제 · 원본과 판단 근거</summary><LegacyCodeList result={result} statusActions={statusActions} /></details>
         <details><summary>사용 중인 라이브러리 문제 · 보안 공지와 악용 정보</summary><DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} /></details>
@@ -151,7 +156,7 @@ function FindingCollection({ result, findings, statusActions }: {
       if (finding.source === 'CODE' && vulnerability) return <CodeFindingCard key={finding.findingId} vulnerability={vulnerability}
         finding={finding} remediation={result.remediation} statusActions={statusActions} />;
       if (finding.dependency) return <DependencyFindingCard key={finding.findingId} dependency={finding.dependency}
-        finding={finding} remediation={result.remediation} intelligence={result.riskAssessment?.threatIntelligence} />;
+        finding={finding} remediation={result.remediation} intelligence={result.riskAssessment?.threatIntelligence} components={result.sca?.components} />;
       const guide = findingGuidance(finding);
       return <article className="vulnerability-item action-finding" key={finding.findingId}>
         <span className={`risk-badge risk-${finding.priority.toLowerCase()}`}>{priorityLabels[finding.priority]}</span>

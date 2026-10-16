@@ -25,14 +25,14 @@ public class ComparisonContextCollector {
         try {
             var digest = MessageDigest.getInstance("SHA-256");
             var resolver = new PathMatchingResourcePatternResolver();
-            for (String area : new String[] {"rule", "dependency", "project/service"}) {
+            for (String area : new String[] {"rule", "dependency", "project/service", "project/coverage", "sca/parser"}) {
                 var resources = resolver.getResources("classpath*:com/securedeploy/" + area + "/**/*.class");
                 java.util.Arrays.sort(resources, java.util.Comparator.comparing(r -> r.getDescription()));
                 for (var resource : resources) {
                     try (var input = resource.getInputStream()) { digest.update(input.readAllBytes()); }
                 }
             }
-            return "coverage-v1:" + HexFormat.of().formatHex(digest.digest());
+            return "coverage-v2:" + HexFormat.of().formatHex(digest.digest());
         } catch (Exception failure) {
             // Unknown analyzer versions cannot establish negative evidence.
             return null;

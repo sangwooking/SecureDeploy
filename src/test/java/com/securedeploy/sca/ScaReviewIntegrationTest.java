@@ -34,6 +34,7 @@ class ScaReviewIntegrationTest {
     @Autowired JdbcTemplate jdbc;
     @MockBean VulnerabilityDataSource provider;
     @MockBean GitHubRepositoryService github;
+    @org.springframework.boot.test.mock.mockito.SpyBean com.securedeploy.rule.engine.VulnerabilityRuleEngine ruleEngine;
 
     @BeforeEach void setup() {
         doAnswer(invocation -> {
@@ -304,6 +305,75 @@ class ScaReviewIntegrationTest {
                 "password", "Fake-test-password-1234", "name", "SCA Test"));
         return json(mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON).content(request))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray()).path("accessToken").asText();
+    }
+
+    @Test void coverageAndDependencyContextPersistRemainOwnerScopedAndDoNotBackfillHistory() throws Exception {
+        String token = signup();
+        String manifest = "{\"devDependencies\":{\"fixture-tool\":\"1.0.0\"}}";
+        String lock = """
+            {"lockfileVersion":3,"packages":{"":{"devDependencies":{"fixture-tool":"1.0.0"}},
+            "node_modules/fixture-tool":{"version":"1.0.0","dev":true,"dependencies":{"lodash":"4.17.10"}},
+            "node_modules/lodash":{"version":"4.17.10","dev":true}}}
+            """;
+        var result = upload(token, Map.of("package.json", manifest, "package-lock.json", lock,
+                "worker.py", "synthetic", "wrangler.jsonc", "{}", "node_modules/ignored.js", "ignored"));
+        assertThat(result.at("/coverage/discoveredFiles").asInt()).isEqualTo(5);
+        assertThat(result.at("/coverage/unsupportedFiles").asInt()).isEqualTo(2);
+        assertThat(result.at("/coverage/excludedFiles").asInt()).isEqualTo(1);
+        assertThat(result.at("/sca/components/1/context/environment").asText()).isEqualTo("DEVELOPMENT");
+        assertThat(result.at("/sca/components/1/context/paths/0/declarationFile").asText()).isEqualTo("package.json");
+        long id = result.path("reviewId").asLong();
+        assertUnchanged(token, result);
+        mvc.perform(get("/api/reviews/" + id).header("Authorization", "Bearer " + signup())).andExpect(status().isForbidden());
+        assertThat(jdbc.queryForObject("select coverage_ledger_json from reviews where id=?", String.class, id)).doesNotContain("synthetic", "/tmp/", "ignored\"");
+        jdbc.update("update reviews set coverage_ledger_json=null where id=?", id);
+        var legacy = json(mvc.perform(get("/api/reviews/" + id).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        assertThat(legacy.path("coverage").isNull()).isTrue();
+        assertThat(legacy.path("riskAssessment")).isEqualTo(result.path("riskAssessment"));
+    }
+
+    @Test void parsingFailureAndLookupFailureAreNotConfusedWithNoVulnerabilities() throws Exception {
+        var malformed = upload(signup(), Map.of("package.json", "{not-json"));
+        assertThat(malformed.at("/sca/manifests/0/status").asText()).isEqualTo("FAILED");
+        assertThat(malformed.at("/sca/status").asText()).isEqualTo("PARTIAL");
+        assertThat(malformed.at("/riskAssessment/prioritizedDeploymentAssessment").asText()).isEqualTo("REVIEW_REQUIRED");
+        doThrow(new IllegalStateException("Offline fixture")).when(provider).lookup(anyList());
+        var offline = upload(signup(), Map.of("package.json", "{\"dependencies\":{\"lodash\":\"4.17.10\"}}"));
+        assertThat(offline.at("/sca/status").asText()).isEqualTo("UNAVAILABLE");
+        assertThat(offline.at("/sca/manifests/0/status").asText()).isEqualTo("COMPLETE");
+        assertThat(offline.at("/riskAssessment/prioritizedDeploymentAssessment").asText()).isNotEqualTo("READY");
+    }
+
+    @Test void unsupportedOnlyInputReturnsCoverageAndNeverCreatesASuccessfulReview() throws Exception {
+        String token = signup();
+        int before = jdbc.queryForObject("select count(*) from reviews", Integer.class);
+        var bytes = new ByteArrayOutputStream();
+        try (var zip = new ZipOutputStream(bytes)) {
+            zip.putNextEntry(new ZipEntry("fixture/server.py")); zip.write("synthetic".getBytes(StandardCharsets.UTF_8)); zip.closeEntry();
+        }
+        var error = json(mvc.perform(multipart("/api/reviews/upload").file(new MockMultipartFile("file", "fixture.zip", "application/zip", bytes.toByteArray()))
+                .header("Authorization", "Bearer " + token)).andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsByteArray());
+        assertThat(error.at("/coverage/unsupportedFiles").asInt()).isEqualTo(1);
+        assertThat(error.at("/coverage/selectedFiles").asInt()).isZero();
+        assertThat(error.toString()).doesNotContain("synthetic", "/tmp/");
+        assertThat(jdbc.queryForObject("select count(*) from reviews", Integer.class)).isEqualTo(before);
+    }
+
+    @Test void engineFailureReportsItsStageAndDoesNotExposeExceptionContentOrSaveAReview() throws Exception {
+        String token = signup();
+        int before = jdbc.queryForObject("select count(*) from reviews", Integer.class);
+        doThrow(new IllegalStateException("synthetic-private-source-never-return")).when(ruleEngine).execute(any());
+        var bytes = new ByteArrayOutputStream();
+        try (var zip = new ZipOutputStream(bytes)) {
+            zip.putNextEntry(new ZipEntry("fixture/App.tsx")); zip.write("const fixture = 1;".getBytes(StandardCharsets.UTF_8)); zip.closeEntry();
+        }
+        var error = json(mvc.perform(multipart("/api/reviews/upload").file(new MockMultipartFile("file", "fixture.zip", "application/zip", bytes.toByteArray()))
+                .header("Authorization", "Bearer " + token)).andExpect(status().isInternalServerError()).andReturn().getResponse().getContentAsByteArray());
+        assertThat(error.at("/coverage/analyzers/0/analyzer").asText()).isEqualTo("RULE_ENGINE");
+        assertThat(error.at("/coverage/status").asText()).isEqualTo("FAILED");
+        assertThat(error.toString()).doesNotContain("synthetic-private-source", "/tmp/");
+        assertThat(jdbc.queryForObject("select count(*) from reviews", Integer.class)).isEqualTo(before);
     }
     private JsonNode upload(String token) throws Exception {
         return upload(token, Map.of("package-lock.json", fixture("package-lock.json")));

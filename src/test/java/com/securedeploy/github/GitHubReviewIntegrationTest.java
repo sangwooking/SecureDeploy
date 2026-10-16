@@ -80,6 +80,10 @@ class GitHubReviewIntegrationTest {
         assertThat(rules(github)).isEqualTo(rules(zip));
         assertThat(github.path("scannedFileCount")).isEqualTo(zip.path("scannedFileCount"));
         assertThat(github.path("securityScore")).isEqualTo(zip.path("securityScore"));
+        assertThat(github.at("/coverage/selectedFiles")).isEqualTo(zip.at("/coverage/selectedFiles"));
+        assertThat(github.at("/coverage/unsupportedFiles")).isEqualTo(zip.at("/coverage/unsupportedFiles"));
+        assertThat(github.at("/coverage/excludedFiles")).isEqualTo(zip.at("/coverage/excludedFiles"));
+        assertThat(github.path("coverage").isNull()).isFalse();
         assertThat(github.at("/sca/summary")).isEqualTo(zip.at("/sca/summary"));
         assertThat(github.at("/sca/dependencyVulnerabilities")).isEqualTo(zip.at("/sca/dependencyVulnerabilities"));
         assertThat(github.at("/riskAssessment/prioritySummary")).isEqualTo(zip.at("/riskAssessment/prioritySummary"));

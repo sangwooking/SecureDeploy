@@ -23,8 +23,24 @@ public record SecurityReviewResponse(
         String repositoryUrl,
         java.time.LocalDateTime createdAt,
         com.securedeploy.project.progress.ReviewProgressSnapshot comparison,
-        com.securedeploy.github.model.GitHubSourceSnapshot sourceMetadata
+        com.securedeploy.github.model.GitHubSourceSnapshot sourceMetadata,
+        com.securedeploy.project.coverage.CoverageLedger coverage
 ) {
+    public SecurityReviewResponse(Long reviewId, Long projectId, String projectName, int scannedFileCount,
+            int vulnerabilityCount, int securityScore, String deploymentStatus, List<VulnerabilityResultResponse> vulnerabilities,
+            ScaResult sca, RiskAssessment riskAssessment, com.securedeploy.ai.remediation.RemediationSnapshot remediation,
+            com.securedeploy.ai.semantic.SemanticSnapshot semanticReview, com.securedeploy.review.model.ScanMode scanMode,
+            com.securedeploy.review.model.ReviewSourceType sourceType, String repositoryUrl, java.time.LocalDateTime createdAt,
+            com.securedeploy.project.progress.ReviewProgressSnapshot comparison, com.securedeploy.github.model.GitHubSourceSnapshot sourceMetadata) {
+        this(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount, securityScore, deploymentStatus,
+                vulnerabilities, sca, riskAssessment, remediation, semanticReview, scanMode, sourceType, repositoryUrl, createdAt, comparison, sourceMetadata, null);
+    }
+
+    public SecurityReviewResponse withCoverage(com.securedeploy.project.coverage.CoverageLedger value) {
+        return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount, securityScore,
+                deploymentStatus, vulnerabilities, sca, riskAssessment, remediation, semanticReview, scanMode,
+                sourceType, repositoryUrl, createdAt, comparison, sourceMetadata, value);
+    }
     public SecurityReviewResponse(Long reviewId, Long projectId, String projectName, int scannedFileCount,
             int vulnerabilityCount, int securityScore, String deploymentStatus,
             List<VulnerabilityResultResponse> vulnerabilities, ScaResult sca, RiskAssessment riskAssessment,
@@ -52,7 +68,7 @@ public record SecurityReviewResponse(
     public SecurityReviewResponse withSemanticReview(com.securedeploy.ai.semantic.SemanticSnapshot snapshot) {
         return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount,
                 securityScore, deploymentStatus, vulnerabilities, sca, riskAssessment, remediation, snapshot, scanMode,
-                sourceType, repositoryUrl, createdAt, comparison, sourceMetadata);
+                sourceType, repositoryUrl, createdAt, comparison, sourceMetadata, coverage);
     }
     public SecurityReviewResponse(Long reviewId, Long projectId, String projectName, int scannedFileCount,
                                   int vulnerabilityCount, int securityScore, String deploymentStatus,
@@ -64,7 +80,7 @@ public record SecurityReviewResponse(
     public SecurityReviewResponse withRemediation(com.securedeploy.ai.remediation.RemediationSnapshot snapshot) {
         return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount,
                 securityScore, deploymentStatus, vulnerabilities, sca, riskAssessment, snapshot, semanticReview, scanMode,
-                sourceType, repositoryUrl, createdAt, comparison, sourceMetadata);
+                sourceType, repositoryUrl, createdAt, comparison, sourceMetadata, coverage);
     }
     @JsonProperty("deploymentAssessmentScope")
     public String deploymentAssessmentScope() {
@@ -99,7 +115,7 @@ public record SecurityReviewResponse(
     public SecurityReviewResponse withSca(ScaResult result) {
         return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount,
                 vulnerabilityCount, securityScore, deploymentStatus, vulnerabilities, result, riskAssessment, remediation, semanticReview, scanMode,
-                sourceType, repositoryUrl, createdAt, comparison, sourceMetadata);
+                sourceType, repositoryUrl, createdAt, comparison, sourceMetadata, coverage);
     }
 
     public SecurityReviewResponse withReviewId(Long reviewId) {
@@ -120,13 +136,13 @@ public record SecurityReviewResponse(
                 riskAssessment,
                 remediation,
                 semanticReview,
-                scanMode, sourceType, repositoryUrl, createdAt, comparison, sourceMetadata
+                scanMode, sourceType, repositoryUrl, createdAt, comparison, sourceMetadata, coverage
         );
     }
 
     public SecurityReviewResponse withSourceMetadata(com.securedeploy.github.model.GitHubSourceSnapshot value) {
         return new SecurityReviewResponse(reviewId, projectId, projectName, scannedFileCount, vulnerabilityCount,
                 securityScore, deploymentStatus, vulnerabilities, sca, riskAssessment, remediation, semanticReview,
-                scanMode, sourceType, repositoryUrl, createdAt, comparison, value);
+                scanMode, sourceType, repositoryUrl, createdAt, comparison, value, coverage);
     }
 }

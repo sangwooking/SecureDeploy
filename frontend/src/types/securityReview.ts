@@ -69,6 +69,7 @@ import type { ProgressAssessment, ReviewProgressSnapshot } from './reviewProgres
 import type { GitHubSourceMetadata } from './githubSource';
 
 export interface SecurityReviewResponse {
+  coverage?: import('./analysisCoverage').CoverageLedger | null;
   sourceType?: 'ZIP' | 'GITHUB' | null;
   sourceMetadata?: GitHubSourceMetadata | null;
   repositoryUrl?: string | null;
@@ -238,6 +239,7 @@ export interface ThreatIntelligenceSnapshot {
 }
 
 export interface DependencyComponent {
+  context?: import('./analysisCoverage').DependencyContext | null;
   ecosystem: 'MAVEN' | 'NPM';
   packageName: string;
   version: string | null;
@@ -266,6 +268,7 @@ export interface DependencyVulnerability {
 }
 
 export interface ScaResult {
+  manifests?: { filePath: string; status: string; reason: string }[] | null;
   schemaVersion: number;
   status: 'COMPLETE' | 'PARTIAL' | 'UNAVAILABLE' | 'NO_MANIFEST' | 'DISABLED';
   analyzedAt: string;

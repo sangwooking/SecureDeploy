@@ -228,7 +228,8 @@ async function downloadPdf(url: string, fallbackMessage: string): Promise<Blob> 
 export async function parseJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
-    throw new Error(errorBody?.message ?? fallbackMessage);
+    const interrupted = errorBody?.coverage ? ' 분석이 중단되어 완료된 결과로 저장되지 않았습니다. 미검사 부분은 안전으로 판단하지 않습니다.' : '';
+    throw new Error((errorBody?.message ?? fallbackMessage) + interrupted);
   }
 
   return response.json();

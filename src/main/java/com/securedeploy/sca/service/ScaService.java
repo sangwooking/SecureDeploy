@@ -28,7 +28,7 @@ public class ScaService {
         }
         List<DependencyComponent> components = inventory.components();
         List<String> warnings = new ArrayList<>(inventory.warnings());
-        if (inventory.manifestCount() == 0) return result(ScaResult.Status.NO_MANIFEST, components, List.of(), 0, warnings);
+        if (inventory.manifestCount() == 0) return result(ScaResult.Status.NO_MANIFEST, components, List.of(), 0, warnings).withManifests(inventory.observations());
         List<DependencyComponent> exact = components.stream().filter(c -> c.versionResolution() == VersionResolution.EXACT).toList();
         boolean unresolved = components.stream().anyMatch(c -> c.versionResolution() != VersionResolution.EXACT);
         if (unresolved) warnings.add("범위/동적/누락 버전은 OSV에 조회하지 않았습니다. 미해결 의존성을 확인해 주세요.");
@@ -39,10 +39,10 @@ public class ScaService {
             ScaResult.Status status = lookup.incomplete() && lookup.analyzedIdentities().isEmpty() && lookup.findings().isEmpty()
                     ? ScaResult.Status.UNAVAILABLE
                     : (!warnings.isEmpty() || lookup.incomplete() || unresolved ? ScaResult.Status.PARTIAL : ScaResult.Status.COMPLETE);
-            return result(status, components, lookup.findings(), lookup.analyzedIdentities().size(), warnings);
+            return result(status, components, lookup.findings(), lookup.analyzedIdentities().size(), warnings).withManifests(inventory.observations());
         } catch (RuntimeException exception) {
             warnings.add("OSV 서비스를 사용할 수 없어 SCA 조회를 완료하지 못했습니다.");
-            return result(ScaResult.Status.UNAVAILABLE, components, List.of(), 0, warnings);
+            return result(ScaResult.Status.UNAVAILABLE, components, List.of(), 0, warnings).withManifests(inventory.observations());
         }
     }
     private ScaResult result(ScaResult.Status status, List<DependencyComponent> components,

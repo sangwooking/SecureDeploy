@@ -37,7 +37,7 @@ public class ZipExtractService {
             if (count.entries == 0) throw new IOException("Empty archive");
             Path projectRoot = findProjectRoot(root);
             return new ExtractedProject(resolveProjectName(archive.originalFileName(), projectRoot),
-                    archive.workspacePath(), projectRoot);
+                    archive.workspacePath(), projectRoot, rebase(count.excluded.snapshot(), root.relativize(projectRoot).toString()));
         } catch (IOException | IllegalArgumentException exception) {
             FileUtils.deleteRecursively(archive.workspacePath());
             throw reject("INVALID_ZIP", HttpStatus.BAD_REQUEST,
@@ -72,6 +72,7 @@ public class ZipExtractService {
                 if (entry.getSize() > policy.maxExpandedBytes() - count.expandedBytes) throw expandedLimit(count);
 
                 boolean ignored = ProjectIgnorePolicy.ignores(relative);
+                if (ignored && !entry.isDirectory()) count.excluded.record(relative.toString(), "FILE", null, "EXCLUDED", "DIRECTORY_POLICY");
                 if (!ignored) {
                     ensureDirectories(root, entry.isDirectory() ? target : target.getParent(), count);
                     if (!entry.isDirectory()) countMaterializedEntry(count);
@@ -154,9 +155,19 @@ public class ZipExtractService {
     }
 
     private static final class ExtractionCount {
+        final com.securedeploy.project.coverage.CoverageRecorder excluded = new com.securedeploy.project.coverage.CoverageRecorder();
         long compressedBytes;
         long expandedBytes;
         int entries;
         int materializedEntries;
+    }
+
+    private com.securedeploy.project.coverage.CoverageLedger rebase(com.securedeploy.project.coverage.CoverageLedger ledger, String prefix) {
+        String start = prefix.replace('\\', '/') + "/";
+        return new com.securedeploy.project.coverage.CoverageLedger(ledger.schemaVersion(), ledger.policyVersion(), ledger.status(),
+                ledger.discoveredFiles(), ledger.selectedFiles(), ledger.unsupportedFiles(), ledger.excludedFiles(), ledger.failedFiles(),
+                ledger.inventoryComplete(), ledger.omittedEntries(), ledger.entries().stream().map(e ->
+                    new com.securedeploy.project.coverage.CoverageLedger.Entry(e.filePath().startsWith(start)
+                        ? e.filePath().substring(start.length()) : e.filePath(), e.kind(), e.fileType(), e.status(), e.reason())).toList(), ledger.analyzers());
     }
 }

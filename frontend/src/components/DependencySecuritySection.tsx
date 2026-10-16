@@ -2,6 +2,7 @@ import type { RiskAssessment, ScaResult, RemediationSnapshot } from '../types/se
 import { DependencyFindingCard } from './DependencyFindingCard';
 import { IncompleteDependencyCard } from './IncompleteDependencyCard';
 import { dependencyText } from './dependencyGuidance';
+import { DependencyActionGroups } from './DependencyContextDetails';
 
 const statusLabels: Record<ScaResult['status'], string> = {
   COMPLETE: '조회 완료', PARTIAL: '일부만 확인됨', UNAVAILABLE: '조회하지 못함',
@@ -37,7 +38,8 @@ export function DependencySecuritySection({ sca, riskAssessment, remediation, re
     {canonical.length === 0 && <p>{sca.status === 'COMPLETE'
       ? '조회한 정확한 버전에서 알려진 취약점이 반환되지 않았습니다. 프로젝트 전체의 안전을 보장하지 않습니다.'
       : '표시할 라이브러리 문제가 없습니다. 미조회 항목과 분석 상태를 확인해 주세요.'}</p>}
-    <div className="vulnerability-list">{canonical.map(dep => <DependencyFindingCard
+    <DependencyActionGroups sca={sca} />
+    <div className="vulnerability-list">{canonical.map(dep => <DependencyFindingCard components={sca.components}
       key={[dep.ecosystem, dep.packageName, dep.installedVersion, dep.osvId].join('|')} dependency={dep}
       remediation={remediation} intelligence={riskAssessment?.threatIntelligence}
       finding={riskAssessment?.dependencyFindings.find(finding => finding.ecosystem === dep.ecosystem &&

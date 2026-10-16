@@ -1,12 +1,14 @@
-import type { DependencyVulnerability, RemediationSnapshot, RiskFinding, ThreatIntelligenceSnapshot } from '../types/securityReview';
+import type { DependencyComponent, DependencyVulnerability, RemediationSnapshot, RiskFinding, ThreatIntelligenceSnapshot } from '../types/securityReview';
+import { DependencyContextDetails, dependencyLocations } from './DependencyContextDetails';
 import { FindingRemediation } from './FindingRemediation';
 import { ThreatIntelligenceDetails } from './ThreatIntelligenceDetails';
 import { priorityLabels } from './reviewPresentation';
 import { dependencyText, knownDependencyValue, unconfirmed } from './dependencyGuidance';
 
-export function DependencyFindingCard({ dependency: dep, finding, remediation, intelligence }: {
+export function DependencyFindingCard({ dependency: dep, finding, remediation, intelligence, components }: {
   dependency: DependencyVulnerability; finding?: RiskFinding;
   remediation?: RemediationSnapshot | null; intelligence?: ThreatIntelligenceSnapshot | null;
+  components?: DependencyComponent[];
 }) {
   const knownExploited = [dep.osvId, ...dep.aliases].some(id => intelligence?.cves[id.toUpperCase()]?.kev.knownExploited === true);
   return <article className="vulnerability-item action-finding dependency-finding">
@@ -20,12 +22,13 @@ export function DependencyFindingCard({ dependency: dep, finding, remediation, i
       <div><dt>라이브러리</dt><dd>{dependencyText(dep.packageName)}</dd></div>
       <div><dt>현재 버전</dt><dd>{dependencyText(dep.installedVersion)}</dd></div>
       <div><dt>수정이 확인된 버전</dt><dd>{dep.fixedVersions.map(knownDependencyValue).filter(Boolean).join(', ') || unconfirmed}</dd></div>
-      <div><dt>수정할 파일</dt><dd className="finding-location">{dependencyText(dep.sourceFiles.join(', '))}</dd></div>
+      <div><dt>버전을 확인한 파일</dt><dd className="finding-location">{dependencyText(dep.sourceFiles.join(', '))}</dd></div>
     </dl>
+    <DependencyContextDetails locations={dependencyLocations(dep, components)} />
     <details className="action-details"><summary>업데이트 방법 보기</summary>
       <h4>내가 해야 할 일</h4>
       <ol>
-        <li>위 파일을 열어 {dependencyText(dep.packageName)}의 버전 선언과 실제 설치 버전을 확인하세요. 다른 라이브러리가 함께 가져오는 항목이면 그 라이브러리도 확인하세요.</li>
+        <li>위 확인 위치와 의존성 경로를 대조하세요. 간접 의존성이라면 상위 패키지의 manifest 선언을 먼저 검토하고, lockfile만 직접 편집하지 마세요.</li>
         <li>{dep.fixedVersions.length > 0
           ? '알려진 수정 버전 중 현재 사용 계열에 맞는 버전과 호환성을 확인하여 업데이트하세요.'
           : '현재는 수정 버전을 확인하지 못했습니다. 공식 보안 공지에서 적용 가능한 조치와 버전을 확인하세요.'}</li>

@@ -14,7 +14,7 @@ public class ScaManifestCollector {
     private final NpmManifestParser npm;
     private static final Set<String> MANIFESTS = Set.of("pom.xml", "build.gradle", "build.gradle.kts", "gradle.lockfile", "package.json", "package-lock.json");
     public ScaManifestCollector(ObjectMapper mapper) { npm = new NpmManifestParser(mapper); }
-    public record Inventory(List<DependencyComponent> components, List<String> warnings, int manifestCount) { }
+    public record Inventory(List<DependencyComponent> components, List<String> warnings, int manifestCount, List<ManifestObservation> observations) { }
 
     public Inventory collect(ProjectStructure structure) {
         List<ProjectFile> files = structure.analysisFiles().stream()
@@ -22,27 +22,40 @@ public class ScaManifestCollector {
                 .filter(f -> !ProjectIgnorePolicy.ignores(Path.of(f.relativePath())))
                 .sorted(Comparator.comparing(ProjectFile::relativePath)).toList();
         List<String> warnings = new ArrayList<>();
+        List<ManifestObservation> observations = new ArrayList<>();
         Map<String, List<DependencyComponent>> parsed = new LinkedHashMap<>();
         Set<String> present = new HashSet<>();
         files.forEach(f -> present.add(f.relativePath()));
-        for (ProjectFile file : files.stream().limit(100).toList()) {
+        for (int index = 0; index < files.size(); index++) {
+            ProjectFile file = files.get(index);
+            String safePath = com.securedeploy.project.coverage.CoverageRecorder.safePath(file.relativePath());
+            if (index >= 100) {
+                observations.add(new ManifestObservation(safePath, "LIMIT_EXCEEDED", "MANIFEST_COUNT_LIMIT"));
+                continue;
+            }
+            if (file.lines().stream().mapToLong(s -> s.length() + 1L).sum() > 2_000_000) {
+                observations.add(new ManifestObservation(safePath, "LIMIT_EXCEEDED", "MANIFEST_SIZE_LIMIT"));
+                warnings.add(safePath + ": SCA manifest 크기 제한으로 파싱하지 못했습니다.");
+                continue;
+            }
             try {
-                if (file.lines().stream().mapToLong(s -> s.length() + 1L).sum() > 2_000_000) throw new IllegalArgumentException();
                 List<DependencyComponent> items = switch (name(file.relativePath())) {
                     case "pom.xml" -> maven.parse(file);
                     case "build.gradle", "build.gradle.kts" -> gradle.parse(file);
                     case "gradle.lockfile" -> gradle.parseLock(file);
                     case "package.json" -> npm.parseManifest(file);
-                    case "package-lock.json" -> npm.parseLock(file);
+                    case "package-lock.json" -> npm.parseLock(file, files);
                     default -> List.of();
                 };
                 parsed.put(file.relativePath(), items);
+                observations.add(new ManifestObservation(safePath, "COMPLETE", "STATIC_MANIFEST_PARSED"));
                 if (name(file.relativePath()).equals("pom.xml") && file.lines().stream().anyMatch(l -> l.contains("<profiles"))) {
-                    warnings.add(file.relativePath() + ": Maven profile 활성화 여부는 정적으로 확인하지 않습니다.");
+                    warnings.add(safePath + ": Maven profile 활성화 여부는 정적으로 확인하지 않습니다.");
                 }
             } catch (Exception exception) {
                 // Never include parser exceptions: their text can contain uploaded credentials/content.
-                warnings.add(file.relativePath() + ": 지원하지 않는 형식, 손상된 manifest 또는 파일 크기 제한으로 파싱하지 못했습니다.");
+                observations.add(new ManifestObservation(safePath, "FAILED", "UNSUPPORTED_OR_INVALID_MANIFEST"));
+                warnings.add(safePath + ": 지원하지 않는 형식 또는 손상된 manifest로 파싱하지 못했습니다.");
             }
         }
         if (files.size() > 100) warnings.add("Manifest 100개 제한으로 일부 파일을 분석하지 못했습니다.");
@@ -57,7 +70,7 @@ public class ScaManifestCollector {
                     // Only the lock contains installed npm versions. Retain missing declarations as unresolved.
                     boolean found = lock != null && lock.stream().anyMatch(c -> c.packageName().equals(item.packageName()) && Boolean.TRUE.equals(c.direct()));
                     if (!found) result.add(new DependencyComponent(item.ecosystem(), item.packageName(), null,
-                            item.scope(), true, item.sourceFile(), item.line(), VersionResolution.UNRESOLVED));
+                            item.scope(), true, item.sourceFile(), item.line(), VersionResolution.UNRESOLVED, item.context()));
                 } else if (gradleLocked) {
                     List<DependencyComponent> locked = lock.stream().filter(c -> c.packageName().equals(item.packageName())).toList();
                     if (locked.isEmpty()) result.add(item);
@@ -68,7 +81,7 @@ public class ScaManifestCollector {
             }
             if (result.size() >= 5000) { warnings.add("의존성 위치 5000개 제한에 도달했습니다."); break; }
         }
-        return new Inventory(List.copyOf(result), List.copyOf(warnings), files.size());
+        return new Inventory(List.copyOf(result), List.copyOf(warnings), files.size(), List.copyOf(observations));
     }
     private static String name(String path) { return path.substring(path.lastIndexOf('/') + 1); }
     private static String directory(String path) { return path.substring(0, path.lastIndexOf('/') + 1); }

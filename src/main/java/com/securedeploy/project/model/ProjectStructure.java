@@ -5,6 +5,8 @@ import java.util.List;
 
 public record ProjectStructure(
         Path projectRoot,
-        List<ProjectFile> analysisFiles
+        List<ProjectFile> analysisFiles,
+        com.securedeploy.project.coverage.CoverageLedger coverage
 ) {
+    public ProjectStructure(Path projectRoot, List<ProjectFile> analysisFiles) { this(projectRoot, analysisFiles, null); }
 }

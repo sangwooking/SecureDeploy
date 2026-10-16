@@ -28,7 +28,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleSecureDeployException(SecureDeployException exception) {
         HttpStatus status = exception.getStatus();
         return ResponseEntity.status(status)
-                .body(new ErrorResponse(LocalDateTime.now(), status.value(), status.getReasonPhrase(), exception.getMessage()));
+                .body(new ErrorResponse(LocalDateTime.now(), status.value(), status.getReasonPhrase(), exception.getMessage(),
+                        exception instanceof com.securedeploy.project.coverage.CoverageException failure ? failure.coverage() : null));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

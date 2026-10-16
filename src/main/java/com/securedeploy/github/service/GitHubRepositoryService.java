@@ -55,7 +55,7 @@ public class GitHubRepositoryService {
                     revision.branch(), revision.commitSha(), revision.commitSha().substring(0, 7), exported.commitTimestamp(),
                     started, Instant.now(), null, 1, exported.submodules(), exported.lfsPointers(), exported.symlinks(), exported.limitations());
             complete = true;
-            return new ClonedRepository(url.repository(), url.canonicalUrl(), workspace, root, metadata);
+            return new ClonedRepository(url.repository(), url.canonicalUrl(), workspace, root, metadata, exported.sourceExclusions());
         } catch (SecureDeployException rejected) {
             LOG.info("GitHub source collection rejected");
             throw rejected;
