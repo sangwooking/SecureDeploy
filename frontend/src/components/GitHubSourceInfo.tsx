@@ -4,6 +4,7 @@ import { dateLabel } from './WorkspaceSummary';
 export function GitHubSourceInfo({ source, compact = false }: { source?: GitHubSourceMetadata | null; compact?: boolean }) {
   if (!source) return <p className="github-source">이 분석에는 저장된 branch / commit 정보가 없습니다.</p>;
   return <section className="github-source" aria-label="분석한 GitHub 버전">
+    {source.accessMethod === 'GITHUB_APP' && <p>{source.privateRepository ? '비공개' : '공개'} 저장소 · GitHub App 읽기 전용 · 분석 시점 기준</p>}
     {compact ? <p>Branch <strong>{source.analyzedBranch}</strong> · Commit <code>{source.shortCommitSha}</code></p> : <>
       <h3>분석한 GitHub 버전</h3>
       <dl className="technical-grid">

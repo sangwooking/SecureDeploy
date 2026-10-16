@@ -10,7 +10,8 @@ public record WorkspaceResponse(long projectCount, long blockedProjectCount, lon
         long analyzedProjectCount, long unassessedProjectCount, List<Project> projects) {
     public record Project(Long projectId, String name, ReviewSourceType sourceType, String repositoryUrl,
             long reviewCount, LocalDateTime createdAt, LocalDateTime updatedAt,
-            ProjectReviewHistoryResponse latestReview, Progress latestProgress) { }
+            ProjectReviewHistoryResponse latestReview, Progress latestProgress,
+            Long githubRepositoryId, Long githubInstallationId, Boolean privateRepository) { }
     public record Progress(ReviewProgressSnapshot.Status status, Long baselineReviewId,
             Map<ReviewProgressSnapshot.Change, Long> counts, String message) {
         public static Progress from(ReviewProgressSnapshot snapshot) {

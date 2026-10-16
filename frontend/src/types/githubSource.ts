@@ -14,4 +14,8 @@ export interface GitHubSourceMetadata {
   lfsPointerCount: number;
   symlinkCount: number;
   limitations: string[];
+  repositoryId?: number | null;
+  installationId?: number | null;
+  privateRepository?: boolean | null;
+  accessMethod?: 'PUBLIC_ANONYMOUS' | 'GITHUB_APP' | null;
 }

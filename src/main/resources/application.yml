@@ -24,6 +24,15 @@ securedeploy:
     timeout-seconds: 60
     max-download-size: 200MB
     max-requests: 12
+    app:
+      enabled: ${GITHUB_APP_ENABLED:false}
+      app-id: ${GITHUB_APP_ID:0}
+      client-id: ${GITHUB_APP_CLIENT_ID:}
+      client-secret: ${GITHUB_APP_CLIENT_SECRET:}
+      slug: ${GITHUB_APP_SLUG:}
+      private-key-file: ${GITHUB_APP_PRIVATE_KEY_FILE:}
+      encryption-key: ${GITHUB_TOKEN_ENCRYPTION_KEY:}
+      callback-url: ${GITHUB_APP_CALLBACK_URL:http://localhost:5173/}
   threat-intelligence:
     enabled: ${THREAT_INTELLIGENCE_ENABLED:true}
     timeout-seconds: 5

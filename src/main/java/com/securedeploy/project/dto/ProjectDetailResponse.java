@@ -11,7 +11,10 @@ public record ProjectDetailResponse(
         int reviewCount,
         ProjectReviewHistoryResponse latestReview,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        Long githubRepositoryId,
+        Long githubInstallationId,
+        Boolean privateRepository
 ) {
 
     public static ProjectDetailResponse from(ProjectEntity project, ProjectReviewHistoryResponse latestReview) {
@@ -23,7 +26,8 @@ public record ProjectDetailResponse(
                 project.getReviews().size(),
                 latestReview,
                 project.getCreatedAt(),
-                project.getUpdatedAt()
+                project.getUpdatedAt(),
+                project.getGithubRepositoryId(), project.getGithubInstallationId(), project.getPrivateRepository()
         );
     }
 }

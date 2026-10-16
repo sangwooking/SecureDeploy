@@ -56,6 +56,7 @@ public class SecurityReviewFacade {
     private final SemanticSnapshotService semanticService;
     private final com.securedeploy.project.progress.ComparisonContextCollector comparisonCollector;
     private final com.securedeploy.project.progress.ReviewProgressService progressService;
+    private final com.securedeploy.github.app.PrivateGitHubSourceService privateGitHubSources;
 
     public SecurityReviewFacade(UploadService uploadService, ZipExtractService zipExtractService,
                                 GitHubRepositoryService gitHubRepositoryService,
@@ -70,7 +71,8 @@ public class SecurityReviewFacade {
                                 com.securedeploy.ai.remediation.RemediationSnapshotService remediationService,
                                 SecuritySliceCollector sliceCollector, SemanticSnapshotService semanticService,
                                 com.securedeploy.project.progress.ComparisonContextCollector comparisonCollector,
-                                com.securedeploy.project.progress.ReviewProgressService progressService) {
+                                com.securedeploy.project.progress.ReviewProgressService progressService,
+                                com.securedeploy.github.app.PrivateGitHubSourceService privateGitHubSources) {
         this.uploadService = uploadService;
         this.zipExtractService = zipExtractService;
         this.gitHubRepositoryService = gitHubRepositoryService;
@@ -89,6 +91,7 @@ public class SecurityReviewFacade {
         this.semanticService = semanticService;
         this.comparisonCollector = comparisonCollector;
         this.progressService = progressService;
+        this.privateGitHubSources = privateGitHubSources;
     }
 
     public SecurityReviewResponse reviewUploadedZip(MultipartFile file) {
@@ -148,6 +151,9 @@ public class SecurityReviewFacade {
 
     public SecurityReviewResponse reviewGitHubRepository(Long projectId, String repositoryUrl, ScanMode scanMode) {
         ProjectEntity project = projectService.findOwnedProjectForRescan(projectId, currentUserService.currentUserId(), ReviewSourceType.GITHUB);
+        if (project.getGithubRepositoryId() != null) {
+            return reviewConnectedGitHub(projectId, project.getGithubInstallationId(), project.getGithubRepositoryId(), scanMode);
+        }
         String requested = gitHubRepositoryService.validateAndNormalizeUrl(repositoryUrl).replaceFirst("\\.git$", "");
         String registered = gitHubRepositoryService.validateAndNormalizeUrl(project.getRepositoryUrl()).replaceFirst("\\.git$", "");
         if (!requested.equalsIgnoreCase(registered)) {
@@ -165,6 +171,21 @@ public class SecurityReviewFacade {
 
     public List<ReviewHistoryResponse> findReviewHistories() {
         return reviewPersistenceService.findReviewHistories(currentUserService.currentUserId());
+    }
+
+    public SecurityReviewResponse reviewConnectedGitHub(Long projectId, long installationId, long repositoryId, ScanMode scanMode) {
+        Long userId = currentUserService.currentUserId();
+        if (projectId != null) {
+            var project = projectService.findOwnedProjectForRescan(projectId, userId, ReviewSourceType.GITHUB);
+            if (!Long.valueOf(repositoryId).equals(project.getGithubRepositoryId()))
+                throw com.securedeploy.github.app.GitHubAppException.denied();
+        }
+        ClonedRepository clone = privateGitHubSources.collect(userId, installationId, repositoryId);
+        try {
+            AnalysisOutcome outcome = reviewProject(clone.repositoryName(), clone.repositoryRoot(), scanMode);
+            ProjectEntity project = projectService.resolveConnectedGitHubProject(userId, projectId, clone.sourceMetadata());
+            return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clone.repositoryUrl(), scanMode, clone.sourceMetadata());
+        } finally { FileUtils.deleteRecursively(clone.workspacePath()); }
     }
 
     private SecurityReviewResponse saveWithRemediation(ProjectEntity project, AnalysisOutcome outcome,

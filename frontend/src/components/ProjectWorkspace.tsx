@@ -81,6 +81,7 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
     <p className="result-breadcrumb"><a href="#/projects">내 프로젝트</a> / {project.name}</p>
     <header className="workspace-section"><h2>{project.name}</h2>
       <p>{project.sourceType === 'GITHUB' ? 'GitHub' : 'ZIP'}{project.repositoryUrl && ` · ${project.repositoryUrl}`}</p>
+      {project.githubRepositoryId != null && <p>{project.privateRepository ? '비공개' : '공개'} 저장소 · GitHub App 읽기 전용 · 최근 분석 시점 기준</p>}
       <strong>{reviewStatus(project.latestReview)}</strong><p>최근 분석: {dateLabel(project.latestReview?.createdAt)}</p>
     </header>
     <nav className="project-navigation" aria-label="프로젝트 메뉴">{projectTabs.map(tab => <a key={tab.id} href={projectLink(project.projectId, tab.id)} aria-current={route.tab === tab.id ? 'page' : undefined}>{tab.label}</a>)}</nav>

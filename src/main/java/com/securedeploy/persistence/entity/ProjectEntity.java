@@ -40,6 +40,10 @@ public class ProjectEntity {
     @Column(length = 500)
     private String repositoryUrl;
 
+    private Long githubRepositoryId;
+    private Long githubInstallationId;
+    private Boolean privateRepository;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
@@ -100,6 +104,14 @@ public class ProjectEntity {
 
     public String getRepositoryUrl() {
         return repositoryUrl;
+    }
+
+    public Long getGithubRepositoryId() { return githubRepositoryId; }
+    public Long getGithubInstallationId() { return githubInstallationId; }
+    public Boolean getPrivateRepository() { return privateRepository; }
+    public void bindGitHubRepository(long repositoryId, long installationId, boolean isPrivate, String canonicalUrl) {
+        githubRepositoryId = repositoryId; githubInstallationId = installationId;
+        privateRepository = isPrivate; repositoryUrl = canonicalUrl;
     }
 
     public UserEntity getUser() {

@@ -2095,6 +2095,13 @@ h1 {
 .workspace-content a { color: #176150; }
 .workspace-content a:focus-visible { outline: 3px solid #287eac; outline-offset: 3px; }
 .workspace-section { padding: 20px 0; border-bottom: 1px solid #d7dfe5; min-width: 0; }
+.github-connection { padding: 16px 0; border-block: 1px solid #d7dfe5; margin: 16px 0; min-width: 0; overflow-wrap: anywhere; }
+.github-connection label { display: grid; gap: 8px; margin: 16px 0; min-width: 0; }
+.github-connection select { width: 100%; min-width: 0; min-height: 42px; padding: 8px; border: 1px solid #bdc9d2; border-radius: 4px; background: #fff; color: #253540; font: inherit; }
+.github-connection button { margin: 4px 0; }
+.analysis-entry .mode-switch { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+.analysis-entry .review-panel { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 540px) { .analysis-entry .mode-switch { grid-template-columns: 1fr; } }
 .workspace-project-row, .workspace-history-row { padding: 20px 0; border-bottom: 1px solid #d7dfe5; min-width: 0; }
 .workspace-project-row .section-heading { align-items: start; }
 .workspace-counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }

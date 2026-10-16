@@ -13,6 +13,26 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class PublicGitHubConnectionTest {
+    @Test void privateCredentialOnlyReachesExactReadOnlyEndpointAndIsCleared() throws Exception {
+        HttpClient client = mock(HttpClient.class);
+        var ok = response(200);
+        when(client.sendAsync(any(), org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<InputStream>>any()))
+                .thenReturn(CompletableFuture.completedFuture(ok));
+        var repository = GitHubRepositoryUrl.parse("https://github.com/fixture/private");
+        try (var budget = new CloneBudget(new GitHubSourceProperties()); var credential = new GitHubReadCredential(repository, "synthetic-private-token")) {
+            assertThatThrownBy(() -> new PublicGitHubConnection(new URL("https://attacker.invalid/git-upload-pack"), repository, budget, client, credential)).isInstanceOf(IOException.class);
+            assertThatThrownBy(() -> new PublicGitHubConnection(new URL(repository.cloneUrl() + "/git-receive-pack"), repository, budget, client, credential)).isInstanceOf(IOException.class);
+            var connection = new PublicGitHubConnection(new URL(repository.cloneUrl() + "/git-upload-pack"), repository, budget, client, credential);
+            connection.setRequestProperty("Authorization", "untrusted-header");
+            connection.getResponseCode();
+            var capture = ArgumentCaptor.forClass(HttpRequest.class); verify(client).sendAsync(capture.capture(), any());
+            assertThat(capture.getValue().headers().firstValue("Authorization")).contains("Basic " + Base64.getEncoder().encodeToString("x-access-token:synthetic-private-token".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+            assertThat(capture.getValue().uri().toString()).doesNotContain("synthetic-private-token");
+            assertThat(credential.toString()).doesNotContain("synthetic-private-token");
+            assertThatThrownBy(() -> credential.authorization(GitHubRepositoryUrl.parse("https://github.com/fixture/other"))).isInstanceOf(IllegalStateException.class);
+            credential.close(); assertThatThrownBy(() -> credential.authorization(repository)).isInstanceOf(IllegalStateException.class);
+        }
+    }
     @Test void gitRequestCompressionHeaderIsKeptButCredentialsAreNeverSent() throws Exception {
         HttpClient client = mock(HttpClient.class);
         HttpResponse<InputStream> response = response(200);

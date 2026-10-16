@@ -37,7 +37,8 @@ public class WorkspaceService {
             return new WorkspaceResponse.Project(project.getId(), project.getName(), project.getSourceType(),
                     project.getRepositoryUrl(), counts.getOrDefault(project.getId(), 0L), project.getCreatedAt(),
                     project.getUpdatedAt(), review == null ? null : ProjectReviewHistoryResponse.from(review),
-                    review == null ? null : WorkspaceResponse.Progress.from(review.getComparison()));
+                    review == null ? null : WorkspaceResponse.Progress.from(review.getComparison()),
+                    project.getGithubRepositoryId(), project.getGithubInstallationId(), project.getPrivateRepository());
         }).sorted(Comparator.comparing((WorkspaceResponse.Project p) -> p.latestReview() == null ? null : p.latestReview().createdAt(),
                 Comparator.nullsLast(Comparator.reverseOrder())).thenComparing(WorkspaceResponse.Project::projectId, Comparator.reverseOrder())).toList();
         return new WorkspaceResponse(items.size(),

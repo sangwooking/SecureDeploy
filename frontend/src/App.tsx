@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { login, signup } from './api/securityReviewApi';
 import type { AuthResponse } from './types/securityReview';
 import { Workspace } from './components/Workspace';
+import { GitHubCallback, hasGitHubCallback } from './components/GitHubCallback';
 
 const ACCESS_TOKEN_STORAGE_KEY = 'securedeploy.accessToken';
 const AUTH_USER_STORAGE_KEY = 'securedeploy.authUser';
@@ -18,6 +19,7 @@ function loadSession(): AuthResponse | null {
 
 export default function App() {
   const [session, setSession] = useState(loadSession);
+  const [githubCallback, setGithubCallback] = useState(hasGitHubCallback);
   const [mode, setMode] = useState<AuthMode>('LOGIN');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,6 +49,7 @@ export default function App() {
     setSession(null); setPassword(''); setName(''); setEmail(''); setError('');
     window.location.hash = '#/dashboard';
   };
+  if (githubCallback) return <GitHubCallback loggedIn={session != null} onDone={() => setGithubCallback(false)} />;
   if (session) return <Workspace key={session.accessToken} session={session} onLogout={logout} />;
   return <AuthScreen mode={mode} email={email} password={password} name={name} errorMessage={error} isLoading={busy}
     onModeChange={value => { setMode(value); setError(''); }} onEmailChange={setEmail} onPasswordChange={setPassword}

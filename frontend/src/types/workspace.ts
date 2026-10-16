@@ -9,6 +9,9 @@ export interface ProjectDetail {
   latestReview: ReviewHistoryResponse | null;
   createdAt: string;
   updatedAt: string;
+  githubRepositoryId?: number | null;
+  githubInstallationId?: number | null;
+  privateRepository?: boolean | null;
 }
 
 export interface WorkspaceProject extends ProjectDetail {

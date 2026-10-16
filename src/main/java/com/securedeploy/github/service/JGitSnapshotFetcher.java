@@ -16,13 +16,18 @@ public class JGitSnapshotFetcher implements GitHubSnapshotFetcher {
     public JGitSnapshotFetcher() { this.client = null; }
     JGitSnapshotFetcher(java.net.http.HttpClient client) { this.client = client; }
     public Revision fetch(GitHubRepositoryUrl url, Path gitDirectory, CloneBudget budget) throws Exception {
+        return fetch(url, gitDirectory, budget, null);
+    }
+    public Revision fetchAuthenticated(GitHubRepositoryUrl url, Path gitDirectory, CloneBudget budget,
+            GitHubReadCredential credential) throws Exception { return fetch(url, gitDirectory, budget, credential); }
+    private Revision fetch(GitHubRepositoryUrl url, Path gitDirectory, CloneBudget budget, GitHubReadCredential credential) throws Exception {
         try (Git git = Git.init().setBare(true).setDirectory(gitDirectory.toFile()).call()) {
             Repository repository = git.getRepository();
             repository.getConfig().setBoolean("http", null, "followRedirects", false);
             repository.getConfig().setBoolean("http", null, "sslVerify", true);
             String branch;
             try (Transport transport = Transport.open(repository, new URIish(url.cloneUrl()))) {
-                configure(transport, url, budget);
+                configure(transport, url, budget, credential);
                 try (FetchConnection connection = transport.openFetch()) {
                     Ref head = connection.getRef(Constants.HEAD);
                     if (head == null || !head.isSymbolic() || !head.getTarget().getName().startsWith(Constants.R_HEADS)) {
@@ -38,16 +43,16 @@ public class JGitSnapshotFetcher implements GitHubSnapshotFetcher {
                     .setRecurseSubmodules(SubmoduleConfig.FetchRecurseSubmodulesMode.NO)
                     .setRefSpecs(new RefSpec("+" + branch + ":" + branch))
                     .setTimeout(30).setProgressMonitor(budget)
-                    .setTransportConfigCallback(transport -> configure(transport, url, budget)).call();
+                    .setTransportConfigCallback(transport -> configure(transport, url, budget, credential)).call();
             budget.check();
             ObjectId commit = repository.resolve(branch + "^{commit}");
             if (commit == null) throw new IOException("Commit unavailable");
             return new Revision(branch.substring(Constants.R_HEADS.length()), commit.name());
         }
     }
-    private void configure(Transport transport, GitHubRepositoryUrl url, CloneBudget budget) {
+    private void configure(Transport transport, GitHubRepositoryUrl url, CloneBudget budget, GitHubReadCredential credential) {
         if (!(transport instanceof TransportHttp http) || !transport.getURI().toString().equals(url.cloneUrl())) {
-            throw new IllegalArgumentException("Only canonical public GitHub HTTPS transport is allowed");
+            throw new IllegalArgumentException("Only canonical GitHub HTTPS transport is allowed");
         }
         transport.setCredentialsProvider(new CredentialsProvider() {
             public boolean isInteractive() { return false; }
@@ -57,7 +62,7 @@ public class JGitSnapshotFetcher implements GitHubSnapshotFetcher {
         transport.setTimeout(30);
         http.setHttpConnectionFactory(new HttpConnectionFactory() {
             public HttpConnection create(URL target) throws IOException {
-                return client == null ? new PublicGitHubConnection(target, url, budget) : new PublicGitHubConnection(target, url, budget, client);
+                return new PublicGitHubConnection(target, url, budget, client, credential);
             }
             public HttpConnection create(URL target, Proxy proxy) throws IOException { return create(target); }
         });

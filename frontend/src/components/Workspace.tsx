@@ -7,6 +7,7 @@ import { parseWorkspaceRoute, projectLink } from './workspaceRoute';
 import { ProjectList, WorkspaceSummary } from './WorkspaceSummary';
 import { NewProjectAnalysis } from './NewProjectAnalysis';
 import { ProjectWorkspace } from './ProjectWorkspace';
+import { GitHubConnectionPanel } from './GitHubConnectionPanel';
 
 export function Workspace({ session, onLogout }: { session: AuthResponse; onLogout: () => void }) {
   const [route, setRoute] = useState(() => parseWorkspaceRoute(window.location.hash));
@@ -60,6 +61,7 @@ export function Workspace({ session, onLogout }: { session: AuthResponse; onLogo
         retryPolicy={() => setPolicyRetry(value => value + 1)} onDeleted={() => { window.location.hash = '#/projects'; setRevision(value => value + 1); }} />}
       {route.page === 'account' && <section className="workspace-section"><h2>계정</h2>
         <dl className="technical-grid"><div><dt>이름</dt><dd>{session.user.name}</dd></div><div><dt>이메일</dt><dd>{session.user.email}</dd></div></dl>
+        <GitHubConnectionPanel />
       </section>}
       {route.page === 'not-found' && <section><h2>페이지를 찾을 수 없습니다.</h2><a href="#/dashboard">대시보드로 돌아가기</a></section>}
     </div>

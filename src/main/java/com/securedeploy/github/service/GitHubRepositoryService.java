@@ -28,6 +28,13 @@ public class GitHubRepositoryService {
     public String validateAndNormalizeUrl(String input) { return GitHubRepositoryUrl.parse(input).canonicalUrl(); }
 
     public ClonedRepository clonePublicRepository(String input) {
+        return collect(input, null);
+    }
+    public ClonedRepository cloneAuthorizedRepository(String input, GitHubReadCredential credential) {
+        java.util.Objects.requireNonNull(credential);
+        return collect(input, credential);
+    }
+    private ClonedRepository collect(String input, GitHubReadCredential credential) {
         GitHubRepositoryUrl url = GitHubRepositoryUrl.parse(input);
         if (!slots.tryAcquire()) throw new SecureDeployException(HttpStatus.TOO_MANY_REQUESTS, "GitHub 분석 요청이 많습니다. 잠시 후 다시 시도해 주세요.");
         Path workspace = null;
@@ -39,7 +46,8 @@ public class GitHubRepositoryService {
             Path gitDirectory = workspace.resolve("objects.git");
             Path root = Files.createDirectory(workspace.resolve("source")).toRealPath();
             GitHubSnapshotFetcher.Revision revision;
-            try { revision = fetcher.fetch(url, gitDirectory, budget); }
+            try { revision = credential == null ? fetcher.fetch(url, gitDirectory, budget)
+                    : fetcher.fetchAuthenticated(url, gitDirectory, budget, credential); }
             catch (Exception failed) { budget.check(); throw failed; }
             var exported = exporter.export(gitDirectory, root, revision.commitSha(), budget);
             budget.check();
@@ -54,7 +62,7 @@ public class GitHubRepositoryService {
         } catch (Exception failed) {
             // No remote message, URL, credentials, stack trace, or repository content in diagnostics.
             LOG.warn("GitHub source collection failed: {}", failed.getClass().getSimpleName());
-            throw new SecureDeployException(HttpStatus.BAD_GATEWAY, "GitHub에서 프로젝트를 가져오지 못했습니다. 공개 저장소 URL을 확인하고 잠시 후 다시 시도해 주세요.");
+            throw new SecureDeployException(HttpStatus.BAD_GATEWAY, "GitHub에서 프로젝트를 가져오지 못했습니다. 저장소 URL 또는 연결 권한을 확인하고 잠시 후 다시 시도해 주세요.");
         } finally {
             if (!complete) FileUtils.deleteRecursively(workspace);
             slots.release();

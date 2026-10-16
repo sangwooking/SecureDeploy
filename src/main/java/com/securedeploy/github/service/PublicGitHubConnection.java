@@ -11,7 +11,7 @@ import javax.net.ssl.*;
 import org.eclipse.jgit.transport.http.HttpConnection;
 import org.springframework.http.HttpStatus;
 
-/** Anonymous TLS-only Git HTTP. No JVM cookies, authenticators, redirects, or proxy credentials. */
+/** Hardened TLS-only reads, anonymous unless given an explicit repository-scoped credential. */
 final class PublicGitHubConnection implements HttpConnection {
     private static final HttpClient CLIENT = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER)
             .connectTimeout(Duration.ofSeconds(10)).proxy(new ProxySelector() {
@@ -21,6 +21,8 @@ final class PublicGitHubConnection implements HttpConnection {
     private final URL url;
     private final HttpClient client;
     private final CloneBudget budget;
+    private final GitHubRepositoryUrl repository;
+    private final GitHubReadCredential credential;
     private final Map<String, String> headers = new HashMap<>();
     private final ByteArrayOutputStream body = new ByteArrayOutputStream();
     private String method = "GET";
@@ -31,12 +33,16 @@ final class PublicGitHubConnection implements HttpConnection {
         this(url, repository, budget, CLIENT);
     }
     PublicGitHubConnection(URL url, GitHubRepositoryUrl repository, CloneBudget budget, HttpClient client) throws IOException {
+        this(url, repository, budget, client, null);
+    }
+    PublicGitHubConnection(URL url, GitHubRepositoryUrl repository, CloneBudget budget, HttpClient client, GitHubReadCredential credential) throws IOException {
         String root = repository.cloneUrl();
         String target = url.toExternalForm();
         if (!target.equals(root + "/info/refs?service=git-upload-pack") && !target.equals(root + "/git-upload-pack")) {
             throw new IOException("Git endpoint rejected");
         }
-        this.url = url; this.budget = budget; this.client = client;
+        this.url = url; this.budget = budget; this.client = client == null ? CLIENT : client;
+        this.repository = repository; this.credential = credential;
     }
     private void send() throws IOException {
         if (response != null) return;
@@ -44,12 +50,15 @@ final class PublicGitHubConnection implements HttpConnection {
         try {
             var request = HttpRequest.newBuilder(url.toURI()).timeout(Duration.ofMillis(budget.remainingMillis()));
             headers.forEach(request::header);
+            if (credential != null) request.header("Authorization", credential.authorization(repository));
             request.header("Accept-Encoding", "identity");
             request.method(method, method.equals("POST") ? HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()) : HttpRequest.BodyPublishers.noBody());
             var pending = client.sendAsync(request.build(), HttpResponse.BodyHandlers.ofInputStream());
             pending.thenAccept(value -> { try { budget.track(value.body()); } catch (Exception ignored) { try { value.body().close(); } catch (IOException ignoredClose) { } } });
             try { response = pending.get(budget.remainingMillis(), TimeUnit.MILLISECONDS); }
             catch (Exception failure) { pending.cancel(true); throw failure; }
+            if (credential != null && Set.of(401, 403, 404).contains(response.statusCode()))
+                throw budget.fail(HttpStatus.FORBIDDEN, "선택한 저장소에 접근할 수 없습니다. GitHub 연결 및 App 설치·승인 범위를 다시 확인해 주세요.");
             validateResponse(response.statusCode(), budget);
             String encoding = response.headers().firstValue("content-encoding").orElse("identity");
             if (!encoding.equalsIgnoreCase("identity")) throw new IOException("Unsupported HTTP encoding");

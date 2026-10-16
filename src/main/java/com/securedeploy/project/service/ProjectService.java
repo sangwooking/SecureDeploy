@@ -103,7 +103,7 @@ public class ProjectService {
         }
         String canonical = com.securedeploy.github.model.GitHubRepositoryUrl.parse(repositoryUrl).canonicalUrl();
         var matches = projectRepository.findAllByUserIdOrderByUpdatedAtDesc(userId).stream()
-                .filter(p -> p.getSourceType() == ReviewSourceType.GITHUB && sameRepository(p.getRepositoryUrl(), canonical)).toList();
+                .filter(p -> p.getSourceType() == ReviewSourceType.GITHUB && p.getGithubRepositoryId() == null && sameRepository(p.getRepositoryUrl(), canonical)).toList();
         if (matches.size() > 1) throw new SecureDeployException(HttpStatus.CONFLICT,
                 "같은 GitHub 저장소로 등록된 프로젝트가 여러 개입니다. 내 프로젝트에서 재검사할 대상을 선택해 주세요.");
         return matches.isEmpty() ? createUserProject(userId, resolveRepositoryName(canonical), ReviewSourceType.GITHUB, canonical) : matches.get(0);
@@ -112,6 +112,21 @@ public class ProjectService {
     private boolean sameRepository(String existing, String canonical) {
         try { return com.securedeploy.github.model.GitHubRepositoryUrl.parse(existing).canonicalUrl().equals(canonical); }
         catch (SecureDeployException invalidLegacyUrl) { return false; }
+    }
+
+    @Transactional
+    public ProjectEntity resolveConnectedGitHubProject(Long userId, Long projectId,
+            com.securedeploy.github.model.GitHubSourceSnapshot source) {
+        if (userId == null || source.repositoryId() == null || source.installationId() == null)
+            throw com.securedeploy.github.app.GitHubAppException.denied();
+        ProjectEntity project = projectId == null
+                ? projectRepository.findByUserIdAndGithubRepositoryId(userId, source.repositoryId())
+                    .orElseGet(() -> createUserProject(userId, source.repository(), ReviewSourceType.GITHUB, source.canonicalRepositoryUrl()))
+                : findOwnedProjectForRescan(projectId, userId, ReviewSourceType.GITHUB);
+        if (projectId != null && !source.repositoryId().equals(project.getGithubRepositoryId()))
+            throw com.securedeploy.github.app.GitHubAppException.denied();
+        project.bindGitHubRepository(source.repositoryId(), source.installationId(), Boolean.TRUE.equals(source.privateRepository()), source.canonicalRepositoryUrl());
+        return projectRepository.save(project);
     }
 
 

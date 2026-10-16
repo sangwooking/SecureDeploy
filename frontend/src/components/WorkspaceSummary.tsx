@@ -29,7 +29,7 @@ export function ProjectList({ projects }: { projects: WorkspaceProject[] }) {
   if (!projects.length) return <div className="empty-state"><p>아직 관리 중인 프로젝트가 없습니다.</p><a href="#/new">새 프로젝트 분석</a></div>;
   return <div className="workspace-project-list">{projects.map(project => <article className="workspace-project-row" key={project.projectId}>
     <div className="section-heading"><div><h3><a href={projectLink(project.projectId)}>{project.name}</a></h3>
-      <span>{project.sourceType === 'GITHUB' ? 'GitHub' : 'ZIP'}</span></div><strong>{reviewStatus(project.latestReview)}</strong></div>
+      <span>{project.sourceType === 'GITHUB' ? 'GitHub' : 'ZIP'}{project.githubRepositoryId != null ? ` · ${project.privateRepository ? '비공개' : '공개'} · 읽기 전용` : ''}</span></div><strong>{reviewStatus(project.latestReview)}</strong></div>
     <PriorityCounts assessment={project.latestReview?.riskSummary} />
     <p>최근 분석: {dateLabel(project.latestReview?.createdAt)} · 총 분석: {project.reviewCount}회</p>
     <ProgressBrief progress={project.latestProgress} />

@@ -47,12 +47,12 @@ export async function fetchProjectReviews(projectId: number): Promise<ReviewHist
   return parseJsonResponse<ReviewHistoryResponse[]>(response, '프로젝트 분석 이력을 불러오지 못했습니다.');
 }
 
-function authHeaders(): HeadersInit {
+export function authHeaders(): HeadersInit {
   const accessToken = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
   return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 }
 
-function jsonHeaders(): HeadersInit {
+export function jsonHeaders(): HeadersInit {
   return {
     'Content-Type': 'application/json',
     ...authHeaders(),
@@ -225,7 +225,7 @@ async function downloadPdf(url: string, fallbackMessage: string): Promise<Blob> 
   return response.blob();
 }
 
-async function parseJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
+export async function parseJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
     throw new Error(errorBody?.message ?? fallbackMessage);

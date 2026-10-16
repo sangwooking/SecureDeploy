@@ -34,6 +34,8 @@ export function RescanForm({ result, onScan, onCancel, uploadPolicy = null, poli
       <option value="STANDARD">기본 분석</option><option value="AI_ENHANCED">AI 강화 분석</option>
     </select></label>
     {mode === 'AI_ENHANCED' && <p>선별·마스킹된 코드가 외부 AI에 전달될 수 있으며 API 비용이 발생할 수 있습니다.</p>}
+    {result.sourceType === 'GITHUB' && <p>연결된 저장소는 사용자 권한과 App 승인 범위를 다시 확인합니다. 권한이 없으면 기존 이력을 유지하고 재검사를 중단합니다. <a href="#/account">GitHub 연결 관리</a></p>}
+    <p>기본 분석에서도 패키지 이름·생태계·확정 버전은 OSV에, 공개 취약점 식별자는 EPSS/KEV 조회에 사용됩니다.</p>
     {error && <p role="alert" className="error-message">{error}</p>}
     <div className="result-actions"><button type="submit" disabled={result.sourceType === 'ZIP' && !uploadPolicy}>대상 확인 후 다시 검사</button>
       <button type="button" className="secondary-button" onClick={onCancel}>취소</button></div>
