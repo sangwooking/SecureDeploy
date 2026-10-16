@@ -34,3 +34,15 @@ test('legacy and unresolved candidates are preserved without being promoted', ()
   const uncertain = fixture(); uncertain.validatedFindings = []; uncertain.findings[0].confidence = 'MEDIUM';
   assert.ok(render(uncertain).includes('중간 처리 또는 실행 호출을 충분히 확인하지 못해'));
 });
+test('SSRF shows human actions and incomplete destination coverage without certifying network safety', () => {
+  const snapshot=fixture();
+  snapshot.findings[0].ruleId='TS_SSRF_INPUT_FLOW';
+  snapshot.validatedFindings[0].ruleId='TS_SSRF_INPUT_FLOW';
+  snapshot.validatedFindings[0].title='사용자가 입력한 주소로 서버가 요청을 보낼 수 있습니다';
+  snapshot.httpUses=[{kind:'INPUT_IN_DESTINATION',controlledPart:'HOST_OR_AUTHORITY',location:snapshot.findings[0].sink,
+    trace:[],defenses:[],limitations:['REDIRECT_DNS_REACHABILITY_NOT_VERIFIED']}];
+  const html=render(snapshot);
+  for(const phrase of ['사용자가 입력한 주소','서버 HTTP 요청 목적지 (1)','호스트 또는 주소 권한부','리다이렉트·DNS 재해석','안전하다고 보증하지 않습니다','NOT_COMPARED']) assert.ok(html.includes(phrase),phrase);
+  assert.equal((html.match(/<article /g)||[]).length,1);
+  assert.ok(render(fixture()).includes('HTTP 목적지 추적 기록이 없습니다'));
+});

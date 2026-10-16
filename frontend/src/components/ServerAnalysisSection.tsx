@@ -31,6 +31,18 @@ const labels: Record<string, string> = {
   EXECUTION_PATH_PARTIAL: '실행 호출 주변의 제어 흐름을 일부만 확인함',
   TRACE_DETAILS_TRUNCATED: '전달 경로가 길어 일부 중간 단계를 생략함',
   PREPARE_CALLS_OUTSIDE_TRACED_FLOW: 'prepare 호출 구문 중 확인한 서버 경로에 연결되지 않은 부분이 있음',
+  REQUEST_HEADER: '요청 헤더에서 받은 값', HTTP_REQUEST_CALL: '서버 HTTP 요청 호출', URL_STRING_CONSTRUCTION: '요청 주소 문자열 구성',
+  INPUT_IN_DESTINATION: '외부 입력이 요청 목적지를 결정할 수 있음', FIXED_DESTINATION: '초기 목적지는 고정됨',
+  ALLOWLISTED_DESTINATION: '파싱한 프로토콜·호스트의 정확한 허용 목록 확인', UNRESOLVED_DESTINATION: '목적지 결정 과정 확인 불가',
+  PARSED_URL_ALLOWLIST: '파싱한 URL 속성의 정확한 허용 목록',
+  DESTINATION_FLOW_UNRESOLVED: 'URL 변환·방어·실행 경로 일부 미확인', URL_MUTATION_UNRESOLVED: 'URL 속성 변경을 완전히 추적하지 못함',
+  REDIRECT_DNS_REACHABILITY_NOT_VERIFIED: '리다이렉트·DNS 재해석·실제 네트워크 접근 가능성 미검증',
+  PORT_POLICY_NOT_VERIFIED: '허용 목록의 포트 정책은 별도 확인 필요',
+  URL_PROPERTY_WRITE: 'URL 속성 대입 확인·함수 간 변경은 제한적으로 추적', URL_QUERY_WRITE: '검색값 변경 확인·함수 간 변경은 제한적으로 추적',
+  HEADER_MUTATION_PARTIAL: '요청 헤더 변경 후의 값을 완전히 추적하지 못함',
+  HTTP_CALLS_OUTSIDE_TRACED_FLOW: 'fetch 구문 중 확인한 서버 경로에 연결되지 않은 부분이 있음',
+  WHOLE_URL: '전체 주소', HOST_OR_AUTHORITY: '호스트 또는 주소 권한부', WHOLE_URL_OR_HOST: '전체 주소 또는 호스트',
+  PATH_QUERY_OR_NONE: '경로·검색값 또는 입력 영향 없음', UNKNOWN: '확인 불가',
 };
 const text = (value: string) => labels[value] ?? (/^[A-Z_]+$/.test(value) ? '지원 범위 밖이거나 추가 확인이 필요한 처리' : value);
 const location = (value: AnalysisLocation) => `${value.filePath}:${value.line} · ${value.functionName}`;
@@ -48,7 +60,7 @@ export function ServerAnalysisSection({ snapshot, compact = false }: { snapshot?
   return <section className="server-analysis-section" aria-label="서버 코드 흐름 검사">
     <h3>서버 코드 흐름 검사</h3><p>{text(snapshot.status)}</p>
     <p className="review-caution">코드 구조에서 확인한 별도 검토 항목입니다. 기존 점수·위험 판정·반드시 처리 건수에 합산하지 않습니다. 항목이 없어도 전체 코드가 안전하다는 의미는 아닙니다.</p>
-    {snapshot.findings.length === 0 && <p>지원 범위에서 요청 값이 쿼리 문자열로 전달되는 항목은 보고되지 않았습니다. 미검사·미지원 범위를 함께 확인하세요.</p>}
+    {snapshot.findings.length === 0 && <p>지원 범위에서 보고된 요청 값 전달 위험 항목은 없습니다. 미검사·미지원 범위를 함께 확인하세요.</p>}
     <div className="vulnerability-list">{validated.map(finding => <article className="vulnerability-item action-finding" key={finding.findingId}>
       <span className="risk-badge risk-review_required">코드 흐름 · 추가 확인 필요</span>
       <h4>{finding.title}</h4>
@@ -69,7 +81,7 @@ export function ServerAnalysisSection({ snapshot, compact = false }: { snapshot?
     {candidates.length > 0 && <h4>추가 문맥이 필요한 후보</h4>}
     <div className="vulnerability-list">{candidates.map((finding, i) => <article className="vulnerability-item action-finding" key={i}>
       <span className="risk-badge risk-review_required">코드 흐름 · 추가 확인 필요</span>
-      <h4>요청 값이 데이터베이스 쿼리에 들어갑니다</h4><p>{finding.message}</p>
+      <h4>{finding.ruleId === 'TS_SSRF_INPUT_FLOW' ? '서버 요청 주소의 처리 과정을 확인해 주세요' : '요청 값이 데이터베이스 쿼리에 들어갑니다'}</h4><p>{finding.message}</p>
       <p>{snapshot.validatedFindings == null ? '이 이력은 실행 경로 Finding 연결 이전의 기록입니다. 과거 결과를 새 기준으로 추측하여 승격하지 않습니다.'
         : '중간 처리 또는 실행 호출을 충분히 확인하지 못해 검증된 흐름 Finding으로 연결하지 않았습니다.'}</p>
       <p>{finding.recommendation}</p>
@@ -83,6 +95,16 @@ export function ServerAnalysisSection({ snapshot, compact = false }: { snapshot?
         <span>{sql.defenses.map(d => text(d.kind)).join(' · ') || '확인한 바인딩 없음'}</span>
       </li>)}</ul><p>바인딩 확인은 인증·소유권 검증이나 모든 쿼리의 안전성을 보장하지 않습니다.</p>
     </details>
+    <details className="coverage-details"><summary>서버 HTTP 요청 목적지 ({snapshot.httpUses?.length ?? '미기록'})</summary>
+      {snapshot.httpUses == null ? <p>이 이력에는 HTTP 목적지 추적 기록이 없습니다. 과거 결과를 새 기준으로 판단하지 않습니다.</p>
+        : <ul className="coverage-file-list">{snapshot.httpUses.map((http, i) => <li key={i}>
+          <code className="finding-location">{location(http.location)}</code><span>{text(http.kind)}</span>
+          <span>입력이 영향을 주는 영역: {text(http.controlledPart)}</span>
+          {http.defenses.map((d, j) => <span key={`d${j}`}>{text(d.kind)}</span>)}
+          {http.limitations.map(l => <span key={l}>{text(l)}</span>)}
+        </li>)}</ul>}
+      <p>고정된 주소나 허용 목록을 확인했더라도 리다이렉트·DNS 재해석·내부망 접근까지 안전하다고 보증하지 않습니다. SSRF는 서버가 의도하지 않은 주소로 요청하게 되는 위험입니다.</p>
+    </details>
     <details className="coverage-details"><summary>인증·권한 관련 문맥 ({snapshot.authorizationContexts.length})</summary>
       {snapshot.authorizationContexts.map((context, i) => <div key={i}>
         <h4 className="finding-location">{location(context.entry)}</h4>
@@ -95,6 +117,7 @@ export function ServerAnalysisSection({ snapshot, compact = false }: { snapshot?
       <ul className="coverage-file-list">{snapshot.files.slice(current * 10, current * 10 + 10).map((f, i) => <li key={i}>
         <code className="finding-location">{f.filePath}</code><span>{text(f.parseStatus)} · {text(f.flowStatus)} · 확인한 함수 {f.functionsAnalyzed}개</span>
         {f.prepareCallSites != null && <span>prepare 호출 구문 {f.prepareCallSites}곳 · 경로 확인 {f.tracedPrepareCallSites ?? '미기록'}곳 (모든 구문이 실제 SQL 호출이라는 뜻은 아님)</span>}
+        {f.httpCallSites != null && <span>fetch 호출 구문 {f.httpCallSites}곳 · 목적지 추적 {f.tracedHttpCallSites ?? '미기록'}곳 (모든 HTTP client를 지원하는 것은 아님)</span>}
         {f.limitations.map(l => <span key={l}>{text(l)}</span>)}
       </li>)}</ul>
       {snapshot.files.length > 10 && <nav className="finding-pagination" aria-label="서버 분석 파일 페이지">

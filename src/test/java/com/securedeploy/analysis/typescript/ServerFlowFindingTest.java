@@ -8,11 +8,36 @@ import static com.securedeploy.analysis.typescript.TypeScriptServerAnalyzerTest.
 class ServerFlowFindingTest {
     final TypeScriptServerAnalyzer analyzer = new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties());
 
+    @Test void ssrfConnectsOnlyKnownDestinationFlowsAndPreservesSqlPolicy() {
+        String start = "export default {fetch(request,env){const url=new URL(request.url).searchParams.get('url'); ";
+        var snapshot = analyzer.analyze(project(start + "env.DB.prepare(url).all(); return fetch(new Request(url));}}"));
+        assertThat(snapshot.validatedFindings()).hasSize(2).allSatisfy(f -> {
+            assertThat(f.priority().name()).isEqualTo("REVIEW_REQUIRED");
+            assertThat(f.comparisonPolicy()).isEqualTo("NOT_COMPARED");
+            assertThat(f.executionLocations()).isNotEmpty();
+        });
+        assertThat(snapshot.validatedFindings()).extracting(ServerFlowFinding::ruleId).containsExactly("TS_SQL_INPUT_FLOW", "TS_SSRF_INPUT_FLOW");
+        assertThat(snapshot.httpUses().get(0).kind()).isEqualTo("INPUT_IN_DESTINATION");
+        for (String expression : new String[] {"normalize(url)", "'https://api.example.invalid/?q='+url"})
+            assertThat(analyzer.analyze(project(start+"return fetch("+expression+");}}")).validatedFindings()).isEmpty();
+        var converter = new ServerAnalysisConverter();
+        assertThat(converter.convertToEntityAttribute(converter.convertToDatabaseColumn(snapshot))).isEqualTo(snapshot);
+    }
+
+    @Test void oldHttpCoverageIsMissingNotInvented() throws Exception {
+        var tree = new ObjectMapper().readTree(new ServerAnalysisConverter().convertToDatabaseColumn(analyzer.analyze(project(UNSAFE))));
+        ((com.fasterxml.jackson.databind.node.ObjectNode) tree).remove("httpUses");
+        ((com.fasterxml.jackson.databind.node.ObjectNode) tree).put("analyzerVersion", "ts-server-v3");
+        var old = new ServerAnalysisConverter().convertToEntityAttribute(tree.toString());
+        assertThat(old.httpUses()).isNull();
+        assertThat(old.analyzerVersion()).isEqualTo("ts-server-v3");
+    }
+
     @Test void expressionStateCorrectionReachesValidatedFindingsWithoutChangingTheirPolicy() {
         String start = "export default { fetch(request,env) { let id = new URL(request.url).searchParams.get('id'); ";
         var unsafe = analyzer.analyze(project(start + "return env.DB.prepare(id + (id = '0')).all(); }}"));
         var safe = analyzer.analyze(project(start + "return env.DB.prepare((id = '0') + id).all(); }}"));
-        assertThat(unsafe.analyzerVersion()).isEqualTo("ts-server-v3");
+        assertThat(unsafe.analyzerVersion()).isEqualTo("ts-server-v4");
         assertThat(unsafe.validatedFindings()).hasSize(1).allSatisfy(f -> {
             assertThat(f.priority().name()).isEqualTo("REVIEW_REQUIRED");
             assertThat(f.comparisonPolicy()).isEqualTo("NOT_COMPARED");
@@ -23,7 +48,7 @@ class ServerFlowFindingTest {
     @Test void v2SnapshotsRemainImmutableAndAreNotReconnectedByTheNewAnalyzer() {
         var converter = new ServerAnalysisConverter();
         var snapshot = analyzer.analyze(project(UNSAFE));
-        String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v3", "ts-server-v2");
+        String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v4", "ts-server-v2");
         var old = converter.convertToEntityAttribute(previous);
         assertThat(old.analyzerVersion()).isEqualTo("ts-server-v2");
         assertThat(converter.convertToDatabaseColumn(old)).isEqualTo(previous);

@@ -33,7 +33,7 @@ They are stored separately from Rule findings/Risk/score and comparison counts.
 Legacy snapshots stay null. Runtime/parser failures are explicit, never a clean scan.
 Run `npm test` here, then backend `gradle test` and frontend tests/build.
 
-`ts-server-v3` connects only HIGH-confidence input-to-query paths with a matching
+`ts-server-v4` connects only HIGH-confidence input-to-query paths with a matching
 execution-call observation to `validatedFindings`. A sink has one version-scoped
 finding identity and retains all validated input paths. Unknown transformations,
 unmodeled guards, partial control flow and unexecuted prepare calls remain candidates.
@@ -56,3 +56,22 @@ changes, separately from focused regressions. It labels SQL input flow, not succ
 exploitation: 8 input-flow cases, 7 safe-flow cases, 5 expected abstentions. This is
 an internal evaluation set, not an independently authored or whole-project benchmark.
 Results, failure diagnostics and coverage contain no target source or literal values.
+
+Version 4 adds an initial HTTP destination abstract value to the same evaluator.
+Global fetch is a sink only in a reached supported handler/function. Query, body,
+route and header inputs can propagate through strings, URL, Request, local functions
+and supplied relative imports. Object fetch methods do not shadow the global binding.
+Initial fixed authority with a terminated /, ?, # or backslash boundary is distinct
+from user-controlled authority; a base URL alone does not restrict absolute input.
+Exact parsed hostname and http(s) protocol checks with rejecting branches are observed,
+not arbitrary startsWith/regex validators. Port policy, redirects, DNS and runtime
+network reachability remain unverified, including fixed/allowlisted destinations.
+Incoming request.url alone does not prove arbitrary host control in Workers routing.
+Unknown wrappers, aliases of global fetch, other HTTP clients, URL authority mutations,
+complex control flow and unsupported guards remain partial, never certified safe.
+HTTP observations are additive nullable snapshot fields; old snapshots are not filled.
+Only a matching HIGH-confidence input-to-destination observation becomes an SSRF
+REVIEW_REQUIRED/NOT_COMPARED finding. Neither HTTP observations nor findings enter Risk.
+The SSRF composed quality set is synthetic and internal, not a whole-project accuracy claim.
+URL parsing semantics: https://url.spec.whatwg.org/
+Defense limitations: https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html

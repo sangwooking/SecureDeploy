@@ -1,7 +1,8 @@
 import ts from 'typescript';
 import path from 'node:path';
+import { destinationOf, joinDestinations, concatenatedDestination, constructedUrl, unresolvedDestination } from './destination.mjs';
 
-export const VERSION = 'ts-server-v3';
+export const VERSION = 'ts-server-v4';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -18,7 +19,7 @@ function addition(left, right) {
   }
   const combined = union(left, right);
   const { constant: ignored, ...withoutConstant } = combined;
-  return withoutConstant;
+  return { ...withoutConstant, ...concatenatedDestination(left, right) };
 }
 function union(...values) {
   if (!values.length) return unknown();
@@ -29,14 +30,25 @@ function union(...values) {
   const same = values.length && values.every(v => v === values[0]);
   if (same) return values[0];
   const refs = values.filter(v => v?.ref).map(v => v.ref);
-  const mixedRefs = refs.length && !values.every(v => v?.ref === refs[0]);
+  const sameUrl = refs.length && refs[0].identity && values.every(v => v?.ref?.identity === refs[0].identity);
+  const mixedRefs = refs.length && !sameUrl && !values.every(v => v?.ref === refs[0]);
+  const mergedRef = sameUrl ? { ...refs[0], unknown: refs.some(r => r.unknown),
+    checks: Object.fromEntries(Object.entries(refs[0].checks ?? {}).filter(([key, check]) =>
+      refs.every(r => JSON.stringify(r.checks?.[key]) === JSON.stringify(check)))) } : refs[0];
+  if (sameUrl) {
+    mergedRef.queryPartial = refs.some(r => r.queryPartial);
+    mergedRef.queryTrace = union(...refs.map(r => ({trace: r.queryTrace ?? []}))).trace;
+    mergedRef.properties = new Map([...new Set(refs.flatMap(r => [...r.properties.keys()]))]
+      .map(key => [key, union(...refs.map(r => r.properties.get(key) ?? unknown()))]));
+  }
   const merged = { trace, unknown: allTrace.length > 20 || values.some(v => v?.unknown) || Boolean(mixedRefs),
+    destination: joinDestinations(values),
     predicateInput: values.some(v => v?.predicateInput) ? {
       trace: values.flatMap(v => (v?.predicateInput ?? v)?.trace ?? []).slice(0, 20),
       unknown: values.some(v => (v?.predicateInput ?? v)?.unknown)
     } : undefined,
     traceTruncated: allTrace.length > 20 || values.some(v => v?.traceTruncated),
-    ref: refs.length && !mixedRefs ? refs[0] : undefined,
+    ref: refs.length && !mixedRefs ? mergedRef : undefined,
     effects: [...new Set(values.flatMap(v => v?.effects ?? []))],
     target: values.every(v => v?.target && v.target === values[0]?.target) ? values[0].target : undefined,
     tag: values.length && values.every(v => v?.tag === values[0]?.tag) ? values[0]?.tag : undefined };
@@ -56,7 +68,7 @@ export function analyze(input, overrides = {}) {
     k in DEFAULTS && Number.isInteger(v) && v > 0).map(([k, v]) => [k, Math.min(v, DEFAULTS[k])])) };
   const deadline = Date.now() + limits.timeoutMs;
   const result = { schemaVersion: 1, analyzerVersion: VERSION, parserVersion: ts.version,
-    status: 'COMPLETE', files: [], findings: [], sqlUses: [], authorizationContexts: [], limitations: [LIMITATION] };
+    status: 'COMPLETE', files: [], findings: [], sqlUses: [], httpUses: [], authorizationContexts: [], limitations: [LIMITATION] };
   const modules = new Map();
   let chars = 0, steps = 0, totalFunctions = 0;
   const safeName = text => /^[A-Za-z_$][\w$]{0,79}$/.test(text ?? '') && !/^(?:sk_|gh[pousr]_|AKIA)/.test(text) ? text : '[identifier]';
@@ -86,7 +98,7 @@ export function analyze(input, overrides = {}) {
     const filePath = file.filePath.replaceAll('\\', '/');
     if (filePath.startsWith('/') || filePath.split('/').includes('..') || /[\x00-\x1f]/.test(filePath)) continue;
     const record = { filePath, parseStatus: 'PARSED', flowStatus: 'NOT_SUPPORTED', entrypoints: 0,
-      functionsAnalyzed: 0, prepareCallSites: 0, tracedPrepareCallSites: 0, limitations: new Set() };
+      functionsAnalyzed: 0, prepareCallSites: 0, tracedPrepareCallSites: 0, httpCallSites: 0, tracedHttpCallSites: 0, limitations: new Set() };
     result.files.push(record);
     if (file.content.length > limits.maxFileChars || chars + file.content.length > limits.maxTotalChars) {
       record.parseStatus = 'LIMIT_EXCEEDED'; record.limitations.add('SOURCE_SIZE_LIMIT_EXCEEDED'); continue;
@@ -104,12 +116,14 @@ export function analyze(input, overrides = {}) {
         const n = stack.pop();
         if (++nodes > limits.maxNodes || Date.now() > deadline) throw new Error('BUDGET');
         if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'prepare') record.prepareCallSites++;
+        if (ts.isCallExpression(n) && (ts.isIdentifier(n.expression) && n.expression.text === 'fetch'
+            || ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'fetch')) record.httpCallSites++;
         ts.forEachChild(n, child => { stack.push(child); });
       }
-      const register = (name, node, exported = false) => {
+      const register = (name, node, exported = false, lexical = true) => {
         if (++totalFunctions > limits.maxFunctions) { note(mod, 'FUNCTION_INDEX_LIMIT_EXCEEDED'); return; }
         const fn = { name, node, mod };
-        mod.functions.set(name, fn); if (exported) mod.exports.set(name, fn); return fn;
+        mod.functions.set(lexical ? name : Symbol(name), fn); if (exported) mod.exports.set(name, fn); return fn;
       };
       for (const s of ast.statements) {
         const exported = s.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword);
@@ -139,11 +153,12 @@ export function analyze(input, overrides = {}) {
             continue;
           }
           let fn;
-          if (ts.isMethodDeclaration(p)) fn = register('fetch', p);
+          // An object method is not a lexical binding of the global fetch function.
+          if (ts.isMethodDeclaration(p)) fn = register('fetch', p, false, false);
           else if (ts.isPropertyAssignment(p)) {
             const init = unwrap(p.initializer);
             fn = ts.isIdentifier(init) ? mod.functions.get(init.text)
-              : ts.isArrowFunction(init) || ts.isFunctionExpression(init) ? register('fetch', init) : undefined;
+              : ts.isArrowFunction(init) || ts.isFunctionExpression(init) ? register('fetch', init, false, false) : undefined;
           } else if (ts.isShorthandPropertyAssignment(p)) fn = mod.functions.get('fetch');
           if (fn) mod.entries.push({ fn, kind: 'WORKER_FETCH' });
           else note(mod, 'WORKER_ENTRY_UNRESOLVED');
@@ -166,6 +181,16 @@ export function analyze(input, overrides = {}) {
   }
   function property(base, key, node, state) {
     const { mod, fn } = state;
+    if (base.ref?.http && base.tag === 'url') {
+      const uncertain = base.unknown || base.ref.unknown;
+      if (key === 'searchParams') return value('query', base.trace, { unknown: uncertain, ref: base.ref });
+      if (key === 'href') return value('urlText', base.trace, { unknown: uncertain, destination: destinationOf(base) });
+      if (base.ref.properties.has(key)) return { ...base.ref.properties.get(key), unknown: uncertain || base.ref.properties.get(key).unknown };
+      if (['hostname', 'host', 'protocol', 'pathname', 'search', 'hash', 'port'].includes(key))
+        return value('input', base.trace, { unknown: uncertain, urlMember: key, destination: unresolvedDestination() });
+      return { ...unknown(), trace: base.trace };
+    }
+    if (base.tag === 'outboundRequest' && key === 'url') return value('urlText', base.trace, { destination: destinationOf(base), unknown: base.unknown || base.ref?.unknown });
     if (base.ref?.properties?.has(key)) return { ...base.ref.properties.get(key), unknown: base.ref.unknown || base.ref.properties.get(key).unknown };
     if (base.ref) return base.ref.unknown ? { trace: base.ref.trace, unknown: true } : constant(undefined);
     if (base.tag === 'context') {
@@ -178,7 +203,8 @@ export function analyze(input, overrides = {}) {
     if (base.tag === 'contextData' && ['user', 'session', 'principal'].includes(key)) {
       state.context.checks.push(loc(node, mod, 'LOGIN_CONTEXT_REFERENCE', fn));
     }
-    if (base.tag === 'request' && key === 'url') return value('urlText', [loc(node, mod, 'REQUEST_URL', fn)], { unknown: base.unknown });
+    if (base.tag === 'request' && key === 'url') return value('urlText', [loc(node, mod, 'REQUEST_URL', fn)], { unknown: base.unknown, destination: unresolvedDestination() });
+    if (base.tag === 'request' && key === 'headers') return value('headers', [], { unknown: base.unknown || state.context.headersMutated });
     if (base.tag === 'url' && key === 'searchParams') return value('query', base.trace, { unknown: base.unknown });
     if (base.tag === 'url' && key === 'pathname') return value('input', base.trace, { unknown: base.unknown });
     if (key === 'length' && !base.unknown && ['STRING', 'ARRAY'].includes(base.inputShape)) return value('numeric');
@@ -219,6 +245,17 @@ export function analyze(input, overrides = {}) {
       return {
         read: () => hasConstant(key) ? property(receiver, String(key.constant), node, state) : { ...union(receiver, key), unknown: true },
         write: (v, target) => {
+          if (receiver.ref?.http && receiver.tag === 'url') {
+            note(mod, 'URL_PROPERTY_WRITE');
+            const ref = target.forkRefs?.get(receiver.ref) ?? receiver.ref;
+            if (hasConstant(key) && ['pathname', 'search', 'hash'].includes(key.constant)) {
+              ref.properties.set(key.constant, v.ref ? { ...unknown(), trace: v.trace } : v);
+              if (key.constant === 'search') { ref.queryTrace = v.trace; ref.queryPartial = true; }
+              return;
+            }
+            ref.unknown = true; ref.checks = {}; ref.trace = union({ trace: ref.trace }, v).trace;
+            note(mod, 'URL_MUTATION_UNRESOLVED'); return;
+          }
           note(mod, 'PROPERTY_WRITE_UNRESOLVED');
           const ref = target.forkRefs?.get(receiver.ref) ?? receiver.ref;
           if (ref) { ref.unknown = true; ref.trace = union({ trace: ref.trace }, v).trace; ref.properties.clear(); }
@@ -258,7 +295,7 @@ export function analyze(input, overrides = {}) {
     for (const name of names) {
       const old = state.vars.get(name);
       if (!old) continue;
-      state.vars.set(name, { ...union(old, incoming), unknown: true, constant: undefined });
+      state.vars.set(name, { ...union(old, incoming), unknown: true, constant: undefined, urlPrefix: undefined, destination: unresolvedDestination() });
       if (old.ref) { old.ref.unknown = true; old.ref.trace = union({ trace: old.ref.trace }, incoming).trace; old.ref.properties.clear(); }
     }
   }
@@ -389,8 +426,25 @@ export function analyze(input, overrides = {}) {
           return invoke(target, passed, state.depth + 1, state.context, state.stack, state.uncertain);
         }
         if (global) {
-          if (callee.text === 'URL') return value('url', args[0]?.trace ?? [], { unknown: args[0]?.unknown });
-          if (callee.text === 'URLSearchParams') return value('query', args[0]?.trace ?? [], { unknown: args[0]?.unknown });
+          if (callee.text === 'URL' && ts.isNewExpression(node)) {
+            const input = args[0] ?? unknown(), base = args[1];
+            const combined = base ? union(input, base) : input;
+            return value('url', combined.trace, { unknown: input.unknown || base?.unknown,
+              ref: { http: constructedUrl(input, base), identity: {}, properties: new Map(), trace: combined.trace, checks: {}, unknown: false } });
+          }
+          if (callee.text === 'Request' && ts.isNewExpression(node)) {
+            const input = args[0] ?? unknown();
+            return value('outboundRequest', input.trace, { unknown: input.unknown,
+              ref: { http: destinationOf(input), properties: new Map(), trace: input.trace, unknown: false } });
+          }
+          if (callee.text === 'fetch' && ts.isCallExpression(node)) {
+            observeHttp(args[0] ?? unknown(), node, state);
+            return unknown();
+          }
+          if (callee.text === 'encodeURIComponent' && ts.isCallExpression(node))
+            return { ...(args[0] ?? unknown()), ref: undefined, destination: unresolvedDestination(), urlPrefix: undefined };
+          if (callee.text === 'URLSearchParams') return value('query', args[0]?.trace ?? [], { unknown: args[0]?.unknown,
+            ref: {properties: new Map(), trace: args[0]?.trace ?? [], unknown: false} });
           if (ts.isCallExpression(node) && ['Number', 'parseInt', 'parseFloat'].includes(callee.text)) {
             return numeric(args, node, state);
           }
@@ -398,8 +452,24 @@ export function analyze(input, overrides = {}) {
       }
       if (ts.isPropertyAccessExpression(callee)) {
         const receiver = receiverInput, method = callee.name.text;
+        if (receiver.tag === 'url' && receiver.ref?.http && ['toString', 'toJSON'].includes(method))
+          return value('urlText', receiver.trace, { unknown: receiver.unknown || receiver.ref.unknown, destination: destinationOf(receiver) });
+        if (receiver.tag === 'query' && ['set', 'append', 'delete', 'sort'].includes(method)) {
+          note(mod, 'URL_QUERY_WRITE');
+          if (receiver.ref) {
+            receiver.ref.queryTrace = union({trace: receiver.ref.queryTrace ?? []}, ...args).trace;
+            receiver.ref.queryPartial = true;
+          }
+          return constant(undefined);
+        }
+        if (receiver.tag === 'headers' && ['set', 'append', 'delete'].includes(method)) {
+          state.context.headersMutated = true; note(mod, 'HEADER_MUTATION_PARTIAL'); return constant(undefined);
+        }
+        if (receiver.tag === 'headers' && method === 'get') return value('input', [loc(node, mod, 'REQUEST_HEADER', fn)], { unknown: receiver.unknown || state.context.headersMutated, inputShape: 'STRING' });
+        if (method === 'includes' && args[0]?.urlMember && ts.isArrayLiteralExpression(unwrap(callee.expression))
+            && unwrap(callee.expression).elements.every(e => ts.isStringLiteral(e))) return value('boolean');
         if (receiver.tag === 'request' && ['json', 'text', 'formData'].includes(method)) return value('input', [loc(node, mod, 'REQUEST_BODY', fn)], { unknown: receiver.unknown, inputShape: method === 'text' ? 'STRING' : undefined });
-        if (receiver.tag === 'query' && ['get', 'getAll'].includes(method)) return value('input', receiver.trace.length ? [loc(node, mod, 'QUERY_PARAMETER', fn)] : [], { unknown: receiver.unknown, inputShape: method === 'get' ? 'STRING' : 'ARRAY' });
+        if (receiver.tag === 'query' && ['get', 'getAll'].includes(method)) return value('input', receiver.trace.length || receiver.ref?.queryTrace?.length ? [loc(node, mod, 'QUERY_PARAMETER', fn)] : [], { unknown: receiver.unknown || receiver.ref?.unknown || receiver.ref?.queryPartial, inputShape: method === 'get' ? 'STRING' : 'ARRAY' });
         if (receiver.tag === 'input' && method === 'get') return receiver;
         if (receiver.tag === 'database' && method === 'prepare') {
           const sql = { ...(args[0] ?? unknown()) };
@@ -452,7 +522,7 @@ export function analyze(input, overrides = {}) {
         argument.ref.properties.clear();
       }
       note(mod, 'CALL_TARGET_UNRESOLVED');
-      return { ...incoming, unknown: true };
+      return { ...incoming, unknown: true, destination: unresolvedDestination(), urlPrefix: undefined };
     }
     if (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) {
       const operand = expr(node.operand, state);
@@ -488,12 +558,18 @@ export function analyze(input, overrides = {}) {
     return { ...state, vars: new Map([...state.vars].map(([name, v]) => [name, clone(v)])), forkRefs: refs };
   }
   function mergeVars(state, branches) {
-    const merged = new Map();
+    const merged = new Map(), urlRefs = new Map();
     for (const key of new Set(branches.flatMap(b => [...b.vars.keys()]))) {
       tick(state.mod);
       const alternatives = branches.map(b => b.vars.get(key) ?? unknown());
-      if (alternatives.some(v => v.ref) && !alternatives.every(v => v.ref === alternatives[0].ref)) note(state.mod, 'OBJECT_BRANCH_MERGE_PARTIAL');
-      merged.set(key, union(...alternatives));
+      if (alternatives.some(v => v.ref) && !alternatives.every(v => v.ref === alternatives[0].ref
+          || v.ref?.identity && v.ref.identity === alternatives[0].ref?.identity)) note(state.mod, 'OBJECT_BRANCH_MERGE_PARTIAL');
+      const joined = union(...alternatives);
+      if (joined.ref?.identity) {
+        if (urlRefs.has(joined.ref.identity)) joined.ref = urlRefs.get(joined.ref.identity);
+        else urlRefs.set(joined.ref.identity, joined.ref);
+      }
+      merged.set(key, joined);
     }
     state.vars = merged;
     state.uncertain = state.uncertain || branches.some(b => b.uncertain);
@@ -505,6 +581,60 @@ export function analyze(input, overrides = {}) {
         branch.vars.set(name, { ...v, unknown: true });
     }
     refineAllowlist(node, true, yes); refineAllowlist(node, false, no);
+    refineUrlAllowlist(node, true, yes); refineUrlAllowlist(node, false, no);
+  }
+  function refineUrlAllowlist(original, accepted, state, depth = 0) {
+    if (depth > 3) return;
+    const node = unwrap(original);
+    if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.ExclamationToken)
+      return refineUrlAllowlist(node.operand, !accepted, state, depth + 1);
+    if (ts.isBinaryExpression(node)) {
+      const op = node.operatorToken.kind;
+      if (op === ts.SyntaxKind.AmpersandAmpersandToken && accepted || op === ts.SyntaxKind.BarBarToken && !accepted) {
+        refineUrlAllowlist(node.left, accepted, state, depth + 1);
+        refineUrlAllowlist(node.right, accepted, state, depth + 1); return;
+      }
+      if ([ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(op)
+          && accepted === (op === ts.SyntaxKind.EqualsEqualsEqualsToken)) {
+        const left = unwrap(node.left), right = unwrap(node.right);
+        if (ts.isStringLiteral(right)) mark(left, [right.text]);
+        else if (ts.isStringLiteral(left)) mark(right, [left.text]);
+      }
+    } else if (accepted && ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)
+        && node.expression.name.text === 'includes' && node.arguments.length === 1) {
+      const list = unwrap(node.expression.expression);
+      if (ts.isArrayLiteralExpression(list) && list.elements.length > 0 && list.elements.length <= 30
+          && list.elements.every(e => ts.isStringLiteral(e))) mark(unwrap(node.arguments[0]), list.elements.map(e => e.text));
+    }
+    function mark(member, literals) {
+      if (!ts.isPropertyAccessExpression(member) || !ts.isIdentifier(member.expression)) return;
+      const v = state.vars.get(member.expression.text), key = member.name.text;
+      if (!v?.ref?.http || v.tag !== 'url' || v.ref.unknown) return;
+      if (!(key === 'protocol' && literals.every(t => ['http:', 'https:'].includes(t))
+          || key === 'hostname' && literals.every(t => /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(t)))) return;
+      v.ref.checks = { ...v.ref.checks, [key]: loc(original, state.mod, 'PARSED_URL_ALLOWLIST', state.fn) };
+    }
+  }
+  function observeHttp(input, node, state) {
+    const {mod, fn} = state;
+    let destination = destinationOf(input);
+    if (state.uncertain || input.traceTruncated) destination = unresolvedDestination();
+    const defenses = Object.values(input.ref?.checks ?? {});
+    const limits = ['REDIRECT_DNS_REACHABILITY_NOT_VERIFIED', 'PATH_FEASIBILITY_NOT_VERIFIED'];
+    if (destination.kind === 'ALLOWLISTED_DESTINATION') limits.push('PORT_POLICY_NOT_VERIFIED');
+    if (destination.kind === 'UNRESOLVED_DESTINATION') { limits.push('DESTINATION_FLOW_UNRESOLVED'); note(mod, 'DESTINATION_FLOW_UNRESOLVED'); }
+    const trace = union(input, {trace: input.ref?.trace ?? []}).trace.map(l => l.kind === 'SQL_STRING_CONSTRUCTION' ? {...l, kind: 'URL_STRING_CONSTRUCTION'} : l);
+    const usage = { ...destination, location: loc(node, mod, 'HTTP_REQUEST_CALL', fn), trace,
+      defenses, limitations: limits };
+    append(result.httpUses, usage, mod);
+    state.context.resources.push(usage.location);
+    if (trace.length && ['INPUT_IN_DESTINATION', 'UNRESOLVED_DESTINATION'].includes(usage.kind)) {
+      append(result.findings, { ruleId: 'TS_SSRF_INPUT_FLOW', kind: 'INPUT_TO_HTTP_DESTINATION',
+        confidence: usage.kind === 'INPUT_IN_DESTINATION' ? 'HIGH' : 'MEDIUM', disposition: 'REVIEW_REQUIRED',
+        source: trace[0], sink: usage.location, flow: trace, defenses, limitations: limits,
+        message: '사용자 입력이 서버의 요청 주소에 전달됩니다. 실제 목적지 제어 여부와 허용 목록을 확인하세요.',
+        recommendation: 'URL을 파싱하고 프로토콜·호스트를 서버의 정확한 허용 목록으로 제한하세요. 리다이렉트와 DNS·네트워크 제한은 별도로 검증하세요.' }, mod);
+    }
   }
   // Only inline literal identifier lists/strict comparisons narrow values, never arbitrary validators.
   function allowedIdentifier(condition, truth, depth = 0) {
@@ -641,7 +771,8 @@ export function analyze(input, overrides = {}) {
     if (!ts.isBlock(node.body)) return expr(node.body, state);
     const r = statement(node.body, state);
     // Branch-local heap copies cannot prove a mutation-free return to the caller.
-    if (mod.record.limitations.has('PROPERTY_WRITE_UNRESOLVED') || mod.record.limitations.has('CLOSURE_SIDE_EFFECTS_UNRESOLVED')) {
+    if (['PROPERTY_WRITE_UNRESOLVED', 'CLOSURE_SIDE_EFFECTS_UNRESOLVED', 'URL_PROPERTY_WRITE', 'URL_QUERY_WRITE']
+        .some(reason => mod.record.limitations.has(reason))) {
       for (const arg of args) if (arg.ref) {
         arg.ref.unknown = true; arg.ref.trace = union({ trace: arg.ref.trace }, ...args).trace; arg.ref.properties.clear();
         note(mod, 'CALLER_HEAP_EFFECTS_PARTIAL');
@@ -658,7 +789,8 @@ export function analyze(input, overrides = {}) {
       context[field] = context[field].filter((item, i, all) => all.findIndex(other => JSON.stringify(item) === JSON.stringify(other)) === i);
       if (context[field].length > 100) { context[field] = context[field].slice(0, 100); note(mod, 'CONTEXT_DETAILS_LIMIT_EXCEEDED'); }
     }
-    append(result.authorizationContexts, { ...context, conclusion: 'NOT_VERIFIED', limitations: [
+    const { headersMutated: ignoredHeaderState, ...publicContext } = context;
+    append(result.authorizationContexts, { ...publicContext, conclusion: 'NOT_VERIFIED', limitations: [
       '조건 분기만으로 인증·소유권 검증을 입증하지 않습니다.',
       '전역 미들웨어·세션 검증·리소스 소유권과 실패 시 차단 경로를 직접 확인하세요.'
     ] }, mod);
@@ -667,6 +799,9 @@ export function analyze(input, overrides = {}) {
     mod.record.tracedPrepareCallSites = new Set(result.sqlUses.filter(s => s.location.filePath === mod.filePath)
       .map(s => `${s.location.line}:${s.location.column}`)).size;
     if (mod.record.prepareCallSites > mod.record.tracedPrepareCallSites) note(mod, 'PREPARE_CALLS_OUTSIDE_TRACED_FLOW');
+    mod.record.tracedHttpCallSites = new Set(result.httpUses.filter(s => s.location.filePath === mod.filePath)
+      .map(s => `${s.location.line}:${s.location.column}`)).size;
+    if (mod.record.httpCallSites > mod.record.tracedHttpCallSites) note(mod, 'HTTP_CALLS_OUTSIDE_TRACED_FLOW');
     if (mod.visited.size) {
       if (mod.visited.size < mod.functions.size) note(mod, 'UNREACHED_FUNCTIONS_NOT_ANALYZED');
       mod.record.flowStatus = mod.record.limitations.size ? 'PARTIAL' : 'SUPPORTED_FLOW_ANALYZED';

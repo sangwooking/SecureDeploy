@@ -38,6 +38,34 @@ class ServerAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void ssrfUsesCommonSourcesAndSnapshotWithoutChangingRiskOrComparison() throws Exception {
+        String token=signup();
+        String code="export default {fetch(request){return fetch(new Request(new URL(request.url).searchParams.get('target')));}}";
+        var zip=upload(token,code);
+        assertThat(zip.at("/serverAnalysis/validatedFindings/0/ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
+        assertThat(zip.at("/serverAnalysis/httpUses/0/kind").asText()).isEqualTo("INPUT_IN_DESTINATION");
+        Path publicRoot=Files.createDirectory(temp.resolve("ssrf-public")); Files.writeString(publicRoot.resolve("worker.ts"),code);
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/server",publicRoot,publicRoot));
+        var publicResult=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/server\",\"scanMode\":\"STANDARD\"}");
+        Path privateRoot=Files.createDirectory(temp.resolve("ssrf-private")); Files.writeString(privateRoot.resolve("worker.ts"),code);
+        var metadata=new GitHubSourceSnapshot("fixture","server","https://github.com/fixture/server","main","a".repeat(40),"aaaaaaa",
+                null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/server",privateRoot,privateRoot,metadata));
+        var privateResult=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        assertThat(publicResult.path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        assertThat(privateResult.path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        assertThat(publicRoot).doesNotExist(); assertThat(privateRoot).doesNotExist();
+        var safe=upload(token,"export default {fetch(request){return fetch('https://example.invalid/?q='+new URL(request.url).searchParams.get('target'));}}");
+        assertThat(safe.at("/serverAnalysis/validatedFindings")).isEmpty();
+        assertThat(safe.path("securityScore")).isEqualTo(zip.path("securityScore"));
+        for(String key:List.of("prioritySummary","prioritizedDeploymentAssessment","codeFindings"))
+            assertThat(safe.path("riskAssessment").path(key)).isEqualTo(zip.path("riskAssessment").path(key));
+        assertThat(safe.at("/comparison/counts/RESOLVED").asInt()).isZero();
+        long id=zip.path("reviewId").asLong();
+        assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+    }
+
     @Test void correctedStatePersistsWithoutChangingRiskOrCountingAFalselyResolvedIssue() throws Exception {
         String token = signup();
         String start = "export default { fetch(request,env) { let id=new URL(request.url).searchParams.get('id'); ";

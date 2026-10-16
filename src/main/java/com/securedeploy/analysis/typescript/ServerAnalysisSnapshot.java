@@ -9,16 +9,27 @@ import com.securedeploy.project.coverage.CoverageLedger;
 public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
         String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
         List<AuthorizationContext> authorizationContexts, List<String> limitations,
-        List<ServerFlowFinding> validatedFindings) {
+        List<ServerFlowFinding> validatedFindings, List<HttpUse> httpUses) {
+    public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
+            String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
+            List<AuthorizationContext> authorizationContexts, List<String> limitations, List<ServerFlowFinding> validatedFindings) {
+        this(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses,
+                authorizationContexts, limitations, validatedFindings, null);
+    }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
             String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
             List<AuthorizationContext> authorizationContexts, List<String> limitations) {
         this(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses,
-                authorizationContexts, limitations, null);
+                authorizationContexts, limitations, null, null);
     }
     public record Location(String filePath, int line, int column, String functionName, String kind) { }
     public record FileCoverage(String filePath, String parseStatus, String flowStatus, int entrypoints,
-            int functionsAnalyzed, int prepareCallSites, int tracedPrepareCallSites, List<String> limitations) {
+            int functionsAnalyzed, int prepareCallSites, int tracedPrepareCallSites, List<String> limitations,
+            Integer httpCallSites, Integer tracedHttpCallSites) {
+        public FileCoverage(String filePath, String parseStatus, String flowStatus, int entrypoints,
+                int functionsAnalyzed, int prepareCallSites, int tracedPrepareCallSites, List<String> limitations) {
+            this(filePath, parseStatus, flowStatus, entrypoints, functionsAnalyzed, prepareCallSites, tracedPrepareCallSites, limitations, null, null);
+        }
         public FileCoverage(String filePath, String parseStatus, String flowStatus, int entrypoints,
                 int functionsAnalyzed, List<String> limitations) {
             this(filePath, parseStatus, flowStatus, entrypoints, functionsAnalyzed, 0, 0, limitations);
@@ -29,11 +40,13 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
             List<String> limitations, String message, String recommendation) { }
     public record SqlUse(String kind, Location location, List<Location> trace, List<Location> defenses,
             List<String> limitations, boolean executionObserved, List<Location> executionLocations) { }
+    public record HttpUse(String kind, String controlledPart, Location location, List<Location> trace,
+            List<Location> defenses, List<String> limitations) { }
     public record AuthorizationContext(Location entry, List<Location> checks, List<Location> defenses,
             List<Location> resources, String conclusion, List<String> limitations) { }
 
     public static ServerAnalysisSnapshot unavailable(String status, List<FileCoverage> files, String reason) {
-        return new ServerAnalysisSnapshot(1, "ts-server-v3", null, status, files, List.of(), List.of(), List.of(), List.of(reason));
+        return new ServerAnalysisSnapshot(1, "ts-server-v4", null, status, files, List.of(), List.of(), List.of(), List.of(reason));
     }
 
     public CoverageLedger attachCoverage(CoverageLedger ledger) {
