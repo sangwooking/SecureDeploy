@@ -46,6 +46,10 @@ public class SupplementalDependencyService {
         try { ecosystem = ScaEcosystem.valueOf(finding.ecosystem()); }
         catch (RuntimeException exception) { throw invalid("라이브러리 유형을 확인하지 못했습니다. 프로젝트를 다시 검사해 주세요."); }
         String name = request.packageName().strip(), version = request.version().strip();
+        if (ecosystem == ScaEcosystem.PYPI) {
+            String normalized = com.securedeploy.sca.parser.PythonRequirement.normalizeName(name);
+            if (normalized != null) name = normalized;
+        }
         var component = VersionClassifier.component(ecosystem, name, version, null, null, "user-provided", 0);
         if (name.length() > 256 || version.length() > 128 || component.versionResolution() != VersionResolution.EXACT
                 || !component.packageName().equals(name) || !component.version().equals(version)

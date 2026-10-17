@@ -18,7 +18,7 @@ public class ScaManifestCollector {
 
     public Inventory collect(ProjectStructure structure) {
         List<ProjectFile> files = structure.analysisFiles().stream()
-                .filter(f -> MANIFESTS.contains(name(f.relativePath())))
+                .filter(f -> MANIFESTS.contains(name(f.relativePath())) || PythonManifestFiles.isPython(f.relativePath()))
                 .filter(f -> !ProjectIgnorePolicy.ignores(Path.of(f.relativePath())))
                 .sorted(Comparator.comparing(ProjectFile::relativePath)).toList();
         List<String> warnings = new ArrayList<>();
@@ -26,6 +26,8 @@ public class ScaManifestCollector {
         Map<String, List<DependencyComponent>> parsed = new LinkedHashMap<>();
         Set<String> present = new HashSet<>();
         files.forEach(f -> present.add(f.relativePath()));
+        var python = new PythonManifestParser().collect(files.stream().limit(100).toList());
+        warnings.addAll(python.warnings()); observations.addAll(python.observations());
         for (int index = 0; index < files.size(); index++) {
             ProjectFile file = files.get(index);
             String safePath = com.securedeploy.project.coverage.CoverageRecorder.safePath(file.relativePath());
@@ -33,6 +35,7 @@ public class ScaManifestCollector {
                 observations.add(new ManifestObservation(safePath, "LIMIT_EXCEEDED", "MANIFEST_COUNT_LIMIT"));
                 continue;
             }
+            if (PythonManifestFiles.isPython(file.relativePath())) continue;
             if (file.lines().stream().mapToLong(s -> s.length() + 1L).sum() > 2_000_000) {
                 observations.add(new ManifestObservation(safePath, "LIMIT_EXCEEDED", "MANIFEST_SIZE_LIMIT"));
                 warnings.add(safePath + ": SCA manifest 크기 제한으로 파싱하지 못했습니다.");
@@ -60,7 +63,9 @@ public class ScaManifestCollector {
         }
         if (files.size() > 100) warnings.add("Manifest 100개 제한으로 일부 파일을 분석하지 못했습니다.");
         List<DependencyComponent> result = new ArrayList<>();
+        result.addAll(python.components());
         for (var entry : parsed.entrySet()) {
+            if (result.size() >= 5000) { warnings.add("의존성 위치 5000개 제한에 도달했습니다."); break; }
             String path = entry.getKey(), base = directory(path), filename = name(path);
             List<DependencyComponent> lock = parsed.get(base + (filename.equals("package.json") ? "package-lock.json" : "gradle.lockfile"));
             boolean npmLocked = filename.equals("package.json") && present.contains(base + "package-lock.json");
@@ -74,8 +79,11 @@ public class ScaManifestCollector {
                 } else if (gradleLocked) {
                     List<DependencyComponent> locked = lock.stream().filter(c -> c.packageName().equals(item.packageName())).toList();
                     if (locked.isEmpty()) result.add(item);
-                    else for (DependencyComponent c : locked) result.add(new DependencyComponent(c.ecosystem(), c.packageName(),
+                    else for (DependencyComponent c : locked) {
+                        if (result.size() >= 5000) break;
+                        result.add(new DependencyComponent(c.ecosystem(), c.packageName(),
                             c.version(), item.scope(), true, path, item.line(), c.versionResolution()));
+                    }
                 } else result.add(item);
                 if (result.size() >= 5000) break;
             }

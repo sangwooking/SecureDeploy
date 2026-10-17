@@ -5,7 +5,7 @@ export interface SupplementalDependencyResponse {
   provenance: 'USER_PROVIDED';
   status: 'COMPLETE' | 'PARTIAL' | 'UNAVAILABLE' | 'DISABLED';
   checkedAt: string;
-  ecosystem: 'MAVEN' | 'NPM';
+  ecosystem: 'MAVEN' | 'NPM' | 'PYPI';
   packageName: string;
   version: string;
   findings: DependencyVulnerability[];

@@ -10,6 +10,9 @@ import org.eclipse.jgit.lib.Constants;
 public final class GitSourceFixture {
     public static final Map<String, String> FILES = Map.ofEntries(
         Map.entry("README.md", "Offline monorepo fixture"),
+        Map.entry("python/requirements.txt", "-c constraints.txt\nfixture-python\nfixture-range>=2.0\n"),
+        Map.entry("python/constraints.txt", "fixture-python==1.0\n"),
+        Map.entry("python/server.py", "# Synthetic source, never executed. Python source analysis is unsupported.\n"),
         Map.entry("backend/pom.xml", "<project><modelVersion>4.0.0</modelVersion><groupId>fixture</groupId><artifactId>backend</artifactId><version>1</version><dependencies><dependency><groupId>org.apache.logging.log4j</groupId><artifactId>log4j-core</artifactId><version>2.14.1</version></dependency></dependencies></project>"),
         Map.entry("backend/module/pom.xml", "<project><dependencies><dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>2.9.10</version></dependency></dependencies></project>"),
         Map.entry("services/build.gradle", "dependencies { implementation 'org.springframework:spring-webmvc:5.3.10' }"),

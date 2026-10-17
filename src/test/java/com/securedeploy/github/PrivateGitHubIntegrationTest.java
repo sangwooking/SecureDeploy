@@ -3,6 +3,8 @@ package com.securedeploy.github;
 import com.fasterxml.jackson.databind.*;
 import com.securedeploy.github.app.*;
 import com.securedeploy.github.service.GitHubSnapshotFetcher;
+import com.securedeploy.sca.client.VulnerabilityDataSource;
+import com.securedeploy.sca.model.*;
 import java.net.URI;
 import java.nio.file.*;
 import java.util.*;
@@ -21,7 +23,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = {"securedeploy.ai.provider=template", "securedeploy.sca.enabled=false", "securedeploy.threat-intelligence.enabled=false",
+@SpringBootTest(properties = {"securedeploy.ai.provider=template", "securedeploy.sca.enabled=true", "securedeploy.threat-intelligence.enabled=false",
         "securedeploy.github.app.enabled=true", "securedeploy.github.app.app-id=123", "securedeploy.github.app.client-id=fixture-client",
         "securedeploy.github.app.client-secret=synthetic-not-real", "securedeploy.github.app.slug=fixture-app",
         "securedeploy.github.app.private-key-file=unused-mocked-client", "securedeploy.github.app.encryption-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="})
@@ -34,6 +36,7 @@ class PrivateGitHubIntegrationTest {
     @Autowired jakarta.persistence.EntityManager entities;
     @MockBean GitHubAppClient github;
     @MockBean GitHubSnapshotFetcher fetcher;
+    @MockBean VulnerabilityDataSource osv;
     @TempDir Path temp;
     String session, sha;
     final List<Path> workspaces = new ArrayList<>();
@@ -41,6 +44,18 @@ class PrivateGitHubIntegrationTest {
 
     @BeforeEach void setup() throws Exception {
         Path remote = temp.resolve("remote"); sha = GitSourceFixture.create(remote);
+        when(fetcher.fetch(any(), any(), any())).thenAnswer(inv -> {
+            Path directory = inv.getArgument(1); workspaces.add(directory.getParent());
+            return GitSourceFixture.fetcher(remote).fetch(inv.getArgument(0), directory, inv.getArgument(2));
+        });
+        when(osv.lookup(anyList())).thenAnswer(inv -> {
+            List<DependencyComponent> components = inv.getArgument(0);
+            var python = components.stream().filter(c -> c.ecosystem() == ScaEcosystem.PYPI).findFirst().orElseThrow();
+            var finding = new DependencyVulnerability(ScaEcosystem.PYPI, python.packageName(), python.version(), "OSV-PYTHON-FIXTURE",
+                    List.of(), "Synthetic Python advisory", com.securedeploy.rule.model.Severity.MEDIUM, null, List.of(), List.of("2.0"), null, null, List.of(), List.of(python.sourceFile()));
+            return new VulnerabilityDataSource.LookupResult(List.of(finding), components.stream().map(DependencyComponent::identity)
+                    .collect(java.util.stream.Collectors.toSet()), false, List.of());
+        });
         when(fetcher.fetchAuthenticated(any(), any(), any(), any())).thenAnswer(inv -> {
             Path directory = inv.getArgument(1); workspaces.add(directory.getParent());
             var revision = GitSourceFixture.fetcher(remote).fetch(inv.getArgument(0), directory, inv.getArgument(2));
@@ -98,6 +113,34 @@ class PrivateGitHubIntegrationTest {
         mvc.perform(get("/api/github/installations/10/repositories").header("Authorization", session)).andExpect(status().isConflict());
         assertThat(read("/api/workspace").path("projectCount").asInt()).isZero();
         verify(fetcher, times(1)).fetchAuthenticated(any(), any(), any(), any());
+    }
+    @Test void pythonScaSnapshotIsIdenticalAcrossZipPublicAndPrivateAcquisition() throws Exception {
+        connect(); var privateResult = analyze(null);
+        var publicResult = json.readTree(mvc.perform(post("/api/reviews/github").header("Authorization", session)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"repositoryUrl\":\"https://github.com/fixture/public\",\"scanMode\":\"STANDARD\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        var bytes = new java.io.ByteArrayOutputStream();
+        try (var zip = new java.util.zip.ZipOutputStream(bytes)) {
+            for (var entry : GitSourceFixture.FILES.entrySet()) {
+                zip.putNextEntry(new java.util.zip.ZipEntry("fixture/" + entry.getKey()));
+                zip.write(entry.getValue().getBytes(java.nio.charset.StandardCharsets.UTF_8)); zip.closeEntry();
+            }
+        }
+        var zipResult = json.readTree(mvc.perform(multipart("/api/reviews/upload")
+                .file(new org.springframework.mock.web.MockMultipartFile("file", "fixture.zip", "application/zip", bytes.toByteArray())).header("Authorization", session))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        for (var result : List.of(privateResult, publicResult, zipResult)) {
+            for (String pointer : List.of("/sca/components", "/sca/summary", "/sca/dependencyVulnerabilities", "/coverage/inspectionScope", "/riskAssessment/prioritySummary")) {
+                assertThat(result.at(pointer)).isEqualTo(privateResult.at(pointer));
+            }
+            assertThat(result.at("/sca/components").toString()).contains("PYPI", "CONSTRAINT_PIN");
+            assertThat(result.at("/coverage/inspectionScope").toString()).contains("PYTHON_SOURCE", "UNSUPPORTED");
+            var saved = read("/api/reviews/" + result.path("reviewId").asLong());
+            assertThat(saved.path("sca")).isEqualTo(result.path("sca"));
+            assertThat(saved.path("coverage")).isEqualTo(result.path("coverage"));
+        }
+        assertThat(read("/api/projects/" + privateResult.path("projectId").asLong() + "/reviews").size()).isEqualTo(1);
+        workspaces.forEach(p -> assertThat(p).doesNotExist());
     }
     @Test void installedButNoUserPermissionStopsBeforeTokenOrSourceAndDoesNotSaveReview() throws Exception {
         connect();

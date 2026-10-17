@@ -13,6 +13,12 @@ public class ProjectFileCollector {
         String lowerName = fileName.toLowerCase();
         String normalizedPath = "/" + path.toString().replace('\\', '/').toLowerCase(java.util.Locale.ROOT);
 
+        if (com.securedeploy.sca.parser.PythonManifestFiles.isRequirements(normalizedPath)) {
+            return Optional.of(ProjectFileType.PYTHON_REQUIREMENTS);
+        }
+        if ("pyproject.toml".equals(lowerName)) return Optional.of(ProjectFileType.PYTHON_PROJECT);
+        if (com.securedeploy.sca.parser.PythonManifestFiles.isUnsupported(lowerName)) return Optional.of(ProjectFileType.PYTHON_LOCK);
+
         if ("dockerfile".equals(lowerName)) {
             return Optional.of(ProjectFileType.DOCKERFILE);
         }

@@ -50,8 +50,10 @@ export function IncompleteDependencyCard({ finding, reviewId }: { finding: RiskF
     event.preventDefault();
     if (busy.current || reviewId == null) return;
     const packageName = name.trim(), currentVersion = version.trim();
-    const namePattern = finding.ecosystem === 'MAVEN' ? /^[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+$/ : /^(?:@[A-Za-z0-9_.-]+\/)?[A-Za-z0-9_.-]+$/;
-    if (!namePattern.test(packageName) || packageName.length > 256 || !/^[0-9][0-9A-Za-z._+-]*$/.test(currentVersion) || currentVersion.length > 128) {
+    const namePattern = finding.ecosystem === 'MAVEN' ? /^[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+$/
+      : finding.ecosystem === 'PYPI' ? /^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,198}[A-Za-z0-9])?$/ : /^(?:@[A-Za-z0-9_.-]+\/)?[A-Za-z0-9_.-]+$/;
+    const versionPattern = finding.ecosystem === 'PYPI' ? /^(?:[0-9]+!)?[0-9]+(?:\.[0-9]+)*(?:(?:a|b|rc)[0-9]+)?(?:\.post[0-9]+)?(?:\.dev[0-9]+)?$/ : /^[0-9][0-9A-Za-z._+-]*$/;
+    if (!namePattern.test(packageName) || packageName.length > 256 || !versionPattern.test(currentVersion) || currentVersion.length > 128) {
       setResult(null); setError('라이브러리 이름과 정확한 버전을 확인해 주세요. 주소·스크립트·버전 범위는 사용할 수 없습니다.'); return;
     }
     busy.current = true; setLoading(true); setError(''); setResult(null);

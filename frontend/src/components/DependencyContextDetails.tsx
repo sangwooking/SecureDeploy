@@ -1,11 +1,13 @@
 import type { DependencyComponent, DependencyVulnerability, ScaResult } from '../types/securityReview';
 import { dependencyText } from './dependencyGuidance';
+import { PythonDependencyDetails } from './PythonDependencyDetails';
 
 const environmentLabels = { DEVELOPMENT: '개발·테스트 선언 경로', PRODUCTION: '운영 의존성 선언 경로', SHARED: '개발·운영 양쪽 선언 경로', UNKNOWN: '사용 환경 확인 불가' };
 export function dependencyLocations(dep: DependencyVulnerability, components: DependencyComponent[] = []) {
   return components.filter(c => c.ecosystem === dep.ecosystem && c.packageName === dep.packageName && c.version === dep.installedVersion);
 }
 export function DependencyContextDetails({ locations }: { locations: DependencyComponent[] }) {
+  if (locations.some(c => c.ecosystem === 'PYPI')) return <PythonDependencyDetails locations={locations} />;
   const contexts = locations.filter(c => c.context);
   if (!contexts.length) return <p>이 이력에는 상위 의존성 경로가 없습니다. 직접/간접 경로와 실제 수정 위치를 추가로 확인해야 합니다.</p>;
   return <details className="action-details"><summary>의존성 경로와 수정 위치 확인</summary>
@@ -32,7 +34,10 @@ export function dependencyActionGroups(sca: ScaResult) {
   const groups = new Map<string, { label: string; file: string; packages: Set<string>; advisories: Set<string> }>();
   for (const dep of sca.dependencyVulnerabilities) {
     const paths = dependencyLocations(dep, sca.components).flatMap(c => c.context?.paths ?? []).filter(p => p.declarationConfirmed);
-    const candidates = paths.length ? paths.map(p => ({ label: p.declaredPackage, file: p.declarationFile }))
+    const python = dependencyLocations(dep, sca.components).filter(c => c.python).flatMap(c =>
+      c.python?.versionOrigin === 'CONSTRAINT_PIN' ? c.python.constraints.map(p => ({ label: dep.packageName, file: p.file }))
+        : [{ label: dep.packageName, file: c.sourceFile }]);
+    const candidates = python.length ? python : paths.length ? paths.map(p => ({ label: p.declaredPackage, file: p.declarationFile }))
       : [{ label: dep.packageName, file: '상위 선언 위치 미확인' }];
     for (const candidate of candidates) {
       const key = `${dep.ecosystem}|${candidate.file}|${candidate.label}`;

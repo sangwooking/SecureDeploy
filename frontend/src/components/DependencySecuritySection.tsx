@@ -28,6 +28,8 @@ export function DependencySecuritySection({ sca, riskAssessment, remediation, re
   return <section className="sca-section" aria-label="사용 중인 라이브러리 문제">
     <div className="section-heading"><h2>사용 중인 라이브러리 문제</h2><span>{statusLabels[sca.status]}</span></div>
     <ScaAssessmentNotice sca={sca} />
+    {(sca.components.some(c => c.ecosystem === 'PYPI') || sca.manifests?.some(m => /(?:requirements|pyproject|poetry|pipfile|uv\.lock|pylock)/i.test(m.filePath))) &&
+      <p className="review-caution">Python은 지원하는 의존성 선언과 알려진 보안 정보만 확인합니다. 실제 설치·간접 의존성 전체와 Python 서버 코드의 인증·권한·데이터 흐름은 미검증입니다.</p>}
     <p>기존 규칙 기반 점수에는 미반영됩니다. 배포 판단에는 별도 위험 평가가 사용됩니다.</p>
     <dl className="sca-metrics">
       <div><dt>발견한 패키지·버전</dt><dd>{sca.summary.dependenciesDiscovered}</dd></div>

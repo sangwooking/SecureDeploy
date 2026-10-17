@@ -23,6 +23,8 @@ class InspectionScopeTest {
         assertThat(scope.areas()).extracting(InspectionScope.Area::id)
                 .containsExactlyInAnyOrder("PYTHON_DEPENDENCIES", "PYTHON_SOURCE", "DOCKER_DEFAULT_STAGE");
         assertThat(scope.areas()).anyMatch(a -> a.id().equals("DOCKER_DEFAULT_STAGE") && a.status().equals("UNKNOWN"));
+        assertThat(scope.areas()).anyMatch(a -> a.id().equals("PYTHON_DEPENDENCIES") && a.status().equals("PARTIAL"));
+        assertThat(scope.areas()).anyMatch(a -> a.id().equals("PYTHON_SOURCE") && a.status().equals("UNSUPPORTED"));
         String json = new CoverageLedgerConverter().convertToDatabaseColumn(structure.coverage().withInspectionScope(scope));
         assertThat(json).doesNotContain("synthetic source", root.toString(), "fixture-package");
         assertThat(new CoverageLedgerConverter().convertToEntityAttribute(json).inspectionScope()).isEqualTo(scope);

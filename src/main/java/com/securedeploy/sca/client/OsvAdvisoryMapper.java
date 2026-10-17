@@ -10,13 +10,20 @@ public class OsvAdvisoryMapper {
         List<JsonNode> affected = new ArrayList<>();
         data.path("affected").forEach(a -> {
             if (component.ecosystem().osvName().equals(a.path("package").path("ecosystem").asText())
-                    && component.packageName().equals(a.path("package").path("name").asText())) affected.add(a);
+                    && component.packageName().equals(component.ecosystem() == ScaEcosystem.PYPI
+                        ? com.securedeploy.sca.parser.PythonRequirement.normalizeName(a.path("package").path("name").asText())
+                        : a.path("package").path("name").asText())) affected.add(a);
         });
         var severity = severityMapper.map(data, affected);
         Set<String> fixes = new LinkedHashSet<>();
+        List<DependencyVulnerability.AdvisoryRange> ranges = new ArrayList<>();
         for (JsonNode a : affected) for (JsonNode range : a.path("ranges")) {
             if ("GIT".equals(range.path("type").asText())) continue;
             for (JsonNode event : range.path("events")) if (event.hasNonNull("fixed")) fixes.add(event.path("fixed").asText());
+            List<DependencyVulnerability.RangeEvent> events = new ArrayList<>();
+            for (JsonNode event : range.path("events")) events.add(new DependencyVulnerability.RangeEvent(
+                    nullable(event, "introduced"), nullable(event, "fixed"), nullable(event, "last_affected"), nullable(event, "limit")));
+            ranges.add(new DependencyVulnerability.AdvisoryRange(range.path("type").asText(), List.copyOf(events)));
         }
         List<String> references = new ArrayList<>();
         for (JsonNode ref : data.path("references")) {
@@ -30,7 +37,7 @@ public class OsvAdvisoryMapper {
         data.path("aliases").forEach(a -> { if (a.isTextual()) aliases.add(a.asText()); });
         return new DependencyVulnerability(component.ecosystem(), component.packageName(), component.version(),
                 id, aliases, nullable(data, "summary"), severity.severity(), severity.score(), severity.vectors(),
-                List.copyOf(fixes), nullable(data, "published"), nullable(data, "modified"), references, paths);
+                List.copyOf(fixes), nullable(data, "published"), nullable(data, "modified"), references, paths, List.copyOf(ranges));
     }
     private String nullable(JsonNode node, String field) { return node.hasNonNull(field) ? node.get(field).asText() : null; }
 }

@@ -285,6 +285,26 @@ class ScaReviewIntegrationTest {
         assertUnchanged(token, before);
     }
 
+    @Test void pythonManualVersionLookupRetainsUserProvenanceAndNeverRewritesSavedAssessment() throws Exception {
+        String token = signup();
+        var before = upload(token, Map.of("requirements.txt", "Fixture_Python>=1.0", "server.py", "# synthetic, never executed"));
+        assertThat(before.at("/sca/status").asText()).isEqualTo("PARTIAL");
+        doAnswer(inv -> {
+            List<DependencyComponent> list = inv.getArgument(0);
+            assertThat(list).hasSize(1);
+            assertThat(list.get(0).ecosystem()).isEqualTo(ScaEcosystem.PYPI);
+            assertThat(list.get(0).packageName()).isEqualTo("fixture-python");
+            assertThat(list.get(0).version()).isEqualTo("1!2.0");
+            return new VulnerabilityDataSource.LookupResult(List.of(), Set.of(list.get(0).identity()), false, List.of());
+        }).when(provider).lookup(anyList());
+        var response = supplement(token, before, supplementalInput(before, "Fixture.Python", "1!2.0"), 200);
+        assertThat(response.path("status").asText()).isEqualTo("COMPLETE");
+        assertThat(response.path("packageName").asText()).isEqualTo("fixture-python");
+        assertUnchanged(token, before);
+        mvc.perform(get("/api/reviews/" + before.path("reviewId").asLong()).header("Authorization", "Bearer " + signup()))
+                .andExpect(status().isForbidden());
+    }
+
     private JsonNode supplementalInput(JsonNode review, String name, String version) {
         return mapper.valueToTree(Map.of("findingId", review.at("/riskAssessment/reviewRequirements/0/findingId").asText(),
                 "packageName", name, "version", version));

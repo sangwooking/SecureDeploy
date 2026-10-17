@@ -26,7 +26,7 @@ public final class CoverageSummary {
         return ledger.withAnalyzers(List.of(
                 new CoverageLedger.Analyzer("RULE_ENGINE", "COMPLETE", "지원 파일의 문자열/설정 패턴 검사. 언어 전체 의미, 인증 흐름, 런타임 도달성은 미검증.", Map.of("SELECTED", ledger.selectedFiles())),
                 new CoverageLedger.Analyzer("FALSE_POSITIVE", "COMPLETE", "선택된 룰 결과의 문맥 기반 후처리. 제외 파일을 검사한 것은 아님.", Map.of()),
-                new CoverageLedger.Analyzer("SCA", sca.status().name(), "Maven/Gradle/npm 정적 선언 및 지원 lockfile의 정확 버전 조회. 설치/빌드 미실행.", manifests),
+                new CoverageLedger.Analyzer("SCA", sca.status().name(), "Maven/Gradle/npm/PyPI 정적 선언 및 지원 lockfile의 정확 버전 조회. 설치/빌드·Python 코드 흐름 분석 미실행.", manifests),
                 new CoverageLedger.Analyzer("THREAT_INTELLIGENCE", intelligence == null ? "UNAVAILABLE" : intelligence.status().name(), "확인된 CVE의 EPSS/KEV 조회. 실제 공격 가능성 검증 아님.", Map.of())));
     }
 }

@@ -16,13 +16,14 @@ export function DependencyFindingCard({ dependency: dep, finding, remediation, i
       {finding ? priorityLabels[finding.priority] : '우선순위 미평가'}
     </span>
     <h3>{dependencyText(dep.packageName)} 업데이트 검토</h3>
-    <p>사용 중인 {dependencyText(dep.installedVersion)} 버전에 알려진 보안 문제가 보고되어 있습니다. 실제 영향은 사용 방식과 버전에 따라 달라집니다.</p>
+    <p>{dep.ecosystem === 'PYPI' ? '정적 선언에서 확인한' : '사용 중인'} {dependencyText(dep.installedVersion)} 버전에 알려진 보안 문제가 보고되어 있습니다. 실제 영향은 사용 방식과 버전에 따라 달라집니다.</p>
+    {dep.ecosystem === 'PYPI' && <p className="review-caution">실제 설치 여부는 미확인입니다. Python 서버 코드의 인증·권한 및 데이터 흐름 검사는 아직 지원하지 않습니다.</p>}
     {knownExploited && <p className="review-caution">분석 당시 정보에 실제 공격에서 악용된 이력이 있습니다. 이 프로젝트가 공격받았다는 뜻은 아닙니다.</p>}
     <dl className="dependency-versions">
       <div><dt>라이브러리</dt><dd>{dependencyText(dep.packageName)}</dd></div>
       <div><dt>현재 버전</dt><dd>{dependencyText(dep.installedVersion)}</dd></div>
       <div><dt>수정이 확인된 버전</dt><dd>{dep.fixedVersions.map(knownDependencyValue).filter(Boolean).join(', ') || unconfirmed}</dd></div>
-      <div><dt>버전을 확인한 파일</dt><dd className="finding-location">{dependencyText(dep.sourceFiles.join(', '))}</dd></div>
+      <div><dt>{dep.ecosystem === 'PYPI' ? '의존성 선언·연결 위치' : '버전을 확인한 파일'}</dt><dd className="finding-location">{dependencyText(dep.sourceFiles.join(', '))}</dd></div>
     </dl>
     <DependencyContextDetails locations={dependencyLocations(dep, components)} />
     <details className="action-details"><summary>업데이트 방법 보기</summary>
@@ -50,6 +51,15 @@ export function DependencyFindingCard({ dependency: dep, finding, remediation, i
         {finding && <div><dt>Priority / Reason code</dt><dd>{finding.priority} / {finding.reasonCode}</dd></div>}
       </dl>
       {finding && <p>{finding.priorityReason}</p>}
+      {!!dep.affectedRanges?.length && <details><summary>OSV 버전 범위 근거</summary>
+        <p>각 범위의 시작·수정 경계를 보존한 정보입니다. 서로 다른 계열의 수정 버전을 하나의 안전한 최소 버전으로 합치지 않습니다.</p>
+        {dep.affectedRanges.map((range, i) => <div key={i}><strong>{range.type}</strong>
+          <ul>{range.events.map((e, j) => <li key={j}>{[
+            e.introduced && `영향 시작: ${e.introduced}`, e.fixed && `수정: ${e.fixed}`,
+            e.lastAffected && `마지막 영향: ${e.lastAffected}`, e.limit && `범위 상한: ${e.limit}`,
+          ].filter(Boolean).join(' · ')}</li>)}</ul>
+        </div>)}
+      </details>}
       <ThreatIntelligenceDetails finding={dep} snapshot={intelligence} />
       {dep.referenceUrls.filter(url => /^https?:\/\//i.test(url)).slice(0, 3).map(url =>
         <p key={url}><a href={url} target="_blank" rel="noopener noreferrer">{url}</a></p>)}

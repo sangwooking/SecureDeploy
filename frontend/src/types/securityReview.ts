@@ -241,7 +241,12 @@ export interface ThreatIntelligenceSnapshot {
 
 export interface DependencyComponent {
   context?: import('./analysisCoverage').DependencyContext | null;
-  ecosystem: 'MAVEN' | 'NPM';
+  python?: {
+    schemaVersion: number; rootManifest: string; environment: string; versionOrigin: string;
+    declaration: string | null; extras: string[]; markerStatus: string; markerVariables: string[];
+    constraints: { file: string; line: number }[]; limitations: string[];
+  } | null;
+  ecosystem: 'MAVEN' | 'NPM' | 'PYPI';
   packageName: string;
   version: string | null;
   scope: string;
@@ -252,7 +257,7 @@ export interface DependencyComponent {
 }
 
 export interface DependencyVulnerability {
-  ecosystem: 'MAVEN' | 'NPM';
+  ecosystem: 'MAVEN' | 'NPM' | 'PYPI';
   packageName: string;
   installedVersion: string;
   osvId: string;
@@ -266,6 +271,7 @@ export interface DependencyVulnerability {
   modified: string | null;
   referenceUrls: string[];
   sourceFiles: string[];
+  affectedRanges?: { type: string; events: { introduced: string | null; fixed: string | null; lastAffected: string | null; limit: string | null }[] }[] | null;
 }
 
 export interface ScaResult {

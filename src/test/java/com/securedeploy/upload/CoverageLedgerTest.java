@@ -21,8 +21,10 @@ class CoverageLedgerTest {
         Files.writeString(temp.resolve("node_modules/unknown.js"), "ignored");
         var result = scanner.scan(temp).coverage();
         assertThat(result.discoveredFiles()).isEqualTo(3);
-        assertThat(result.selectedFiles()).isEqualTo(1);
-        assertThat(result.unsupportedFiles()).isEqualTo(2);
+        assertThat(result.selectedFiles()).isEqualTo(2);
+        assertThat(result.unsupportedFiles()).isEqualTo(1);
+        assertThat(result.entries()).anyMatch(e -> e.filePath().equals("requirements.txt") && e.status().equals("SELECTED"));
+        assertThat(result.entries()).anyMatch(e -> e.filePath().equals("worker.py") && e.status().equals("UNSUPPORTED"));
         assertThat(result.inventoryComplete()).isFalse();
         assertThat(result.entries()).anyMatch(e -> e.kind().equals("DIRECTORY") && e.reason().contains("NOT_ENUMERATED"));
         assertThat(new CoverageLedgerConverter().convertToDatabaseColumn(result)).doesNotContain(temp.toString(), "placeholder");

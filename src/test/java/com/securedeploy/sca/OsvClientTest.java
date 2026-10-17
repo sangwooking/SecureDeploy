@@ -89,6 +89,27 @@ class OsvClientTest {
         assertThat(result.warnings()).isNotEmpty();
         server.verify();
     }
+    @Test void pypiUsesNormalizedNameExactPinsAndPreservesSeparateFixRanges() {
+        var declared = dependency(ScaEcosystem.PYPI, "Example_Package", "1.0.0", "requirements.txt");
+        server.expect(requestTo("https://api.osv.dev/v1/querybatch"))
+                .andExpect(content().json("{\"queries\":[{\"package\":{\"ecosystem\":\"PyPI\",\"name\":\"example-package\"},\"version\":\"1.0.0\"}]}"))
+                .andRespond(withSuccess("{\"results\":[{\"vulns\":[{\"id\":\"PYSEC-fixture-1\"}]}]}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://api.osv.dev/v1/vulns/PYSEC-fixture-1")).andRespond(withSuccess("""
+            {"id":"PYSEC-fixture-1","affected":[
+              {"package":{"ecosystem":"PyPI","name":"Example.Package"},"ranges":[
+                {"type":"ECOSYSTEM","events":[{"introduced":"1.0"},{"fixed":"1.0.1"}]},
+                {"type":"ECOSYSTEM","events":[{"introduced":"2.0"},{"fixed":"2.0.5"}]}]},
+              {"package":{"ecosystem":"PyPI","name":"unrelated"},"ranges":[
+                {"type":"ECOSYSTEM","events":[{"introduced":"0"},{"fixed":"99.0"}]}]}]}
+            """, MediaType.APPLICATION_JSON));
+        var result = client.lookup(List.of(declared));
+        assertThat(result.incomplete()).isFalse();
+        var finding = result.findings().get(0);
+        assertThat(finding.fixedVersions()).containsExactly("1.0.1", "2.0.5");
+        assertThat(finding.affectedRanges()).hasSize(2);
+        assertThat(finding.affectedRanges().get(1).events().get(0).introduced()).isEqualTo("2.0");
+        server.verify();
+    }
     @Test void malformedJsonAndRateLimitRemainPartial() {
         server.expect(requestTo("https://api.osv.dev/v1/querybatch"))
                 .andRespond(withSuccess("{malformed", MediaType.APPLICATION_JSON));

@@ -19,8 +19,7 @@ public record InspectionScope(int schemaVersion, String assurance, boolean evide
             String name = path.substring(path.lastIndexOf('/') + 1);
             String id = null, label = null;
             if (name.endsWith(".py")) { id = "PYTHON_SOURCE"; label = "Python 코드"; }
-            else if (name.matches("requirements(?:[-.][^/]*)?\\.txt")
-                    || Set.of("pyproject.toml", "pipfile", "pipfile.lock", "poetry.lock", "uv.lock").contains(name)) {
+            else if (com.securedeploy.sca.parser.PythonManifestFiles.isPython(path)) {
                 id = "PYTHON_DEPENDENCIES"; label = "Python 의존성";
             } else if (name.endsWith(".dart")) { id = "DART_SOURCE"; label = "Dart 코드"; }
             else if (Set.of("pubspec.yaml", "pubspec.lock").contains(name)) { id = "DART_DEPENDENCIES"; label = "Dart 의존성"; }
@@ -33,6 +32,13 @@ public record InspectionScope(int schemaVersion, String assurance, boolean evide
                     "이 파일 영역은 검사하지 못했습니다. 파일 이름에 따른 범위 기록이며 실제 서버 역할이나 위험 여부를 확정하지 않습니다.");
         }
         for (var file : files) {
+            if (file.type() == ProjectFileType.PYTHON_REQUIREMENTS || file.type() == ProjectFileType.PYTHON_PROJECT) {
+                add(groups, "PYTHON_DEPENDENCIES", "Python 의존성 선언", "PARTIAL", file.relativePath(),
+                        "지원하는 정적 선언만 SCA에서 확인합니다. 파일별 파싱·조회 상태를 함께 확인하세요. 실제 설치·환경 조건·간접 의존성 전체는 미검증이며 Python 인증·권한·데이터 흐름 분석은 지원하지 않습니다.");
+            } else if (file.type() == ProjectFileType.PYTHON_LOCK) {
+                add(groups, "PYTHON_DEPENDENCIES", "Python 의존성 형식", "UNSUPPORTED", file.relativePath(),
+                        "이 형식은 아직 의존성을 추출하지 않습니다. SCA의 미지원 파일 기록을 확인하세요.");
+            }
             if (file.type() == ProjectFileType.DOCKERFILE) {
                 var runtime = DockerRuntimeUser.inspect(file);
                 add(groups, "DOCKER_DEFAULT_STAGE", "Docker 기본 최종 stage", runtime.status().name(), file.relativePath(),

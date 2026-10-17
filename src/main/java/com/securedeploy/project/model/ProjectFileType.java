@@ -18,5 +18,8 @@ public enum ProjectFileType {
     PACKAGE_JSON,
     LOCK_FILE,
     FRONTEND_CONFIG,
-    ENV_FILE
+    ENV_FILE,
+    PYTHON_REQUIREMENTS,
+    PYTHON_PROJECT,
+    PYTHON_LOCK
 }

@@ -1,0 +1,17 @@
+module.exports = () => ({
+  status: 'PARTIAL', analyzedAt: '2026-01-01T00:00:00Z', warnings: ['설치 환경 조건은 미평가입니다.'],
+  summary: { dependenciesDiscovered: 1, dependenciesAnalyzed: 1, unresolvedDependencies: 0, vulnerableDependencies: 1,
+    dependencyVulnerabilities: 1, severityCounts: { MEDIUM: 1 } },
+  manifests: [{ filePath: 'requirements-dev.txt', status: 'PARTIAL', reason: 'ENVIRONMENT_MARKER_NOT_EVALUATED' }],
+  components: [{ ecosystem: 'PYPI', packageName: 'fixture-python', version: '1.0', scope: 'DEVELOPMENT_FILENAME_HINT',
+    direct: null, sourceFile: 'requirements-dev.txt', line: 3, versionResolution: 'EXACT', context: null,
+    python: { schemaVersion: 1, rootManifest: 'requirements-dev.txt', environment: 'DEVELOPMENT_FILENAME_HINT',
+      versionOrigin: 'PINNED_DECLARATION', declaration: '==1.0', extras: ['fast'], markerStatus: 'CONDITIONAL_NOT_EVALUATED',
+      markerVariables: ['python_version'], constraints: [{ file: 'constraints.txt', line: 2 }],
+      limitations: ['실제 설치·운영 사용 여부는 확인하지 않았습니다.'] } }],
+  dependencyVulnerabilities: [{ ecosystem: 'PYPI', packageName: 'fixture-python', installedVersion: '1.0', osvId: 'OSV-PYTHON-FIXTURE',
+    aliases: [], summary: 'Synthetic advisory, not a real package', severity: 'MEDIUM', cvssScore: null, cvssVectors: [],
+    fixedVersions: ['2.1.1', '3.0.2'], published: null, modified: null, referenceUrls: [], sourceFiles: ['requirements-dev.txt'],
+    affectedRanges: [{ type: 'ECOSYSTEM', events: [{ introduced: '0' }, { fixed: '2.1.1' }] },
+      { type: 'ECOSYSTEM', events: [{ introduced: '3.0' }, { fixed: '3.0.2' }] }] }],
+});

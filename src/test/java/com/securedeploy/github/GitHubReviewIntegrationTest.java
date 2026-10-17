@@ -88,6 +88,8 @@ class GitHubReviewIntegrationTest {
         assertThat(github.at("/coverage/inspectionScope/assurance").asText()).isEqualTo("NOT_ESTABLISHED");
         assertThat(detail(github.path("reviewId").asLong()).path("coverage")).isEqualTo(github.path("coverage"));
         assertThat(github.at("/sca/summary")).isEqualTo(zip.at("/sca/summary"));
+        assertThat(github.at("/sca/components")).isEqualTo(zip.at("/sca/components"));
+        assertThat(github.at("/sca/components").toString()).contains("PYPI", "CONSTRAINT_PIN", "python/constraints.txt");
         assertThat(github.at("/sca/dependencyVulnerabilities")).isEqualTo(zip.at("/sca/dependencyVulnerabilities"));
         assertThat(github.at("/riskAssessment/prioritySummary")).isEqualTo(zip.at("/riskAssessment/prioritySummary"));
         assertThat(github.at("/riskAssessment/prioritizedDeploymentAssessment")).isEqualTo(zip.at("/riskAssessment/prioritizedDeploymentAssessment"));

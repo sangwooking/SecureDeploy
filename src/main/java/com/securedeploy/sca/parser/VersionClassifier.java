@@ -5,6 +5,13 @@ public final class VersionClassifier {
     public static DependencyComponent component(ScaEcosystem ecosystem, String name, String version,
                                                  String scope, Boolean direct, String file, int line) {
         String value = version == null ? "" : version.strip();
+        if (ecosystem == ScaEcosystem.PYPI) {
+            String normalized = PythonRequirement.normalizeName(name);
+            String exact = PythonRequirement.exactVersion(value);
+            return new DependencyComponent(ecosystem, normalized == null ? "<unresolved-package>" : normalized,
+                    exact, scope, direct, file, line,
+                    normalized != null && exact != null ? VersionResolution.EXACT : VersionResolution.UNRESOLVED);
+        }
         VersionResolution resolution = classify(ecosystem, value);
         String namePattern = ecosystem == ScaEcosystem.MAVEN
                 ? "[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+" : "(@[A-Za-z0-9_.-]+/)?[A-Za-z0-9_.-]+";
@@ -21,6 +28,7 @@ public final class VersionClassifier {
                 scope, direct, file, line, resolution);
     }
     public static VersionResolution classify(ScaEcosystem ecosystem, String value) {
+        if (ecosystem == ScaEcosystem.PYPI) return PythonRequirement.exactVersion(value) == null ? VersionResolution.UNRESOLVED : VersionResolution.EXACT;
         if (value == null || value.isBlank() || value.contains("$") || value.contains(":")
                 || value.contains("/") || value.toUpperCase().endsWith("SNAPSHOT")
                 || value.equalsIgnoreCase("latest") || value.equalsIgnoreCase("release")) {
