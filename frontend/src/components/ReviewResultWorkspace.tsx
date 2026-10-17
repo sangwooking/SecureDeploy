@@ -3,7 +3,7 @@ import type { RiskFinding, SecurityReviewResponse, Severity } from '../types/sec
 import { CodeFindingCard, type FindingStatusActions } from './CodeFindingCard';
 import { DependencyFindingCard } from './DependencyFindingCard';
 import { DependencyActionGroups } from './DependencyContextDetails';
-import { AnalysisCoverageSection } from './AnalysisCoverageSection';
+import { AnalysisCoverageSection, InspectionBoundaryNotice } from './AnalysisCoverageSection';
 import { ServerAnalysisSection } from './ServerAnalysisSection';
 import { DependencySecuritySection, ScaAssessmentNotice } from './DependencySecuritySection';
 import { FindingRemediation, RemediationNotice } from './FindingRemediation';
@@ -59,7 +59,8 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
         <section className={`readiness-band assessment-${assessment?.prioritizedDeploymentAssessment.toLowerCase() ?? 'unknown'}`} aria-label="지금 배포해도 될까요?">
           <p>지금 배포해도 될까요?</p>
           <h2>{assessment ? deploymentLabels[assessment.prioritizedDeploymentAssessment] : '재분석 후 배포 여부를 확인하세요'}</h2>
-          <p>{assessment ? '코드·라이브러리 위험과 분석 완성도를 고려한 결과입니다.' : '이 이력에는 위험 기반 배포 평가가 없습니다. 기존 점수만으로 배포 가능 여부를 판단하지 않습니다.'}</p>
+          <p>{assessment ? '지원하는 코드·라이브러리 위험 자료로 계산한 저장 결과입니다. 프로젝트 전체의 검사 범위와는 다릅니다.' : '이 이력에는 위험 기반 배포 평가가 없습니다. 기존 점수만으로 배포 가능 여부를 판단하지 않습니다.'}</p>
+          <InspectionBoundaryNotice coverage={result.coverage} />
           <div className="decision-counts">
             <button type="button" onClick={() => navigate('BLOCKING')}><span>반드시 처리</span><strong>{counts.blocking ?? '미평가'}</strong></button>
             <button type="button" onClick={() => navigate('REVIEW_REQUIRED')}><span>배포 전 직접 확인</span>
@@ -154,6 +155,8 @@ function FindingCollection({ result, findings, statusActions }: {
     <label className="finding-filter">심각도 <select value={severity} onChange={event => { setSeverity(event.target.value as Severity | 'ALL'); setPage(0); }}>
       <option value="ALL">전체</option>{Object.keys(severityOrder).map(value => <option key={value}>{value}</option>)}
     </select><span>{sorted.length}건</span></label>
+    {findings.filter(f => f.ruleId === 'LOCAL_STORAGE_TOKEN').length > 1 &&
+      <p className="review-caution">토큰 사용 위치가 여러 곳입니다. 서로 독립적인 수정 작업이라는 뜻은 아닙니다. 공통 저장 코드와 로그인·갱신 흐름을 함께 확인하세요. 별칭을 통한 저장 위치는 현재 룰에서 확인하지 못할 수 있습니다.</p>}
     {!sorted.length && <p className="result-empty">{findings.length ? '선택한 심각도에 해당하는 문제가 없습니다.' : '이 분류에 저장된 문제가 없습니다.'}</p>}
     <div className="vulnerability-list">{sorted.slice(currentPage * 6, currentPage * 6 + 6).map(finding => {
       if (incompleteDependency(finding)) return <IncompleteDependencyCard key={`${result.reviewId}:${finding.findingId}`}

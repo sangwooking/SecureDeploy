@@ -62,6 +62,6 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
                 : !List.of("COMPLETE", "NOT_APPLICABLE").contains(status) ? "PARTIAL" : ledger.status();
         return new CoverageLedger(ledger.schemaVersion(), ledger.policyVersion(), combined, ledger.discoveredFiles(),
                 ledger.selectedFiles(), ledger.unsupportedFiles(), ledger.excludedFiles(), ledger.failedFiles(),
-                ledger.inventoryComplete(), ledger.omittedEntries(), ledger.entries(), List.copyOf(analyzers));
+                ledger.inventoryComplete(), ledger.omittedEntries(), ledger.entries(), List.copyOf(analyzers), ledger.inspectionScope());
     }
 }

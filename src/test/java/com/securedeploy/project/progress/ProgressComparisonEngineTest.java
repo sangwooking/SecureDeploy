@@ -40,6 +40,14 @@ class ProgressComparisonEngineTest {
             assertThat(engine.compare(before, after).counts()).containsEntry(Change.RESOLVED, 0L).containsEntry(Change.UNAVAILABLE, 1L);
         }
     }
+    @Test void correctedDockerFalsePositiveIsNotReportedAsCodeRemediationAcrossVersions() {
+        var before = review(1, sca(ScaResult.Status.COMPLETE, List.of()), code("DOCKER_ROOT_USER", 12));
+        var after = review(2, sca(ScaResult.Status.COMPLETE, List.of()));
+        after.attachComparisonContext(new ComparisonContext(1, 1L, "scanner-accuracy-new-version", true, List.of("application.yml")));
+        var saved = before.getRiskAssessment();
+        assertThat(engine.compare(before, after).counts()).containsEntry(Change.RESOLVED, 0L).containsEntry(Change.UNAVAILABLE, 1L);
+        assertThat(before.getRiskAssessment()).isSameAs(saved);
+    }
     @ParameterizedTest @EnumSource(value = ScaResult.Status.class, names = {"PARTIAL", "UNAVAILABLE", "DISABLED", "NO_MANIFEST"})
     void dependencyLookupFailureOrUnresolvedNeverResolves(ScaResult.Status status) {
         var before = review(1, sca(ScaResult.Status.COMPLETE, List.of(dependency("TEST-1", "1.0.0"))));

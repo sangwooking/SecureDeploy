@@ -4,6 +4,11 @@ export interface CoverageLedger {
   failedFiles: number; inventoryComplete: boolean; omittedEntries: number;
   entries: { filePath: string; kind: string; fileType: string | null; status: string; reason: string }[];
   analyzers: { analyzer: string; status: string; scope: string; fileStatuses: Record<string, number> }[];
+  inspectionScope?: {
+    schemaVersion: number; assurance: 'NOT_ESTABLISHED'; evidenceComplete: boolean;
+    areas: { id: string; label: string; status: string; observedFiles: number; examplePaths: string[]; limitation: string }[];
+    incompleteAnalyzers: string[];
+  } | null;
 }
 
 export interface DependencyContext {

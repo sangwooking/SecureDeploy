@@ -110,6 +110,18 @@ test('technical screen retains reference score and original snapshots without ch
   for (const text of ['100 / 100', '참고 점수는 배포 허가가 아닙니다', 'BLOCKED', 'HARDCODED_SECRET', 'CVE-2099-0001']) assert.ok(html.includes(text));
 });
 
+test('repeated storage locations retain findings but are not presented as independent fixes', () => {
+  const result = fixture();
+  result.vulnerabilities = [51, 52].map((vulnerabilityId, index) => ({ ...result.vulnerabilities[0],
+    vulnerabilityId, ruleId: 'LOCAL_STORAGE_TOKEN', filePath: 'src/session.ts', line: 10 + index * 10 }));
+  result.riskAssessment.codeFindings = result.vulnerabilities.map(v => ({ ...result.riskAssessment.codeFindings[0],
+    findingId: `code:${v.vulnerabilityId}`, vulnerabilityId: v.vulnerabilityId, ruleId: v.ruleId, priority: 'SHOULD_FIX' }));
+  const before = JSON.stringify(result);
+  const html = render(result, 'SHOULD_FIX');
+  for (const text of ['서로 독립적인 수정 작업이라는 뜻은 아닙니다', '별칭을 통한 저장 위치', 'src/session.ts', '>10행<', '>20행<']) assert.ok(html.includes(text), text);
+  assert.equal(JSON.stringify(result), before);
+});
+
 test('guidance resolves saved advice by finding identity without legacy generation tabs', () => {
   const html = render(fixture(), 'GUIDANCE');
   for (const text of ['해결할 문제 선택', '코드에서 인증정보 제거', '수정 후 무엇을 확인하나요?', 'AI 자세히 보기']) assert.ok(html.includes(text));

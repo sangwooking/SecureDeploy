@@ -78,7 +78,8 @@ public class FalsePositiveAnalyzer {
     FalsePositiveDecision decide(FalsePositiveContext context) {
         RuleMatch match = context.match();
         if (!TARGET_RULE_IDS.contains(match.ruleId())) {
-            return FalsePositiveDecision.keep(match.severity(), FalsePositiveRisk.LOW, DetectionConfidence.HIGH, "명확한 룰 패턴에 의해 탐지되었습니다.");
+            return FalsePositiveDecision.keep(match.severity(), match.falsePositiveRisk(), match.confidence(),
+                    match.analysisNote() == null ? "명확한 룰 패턴에 의해 탐지되었습니다." : match.analysisNote());
         }
 
         String path = lower(match.filePath());

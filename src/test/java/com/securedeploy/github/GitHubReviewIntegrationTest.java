@@ -84,6 +84,9 @@ class GitHubReviewIntegrationTest {
         assertThat(github.at("/coverage/unsupportedFiles")).isEqualTo(zip.at("/coverage/unsupportedFiles"));
         assertThat(github.at("/coverage/excludedFiles")).isEqualTo(zip.at("/coverage/excludedFiles"));
         assertThat(github.path("coverage").isNull()).isFalse();
+        assertThat(github.at("/coverage/inspectionScope")).isEqualTo(zip.at("/coverage/inspectionScope"));
+        assertThat(github.at("/coverage/inspectionScope/assurance").asText()).isEqualTo("NOT_ESTABLISHED");
+        assertThat(detail(github.path("reviewId").asLong()).path("coverage")).isEqualTo(github.path("coverage"));
         assertThat(github.at("/sca/summary")).isEqualTo(zip.at("/sca/summary"));
         assertThat(github.at("/sca/dependencyVulnerabilities")).isEqualTo(zip.at("/sca/dependencyVulnerabilities"));
         assertThat(github.at("/riskAssessment/prioritySummary")).isEqualTo(zip.at("/riskAssessment/prioritySummary"));

@@ -250,7 +250,9 @@ public class SecurityReviewFacade {
         var intelligence = threatIntelligenceService.enrich(sca);
         var serverAnalysis = typeScriptAnalyzer.analyze(projectStructure);
         var coverage = com.securedeploy.project.coverage.CoverageSummary.complete(projectStructure.coverage(), sourceExclusions, sca, intelligence);
-        return new AnalysisOutcome(response.withSca(sca).withServerAnalysis(serverAnalysis).withCoverage(serverAnalysis.attachCoverage(coverage)), snippetGroup, intelligence, slices,
+        coverage = serverAnalysis.attachCoverage(coverage);
+        coverage = coverage.withInspectionScope(com.securedeploy.project.coverage.InspectionScope.collect(coverage, projectStructure.analysisFiles()));
+        return new AnalysisOutcome(response.withSca(sca).withServerAnalysis(serverAnalysis).withCoverage(coverage), snippetGroup, intelligence, slices,
                 comparisonCollector.collect(projectStructure));
     }
 

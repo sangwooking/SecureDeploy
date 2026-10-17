@@ -28,6 +28,7 @@ export function RiskAssessmentSection({ assessment }: { assessment?: RiskAssessm
     <div className="section-heading"><h2>위험 기반 배포 평가</h2><strong>{status}</strong></div>
     <p className="risk-primary-label">배포 판단의 기준 · Code + SCA{assessment.schemaVersion >= 3 ? ' + Threat Intelligence' : ''} + 분석 완성도</p>
     <p>{assessment.assessmentReason}</p>
+    <p>지원 위험 자료의 계산 상태: {assessment.assessmentCoverage.overall ?? '이력에 미기록'}. COMPLETE는 Rule·SCA·악용 정보의 평가 자료 기준이며, 프로젝트 전체 코드와 설정을 검사했다는 의미가 아닙니다. 미지원 영역은 별도의 검사 범위 기록을 확인하세요.</p>
     <dl className="sca-metrics risk-summary">
       {priorities.map(priority => <div key={priority}>
         <dt>{priorityLabels[priority]} · {priority}</dt><dd>{assessment.prioritySummary[priority]}</dd>

@@ -66,6 +66,7 @@ class PrivateGitHubIntegrationTest {
         assertThat(first.at("/sourceMetadata/commitSha").asText()).isEqualTo(sha);
         assertThat(first.at("/sourceMetadata/privateRepository").asBoolean()).isTrue();
         assertThat(first.at("/sourceMetadata/accessMethod").asText()).isEqualTo("GITHUB_APP");
+        assertThat(first.at("/coverage/inspectionScope/assurance").asText()).isEqualTo("NOT_ESTABLISHED");
         assertThat(first.path("vulnerabilityCount").asInt()).isPositive();
         assertThat(first.toString()).doesNotContain("synthetic-user-token", "synthetic-install-token");
         assertThat(read("/api/projects/" + project).path("githubRepositoryId").asLong()).isEqualTo(20);
@@ -81,6 +82,7 @@ class PrivateGitHubIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON).content("{\"repositoryUrl\":\"https://github.com/fixture/private\"}"))
                 .andExpect(status().isConflict());
         assertThat(read("/api/reviews/" + review).path("sourceMetadata")).isEqualTo(first.path("sourceMetadata"));
+        assertThat(read("/api/reviews/" + review).path("coverage")).isEqualTo(first.path("coverage"));
         verify(github, times(2)).revokeInstallation("synthetic-install-token");
         verify(fetcher, times(2)).fetchAuthenticated(any(), any(), any(), any());
         verify(fetcher, never()).fetch(any(), any(), any());

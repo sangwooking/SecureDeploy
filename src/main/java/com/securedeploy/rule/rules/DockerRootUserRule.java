@@ -4,9 +4,7 @@ import com.securedeploy.project.model.ProjectFile;
 import com.securedeploy.rule.model.RuleCategory;
 import com.securedeploy.rule.model.RuleMatch;
 import com.securedeploy.rule.model.Severity;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,37 +16,15 @@ public class DockerRootUserRule implements VulnerabilityRule {
             return List.of();
         }
 
-        List<RuleMatch> matches = new ArrayList<>();
-        boolean hasUser = false;
-        List<String> lines = file.lines();
-        for (int index = 0; index < lines.size(); index++) {
-            String trimmed = lines.get(index).strip();
-            String lower = trimmed.toLowerCase(Locale.ROOT);
-            if (lower.startsWith("user ")) {
-                hasUser = true;
-                String user = lower.substring(5).strip();
-                if ("root".equals(user) || "0".equals(user)) {
-                    matches.add(match(file, index + 1, trimmed, "Dockerfile에서 USER root가 설정되어 컨테이너가 root 권한으로 실행될 수 있습니다."));
-                }
-            }
-        }
-
-        if (!hasUser) {
-            matches.add(match(file, 1, "USER directive missing", "Dockerfile에 USER 지시어가 없습니다. 기본 root 사용자로 실행될 수 있습니다."));
-        }
-        return matches;
+        var runtime = DockerRuntimeUser.inspect(file);
+        if (runtime.status() != DockerRuntimeUser.Status.ROOT_DECLARED) return List.of();
+        return List.of(new RuleMatch("DOCKER_ROOT_USER", RuleCategory.CONTAINER_SECURITY, Severity.HIGH,
+                file.relativePath(), runtime.line(),
+                "Dockerfile의 기본 최종 stage가 root 사용자 설정을 유지하거나 상속합니다.",
+                "최종 실행 stage에서 non-root USER를 지정하고 실제 build target과 배포 user override를 확인하세요.",
+                "Default final stage: root USER declaration or inheritance",
+                com.securedeploy.rule.model.FalsePositiveRisk.LOW, com.securedeploy.rule.model.DetectionConfidence.HIGH,
+                "기본 최종 stage의 FROM/USER 순서를 확인했습니다. 기반 이미지 내부, 별도 build target, 실행 시 사용자 변경은 검증하지 않았습니다."));
     }
 
-    private RuleMatch match(ProjectFile file, int line, String evidence, String message) {
-        return new RuleMatch(
-                "DOCKER_ROOT_USER",
-                RuleCategory.CONTAINER_SECURITY,
-                Severity.HIGH,
-                file.relativePath(),
-                line,
-                message,
-                "컨테이너 내부 전용 non-root 사용자를 생성하고 USER appuser처럼 명시적으로 전환하세요.",
-                evidence
-        );
-    }
 }

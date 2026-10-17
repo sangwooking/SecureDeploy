@@ -6,7 +6,24 @@ const statuses: Record<string, string> = {
   COMPLETE: '완료', PARTIAL: '일부 확인', FAILED: '실패', UNAVAILABLE: '확인하지 못함',
   LIMIT_EXCEEDED: '제한 초과', SELECTED: '패턴 검사 입력', UNSUPPORTED: '미지원', EXCLUDED: '제외',
   DISABLED: '비활성', NO_MANIFEST: '지원 manifest 없음', NOT_APPLICABLE: '조회 대상 없음',
+  UNKNOWN: '확인하지 못함', ROOT_DECLARED: '기본 최종 stage에 root 선언', NON_ROOT_DECLARED: '기본 최종 stage에 non-root 선언',
 };
+export function InspectionBoundaryNotice({ coverage }: { coverage?: CoverageLedger | null }) {
+  const scope = coverage?.inspectionScope;
+  const gaps = scope?.areas.filter(a => !['ROOT_DECLARED', 'NON_ROOT_DECLARED'].includes(a.status)) ?? [];
+  return <div className="decision-disclaimer" aria-label="배포 판단의 검사 범위 한계">
+    <strong>지원 범위의 판단이며, 전체 프로젝트 검사 완료를 뜻하지 않습니다.</strong>
+    {!scope ? <p>이 이력에는 주요 영역별 검사 근거가 없습니다. 아래 파일별 범위 기록을 확인하세요. 과거 범위를 추측하지 않습니다.</p>
+      : <>
+        {gaps.length > 0 && <ul>{gaps.map(a => <li key={`${a.id}:${a.status}`}>
+          {a.label} · {statuses[a.status] ?? a.status} ({a.observedFiles}개 관측)
+        </li>)}</ul>}
+        {!!scope.incompleteAnalyzers.length && <p>일부 완료·실패·미실행 분석이 있습니다. 아래 검사 범위의 분석기 상태를 확인하세요.</p>}
+        {!scope.evidenceComplete && <p>제외 폴더 또는 목록 제한으로 범위 기록도 일부만 확보했습니다. 미표시 영역을 검사 완료로 해석하지 마세요.</p>}
+        {!gaps.length && <p>기록된 범위 밖의 언어, 실제 실행 환경과 권한 검증까지 안전하다고 보증하지 않습니다.</p>}
+      </>}
+  </div>;
+}
 const reasons: Record<string, string> = {
   NO_SUPPORTED_ANALYZER: '지원하는 분석기가 없는 파일', DIRECTORY_POLICY: '산출물·외부 패키지 제외 정책',
   DIRECTORY_POLICY_SUBTREE_NOT_ENUMERATED: '제외 폴더 내부는 열거하지 않음',
@@ -35,6 +52,12 @@ export function AnalysisCoverageSection({ coverage, sca, semantic }: {
       <p className="review-caution">검사하지 못한 영역이 있습니다. 배포 판단은 검사된 범위의 결과이며, 미지원·제외 영역의 안전 여부는 별도 확인이 필요합니다.</p>}
     {!coverage.inventoryComplete && <p>하위 저장소·제외 폴더 내부 또는 중단 이후 파일 수는 확인하지 못했습니다. 발견한 파일 수는 전체 저장소 파일 수가 아닐 수 있습니다.</p>}
     <details className="coverage-details"><summary>분석기와 파일별 범위 보기</summary>
+      {coverage.inspectionScope && <><h4>주요 영역과 확인하지 못한 부분</h4>
+        <ul className="coverage-file-list">{coverage.inspectionScope.areas.map(a => <li key={`${a.id}:${a.status}`}>
+          <strong>{a.label} · {statuses[a.status] ?? a.status} · {a.observedFiles}개 관측</strong>
+          <span>{a.limitation}</span>
+          {a.examplePaths.map(path => <code key={path} className="finding-location">{path}</code>)}
+        </li>)}</ul></>}
       <dl>{coverage.analyzers.map(a => <div key={a.analyzer}><dt>{a.analyzer} · {statuses[a.status] ?? a.status}</dt><dd>{a.scope}</dd></div>)}</dl>
       <p>AI Semantic: {semantic?.semanticReviewStatus === 'NOT_REQUESTED' ? '실행하지 않음 (후보 0건 또는 안전 판정 아님)' : semantic?.semanticReviewStatus ?? '저장된 기록 없음'}</p>
       <label className="finding-filter">파일 상태 <select value={filter} onChange={e => { setFilter(e.target.value); setPage(0); }}>

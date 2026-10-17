@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
 const load = require('./load-component.cjs');
-const { AnalysisCoverageSection } = load('AnalysisCoverageSection');
+const { AnalysisCoverageSection, InspectionBoundaryNotice } = load('AnalysisCoverageSection');
 const { DependencyContextDetails, dependencyActionGroups } = load('DependencyContextDetails');
 const render = (component, props) => renderToStaticMarkup(React.createElement(component, props));
 const path = { declarationFile: 'package.json', declarationLine: 8, declarationSection: 'devDependencies',
@@ -28,6 +28,17 @@ test('legacy coverage is unknown, not backfilled with zero counts', () => {
   const html = render(AnalysisCoverageSection, { coverage: null });
   assert.ok(html.includes('범위 기록이 없습니다'));
   assert.ok(!html.includes('미지원 0개'));
+});
+test('risk computation completeness cannot imply whole-project coverage', () => {
+  const coverage = { inspectionScope: { schemaVersion: 1, assurance: 'NOT_ESTABLISHED', evidenceComplete: false,
+    areas: [{ id: 'PYTHON_SOURCE', label: 'Python 코드', status: 'UNSUPPORTED', observedFiles: 12,
+      examplePaths: ['server.py'], limitation: '정적 구조 미검증' }], incompleteAnalyzers: ['TYPESCRIPT_SERVER:PARTIAL'] } };
+  const before = JSON.stringify(coverage);
+  const html = render(InspectionBoundaryNotice, { coverage });
+  for (const text of ['전체 프로젝트 검사 완료를 뜻하지 않습니다', 'Python 코드', '미지원', '12개 관측', '미표시 영역']) assert.ok(html.includes(text));
+  assert.equal(JSON.stringify(coverage), before);
+  assert.ok(!html.includes('BLOCKED'));
+  assert.ok(render(InspectionBoundaryNotice, { coverage: null }).includes('과거 범위를 추측하지 않습니다'));
 });
 test('dependency context shows parent edit location and uncertainty, not runtime guarantees', () => {
   for (const env of ['DEVELOPMENT', 'PRODUCTION', 'SHARED', 'UNKNOWN']) {
