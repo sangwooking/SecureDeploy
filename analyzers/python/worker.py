@@ -9,7 +9,7 @@ from dataclasses import dataclass, replace
 from pathlib import PurePosixPath
 from collections import Counter
 
-VERSION = "py-django-v1"
+VERSION = "py-django-v2"
 MAX_NODES = 60000
 MAX_STEPS = 30000
 MAX_DEPTH = 5
@@ -25,6 +25,7 @@ class Value:
     symbol: str = ""
     tag: str = ""
     defenses: tuple = ()
+    elements: tuple | None = None
 
 
 def merge(*values):
@@ -39,10 +40,13 @@ def merge(*values):
             if entry not in defenses:
                 defenses.append(entry)
     first = values[0]
+    elements = None
+    if all(v.elements is not None for v in values) and len({len(v.elements) for v in values}) == 1:
+        elements = tuple(merge(*(v.elements[i] for v in values)) for i in range(len(first.elements)))
     return Value(tuple(trace[:40]), any(v.unknown for v in values) or len(trace) > 40,
                  first.literal if all(v.literal == first.literal for v in values) else UNKNOWN,
                  first.symbol if all(v.symbol == first.symbol for v in values) else "",
-                 first.tag if all(v.tag == first.tag for v in values) else "", tuple(defenses[:20]))
+                 first.tag if all(v.tag == first.tag for v in values) else "", tuple(defenses[:20]), elements)
 
 
 class BudgetExceeded(Exception):
@@ -70,9 +74,19 @@ class Analyzer:
                                        entrypoints=0, functionsAnalyzed=0, prepareCallSites=0,
                                        tracedPrepareCallSites=0, limitations=[])
             try:
+                self.tick()
                 tree = ast.parse(item["content"], filename="<source>")
-                node_count += sum(1 for _ in ast.walk(tree))
-                if node_count > MAX_NODES:
+                count = 0
+                for _ in ast.walk(tree):
+                    count += 1
+                    if count > MAX_NODES - node_count:
+                        break
+                if count > MAX_NODES - node_count:
+                    self.coverage[path]["parseStatus"] = "LIMIT_EXCEEDED"
+                    self.note("AST_NODE_LIMIT", path)
+                    continue
+                node_count += count
+                if time.monotonic() - self.start > 4:
                     raise BudgetExceeded()
                 self.modules[path] = tree
                 self.index(path, tree)
@@ -81,7 +95,7 @@ class Analyzer:
                 self.note("INVALID_SYNTAX", path)
             except BudgetExceeded:
                 self.coverage[path]["parseStatus"] = "LIMIT_EXCEEDED"
-                self.note("AST_NODE_LIMIT", path)
+                self.note("ANALYSIS_BUDGET_EXCEEDED", path)
 
     def tick(self):
         self.steps += 1
@@ -238,6 +252,8 @@ class Analyzer:
 
     def run(self):
         self.discover()
+        for key in self.entries:
+            self.coverage[self.functions[key][0]]["entrypoints"] += 1
         try:
             for key in sorted(self.entries):
                 path, node, cls = self.functions[key]
@@ -269,7 +285,6 @@ class Analyzer:
                     for item in self.classes[cls][1].body:
                         if isinstance(item, ast.Assign) and any(isinstance(t, ast.Name) and t.id in {"permission_classes", "authentication_classes"} for t in item.targets):
                             context["checks"].append(self.loc(item, "AUTH_DECLARATION"))
-                self.coverage[path]["entrypoints"] += 1
                 self.call_function(key, values, {})
                 if len(self.auth) < MAX_RESULTS:
                     self.auth.append(context)
@@ -278,12 +293,12 @@ class Analyzer:
         for path, c in self.coverage.items():
             c["functionsAnalyzed"] = sum(p == path for p, _ in self.visited)
             c["tracedPrepareCallSites"] = sum(p == path for p, _ in self.traced)
-            if c["functionsAnalyzed"]:
-                c["flowStatus"] = "PARTIAL" if c["limitations"] else "SUPPORTED_FLOW_ANALYZED"
-            elif c["parseStatus"] == "PARSED":
+            if not c["functionsAnalyzed"] and c["parseStatus"] == "PARSED":
                 self.note("NO_SUPPORTED_SERVER_ENTRY_OR_CALL", path)
             if c["prepareCallSites"] > c["tracedPrepareCallSites"]:
                 self.note("SQL_CALLS_OUTSIDE_TRACED_FLOW", path)
+            if c["functionsAnalyzed"]:
+                c["flowStatus"] = "PARTIAL" if c["limitations"] else "SUPPORTED_FLOW_ANALYZED"
         return dict(schemaVersion=1, analyzerVersion=VERSION, parserVersion="CPython-" + ".".join(map(str, sys.version_info[:3])),
                     status="PARTIAL" if any(c["limitations"] for c in self.coverage.values()) else "COMPLETE",
                     files=list(self.coverage.values()), findings=self.findings, sqlUses=self.sql, httpUses=[],
@@ -295,6 +310,19 @@ class Analyzer:
             self.note("CALL_DEPTH_EXCEEDED")
             return replace(merge(*args, *keywords.values()), unknown=True)
         path, node, cls = self.functions[key]
+        parameters = node.args.posonlyargs + node.args.args
+        names = {p.arg for p in parameters + node.args.kwonlyargs}
+        defaults = dict(zip([a.arg for a in parameters[-len(node.args.defaults):]], node.args.defaults)) if node.args.defaults else {}
+        kwdefaults = dict(zip([a.arg for a in node.args.kwonlyargs], node.args.kw_defaults))
+        invalid = (len(args) > len(parameters) or any(p.arg in keywords for p in parameters[:len(args)])
+                   or any(p.arg in keywords for p in node.args.posonlyargs)
+                   or any(k not in names for k in keywords)
+                   or any(p.arg not in keywords and p.arg not in defaults for p in parameters[len(args):])
+                   or any(p.arg not in keywords and kwdefaults[p.arg] is None for p in node.args.kwonlyargs))
+        if invalid:
+            self.note("CALL_ARGUMENT_BINDING_UNRESOLVED")
+            self.partial = True
+            return replace(merge(*args, *keywords.values()), unknown=True, literal=UNKNOWN)
         if node.args.vararg or node.args.kwarg:
             self.note("VARIADIC_ARGUMENTS_UNRESOLVED", path)
         old = self.path, self.function, self.partial
@@ -314,20 +342,18 @@ class Analyzer:
             tail = symbol[len(module) + 1:] if symbol.startswith(module + ".") else ""
             if tail and "." not in tail:
                 env[tail] = Value(unknown=True) if tail in self.shadowed[path] else Value(symbol=symbol)
-        parameters = node.args.posonlyargs + node.args.args
-        defaults = dict(zip([a.arg for a in parameters[-len(node.args.defaults):]], node.args.defaults)) if node.args.defaults else {}
         for i, parameter in enumerate(parameters):
             value = args[i] if i < len(args) else keywords.get(parameter.arg, Value(unknown=True))
             if i >= len(args) and parameter.arg not in keywords and parameter.arg in defaults and isinstance(defaults[parameter.arg], ast.Constant):
                 value = Value(literal=defaults[parameter.arg].value)
             env[parameter.arg] = self.step(value, parameter, "FUNCTION_ARGUMENT")
         for parameter in node.args.kwonlyargs:
-            env[parameter.arg] = self.step(keywords.get(parameter.arg, Value(unknown=True)), parameter, "FUNCTION_ARGUMENT")
+            default = kwdefaults[parameter.arg]
+            value = keywords.get(parameter.arg, Value(literal=default.value) if isinstance(default, ast.Constant) else Value(unknown=True))
+            env[parameter.arg] = self.step(value, parameter, "FUNCTION_ARGUMENT")
         # Python locals shadow globals/imports for the whole function, even before assignment.
-        for stmt in node.body:
-            for n in ast.walk(stmt):
-                if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store) and n.id not in {p.arg for p in parameters}:
-                    env[n.id] = Value(unknown=True)
+        for name in self.local_bindings(node.body) - names:
+            env[name] = Value(unknown=True)
         try:
             _, returns, terminated = self.block(node.body, env)
             if not terminated:
@@ -336,6 +362,52 @@ class Analyzer:
         finally:
             self.stack.pop()
             self.path, self.function, self.partial = old
+
+    def local_bindings(self, statements):
+        names = set()
+        pending = list(statements)
+        while pending:
+            node = pending.pop()
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                names.add(node.name)
+                continue
+            if isinstance(node, ast.Lambda):
+                continue
+            if isinstance(node, (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)):
+                # Comprehension iteration variables are local, but := binds the containing scope.
+                nested = [node]
+                while nested:
+                    item = nested.pop()
+                    if isinstance(item, ast.Lambda):
+                        continue
+                    if isinstance(item, ast.NamedExpr) and isinstance(item.target, ast.Name):
+                        names.add(item.target.id)
+                    nested.extend(ast.iter_child_nodes(item))
+                continue
+            if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
+                names.add(node.id)
+            if isinstance(node, (ast.ExceptHandler, ast.MatchAs, ast.MatchStar)) and node.name:
+                names.add(node.name)
+            if isinstance(node, ast.MatchMapping) and node.rest:
+                names.add(node.rest)
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                names.update(a.asname or a.name.split('.')[0] for a in node.names)
+            pending.extend(ast.iter_child_nodes(node))
+        return names
+
+    def guard_partial(self, condition, node, env):
+        predicate_input = any((isinstance(n, ast.Name) and (
+            env.get(n.id, Value()).trace or env.get(n.id, Value()).tag == "input-map"))
+            or (isinstance(n, ast.Attribute) and n.attr in {"GET", "POST", "data", "query_params", "headers", "META", "body"}
+                and isinstance(n.value, ast.Name) and env.get(n.value.id, Value()).tag == "request")
+            for n in ast.walk(node))
+        if condition.unknown and (condition.trace or predicate_input):
+            self.note("INPUT_GUARD_UNRESOLVED")
+            self.partial = True
+
+    def returned(self, value):
+        # Carry path uncertainty out of a helper instead of resetting it with the call frame.
+        return replace(value, unknown=True) if self.partial else value
 
     def block(self, statements, env):
         returns = []
@@ -352,23 +424,14 @@ class Analyzer:
             elif isinstance(node, ast.Expr):
                 self.expr(node.value, env)
             elif isinstance(node, ast.Return):
-                returns.append(self.expr(node.value, env))
+                returns.append(self.returned(self.expr(node.value, env)))
                 return env, returns, True
             elif isinstance(node, ast.Raise):
                 self.expr(node.exc, env)
                 return env, returns, True
             elif isinstance(node, ast.If):
                 condition = self.expr(node.test, env)
-                predicate_input = any((isinstance(n, ast.Name) and (
-                    env.get(n.id, Value()).trace or env.get(n.id, Value()).tag == "input-map"))
-                    or (isinstance(n, ast.Attribute) and n.attr in {"GET", "POST", "data", "query_params", "headers", "META", "body"}
-                        and isinstance(n.value, ast.Name) and env.get(n.value.id, Value()).tag == "request")
-                    for n in ast.walk(node.test))
-                if condition.unknown and (condition.trace or predicate_input):
-                    # An opaque predicate may validate the input. Preserve provenance,
-                    # but do not assert a proven unguarded path through its branch.
-                    self.note("INPUT_GUARD_UNRESOLVED")
-                    self.partial = True
+                self.guard_partial(condition, node.test, env)
                 for context in self.contexts:
                     if len(context["checks"]) < 40:
                         context["checks"].append(self.loc(node.test, "CONDITIONAL_CHECK"))
@@ -378,12 +441,17 @@ class Analyzer:
                     if end:
                         return env, returns, True
                 else:
+                    before = self.partial
                     a, ra, ta = self.block(node.body, dict(env))
+                    pa = self.partial
+                    self.partial = before
                     b, rb, tb = self.block(node.orelse, dict(env))
+                    pb = self.partial
                     returns += ra + rb
                     if ta and tb:
                         return env, returns, True
                     env = b if ta else a if tb else self.join_env(a, b)
+                    self.partial = pb if ta else pa if tb else pa or pb
             elif isinstance(node, (ast.With, ast.AsyncWith)):
                 supported = True
                 for item in node.items:
@@ -391,12 +459,10 @@ class Analyzer:
                     supported &= value.tag == "cursor"
                     if item.optional_vars:
                         self.assign(item.optional_vars, value, env)
-                previous = self.partial
                 self.partial |= not supported
                 if not supported:
                     self.note("CONTEXT_MANAGER_UNRESOLVED")
                 env, found, end = self.block(node.body, env)
-                self.partial = previous
                 returns += found
                 if end:
                     return env, returns, True
@@ -416,13 +482,18 @@ class Analyzer:
         if isinstance(node, ast.Name):
             env[node.id] = value
         elif isinstance(node, (ast.Tuple, ast.List)):
-            for target in node.elts:
-                self.assign(target, replace(value, unknown=True), env)
+            if value.elements is not None and len(node.elts) == len(value.elements) and not value.unknown:
+                for target, element in zip(node.elts, value.elements):
+                    self.assign(target, self.step(element, target, "ASSIGNMENT"), env)
+            else:
+                self.note("UNPACKING_UNRESOLVED")
+                for target in node.elts:
+                    self.assign(target, replace(value, unknown=True, elements=None), env)
         else:
             self.note("MUTABLE_OBJECT_WRITE_UNRESOLVED")
             # Aliases may refer to the same mutated object. Invalidate conservatively.
             for key in env:
-                env[key] = replace(env[key], unknown=True, literal=UNKNOWN)
+                env[key] = replace(env[key], unknown=True, literal=UNKNOWN, elements=None)
 
     def construct(self, a, b, node):
         result = merge(a, b)
@@ -480,7 +551,9 @@ class Analyzer:
             values = [self.expr(v, env) for v in node.values]
             return self.step(replace(merge(*values), literal=UNKNOWN), node, "SQL_STRING_CONSTRUCTION")
         if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
-            return replace(merge(*(self.expr(n, env) for n in node.elts)), tag="collection", literal=UNKNOWN)
+            values = tuple(self.expr(n, env) for n in node.elts)
+            return replace(merge(*values), tag="tuple" if isinstance(node, ast.Tuple) else "collection", literal=UNKNOWN,
+                           elements=values if isinstance(node, (ast.List, ast.Tuple)) else None)
         if isinstance(node, ast.Dict):
             values = []
             for k, v in zip(node.keys, node.values):
@@ -496,7 +569,13 @@ class Analyzer:
             if condition.literal is not UNKNOWN:
                 return self.expr(node.body if bool(condition.literal) else node.orelse, env)
             a, b = dict(env), dict(env)
-            va, vb = self.expr(node.body, a), self.expr(node.orelse, b)
+            self.guard_partial(condition, node.test, env)
+            before = self.partial
+            va = self.returned(self.expr(node.body, a))
+            pa = self.partial
+            self.partial = before
+            vb = self.returned(self.expr(node.orelse, b))
+            self.partial |= pa
             env.update(self.join_env(a, b))
             return merge(va, vb)
         if isinstance(node, ast.BoolOp):
@@ -508,8 +587,9 @@ class Analyzer:
                         break
                     value = self.expr(part, env)
                 else:
+                    self.guard_partial(value, node, env)
                     optional = dict(env)
-                    other = self.expr(part, optional)
+                    other = self.returned(self.expr(part, optional))
                     env.update(self.join_env(env, optional))
                     value = merge(value, other)
             return value
@@ -593,6 +673,11 @@ class Analyzer:
             return self.call_function(function.symbol, args, keywords)
         value = merge(*(args + list(keywords.values()) + ([base] if base else [])))
         self.note("CALL_TARGET_UNRESOLVED")
+        if any(v.tag == "collection" for v in args + list(keywords.values()) + ([base] if base else [])):
+            self.note("MUTABLE_OBJECT_WRITE_UNRESOLVED")
+            for key, v in env.items():
+                if v.tag == "collection":
+                    env[key] = replace(v, unknown=True, elements=None)
         return replace(value, unknown=True, literal=UNKNOWN, symbol="", tag="")
 
     def is_model(self, key):

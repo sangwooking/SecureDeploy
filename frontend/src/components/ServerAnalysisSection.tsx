@@ -61,6 +61,19 @@ const labels: Record<string, string> = {
   DECORATOR_EXECUTION_UNRESOLVED: '사용자 정의 데코레이터의 실행 영향 미확인',
   CUSTOM_MANAGER_AND_RUNTIME_NOT_VERIFIED: '사용자 정의 Manager와 실제 실행 환경은 미검증',
   INPUT_GUARD_UNRESOLVED: '입력에 대한 사용자 정의 검증 함수의 효과 미확인',
+  FILE_COUNT_LIMIT: '분석할 파일 수 상한으로 선택하지 못함',
+  FILE_CHARACTER_LIMIT: '이 파일의 문자 수 상한 초과',
+  TOTAL_CHARACTER_LIMIT: '전체 소스 문자 수 상한으로 선택하지 못함',
+  DJANGO_ROUTING_HINT: 'Django 경로 설정 후보를 우선 선택',
+  DJANGO_ENTRY_HINT: 'Django/DRF 요청 처리 선언 후보를 우선 선택',
+  RELATED_IMPORT_HINT: '요청 경로 후보와 연결된 정적 import 참조',
+  DETERMINISTIC_FALLBACK: '연결 근거 밖의 나머지 파일을 경로순 선택',
+  SELECTION_HINT_LIMIT: '파일 선택용 사전 조사 상한으로 연결 관계를 일부 확인하지 못함',
+  LEXICAL_SELECTION_HINTS_NOT_VERIFIED_ENTRIES: '파일 선택 단서는 우선순위용이며 실제 진입점은 구문 분석으로 별도 확인',
+  SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED: '소스 제한 또는 민감한 경로로 선택하지 못한 파일이 있음',
+  OMITTED_FILE_DETAILS_TRUNCATED: '미선택 파일 기록 일부를 생략함. 표시 파일 수는 전체 파일 수가 아님',
+  CALL_ARGUMENT_BINDING_UNRESOLVED: '함수 인자를 올바르게 전달할 수 있는지 확인하지 못함',
+  UNPACKING_UNRESOLVED: '묶음 값의 개별 변수 전달을 확인하지 못함',
 };
 const text = (value: string) => labels[value] ?? (/^[A-Z_]+$/.test(value) ? '지원 범위 밖이거나 추가 확인이 필요한 처리' : value);
 const location = (value: AnalysisLocation) => `${value.filePath}:${value.line} · ${value.functionName}`;
@@ -82,11 +95,13 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
   const title = python ? 'Python 서버 코드 흐름 검사' : '서버 코드 흐름 검사';
   if (compact) return <section className="analysis-coverage-brief" aria-label={python ? 'Python 서버 코드 흐름 요약' : '서버 코드 흐름 요약'}><h3>{title}</h3>
     <p>{text(snapshot.status)} · {snapshot.validatedFindings == null ? '실행 경로 Finding 연결 미기록' : `정적 근거가 연결된 검토 항목 ${validated.length}건`} · 추가 문맥 확인 {candidates.length}건</p>
+    {python && <PythonCoverageSummary snapshot={snapshot} />}
     <p>기존 배포 판단과 점수에 합산하지 않은 별도 결과입니다. ‘배포 전 직접 확인’에서 근거와 검사하지 못한 부분을 확인하세요.</p></section>;
   const current = Math.min(page, Math.max(0, Math.ceil(snapshot.files.length / 10) - 1));
   return <section className="server-analysis-section" aria-label={title}>
     <h3>{title}</h3><p>{text(snapshot.status)}</p>
     {python && <p>Django/DRF에서 연결된 일부 요청 경로와 SQL 값 전달을 확인한 결과입니다. 전체 Python 코드·인증·권한·미들웨어를 검사한 것은 아닙니다.</p>}
+    {python && <PythonCoverageSummary snapshot={snapshot} />}
     <p className="review-caution">코드 구조에서 확인한 별도 검토 항목입니다. 기존 점수·위험 판정·반드시 처리 건수에 합산하지 않습니다. 항목이 없어도 전체 코드가 안전하다는 의미는 아닙니다.</p>
     {snapshot.findings.length === 0 && <p>지원 범위에서 보고된 요청 값 전달 위험 항목은 없습니다. 미검사·미지원 범위를 함께 확인하세요.</p>}
     <div className="vulnerability-list">{validated.map(finding => <article className="vulnerability-item action-finding" key={finding.findingId}>
@@ -144,6 +159,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
     <details className="coverage-details"><summary>파일별 구문 검사·추적 범위 ({snapshot.files.length})</summary>
       <ul className="coverage-file-list">{snapshot.files.slice(current * 10, current * 10 + 10).map((f, i) => <li key={i}>
         <code className="finding-location">{f.filePath}</code><span>{text(f.parseStatus)} · {text(f.flowStatus)} · 확인한 함수 {f.functionsAnalyzed}개</span>
+        {python && <span>확인한 요청 진입점 {f.entrypoints}개{f.selectionReason ? ` · ${text(f.selectionReason)}` : ''}</span>}
         {f.prepareCallSites != null && <span>{python ? 'SQL 실행 후보' : 'prepare'} 호출 구문 {f.prepareCallSites}곳 · 경로 확인 {f.tracedPrepareCallSites ?? '미기록'}곳 (모든 구문이 실제 SQL 호출이라는 뜻은 아님)</span>}
         {f.httpCallSites != null && <span>fetch 호출 구문 {f.httpCallSites}곳 · 목적지 추적 {f.tracedHttpCallSites ?? '미기록'}곳 (모든 HTTP client를 지원하는 것은 아님)</span>}
         {f.limitations.map(l => <span key={l}>{text(l)}</span>)}
@@ -156,6 +172,21 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
       <ul>{snapshot.limitations.map(l => <li key={l}>{text(l)}</li>)}</ul>
     </details>
   </section>;
+}
+
+function PythonCoverageSummary({ snapshot }: { snapshot: ServerAnalysisSnapshot }) {
+  const parsed = snapshot.files.filter(f => f.parseStatus === 'PARSED').length;
+  const traced = snapshot.files.filter(f => f.functionsAnalyzed > 0).length;
+  const limited = snapshot.files.filter(f => f.parseStatus === 'LIMIT_EXCEEDED').length;
+  const failed = snapshot.files.filter(f => f.parseStatus === 'PARSE_FAILED').length;
+  const entries = snapshot.files.reduce((sum, f) => sum + f.entrypoints, 0);
+  return <div aria-label="Python 검사 범위 단계">
+    {snapshot.selectionCoverage && <p>공통 파일 수집기를 통과한 Python 파일 {snapshot.selectionCoverage.discoveredFiles}개 · 분석기에 전달 {snapshot.selectionCoverage.submittedFiles}개 · 미선택 {snapshot.selectionCoverage.omittedFiles}개</p>}
+    <p>파일 기록 {snapshot.files.length}개 · 구문 파싱 {parsed}개 · 요청 진입점 {entries}개 · 값 전달을 추적한 파일 {traced}개</p>
+    <p>자원 제한 {limited}개 · 파싱 실패 {failed}개 · 파싱 후 흐름 미추적 {snapshot.files.filter(f => f.parseStatus === 'PARSED' && f.functionsAnalyzed === 0).length}개</p>
+    <p>파싱은 코드 구조를 읽었다는 뜻이며 보안 검사를 모두 마쳤다는 뜻이 아닙니다. 값 전달을 추적한 파일도 일부 함수·경로만 확인했습니다.</p>
+    {(snapshot.limitations.includes('OMITTED_FILE_DETAILS_TRUNCATED') || (snapshot.selectionCoverage?.omittedDetails ?? 0) > 0) && <p>{text('OMITTED_FILE_DETAILS_TRUNCATED')}</p>}
+  </div>;
 }
 
 function FlowEvidence({ finding }: { finding: ServerAnalysisSnapshot['findings'][number] }) {

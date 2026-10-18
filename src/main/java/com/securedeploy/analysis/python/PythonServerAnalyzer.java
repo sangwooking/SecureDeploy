@@ -22,36 +22,46 @@ public class PythonServerAnalyzer {
     public PythonServerAnalyzer(PythonAnalysisProperties properties) { this.properties = properties; }
 
     public ServerAnalysisSnapshot analyze(ProjectStructure project) {
-        var candidates = project.analysisFiles().stream().filter(f -> f.type() == com.securedeploy.project.model.ProjectFileType.PYTHON)
-                .sorted(Comparator.comparing(f -> f.relativePath())).toList();
+        var candidates = PythonSourceSelector.order(project.analysisFiles().stream()
+                .filter(f -> f.type() == com.securedeploy.project.model.ProjectFileType.PYTHON).toList());
         if (candidates.isEmpty()) return unavailable("NOT_APPLICABLE", List.of(), "NO_PYTHON_FILES");
         List<Map<String, String>> sources = new ArrayList<>();
         List<FileCoverage> omitted = new ArrayList<>();
         Map<String, Integer> lineCounts = new HashMap<>();
+        Map<String, String> selectionReasons = new HashMap<>();
+        Map<String, Integer> omissionReasons = new TreeMap<>();
         int total = 0;
-        for (var file : candidates) {
+        for (var candidate : candidates) {
+            var file = candidate.file();
             String path = CoverageRecorder.safePath(file.relativePath());
             long length = file.lines().stream().mapToLong(line -> line.length() + 1L).sum();
             if (path.equals("[redacted-path]")) {
+                omissionReasons.merge("SENSITIVE_PATH_OMITTED", 1, Integer::sum);
                 if (omitted.size() < MAX_FILES) omitted.add(skipped(path, "SENSITIVE_PATH_OMITTED"));
             } else if (sources.size() >= MAX_FILES || length > MAX_FILE_CHARS || length + total > MAX_TOTAL_CHARS) {
-                if (omitted.size() < MAX_FILES) omitted.add(skipped(path, "SOURCE_LIMIT_EXCEEDED"));
+                String reason = length > MAX_FILE_CHARS ? "FILE_CHARACTER_LIMIT"
+                        : sources.size() >= MAX_FILES ? "FILE_COUNT_LIMIT" : "TOTAL_CHARACTER_LIMIT";
+                omissionReasons.merge(reason, 1, Integer::sum);
+                if (omitted.size() < MAX_FILES) omitted.add(skipped(path, reason).withSelectionReason(candidate.reason()));
             } else {
                 sources.add(Map.of("filePath", path, "content", String.join("\n", file.lines())));
                 lineCounts.put(path, file.lines().size()); total += (int) length;
+                selectionReasons.put(path, candidate.reason());
             }
         }
         List<FileCoverage> unavailableFiles = new ArrayList<>(omitted);
         sources.forEach(f -> unavailableFiles.add(new FileCoverage(f.get("filePath"), "NOT_RUN", "NOT_RUN", 0, 0, List.of())));
-        if (!properties.isEnabled()) return unavailable("DISABLED", unavailableFiles, "ANALYZER_DISABLED");
-        if (sources.isEmpty()) return unavailable("PARTIAL", unavailableFiles, "NO_SOURCE_WITHIN_LIMITS");
-        if (!capacity.tryAcquire()) return unavailable("UNAVAILABLE", unavailableFiles, "ANALYZER_CAPACITY_LIMIT");
+        var selection = new ServerAnalysisSnapshot.SelectionCoverage(candidates.size(), sources.size(),
+                candidates.size() - sources.size(), candidates.size() - sources.size() - omitted.size(), total, Map.copyOf(omissionReasons));
+        if (!properties.isEnabled()) return unavailable("DISABLED", unavailableFiles, "ANALYZER_DISABLED").withSelectionCoverage(selection);
+        if (sources.isEmpty()) return unavailable("PARTIAL", unavailableFiles, "NO_SOURCE_WITHIN_LIMITS").withSelectionCoverage(selection);
+        if (!capacity.tryAcquire()) return unavailable("UNAVAILABLE", unavailableFiles, "ANALYZER_CAPACITY_LIMIT").withSelectionCoverage(selection);
         Process process = null;
         ExecutorService io = Executors.newFixedThreadPool(2, r -> { var thread = new Thread(r, "python-analysis-io"); thread.setDaemon(true); return thread; });
         try {
             Path directory = Path.of(properties.getAnalyzerDirectory()).toRealPath();
             if (!Files.isRegularFile(directory.resolve("worker.py")))
-                return unavailable("UNAVAILABLE", unavailableFiles, "TRUSTED_PARSER_NOT_INSTALLED");
+                return unavailable("UNAVAILABLE", unavailableFiles, "TRUSTED_PARSER_NOT_INSTALLED").withSelectionCoverage(selection);
             byte[] input = mapper.writeValueAsBytes(Map.of("files", sources));
             var builder = new ProcessBuilder(properties.getPythonExecutable(), "-I", "-S", "-B",
                     directory.resolve("worker.py").toString());
@@ -65,26 +75,29 @@ public class PythonServerAnalyzer {
                 catch (java.io.IOException failure) { throw new IllegalStateException("ANALYZER_INPUT_FAILED"); } });
             Future<byte[]> reader = io.submit(() -> { try (var output = child.getInputStream()) { return output.readNBytes(MAX_OUTPUT_BYTES + 1); } });
             if (!process.waitFor(properties.getTimeoutSeconds(), TimeUnit.SECONDS))
-                return unavailable("TIMEOUT", unavailableFiles, "ANALYZER_TIMEOUT");
+                return unavailable("TIMEOUT", unavailableFiles, "ANALYZER_TIMEOUT").withSelectionCoverage(selection);
             writer.get(1, TimeUnit.SECONDS);
             byte[] output = reader.get(1, TimeUnit.SECONDS);
             if (process.exitValue() != 0 || output.length > MAX_OUTPUT_BYTES)
-                return unavailable("UNAVAILABLE", unavailableFiles, "PARSER_PROCESS_FAILED");
+                return unavailable("UNAVAILABLE", unavailableFiles, "PARSER_PROCESS_FAILED").withSelectionCoverage(selection);
             var parsed = mapper.readValue(output, ServerAnalysisSnapshot.class);
             validate(parsed, lineCounts);
-            var files = new ArrayList<>(parsed.files()); files.addAll(omitted);
+            var files = new ArrayList<>(parsed.files().stream()
+                    .map(f -> f.withSelectionReason(selectionReasons.get(f.filePath()))).toList()); files.addAll(omitted);
             var limitations = new ArrayList<>(parsed.limitations());
             if (!omitted.isEmpty()) limitations.add("SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED");
+            limitations.add("LEXICAL_SELECTION_HINTS_NOT_VERIFIED_ENTRIES");
+            if (candidates.stream().anyMatch(c -> c.reason().equals("SELECTION_HINT_LIMIT"))) limitations.add("SELECTION_HINT_LIMIT");
             if (candidates.size() > sources.size() + omitted.size()) limitations.add("OMITTED_FILE_DETAILS_TRUNCATED");
             return new ServerAnalysisSnapshot(parsed.schemaVersion(), parsed.analyzerVersion(), parsed.parserVersion(),
                     omitted.isEmpty() ? parsed.status() : "PARTIAL", List.copyOf(files), parsed.findings(), parsed.sqlUses(),
-                    parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses());
+                    parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses()).withSelectionCoverage(selection);
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
-            return unavailable("UNAVAILABLE", unavailableFiles, "ANALYSIS_INTERRUPTED");
+            return unavailable("UNAVAILABLE", unavailableFiles, "ANALYSIS_INTERRUPTED").withSelectionCoverage(selection);
         } catch (Exception failure) {
             // Never expose source, child stderr or process environment in an API error or log.
-            return unavailable("UNAVAILABLE", unavailableFiles, "PARSER_PROCESS_OR_RESPONSE_FAILED");
+            return unavailable("UNAVAILABLE", unavailableFiles, "PARSER_PROCESS_OR_RESPONSE_FAILED").withSelectionCoverage(selection);
         } finally {
             if (process != null && process.isAlive()) {
                 process.destroyForcibly();
@@ -95,7 +108,7 @@ public class PythonServerAnalyzer {
     }
 
     private ServerAnalysisSnapshot unavailable(String status, List<FileCoverage> files, String reason) {
-        return new ServerAnalysisSnapshot(1, "py-django-v1", null, status, files, List.of(), List.of(), List.of(), List.of(reason), List.of(), List.of());
+        return new ServerAnalysisSnapshot(1, "py-django-v2", null, status, files, List.of(), List.of(), List.of(), List.of(reason), List.of(), List.of());
     }
 
     private FileCoverage skipped(String path, String reason) {
@@ -103,7 +116,7 @@ public class PythonServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"py-django-v1".equals(result.analyzerVersion()) || result.parserVersion() == null || !result.parserVersion().matches("CPython-3\\.\\d+\\.\\d+")
+        if (result.schemaVersion() != 1 || !"py-django-v2".equals(result.analyzerVersion()) || result.parserVersion() == null || !result.parserVersion().matches("CPython-3\\.\\d+\\.\\d+")
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.authorizationContexts().size() > 200) throw new IllegalArgumentException("INVALID_ANALYZER_RESPONSE");

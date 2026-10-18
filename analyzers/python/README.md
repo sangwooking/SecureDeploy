@@ -1,6 +1,6 @@
 # Bounded Python server flow analysis
 
-Trusted CPython standard-library AST worker, version `py-django-v1`.
+Trusted CPython standard-library AST worker, version `py-django-v2`.
 No Django install, target import, target evaluation, build, pip, or network requests.
 
 ## Runtime
@@ -19,6 +19,32 @@ only locations, fixed messages and structural evidence leave stdout. Limits:
 CPU limit is 6 seconds. Linux uses a 384MiB address-space ceiling; macOS uses
 bounded input and periodic peak-RSS checks, NOT a hard memory ceiling. Parent
 timeout kills the child. This is not a filesystem/network/OS sandbox.
+
+## Source selection and coverage
+
+The parent schedules files using bounded lexical Django/DRF import and routing
+hints, then at most five rounds of exact local import expansion. Remaining files
+use deterministic path order. Hint inspection is capped at 1,000 files and 1M
+characters, independently of the unchanged worker source limits; omitted hint
+inspection is explicit. Hints are not verified endpoints: the AST worker
+independently resolves entries. No repository-specific names or suffix-based
+module guesses are used. Multiline/dynamic imports and package search paths may
+not be resolved. All source, file, node and execution limits remain unchanged.
+An AST too large for the remaining node budget is omitted without spending the
+budget needed for a later smaller AST. Parsing and traversal stay time-bounded.
+
+`selectionCoverage` counts Python files received from the common file collector,
+not files excluded before that collector. It distinguishes submitted/omitted
+files and omitted detail rows. Per-file `selectionReason` is optional for old
+snapshots. File-count, per-file-character, total-character, AST and work/time
+limits have separate reasons. Parsed files, discovered entries, traced functions
+and unresolved paths are different coverage stages, never full-code assurance.
+
+Flow v2 preserves uncertainty across returns/context managers, isolates branch
+state, validates local argument binding, and keeps nested local scopes separate.
+Literal tuple/list unpacking preserves individual values; unknown mutable calls
+invalidate collection precision. Unknown input validators remain deferred,
+including conditional expressions and short-circuit calls.
 
 ## Supported scope and uncertainty
 
@@ -45,7 +71,11 @@ The outer `serverAnalysis.status` retains its existing TypeScript meaning;
 Python has its own status and Coverage Ledger entry. Neither is whole-project assurance.
 
 Run `python3 -B -m unittest discover -v` here, then backend and frontend tests.
-The separate synthetic evaluation file is not external or statistically representative.
+The synthetic evaluation and variation files are not external, independently
+authored or statistically representative. v2 development regressions reproduced
+eight failing assertions before correction. Post-implementation variations add
+28 classifications across renamed/split files (10 confirmed, 10 no finding,
+8 deferred); they now become regression cases, not future blind holdouts.
 
 References: [Python AST](https://docs.python.org/3/library/ast.html),
 [isolated invocation](https://docs.python.org/3/using/cmdline.html),

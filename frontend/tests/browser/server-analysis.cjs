@@ -11,7 +11,11 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       const result = require('../result-fixture.cjs')(), errors = [], blocked = [];
       result.serverAnalysis = require('../server-analysis-fixture.cjs')();
       const python = require('../server-analysis-fixture.cjs')();
-      python.analyzerVersion = 'py-django-v1'; python.parserVersion = 'CPython-3.14.5';
+      python.analyzerVersion = 'py-django-v2'; python.parserVersion = 'CPython-3.14.5';
+      python.selectionCoverage={discoveredFiles:3,submittedFiles:2,omittedFiles:1,omittedDetails:0,submittedCharacters:100,omissionReasons:{FILE_COUNT_LIMIT:1}};
+      python.files[0].selectionReason='DJANGO_ENTRY_HINT';
+      python.files.push({filePath:'app/registry.py',parseStatus:'PARSED',flowStatus:'NOT_SUPPORTED',entrypoints:0,functionsAnalyzed:0,limitations:['NO_SUPPORTED_SERVER_ENTRY_OR_CALL']},
+        {filePath:'data/catalog.py',parseStatus:'LIMIT_EXCEEDED',flowStatus:'NOT_RUN',entrypoints:0,functionsAnalyzed:0,limitations:['FILE_COUNT_LIMIT']});
       python.validatedFindings[0].sourceType = 'PYTHON_DATA_FLOW';
       python.validatedFindings[0].ruleId = 'PY_SQL_INPUT_FLOW';
       python.validatedFindings[0].recommendedAction = 'SQL은 고정하고 execute(sql, params) 또는 Django ORM을 사용하세요.';
@@ -53,6 +57,10 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       assert.equal(await pythonSection.locator('article').count(), 1);
       assert.ok((await pythonSection.innerText()).includes('execute(sql, params)'));
       assert.ok((await pythonSection.innerText()).includes('전체 Python 코드'));
+      for (const phrase of ['구문 파싱 2개','자원 제한 1개','보안 검사를 모두 마쳤다는 뜻이 아닙니다','미선택 1개'])
+        assert.ok((await pythonSection.innerText()).includes(phrase),phrase);
+      await pythonSection.getByText('파일별 구문 검사·추적 범위 (3)',{exact:true}).click();
+      assert.ok((await pythonSection.innerText()).includes('파일 수 상한'));
       assert.ok((await section.innerText()).includes('functions/api/items.ts:3'));
       assert.equal(await section.locator('article').count(), 2);
       for (const title of ['Finding 기술 근거와 한계', '쿼리 값 처리와 방어 근거 (1)', '서버 HTTP 요청 목적지 (1)', '인증·권한 관련 문맥 (1)', '파일별 구문 검사·추적 범위 (1)'])

@@ -21,6 +21,20 @@ test('structural evidence shows source, propagation, file, uncertainty, and no a
   const html = render(fixture());
   for (const phrase of ['functions/api/items.ts:3', 'functions/api/items.ts:6', '변수로 전달', '추가 확인 필요', '기존 점수·위험 판정·반드시 처리 건수에 합산하지 않습니다', '접근 권한 취약점으로 판단하지 않습니다']) assert.ok(html.includes(phrase), phrase);
 });
+test('Python parsing, entry discovery, traced files and resource limits remain distinct', () => {
+  const root=fixture(), py=fixture(); root.pythonAnalysis=py;
+  py.analyzerVersion='py-django-v2'; py.findings=[];py.validatedFindings=[];
+  py.files=[
+    {filePath:'route.py',parseStatus:'PARSED',flowStatus:'NOT_SUPPORTED',entrypoints:0,functionsAnalyzed:0,limitations:[],selectionReason:'DJANGO_ROUTING_HINT'},
+    {filePath:'handler.py',parseStatus:'PARSED',flowStatus:'PARTIAL',entrypoints:2,functionsAnalyzed:1,limitations:['CALL_TARGET_UNRESOLVED']},
+    {filePath:'data.py',parseStatus:'LIMIT_EXCEEDED',flowStatus:'NOT_RUN',entrypoints:0,functionsAnalyzed:0,limitations:['FILE_COUNT_LIMIT']},
+  ];
+  const html=render(root);
+  for (const phrase of ['파일 기록 3개','구문 파싱 2개','요청 진입점 2개','값 전달을 추적한 파일 1개','자원 제한 1개',
+    '보안 검사를 모두 마쳤다는 뜻이 아닙니다','Django 경로 설정 후보','파일 수 상한']) assert.ok(html.includes(phrase),phrase);
+  py.limitations.push('OMITTED_FILE_DETAILS_TRUNCATED');
+  assert.ok(render(root).includes('표시 파일 수는 전체 파일 수가 아님'));
+});
 test('old snapshots, failed analysis and no findings are not equated with safety', () => {
   assert.ok(render(null).includes('기록이 없습니다'));
   for (const status of ['PARTIAL', 'TIMEOUT', 'UNAVAILABLE', 'NOT_APPLICABLE', 'DISABLED']) {

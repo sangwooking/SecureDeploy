@@ -7,12 +7,15 @@ export interface ServerFlowFinding {
 }
 export interface ServerAnalysisSnapshot {
   pythonAnalysis?: ServerAnalysisSnapshot | null;
+  selectionCoverage?: { discoveredFiles: number; submittedFiles: number; omittedFiles: number; omittedDetails: number;
+    submittedCharacters: number; omissionReasons: Record<string, number> } | null;
   schemaVersion: number;
   analyzerVersion: string;
   parserVersion: string | null;
   status: string;
   files: { filePath: string; parseStatus: string; flowStatus: string; entrypoints: number; functionsAnalyzed: number;
-    prepareCallSites?: number; tracedPrepareCallSites?: number; httpCallSites?: number | null; tracedHttpCallSites?: number | null; limitations: string[] }[];
+    prepareCallSites?: number; tracedPrepareCallSites?: number; httpCallSites?: number | null; tracedHttpCallSites?: number | null;
+    selectionReason?: string | null; limitations: string[] }[];
   findings: { ruleId: string; kind: string; confidence: string; disposition: string;
     source: AnalysisLocation; sink: AnalysisLocation; flow: AnalysisLocation[]; defenses: AnalysisLocation[];
     limitations: string[]; message: string; recommendation: string }[];
