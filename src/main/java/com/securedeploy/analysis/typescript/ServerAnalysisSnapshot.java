@@ -9,7 +9,18 @@ import com.securedeploy.project.coverage.CoverageLedger;
 public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
         String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
         List<AuthorizationContext> authorizationContexts, List<String> limitations,
-        List<ServerFlowFinding> validatedFindings, List<HttpUse> httpUses) {
+        List<ServerFlowFinding> validatedFindings, List<HttpUse> httpUses, ServerAnalysisSnapshot pythonAnalysis) {
+    public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
+            String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
+            List<AuthorizationContext> authorizationContexts, List<String> limitations,
+            List<ServerFlowFinding> validatedFindings, List<HttpUse> httpUses) {
+        this(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses,
+                authorizationContexts, limitations, validatedFindings, httpUses, null);
+    }
+    public ServerAnalysisSnapshot withPythonAnalysis(ServerAnalysisSnapshot value) {
+        return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings,
+                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, value);
+    }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
             String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
             List<AuthorizationContext> authorizationContexts, List<String> limitations, List<ServerFlowFinding> validatedFindings) {
@@ -56,8 +67,10 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
             counts.merge("FLOW_" + file.flowStatus(), 1, Integer::sum);
         });
         var analyzers = new java.util.ArrayList<>(ledger.analyzers());
-        analyzers.add(new CoverageLedger.Analyzer("TYPESCRIPT_SERVER", status,
-                "Workers/Pages 진입점의 제한된 구문·값 전달 검사. 전체 TypeScript, 실행 가능성, 인증·소유권 보증 및 Risk 계산에는 포함되지 않습니다.", counts));
+        boolean python = analyzerVersion.startsWith("py-django-");
+        analyzers.add(new CoverageLedger.Analyzer(python ? "PYTHON_SERVER" : "TYPESCRIPT_SERVER", status,
+                python ? "Django/DRF 진입점의 제한된 SQL 값 전달 검사. 전체 Python, 인증·소유권, 실행 가능성은 보증하지 않으며 기존 Risk 계산과 분리됩니다."
+                : "Workers/Pages 진입점의 제한된 구문·값 전달 검사. 전체 TypeScript, 실행 가능성, 인증·소유권 보증 및 Risk 계산에는 포함되지 않습니다.", counts));
         String combined = "FAILED".equals(ledger.status()) ? "FAILED"
                 : !List.of("COMPLETE", "NOT_APPLICABLE").contains(status) ? "PARTIAL" : ledger.status();
         return new CoverageLedger(ledger.schemaVersion(), ledger.policyVersion(), combined, ledger.discoveredFiles(),

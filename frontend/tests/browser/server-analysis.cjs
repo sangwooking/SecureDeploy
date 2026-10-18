@@ -10,6 +10,13 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       const page = await browser.newPage({ viewport: { width, height: 1000 } });
       const result = require('../result-fixture.cjs')(), errors = [], blocked = [];
       result.serverAnalysis = require('../server-analysis-fixture.cjs')();
+      const python = require('../server-analysis-fixture.cjs')();
+      python.analyzerVersion = 'py-django-v1'; python.parserVersion = 'CPython-3.14.5';
+      python.validatedFindings[0].sourceType = 'PYTHON_DATA_FLOW';
+      python.validatedFindings[0].ruleId = 'PY_SQL_INPUT_FLOW';
+      python.validatedFindings[0].recommendedAction = 'SQL은 고정하고 execute(sql, params) 또는 Django ORM을 사용하세요.';
+      python.findings[0].ruleId = 'PY_SQL_INPUT_FLOW';
+      result.serverAnalysis.pythonAnalysis = python;
       const ssrfSource={filePath:'functions/proxy.ts',line:3,functionName:'onRequest',kind:'REQUEST_HEADER'};
       const ssrfSink={...ssrfSource,line:5,kind:'HTTP_REQUEST_CALL'};
       const ssrf={ruleId:'TS_SSRF_INPUT_FLOW',kind:'INPUT_TO_HTTP_DESTINATION',confidence:'HIGH',disposition:'REVIEW_REQUIRED',
@@ -38,9 +45,14 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       await page.goto(`${url}/#/projects/7/findings`);
       const nav = page.getByRole('navigation', { name: '분석 결과 메뉴' });
       await nav.getByRole('button', { name: '결과 요약', exact: true }).click();
-      assert.ok((await page.getByRole('region', { name: '서버 코드 흐름 요약' }).innerText()).includes('별도 결과'));
+      assert.ok((await page.getByRole('region', { name: '서버 코드 흐름 요약', exact: true }).innerText()).includes('별도 결과'));
       await nav.getByRole('button', { name: '배포 전 직접 확인할 부분', exact: true }).click();
       const section = page.getByRole('region', { name: '서버 코드 흐름 검사', exact: true });
+      const pythonSection = page.getByRole('region', { name: 'Python 서버 코드 흐름 검사', exact: true });
+      await pythonSection.waitFor({ state: 'visible' });
+      assert.equal(await pythonSection.locator('article').count(), 1);
+      assert.ok((await pythonSection.innerText()).includes('execute(sql, params)'));
+      assert.ok((await pythonSection.innerText()).includes('전체 Python 코드'));
       assert.ok((await section.innerText()).includes('functions/api/items.ts:3'));
       assert.equal(await section.locator('article').count(), 2);
       for (const title of ['Finding 기술 근거와 한계', '쿼리 값 처리와 방어 근거 (1)', '서버 HTTP 요청 목적지 (1)', '인증·권한 관련 문맥 (1)', '파일별 구문 검사·추적 범위 (1)'])
@@ -57,4 +69,4 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       await page.close();
     }
   } finally { await browser.close(); }
-})().catch(() => { console.error('Server analysis browser assertion failed'); process.exitCode = 1; });
+})().catch(error => { console.error('Synthetic server analysis browser assertion failed:', error.message); process.exitCode = 1; });

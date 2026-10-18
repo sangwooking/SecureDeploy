@@ -43,22 +43,50 @@ const labels: Record<string, string> = {
   HTTP_CALLS_OUTSIDE_TRACED_FLOW: 'fetch 구문 중 확인한 서버 경로에 연결되지 않은 부분이 있음',
   WHOLE_URL: '전체 주소', HOST_OR_AUTHORITY: '호스트 또는 주소 권한부', WHOLE_URL_OR_HOST: '전체 주소 또는 호스트',
   PATH_QUERY_OR_NONE: '경로·검색값 또는 입력 영향 없음', UNKNOWN: '확인 불가',
+  SERVER_ENTRY: '서버 요청 진입점', AUTH_DECLARATION: '인증·권한 설정 선언',
+  BOUNDED_DJANGO_DRF_ONLY: 'Django/DRF의 일부 진입점·SQL 전달만 검사',
+  MIDDLEWARE_SETTINGS_AND_OWNERSHIP_NOT_VERIFIED: '미들웨어·전역 설정·리소스 소유권은 미검증',
+  STATIC_FLOW_NOT_EXPLOIT_PROOF: '정적 전달 경로이며 공격 성공을 확인한 것은 아님',
+  NO_OS_SANDBOX: '시간·입출력 제한 프로세스이며 OS 수준 완전 격리는 아님',
+  RSS_CHECK_NOT_HARD_MEMORY_LIMIT: '이 환경은 메모리 사용량 점검이며 OS 강제 메모리 제한은 아님',
+  SQL_CALLS_OUTSIDE_TRACED_FLOW: '확인한 서버 경로 밖에도 SQL 호출 후보 구문이 있음',
+  LAZY_RAW_EXECUTION_NOT_VERIFIED: 'raw 쿼리의 지연 실행 시점 미확인',
+  ROUTE_TARGET_UNRESOLVED: 'URL 경로의 요청 처리 함수를 확인하지 못함',
+  AST_NODE_LIMIT: '구문 트리 크기 제한', RESULT_LIMIT_EXCEEDED: '기록 가능한 근거 수 제한',
+  ASYNC_EXECUTION_UNRESOLVED: '비동기 호출 실행 흐름 미확인',
+  MUTABLE_OBJECT_WRITE_UNRESOLVED: '객체 변경과 별칭의 영향을 확인하지 못함',
+  CONTEXT_MANAGER_UNRESOLVED: '컨텍스트 관리자의 실행 흐름 미확인',
+  ORM_VALUE_QUERY: 'ORM 값 매개변수 호출 형태 확인', ORM_VALUE_PARAMETERS: 'ORM의 값 매개변수 사용',
+  NUMERIC_ROUTE_CONVERTER: '정수형 경로 변환 선언', ROUTE_PARAMETERS_UNRESOLVED: '경로 인자의 전달 방식 미확인',
+  DECORATOR_EXECUTION_UNRESOLVED: '사용자 정의 데코레이터의 실행 영향 미확인',
+  CUSTOM_MANAGER_AND_RUNTIME_NOT_VERIFIED: '사용자 정의 Manager와 실제 실행 환경은 미검증',
+  INPUT_GUARD_UNRESOLVED: '입력에 대한 사용자 정의 검증 함수의 효과 미확인',
 };
 const text = (value: string) => labels[value] ?? (/^[A-Z_]+$/.test(value) ? '지원 범위 밖이거나 추가 확인이 필요한 처리' : value);
 const location = (value: AnalysisLocation) => `${value.filePath}:${value.line} · ${value.functionName}`;
 
 export function ServerAnalysisSection({ snapshot, compact = false }: { snapshot?: ServerAnalysisSnapshot | null; compact?: boolean }) {
+  return <>
+    <LanguageAnalysisSection snapshot={snapshot} compact={compact} />
+    {snapshot?.pythonAnalysis && snapshot.pythonAnalysis.status !== 'NOT_APPLICABLE' &&
+      <LanguageAnalysisSection snapshot={snapshot.pythonAnalysis} compact={compact} python />}
+  </>;
+}
+
+function LanguageAnalysisSection({ snapshot, compact = false, python = false }: { snapshot?: ServerAnalysisSnapshot | null; compact?: boolean; python?: boolean }) {
   const [page, setPage] = useState(0);
   if (!snapshot) return compact ? null : <section className="analysis-coverage-brief"><h3>서버 코드 흐름 검사</h3>
     <p>이 이력에는 서버 코드 흐름 기록이 없습니다. 과거 분석을 추측하여 채우지 않습니다.</p></section>;
   const validated = snapshot.validatedFindings ?? [];
   const candidates = snapshot.findings.filter(candidate => !validated.some(f => f.evidence.some(e => JSON.stringify(e) === JSON.stringify(candidate))));
-  if (compact) return <section className="analysis-coverage-brief" aria-label="서버 코드 흐름 요약"><h3>서버 코드 흐름 검사</h3>
+  const title = python ? 'Python 서버 코드 흐름 검사' : '서버 코드 흐름 검사';
+  if (compact) return <section className="analysis-coverage-brief" aria-label={python ? 'Python 서버 코드 흐름 요약' : '서버 코드 흐름 요약'}><h3>{title}</h3>
     <p>{text(snapshot.status)} · {snapshot.validatedFindings == null ? '실행 경로 Finding 연결 미기록' : `정적 근거가 연결된 검토 항목 ${validated.length}건`} · 추가 문맥 확인 {candidates.length}건</p>
     <p>기존 배포 판단과 점수에 합산하지 않은 별도 결과입니다. ‘배포 전 직접 확인’에서 근거와 검사하지 못한 부분을 확인하세요.</p></section>;
   const current = Math.min(page, Math.max(0, Math.ceil(snapshot.files.length / 10) - 1));
-  return <section className="server-analysis-section" aria-label="서버 코드 흐름 검사">
-    <h3>서버 코드 흐름 검사</h3><p>{text(snapshot.status)}</p>
+  return <section className="server-analysis-section" aria-label={title}>
+    <h3>{title}</h3><p>{text(snapshot.status)}</p>
+    {python && <p>Django/DRF에서 연결된 일부 요청 경로와 SQL 값 전달을 확인한 결과입니다. 전체 Python 코드·인증·권한·미들웨어를 검사한 것은 아닙니다.</p>}
     <p className="review-caution">코드 구조에서 확인한 별도 검토 항목입니다. 기존 점수·위험 판정·반드시 처리 건수에 합산하지 않습니다. 항목이 없어도 전체 코드가 안전하다는 의미는 아닙니다.</p>
     {snapshot.findings.length === 0 && <p>지원 범위에서 보고된 요청 값 전달 위험 항목은 없습니다. 미검사·미지원 범위를 함께 확인하세요.</p>}
     <div className="vulnerability-list">{validated.map(finding => <article className="vulnerability-item action-finding" key={finding.findingId}>
@@ -95,7 +123,7 @@ export function ServerAnalysisSection({ snapshot, compact = false }: { snapshot?
         <span>{sql.defenses.map(d => text(d.kind)).join(' · ') || '확인한 바인딩 없음'}</span>
       </li>)}</ul><p>바인딩 확인은 인증·소유권 검증이나 모든 쿼리의 안전성을 보장하지 않습니다.</p>
     </details>
-    <details className="coverage-details"><summary>서버 HTTP 요청 목적지 ({snapshot.httpUses?.length ?? '미기록'})</summary>
+    {!python && <details className="coverage-details"><summary>서버 HTTP 요청 목적지 ({snapshot.httpUses?.length ?? '미기록'})</summary>
       {snapshot.httpUses == null ? <p>이 이력에는 HTTP 목적지 추적 기록이 없습니다. 과거 결과를 새 기준으로 판단하지 않습니다.</p>
         : <ul className="coverage-file-list">{snapshot.httpUses.map((http, i) => <li key={i}>
           <code className="finding-location">{location(http.location)}</code><span>{text(http.kind)}</span>
@@ -104,7 +132,7 @@ export function ServerAnalysisSection({ snapshot, compact = false }: { snapshot?
           {http.limitations.map(l => <span key={l}>{text(l)}</span>)}
         </li>)}</ul>}
       <p>고정된 주소나 허용 목록을 확인했더라도 리다이렉트·DNS 재해석·내부망 접근까지 안전하다고 보증하지 않습니다. SSRF는 서버가 의도하지 않은 주소로 요청하게 되는 위험입니다.</p>
-    </details>
+    </details>}
     <details className="coverage-details"><summary>인증·권한 관련 문맥 ({snapshot.authorizationContexts.length})</summary>
       {snapshot.authorizationContexts.map((context, i) => <div key={i}>
         <h4 className="finding-location">{location(context.entry)}</h4>
@@ -116,7 +144,7 @@ export function ServerAnalysisSection({ snapshot, compact = false }: { snapshot?
     <details className="coverage-details"><summary>파일별 구문 검사·추적 범위 ({snapshot.files.length})</summary>
       <ul className="coverage-file-list">{snapshot.files.slice(current * 10, current * 10 + 10).map((f, i) => <li key={i}>
         <code className="finding-location">{f.filePath}</code><span>{text(f.parseStatus)} · {text(f.flowStatus)} · 확인한 함수 {f.functionsAnalyzed}개</span>
-        {f.prepareCallSites != null && <span>prepare 호출 구문 {f.prepareCallSites}곳 · 경로 확인 {f.tracedPrepareCallSites ?? '미기록'}곳 (모든 구문이 실제 SQL 호출이라는 뜻은 아님)</span>}
+        {f.prepareCallSites != null && <span>{python ? 'SQL 실행 후보' : 'prepare'} 호출 구문 {f.prepareCallSites}곳 · 경로 확인 {f.tracedPrepareCallSites ?? '미기록'}곳 (모든 구문이 실제 SQL 호출이라는 뜻은 아님)</span>}
         {f.httpCallSites != null && <span>fetch 호출 구문 {f.httpCallSites}곳 · 목적지 추적 {f.tracedHttpCallSites ?? '미기록'}곳 (모든 HTTP client를 지원하는 것은 아님)</span>}
         {f.limitations.map(l => <span key={l}>{text(l)}</span>)}
       </li>)}</ul>

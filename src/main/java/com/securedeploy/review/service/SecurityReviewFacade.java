@@ -60,6 +60,7 @@ public class SecurityReviewFacade {
     private final com.securedeploy.project.progress.ReviewProgressService progressService;
     private final com.securedeploy.github.app.PrivateGitHubSourceService privateGitHubSources;
     private final com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer typeScriptAnalyzer;
+    private final com.securedeploy.analysis.python.PythonServerAnalyzer pythonAnalyzer;
 
     public SecurityReviewFacade(UploadService uploadService, ZipExtractService zipExtractService,
                                 GitHubRepositoryService gitHubRepositoryService,
@@ -76,7 +77,8 @@ public class SecurityReviewFacade {
                                 com.securedeploy.project.progress.ComparisonContextCollector comparisonCollector,
                                 com.securedeploy.project.progress.ReviewProgressService progressService,
                                 com.securedeploy.github.app.PrivateGitHubSourceService privateGitHubSources,
-                                com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer typeScriptAnalyzer) {
+                                com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer typeScriptAnalyzer,
+                                com.securedeploy.analysis.python.PythonServerAnalyzer pythonAnalyzer) {
         this.uploadService = uploadService;
         this.zipExtractService = zipExtractService;
         this.gitHubRepositoryService = gitHubRepositoryService;
@@ -97,6 +99,7 @@ public class SecurityReviewFacade {
         this.progressService = progressService;
         this.privateGitHubSources = privateGitHubSources;
         this.typeScriptAnalyzer = typeScriptAnalyzer;
+        this.pythonAnalyzer = pythonAnalyzer;
     }
 
     public SecurityReviewResponse reviewUploadedZip(MultipartFile file) {
@@ -248,9 +251,11 @@ public class SecurityReviewFacade {
             }
         }
         var intelligence = threatIntelligenceService.enrich(sca);
-        var serverAnalysis = typeScriptAnalyzer.analyze(projectStructure);
+        var pythonAnalysis = pythonAnalyzer.analyze(projectStructure);
+        var serverAnalysis = typeScriptAnalyzer.analyze(projectStructure).withPythonAnalysis(pythonAnalysis);
         var coverage = com.securedeploy.project.coverage.CoverageSummary.complete(projectStructure.coverage(), sourceExclusions, sca, intelligence);
         coverage = serverAnalysis.attachCoverage(coverage);
+        coverage = pythonAnalysis.attachCoverage(coverage);
         coverage = coverage.withInspectionScope(com.securedeploy.project.coverage.InspectionScope.collect(coverage, projectStructure.analysisFiles()));
         return new AnalysisOutcome(response.withSca(sca).withServerAnalysis(serverAnalysis).withCoverage(coverage), snippetGroup, intelligence, slices,
                 comparisonCollector.collect(projectStructure));

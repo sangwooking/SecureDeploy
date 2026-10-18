@@ -21,5 +21,6 @@ public enum ProjectFileType {
     ENV_FILE,
     PYTHON_REQUIREMENTS,
     PYTHON_PROJECT,
-    PYTHON_LOCK
+    PYTHON_LOCK,
+    PYTHON
 }

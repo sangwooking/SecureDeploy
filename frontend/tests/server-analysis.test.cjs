@@ -5,6 +5,18 @@ const { renderToStaticMarkup } = require('react-dom/server');
 const { ServerAnalysisSection } = require('./load-component.cjs')('ServerAnalysisSection');
 const fixture = require('./server-analysis-fixture.cjs');
 const render = snapshot => renderToStaticMarkup(React.createElement(ServerAnalysisSection, { snapshot }));
+test('Python evidence shares the UI but keeps scope, guidance and counts separate from TypeScript', () => {
+  const root = fixture();
+  const py = fixture(); py.analyzerVersion = 'py-django-v1'; py.parserVersion = 'CPython-3.14.5';
+  py.validatedFindings[0].sourceType = 'PYTHON_DATA_FLOW';
+  py.validatedFindings[0].ruleId = 'PY_SQL_INPUT_FLOW';
+  py.validatedFindings[0].recommendedAction = 'execute(sql, params) 또는 Django ORM 값 매개변수';
+  root.pythonAnalysis = py;
+  const html = render(root);
+  for (const phrase of ['Python 서버 코드 흐름 검사', 'Django/DRF', '전체 Python 코드', 'execute(sql, params)', 'PYTHON_DATA_FLOW', 'NOT_COMPARED']) assert.ok(html.includes(phrase), phrase);
+  assert.equal((html.match(/<article /g)||[]).length, 2);
+  assert.ok(!render(fixture()).includes('Python 서버 코드 흐름 검사'));
+});
 test('structural evidence shows source, propagation, file, uncertainty, and no automatic risk promotion', () => {
   const html = render(fixture());
   for (const phrase of ['functions/api/items.ts:3', 'functions/api/items.ts:6', '변수로 전달', '추가 확인 필요', '기존 점수·위험 판정·반드시 처리 건수에 합산하지 않습니다', '접근 권한 취약점으로 판단하지 않습니다']) assert.ok(html.includes(phrase), phrase);

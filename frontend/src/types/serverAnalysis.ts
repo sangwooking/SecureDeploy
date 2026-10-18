@@ -1,11 +1,12 @@
 export interface AnalysisLocation { filePath: string; line: number; column?: number; functionName: string; kind: string }
 export interface ServerFlowFinding {
-  findingId: string; sourceType: 'TYPESCRIPT_DATA_FLOW'; analyzerVersion: string; ruleId: string;
+  findingId: string; sourceType: 'TYPESCRIPT_DATA_FLOW' | 'PYTHON_DATA_FLOW'; analyzerVersion: string; ruleId: string;
   priority: 'REVIEW_REQUIRED'; comparisonPolicy: 'NOT_COMPARED'; location: AnalysisLocation;
   evidence: ServerAnalysisSnapshot['findings']; executionLocations: AnalysisLocation[];
   title: string; riskExplanation: string; recommendedAction: string; verificationSteps: string[];
 }
 export interface ServerAnalysisSnapshot {
+  pythonAnalysis?: ServerAnalysisSnapshot | null;
   schemaVersion: number;
   analyzerVersion: string;
   parserVersion: string | null;

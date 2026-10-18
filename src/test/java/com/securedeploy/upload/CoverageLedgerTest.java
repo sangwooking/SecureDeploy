@@ -16,15 +16,17 @@ class CoverageLedgerTest {
     @Test void inventoryDistinguishesUnsupportedAndPrunedDirectoriesFromPatternInputs() throws Exception {
         Files.writeString(temp.resolve("App.tsx"), "const a=1;");
         Files.writeString(temp.resolve("worker.py"), "placeholder");
+        Files.writeString(temp.resolve("worker.go"), "placeholder");
         Files.writeString(temp.resolve("requirements.txt"), "fake==1.0.0");
         Files.createDirectories(temp.resolve("node_modules"));
         Files.writeString(temp.resolve("node_modules/unknown.js"), "ignored");
         var result = scanner.scan(temp).coverage();
-        assertThat(result.discoveredFiles()).isEqualTo(3);
-        assertThat(result.selectedFiles()).isEqualTo(2);
+        assertThat(result.discoveredFiles()).isEqualTo(4);
+        assertThat(result.selectedFiles()).isEqualTo(3);
         assertThat(result.unsupportedFiles()).isEqualTo(1);
         assertThat(result.entries()).anyMatch(e -> e.filePath().equals("requirements.txt") && e.status().equals("SELECTED"));
-        assertThat(result.entries()).anyMatch(e -> e.filePath().equals("worker.py") && e.status().equals("UNSUPPORTED"));
+        assertThat(result.entries()).anyMatch(e -> e.filePath().equals("worker.py") && e.status().equals("SELECTED"));
+        assertThat(result.entries()).anyMatch(e -> e.filePath().equals("worker.go") && e.status().equals("UNSUPPORTED"));
         assertThat(result.inventoryComplete()).isFalse();
         assertThat(result.entries()).anyMatch(e -> e.kind().equals("DIRECTORY") && e.reason().contains("NOT_ENUMERATED"));
         assertThat(new CoverageLedgerConverter().convertToDatabaseColumn(result)).doesNotContain(temp.toString(), "placeholder");

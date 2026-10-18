@@ -11,7 +11,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         List<ServerAnalysisSnapshot.Finding> evidence, List<ServerAnalysisSnapshot.Location> executionLocations, String title, String riskExplanation,
         String recommendedAction, List<String> verificationSteps) {
 
-    static List<ServerFlowFinding> connect(ServerAnalysisSnapshot snapshot) {
+    public static List<ServerFlowFinding> connect(ServerAnalysisSnapshot snapshot) {
         var findings = new ArrayList<>(connectSql(snapshot));
         if (snapshot.httpUses() == null) return List.copyOf(findings);
         Map<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>> groups = new LinkedHashMap<>();
@@ -40,9 +40,11 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
     }
 
     private static List<ServerFlowFinding> connectSql(ServerAnalysisSnapshot snapshot) {
+        boolean python = snapshot.analyzerVersion().startsWith("py-django-");
+        String ruleId = python ? "PY_SQL_INPUT_FLOW" : "TS_SQL_INPUT_FLOW";
         Map<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>> groups = new LinkedHashMap<>();
         for (var candidate : snapshot.findings()) {
-            if (!"HIGH".equals(candidate.confidence()) || !"TS_SQL_INPUT_FLOW".equals(candidate.ruleId())
+            if (!"HIGH".equals(candidate.confidence()) || !ruleId.equals(candidate.ruleId())
                     || candidate.limitations().contains("QUERY_HAS_UNRESOLVED_VALUES")
                     || candidate.limitations().contains("TRACE_DETAILS_TRUNCATED")) continue;
             boolean executed = snapshot.sqlUses().stream().anyMatch(sql -> sql.executionObserved()
@@ -54,13 +56,14 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
             if (!evidence.contains(candidate)) evidence.add(candidate);
         }
         return groups.entrySet().stream().map(group -> new ServerFlowFinding(
-                identity(snapshot.analyzerVersion(), "TS_SQL_INPUT_FLOW", group.getKey()), "TYPESCRIPT_DATA_FLOW", snapshot.analyzerVersion(),
-                "TS_SQL_INPUT_FLOW", RiskPriority.REVIEW_REQUIRED, "NOT_COMPARED", group.getKey(), List.copyOf(group.getValue()),
+                identity(snapshot.analyzerVersion(), ruleId, group.getKey()), python ? "PYTHON_DATA_FLOW" : "TYPESCRIPT_DATA_FLOW", snapshot.analyzerVersion(),
+                ruleId, RiskPriority.REVIEW_REQUIRED, "NOT_COMPARED", group.getKey(), List.copyOf(group.getValue()),
                 snapshot.sqlUses().stream().filter(sql -> sql.location().equals(group.getKey()) && sql.executionLocations() != null)
                         .flatMap(sql -> sql.executionLocations().stream()).distinct().toList(),
                 "요청 값이 SQL 문자열과 실행 호출까지 전달됩니다",
-                "사용자가 보낸 값이 데이터 값이 아닌 쿼리 문법으로 해석될 수 있습니다. 정적 전달 근거이며 실제 공격 성공이나 배포 환경의 D1 연결을 검증한 것은 아닙니다.",
-                "SQL 구조를 고정하고 값은 prepare(...).bind(...)로 전달하세요. 테이블·열 이름은 바인딩 대신 서버의 고정된 허용 목록에서 선택하세요.",
+                "사용자가 보낸 값이 데이터 값이 아닌 쿼리 문법으로 해석될 수 있습니다(CWE-89). 정적 전달 근거이며 실제 공격 성공이나 운영 DB 연결을 검증한 것은 아닙니다.",
+                python ? "SQL 구조를 고정하고 값은 execute(sql, params)로 분리하거나 Django ORM의 값 매개변수를 사용하세요. 테이블·열 이름은 서버의 고정된 허용 목록에서 선택하세요."
+                : "SQL 구조를 고정하고 값은 prepare(...).bind(...)로 전달하세요. 테이블·열 이름은 바인딩 대신 서버의 고정된 허용 목록에서 선택하세요.",
                 List.of("표시된 입력·쿼리 구성·실행 경로와 앞단의 입력 검사를 확인하세요.",
                         "정상 값과 따옴표 등이 포함된 테스트 입력으로 값 바인딩을 검증하세요. 실제 운영 서버에서 공격 테스트를 하지 마세요.",
                         "수정 후 같은 프로젝트를 재검사하여 해당 위치의 흐름 근거를 다시 확인하세요. 이 항목은 기존 해결 건수에 자동 합산되지 않습니다.")))
@@ -70,7 +73,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
     private static String identity(String version, String ruleId, ServerAnalysisSnapshot.Location location) {
         try {
             String key = version + "\n" + ruleId + "\n" + location.filePath() + "\n" + location.line() + ":" + location.column();
-            return "ts-flow:" + HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(key.getBytes(StandardCharsets.UTF_8)));
+            return (ruleId.startsWith("PY_") ? "py-flow:" : "ts-flow:") + HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(key.getBytes(StandardCharsets.UTF_8)));
         } catch (java.security.NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
     }
 }

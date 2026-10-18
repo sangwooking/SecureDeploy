@@ -144,10 +144,10 @@ class PythonScaParserTest {
         assertThat(parse("requirements.txt", " ".repeat(200_001)).observations().get(0).status()).isEqualTo("LIMIT_EXCEEDED");
         assertThat(parse("pyproject.toml", "[".repeat(300)).observations().get(0).status()).isEqualTo("LIMIT_EXCEEDED");
     }
-    @Test void collectsOnlyKnownManifestTypesAndLeavesPythonSourceUnsupported() {
+    @Test void collectsKnownManifestTypesAndPythonSourceForItsSeparateAnalyzer() {
         var collector = new ProjectFileCollector();
         for (var name : List.of("backend/requirements.txt", "requirements-production.txt", "requirements/base.txt", "constraints.txt", "pyproject.toml", "uv.lock")) assertThat(collector.resolveAnalysisFileType(Path.of(name))).isPresent();
-        assertThat(collector.resolveAnalysisFileType(Path.of("server.py"))).isEmpty();
+        assertThat(collector.resolveAnalysisFileType(Path.of("server.py"))).contains(ProjectFileType.PYTHON);
         assertThat(collector.resolveAnalysisFileType(Path.of("notes.txt"))).isEmpty();
     }
 }

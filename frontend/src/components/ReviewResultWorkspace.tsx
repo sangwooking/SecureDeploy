@@ -36,6 +36,8 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
   const assessment = result.riskAssessment;
   const findings = allRiskFindings(result);
   const counts = reviewCounts(result);
+  const flowCount = (result.serverAnalysis?.validatedFindings?.length ?? 0)
+    + (result.serverAnalysis?.pythonAnalysis?.validatedFindings?.length ?? 0);
   const navigate = (next: ResultView) => {
     onViewChange(next);
     requestAnimationFrame(() => { panel.current?.focus({ preventScroll: true }); panel.current?.scrollIntoView({ block: 'start' }); });
@@ -83,7 +85,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
             })}</ol>
             {assessment.prioritySummary.BLOCKING === 0 && assessment.prioritySummary.REVIEW_REQUIRED === 0 && assessment.prioritySummary.SHOULD_FIX === 0 && <p>분석된 범위에서 필수 처리 또는 수정 권장 문제가 보고되지 않았습니다. 분석 범위와 추가 확인 사항을 함께 확인하세요.</p>}
             {counts.candidates > 0 && <p>AI가 제안한 {counts.candidates}개 확인 항목은 ‘배포 전 직접 확인할 부분’에서 별도로 검토하세요.</p>}
-            {(result.serverAnalysis?.validatedFindings?.length ?? 0) > 0 && <p>서버 코드 흐름 근거가 연결된 검토 항목 {result.serverAnalysis!.validatedFindings!.length}건이 있습니다.
+            {flowCount > 0 && <p>서버 코드 흐름 근거가 연결된 검토 항목 {flowCount}건이 있습니다.
               <button className="secondary-button" type="button" onClick={() => navigate('REVIEW_REQUIRED')}>입력 경로와 수정 방법 확인</button></p>}
             {assessment.prioritySummary.INFORMATIONAL > 0 && <p>참고 사항 {assessment.prioritySummary.INFORMATIONAL}건은 ‘수정 권장’에서 별도로 확인할 수 있습니다.</p>}
           </> : <button className="secondary-button" type="button" onClick={() => navigate('REVIEW_REQUIRED')}>저장된 문제 확인</button>}

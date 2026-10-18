@@ -338,7 +338,8 @@ class ScaReviewIntegrationTest {
         var result = upload(token, Map.of("package.json", manifest, "package-lock.json", lock,
                 "worker.py", "synthetic", "wrangler.jsonc", "{}", "node_modules/ignored.js", "ignored"));
         assertThat(result.at("/coverage/discoveredFiles").asInt()).isEqualTo(5);
-        assertThat(result.at("/coverage/unsupportedFiles").asInt()).isEqualTo(2);
+        assertThat(result.at("/coverage/unsupportedFiles").asInt()).isEqualTo(1);
+        assertThat(result.at("/serverAnalysis/pythonAnalysis/files/0/flowStatus").asText()).isEqualTo("NOT_SUPPORTED");
         assertThat(result.at("/coverage/excludedFiles").asInt()).isEqualTo(1);
         assertThat(result.at("/sca/components/1/context/environment").asText()).isEqualTo("DEVELOPMENT");
         assertThat(result.at("/sca/components/1/context/paths/0/declarationFile").asText()).isEqualTo("package.json");
@@ -370,7 +371,7 @@ class ScaReviewIntegrationTest {
         int before = jdbc.queryForObject("select count(*) from reviews", Integer.class);
         var bytes = new ByteArrayOutputStream();
         try (var zip = new ZipOutputStream(bytes)) {
-            zip.putNextEntry(new ZipEntry("fixture/server.py")); zip.write("synthetic".getBytes(StandardCharsets.UTF_8)); zip.closeEntry();
+            zip.putNextEntry(new ZipEntry("fixture/server.go")); zip.write("synthetic".getBytes(StandardCharsets.UTF_8)); zip.closeEntry();
         }
         var error = json(mvc.perform(multipart("/api/reviews/upload").file(new MockMultipartFile("file", "fixture.zip", "application/zip", bytes.toByteArray()))
                 .header("Authorization", "Bearer " + token)).andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsByteArray());

@@ -25,7 +25,7 @@ public class ComparisonContextCollector {
         try {
             var digest = MessageDigest.getInstance("SHA-256");
             var resolver = new PathMatchingResourcePatternResolver();
-            for (String area : new String[] {"rule", "dependency", "project/service", "project/coverage", "sca/parser"}) {
+            for (String area : new String[] {"rule", "dependency", "project/service", "project/coverage", "sca/parser", "analysis/python"}) {
                 var resources = resolver.getResources("classpath*:com/securedeploy/" + area + "/**/*.class");
                 java.util.Arrays.sort(resources, java.util.Comparator.comparing(r -> r.getDescription()));
                 for (var resource : resources) {

@@ -13,6 +13,8 @@ public class ProjectFileCollector {
         String lowerName = fileName.toLowerCase();
         String normalizedPath = "/" + path.toString().replace('\\', '/').toLowerCase(java.util.Locale.ROOT);
 
+        if (lowerName.endsWith(".py")) return Optional.of(ProjectFileType.PYTHON);
+
         if (com.securedeploy.sca.parser.PythonManifestFiles.isRequirements(normalizedPath)) {
             return Optional.of(ProjectFileType.PYTHON_REQUIREMENTS);
         }

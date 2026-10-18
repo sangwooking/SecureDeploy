@@ -134,7 +134,8 @@ class PrivateGitHubIntegrationTest {
                 assertThat(result.at(pointer)).isEqualTo(privateResult.at(pointer));
             }
             assertThat(result.at("/sca/components").toString()).contains("PYPI", "CONSTRAINT_PIN");
-            assertThat(result.at("/coverage/inspectionScope").toString()).contains("PYTHON_SOURCE", "UNSUPPORTED");
+            assertThat(result.at("/coverage/inspectionScope").toString()).contains("PYTHON_SOURCE", "PARTIAL");
+            assertThat(result.at("/serverAnalysis/pythonAnalysis")).isEqualTo(privateResult.at("/serverAnalysis/pythonAnalysis"));
             var saved = read("/api/reviews/" + result.path("reviewId").asLong());
             assertThat(saved.path("sca")).isEqualTo(result.path("sca"));
             assertThat(saved.path("coverage")).isEqualTo(result.path("coverage"));
