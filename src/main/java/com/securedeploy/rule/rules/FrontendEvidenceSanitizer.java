@@ -9,10 +9,10 @@ final class FrontendEvidenceSanitizer {
         if (evidence == null) {
             return null;
         }
-        return evidence
-                .replaceAll("(?i)((?:vite[_-]?)?[a-z0-9_]*(?:api[_-]?key|secret|token)\s*=\s*)([^\s\"']+)", "$1<redacted>")
-                .replaceAll("(?i)((?:api[_-]?key|secret|token|accessToken|refreshToken)\s*[:=]\s*[\"'])([^\"']+)([\"'])", "$1<redacted>$3")
-                .replaceAll("(?i)((?:api[_-]?key|secret|token|accessToken|refreshToken)[\"']?\s*,\s*[\"'])([^\"']+)([\"'])", "$1<redacted>$3");
+        return new com.securedeploy.ai.remediation.RemediationSanitizer().text(evidence, 10_000)
+                .replaceAll("(?i)((?:vite[_-]?)?[a-z0-9_]*(?:api[_-]?key|secret|token)\\s*=\\s*)([^\\s\"']+)", "$1<redacted>")
+                .replaceAll("(?i)((?:api[_-]?key|secret|token|accessToken|refreshToken)\\s*[:=]\\s*[\"'])([^\"']+)([\"'])", "$1<redacted>$3")
+                .replaceAll("(?i)((?:api[_-]?key|secret|token|accessToken|refreshToken)[\"']?\\s*,\\s*[\"'])([^\"']+)([\"'])", "$1<redacted>$3");
     }
 
     static boolean isDummyValue(String value) {

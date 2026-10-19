@@ -29,6 +29,9 @@ public class HardcodedSecretRule implements VulnerabilityRule {
         return ConfigFileParser.parse(file).stream()
                 .filter(entry -> isSecretKey(entry.normalizedKey()))
                 .filter(entry -> !ConfigFileParser.isPlaceholder(entry.value()))
+                .filter(entry -> !((file.type() == com.securedeploy.project.model.ProjectFileType.ENV || file.type() == com.securedeploy.project.model.ProjectFileType.ENV_FILE)
+                        && (entry.key().startsWith("VITE_") || entry.key().startsWith("NEXT_PUBLIC_")))
+                        || HardcodedFrontendSecretRule.credentialCandidate(entry.value()))
                 .map(entry -> new RuleMatch(
                         "HARDCODED_SECRET",
                         RuleCategory.SECRET_MANAGEMENT,

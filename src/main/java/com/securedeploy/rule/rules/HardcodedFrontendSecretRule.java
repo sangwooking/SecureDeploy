@@ -1,6 +1,7 @@
 package com.securedeploy.rule.rules;
 
 import com.securedeploy.project.model.ProjectFile;
+import com.securedeploy.project.model.ProjectFileType;
 import com.securedeploy.rule.model.RuleCategory;
 import com.securedeploy.rule.model.RuleMatch;
 import com.securedeploy.rule.model.Severity;
@@ -13,8 +14,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class HardcodedFrontendSecretRule implements VulnerabilityRule {
 
-    private static final Pattern ENV_SECRET = Pattern.compile("(?i)\b((?:VITE_)?[A-Z0-9_]*(?:API_KEY|SECRET|TOKEN)[A-Z0-9_]*)\s*=\s*([^\s#]+)");
-    private static final Pattern JS_SECRET = Pattern.compile("(?i)(api[_-]?key|secret|token|accessToken|refreshToken)[\"']?\s*[:=]\s*[\"']([^\"']{8,})[\"']");
+    private static final Pattern ENV_SECRET = Pattern.compile("(?i)^\\h*(?:export\\h+)?\\b([A-Z0-9_]*(?:API_KEY|SECRET|TOKEN)[A-Z0-9_]*)\\h*=\\h*(?:\"([^\"\\r\\n]*)\"|'([^'\\r\\n]*)'|([^\\s#;]+))\\h*(?:#.*)?$");
+    private static final Pattern JS_SECRET = Pattern.compile("(?i)(api[_-]?key|secret|token|accessToken|refreshToken)[\"']?\\s*[:=]\\s*[\"']([^\"']{8,})[\"']");
+    private static final Pattern CREDENTIAL = Pattern.compile("^(?:sk-(?:proj-)?[A-Za-z0-9_-]{24,}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{24,}|AKIA[A-Z0-9]{16}|eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+)$");
 
     @Override
     public List<RuleMatch> evaluate(ProjectFile file) {
@@ -26,8 +28,9 @@ public class HardcodedFrontendSecretRule implements VulnerabilityRule {
         List<String> lines = file.lines();
         for (int index = 0; index < lines.size(); index++) {
             String line = lines.get(index);
-            addEnvMatch(file, matches, line, index + 1);
-            addJsMatch(file, matches, line, index + 1);
+            if (file.type() == ProjectFileType.ENV || file.type() == ProjectFileType.ENV_FILE)
+                addEnvMatch(file, matches, line, index + 1);
+            else addJsMatch(file, matches, line, index + 1);
         }
         return matches;
     }
@@ -37,11 +40,26 @@ public class HardcodedFrontendSecretRule implements VulnerabilityRule {
         if (!matcher.find()) {
             return;
         }
-        String value = matcher.group(2);
-        if (FrontendEvidenceSanitizer.isDummyValue(value)) {
+        String value = matcher.group(2) != null ? matcher.group(2) : matcher.group(3) != null ? matcher.group(3) : matcher.group(4);
+        if ((FrontendEvidenceSanitizer.isDummyValue(value) && !CREDENTIAL.matcher(value).matches()) || !credentialCandidate(value)) {
             return;
         }
         matches.add(match(file, lineNumber, line));
+    }
+
+    static boolean credentialCandidate(String value) {
+        if (CREDENTIAL.matcher(value).matches()) return true;
+        if (value.length() < 32 || value.startsWith("${") || value.startsWith("http://") || value.startsWith("https://")
+                || value.startsWith("pk_live_") || value.startsWith("pk_test_")
+                || value.matches("(?i)[a-f0-9]{32,128}|[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}")) return false;
+        var counts = new java.util.HashMap<Character, Integer>();
+        for (int i = 0; i < value.length(); i++) counts.merge(value.charAt(i), 1, Integer::sum);
+        double entropy = 0;
+        for (int count : counts.values()) {
+            double probability = (double)count / value.length();
+            entropy -= probability * (Math.log(probability) / Math.log(2));
+        }
+        return counts.size() >= 12 && entropy >= 3.5;
     }
 
     private void addJsMatch(ProjectFile file, List<RuleMatch> matches, String line, int lineNumber) {
