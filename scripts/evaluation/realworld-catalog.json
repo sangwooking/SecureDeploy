@@ -1,0 +1,3214 @@
+{
+  "schemaVersion": 1,
+  "engineBaselineCommit": "c71863844df520bebe9185bebbc54fef081e4184",
+  "reviewer": "Single curator reviewing patches; not independently blinded",
+  "splitPolicy": "Repository/fork/CVE/family and both revisions stay together; only new projects, no prior BenchmarkJava sources.",
+  "collectionMetadata": {
+    "sourceUrl": "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+    "rangeStart": 1485686,
+    "rangeBytes": 2097152,
+    "prefixSha256": "54493577e8fc324ee77b80fd655825c7ce72ec4df4135f6cc26a3fd7971af051",
+    "fixesTableBytes": 1634659,
+    "githubFixRows": 12864,
+    "otherRowsNotSelected": 59,
+    "integrity": "PARTIAL_ARCHIVE_FULL_CHECKSUM_NOT_VERIFIED",
+    "sqlExecuted": false,
+    "databaseRestored": false
+  },
+  "cases": [
+    {
+      "caseId": "vul4j-2-parent",
+      "pairId": "vul4j-2",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/xmlgraphics-batik",
+      "repositoryCommitSha": "efb98a96b9b64a557a1caf030e2c16c3902b9712",
+      "vulnerableCommitSha": "efb98a96b9b64a557a1caf030e2c16c3902b9712",
+      "fixedCommitSha": "660ef628d637af636ea113243fe73f170ac43958",
+      "repositoryGroup": "apache/xmlgraphics-batik",
+      "forkGroup": "apache/xmlgraphics-batik",
+      "vulnerabilityFamily": "xml-external-entity",
+      "cve": "CVE-2017-5662",
+      "ghsa": null,
+      "cwe": "CWE-611",
+      "datasetCwe": "CWE-611",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "xmlgraphics-batik implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "batik-dom/src/main/java/org/apache/batik/dom/util/SAXDocumentFactory.java",
+          "startLine": 397,
+          "endLine": 412
+        },
+        {
+          "filePath": "batik-dom/src/main/java/org/apache/batik/dom/util/SAXDocumentFactory.java",
+          "startLine": 441,
+          "endLine": 456
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "batik-dom/src/main/java/org/apache/batik/dom/util/SAXDocumentFactory.java",
+          "startLine": 1,
+          "endLine": 817
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/xmlgraphics-batik/commit/660ef628d637af636ea113243fe73f170ac43958"
+      ],
+      "sourceToSinkEvidence": "Caller-controlled XML InputSource reaches SAX parser.parse; external DTD loading was not explicitly disabled.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Attacker-controlled XML and parser implementation that resolves external DTDs; no network or XML payload executed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "batik-dom/src/main/java/org/apache/batik/dom/util/SAXDocumentFactory.java",
+          "url": "https://raw.githubusercontent.com/apache/xmlgraphics-batik/efb98a96b9b64a557a1caf030e2c16c3902b9712/batik-dom/src/main/java/org/apache/batik/dom/util/SAXDocumentFactory.java",
+          "sha256": "21144c406d1fb6860db226638f9bf38eeaeaba89b32318f15b956afa3369027e"
+        }
+      ],
+      "improvementProposal": "XML parser feature configuration and caller input contracts",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-2-fixed",
+      "pairId": "vul4j-2",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/xmlgraphics-batik",
+      "repositoryCommitSha": "660ef628d637af636ea113243fe73f170ac43958",
+      "vulnerableCommitSha": "efb98a96b9b64a557a1caf030e2c16c3902b9712",
+      "fixedCommitSha": "660ef628d637af636ea113243fe73f170ac43958",
+      "repositoryGroup": "apache/xmlgraphics-batik",
+      "forkGroup": "apache/xmlgraphics-batik",
+      "vulnerabilityFamily": "xml-external-entity",
+      "cve": "CVE-2017-5662",
+      "ghsa": null,
+      "cwe": "CWE-611",
+      "datasetCwe": "CWE-611",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "xmlgraphics-batik implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "batik-dom/src/main/java/org/apache/batik/dom/util/SAXDocumentFactory.java",
+          "startLine": 397,
+          "endLine": 413
+        },
+        {
+          "filePath": "batik-dom/src/main/java/org/apache/batik/dom/util/SAXDocumentFactory.java",
+          "startLine": 442,
+          "endLine": 458
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "batik-dom/src/main/java/org/apache/batik/dom/util/SAXDocumentFactory.java",
+          "startLine": 1,
+          "endLine": 819
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/xmlgraphics-batik/commit/660ef628d637af636ea113243fe73f170ac43958"
+      ],
+      "sourceToSinkEvidence": "Caller-controlled XML InputSource reaches SAX parser.parse; external DTD loading was not explicitly disabled.",
+      "mitigationEvidence": "Both parser creation paths set load-external-dtd=false.",
+      "requiredConditions": "Attacker-controlled XML and parser implementation that resolves external DTDs; no network or XML payload executed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "batik-dom/src/main/java/org/apache/batik/dom/util/SAXDocumentFactory.java",
+          "url": "https://raw.githubusercontent.com/apache/xmlgraphics-batik/660ef628d637af636ea113243fe73f170ac43958/batik-dom/src/main/java/org/apache/batik/dom/util/SAXDocumentFactory.java",
+          "sha256": "20af786f1a7221f57e79f5291783f2732f06b1190deec42d4305e6202d67efb2"
+        }
+      ],
+      "improvementProposal": "XML parser feature configuration and caller input contracts",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-9-parent",
+      "pairId": "vul4j-9",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/commons-configuration",
+      "repositoryCommitSha": "342f3b3be52bbbb188ad2fe81bb19ad688012123",
+      "vulnerableCommitSha": "342f3b3be52bbbb188ad2fe81bb19ad688012123",
+      "fixedCommitSha": "add7375cf37fd316d4838c6c56b054fc293b4641",
+      "repositoryGroup": "apache/commons-configuration",
+      "forkGroup": "apache/commons-configuration",
+      "vulnerabilityFamily": "yaml-object-construction",
+      "cve": "CVE-2020-1953",
+      "ghsa": null,
+      "cwe": "CWE-502",
+      "datasetCwe": "Not Mapping",
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "commons-configuration implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "startLine": 13,
+          "endLine": 33
+        },
+        {
+          "filePath": "src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "startLine": 60,
+          "endLine": 91
+        },
+        {
+          "filePath": "src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "startLine": 112,
+          "endLine": 145
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "startLine": 1,
+          "endLine": 145
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/commons-configuration/commit/add7375cf37fd316d4838c6c56b054fc293b4641"
+      ],
+      "sourceToSinkEvidence": "Reader/InputStream YAML reaches Yaml.load and can request Java object construction.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Untrusted YAML must reach this configuration loader; dependency internals and object gadgets not executed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "url": "https://raw.githubusercontent.com/apache/commons-configuration/342f3b3be52bbbb188ad2fe81bb19ad688012123/src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "sha256": "b4142311457fedf5bf39a39e4d84d29b80203a89e0f8539c5b928d9ace67a499"
+        }
+      ],
+      "improvementProposal": "Library deserialization input contracts and constructor defenses",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-9-fixed",
+      "pairId": "vul4j-9",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/commons-configuration",
+      "repositoryCommitSha": "add7375cf37fd316d4838c6c56b054fc293b4641",
+      "vulnerableCommitSha": "342f3b3be52bbbb188ad2fe81bb19ad688012123",
+      "fixedCommitSha": "add7375cf37fd316d4838c6c56b054fc293b4641",
+      "repositoryGroup": "apache/commons-configuration",
+      "forkGroup": "apache/commons-configuration",
+      "vulnerabilityFamily": "yaml-object-construction",
+      "cve": "CVE-2020-1953",
+      "ghsa": null,
+      "cwe": "CWE-502",
+      "datasetCwe": "Not Mapping",
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "commons-configuration implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "startLine": 13,
+          "endLine": 36
+        },
+        {
+          "filePath": "src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "startLine": 63,
+          "endLine": 94
+        },
+        {
+          "filePath": "src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "startLine": 115,
+          "endLine": 178
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "startLine": 1,
+          "endLine": 178
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/commons-configuration/commit/add7375cf37fd316d4838c6c56b054fc293b4641"
+      ],
+      "sourceToSinkEvidence": "Reader/InputStream YAML reaches Yaml.load and can request Java object construction.",
+      "mitigationEvidence": "All four read paths use a Constructor that rejects class loading.",
+      "requiredConditions": "Untrusted YAML must reach this configuration loader; dependency internals and object gadgets not executed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "url": "https://raw.githubusercontent.com/apache/commons-configuration/add7375cf37fd316d4838c6c56b054fc293b4641/src/main/java/org/apache/commons/configuration2/YAMLConfiguration.java",
+          "sha256": "5c52e26f78daa509f2732bdd455f6f22a79d1cdfc1b617e3d2a990849082191a"
+        }
+      ],
+      "improvementProposal": "Library deserialization input contracts and constructor defenses",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-10-parent",
+      "pairId": "vul4j-10",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/commons-fileupload",
+      "repositoryCommitSha": "e685ae49df3ccb864493f51a14ddd884e86e7e03",
+      "vulnerableCommitSha": "e685ae49df3ccb864493f51a14ddd884e86e7e03",
+      "fixedCommitSha": "163a6061fbc077d4b6e4787d26857c2baba495d1",
+      "repositoryGroup": "apache/commons-fileupload",
+      "forkGroup": "apache/commons-fileupload",
+      "vulnerabilityFamily": "deserialized-repository-state",
+      "cve": "CVE-2013-2186",
+      "ghsa": null,
+      "cwe": "CWE-20",
+      "datasetCwe": "CWE-20",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "commons-fileupload implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/fileupload/disk/DiskFileItem.java",
+          "startLine": 651,
+          "endLine": 666
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/fileupload/disk/DiskFileItem.java",
+          "startLine": 1,
+          "endLine": 689
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/commons-fileupload/commit/163a6061fbc077d4b6e4787d26857c2baba495d1"
+      ],
+      "sourceToSinkEvidence": "Deserialized repository state reaches getOutputStream during readObject.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Label covers the named repository validation defect, not all Java deserialization attacks or gadgets.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/apache/commons/fileupload/disk/DiskFileItem.java",
+          "url": "https://raw.githubusercontent.com/apache/commons-fileupload/e685ae49df3ccb864493f51a14ddd884e86e7e03/src/main/java/org/apache/commons/fileupload/disk/DiskFileItem.java",
+          "sha256": "a93b3764a64cf7254ccaa8fdc57f53a3aed4c8f3ebe8ebdde571b092b410ce2c"
+        }
+      ],
+      "improvementProposal": "Deserialized field state and file write effects",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-10-fixed",
+      "pairId": "vul4j-10",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/commons-fileupload",
+      "repositoryCommitSha": "163a6061fbc077d4b6e4787d26857c2baba495d1",
+      "vulnerableCommitSha": "e685ae49df3ccb864493f51a14ddd884e86e7e03",
+      "fixedCommitSha": "163a6061fbc077d4b6e4787d26857c2baba495d1",
+      "repositoryGroup": "apache/commons-fileupload",
+      "forkGroup": "apache/commons-fileupload",
+      "vulnerabilityFamily": "deserialized-repository-state",
+      "cve": "CVE-2013-2186",
+      "ghsa": null,
+      "cwe": "CWE-20",
+      "datasetCwe": "CWE-20",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "commons-fileupload implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/fileupload/disk/DiskFileItem.java",
+          "startLine": 651,
+          "endLine": 686
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/fileupload/disk/DiskFileItem.java",
+          "startLine": 1,
+          "endLine": 709
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/commons-fileupload/commit/163a6061fbc077d4b6e4787d26857c2baba495d1"
+      ],
+      "sourceToSinkEvidence": "Deserialized repository state reaches getOutputStream during readObject.",
+      "mitigationEvidence": "readObject rejects non-directory repositories and null characters.",
+      "requiredConditions": "Label covers the named repository validation defect, not all Java deserialization attacks or gadgets.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/apache/commons/fileupload/disk/DiskFileItem.java",
+          "url": "https://raw.githubusercontent.com/apache/commons-fileupload/163a6061fbc077d4b6e4787d26857c2baba495d1/src/main/java/org/apache/commons/fileupload/disk/DiskFileItem.java",
+          "sha256": "00dc3dfb7fb7c01d3dd2f8b0adf62e3a77493068c53facd5adfb3d19c51ebd19"
+        }
+      ],
+      "improvementProposal": "Deserialized field state and file write effects",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-14-parent",
+      "pairId": "vul4j-14",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/commons-io",
+      "repositoryCommitSha": "7791a851c4a303f47743b156007fb19c6ed8ed81",
+      "vulnerableCommitSha": "7791a851c4a303f47743b156007fb19c6ed8ed81",
+      "fixedCommitSha": "2736b6fe0b3fa22ec8e2b4184897ecadb021fc78",
+      "repositoryGroup": "apache/commons-io",
+      "forkGroup": "apache/commons-io",
+      "vulnerabilityFamily": "unc-path-normalization",
+      "cve": "CVE-2021-29425",
+      "ghsa": null,
+      "cwe": "CWE-22",
+      "datasetCwe": "CWE-20",
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "commons-io implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "startLine": 14,
+          "endLine": 31
+        },
+        {
+          "filePath": "src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "startLine": 671,
+          "endLine": 687
+        },
+        {
+          "filePath": "src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "startLine": 1485,
+          "endLine": 1493
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "startLine": 1,
+          "endLine": 1493
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/commons-io/commit/2736b6fe0b3fa22ec8e2b4184897ecadb021fc78"
+      ],
+      "sourceToSinkEvidence": "Malformed UNC-style filename prefix affects normalization results used by caller filesystem code.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "A caller must rely on normalization for path security; no filesystem operation is in this utility itself. CWE is path-level analyst classification.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "url": "https://raw.githubusercontent.com/apache/commons-io/7791a851c4a303f47743b156007fb19c6ed8ed81/src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "sha256": "75dca88fd2be41bc12bdc4ff9009a1ac6d240400eb4943e829f0a87e7309da95"
+        }
+      ],
+      "improvementProposal": "Normalization contracts, validation and downstream callers",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-14-fixed",
+      "pairId": "vul4j-14",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/commons-io",
+      "repositoryCommitSha": "2736b6fe0b3fa22ec8e2b4184897ecadb021fc78",
+      "vulnerableCommitSha": "7791a851c4a303f47743b156007fb19c6ed8ed81",
+      "fixedCommitSha": "2736b6fe0b3fa22ec8e2b4184897ecadb021fc78",
+      "repositoryGroup": "apache/commons-io",
+      "forkGroup": "apache/commons-io",
+      "vulnerabilityFamily": "unc-path-normalization",
+      "cve": "CVE-2021-29425",
+      "ghsa": null,
+      "cwe": "CWE-22",
+      "datasetCwe": "CWE-20",
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "commons-io implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "startLine": 14,
+          "endLine": 35
+        },
+        {
+          "filePath": "src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "startLine": 675,
+          "endLine": 693
+        },
+        {
+          "filePath": "src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "startLine": 1491,
+          "endLine": 1638
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "startLine": 1,
+          "endLine": 1638
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/commons-io/commit/2736b6fe0b3fa22ec8e2b4184897ecadb021fc78"
+      ],
+      "sourceToSinkEvidence": "Malformed UNC-style filename prefix affects normalization results used by caller filesystem code.",
+      "mitigationEvidence": "Hostname prefix is checked before returning a valid prefix length.",
+      "requiredConditions": "A caller must rely on normalization for path security; no filesystem operation is in this utility itself. CWE is path-level analyst classification.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "url": "https://raw.githubusercontent.com/apache/commons-io/2736b6fe0b3fa22ec8e2b4184897ecadb021fc78/src/main/java/org/apache/commons/io/FilenameUtils.java",
+          "sha256": "dc05d2223824423dba5a7da91ea455763508924ae67216df48ca7303d19f4196"
+        }
+      ],
+      "improvementProposal": "Normalization contracts, validation and downstream callers",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-18-parent",
+      "pairId": "vul4j-18",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/jspwiki",
+      "repositoryCommitSha": "f140a2a4371735ad24d04a1d78c6e1d9ceaed76f",
+      "vulnerableCommitSha": "f140a2a4371735ad24d04a1d78c6e1d9ceaed76f",
+      "fixedCommitSha": "88d89d6523802c044cfcb7930cba40d8eeb21da2",
+      "repositoryGroup": "apache/jspwiki",
+      "forkGroup": "apache/jspwiki",
+      "vulnerabilityFamily": "servlet-forward-target",
+      "cve": "CVE-2019-0225",
+      "ghsa": null,
+      "cwe": "CWE-22",
+      "datasetCwe": "CWE-22",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "jspwiki implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "jspwiki-main/src/main/java/org/apache/wiki/url/DefaultURLConstructor.java",
+          "startLine": 272,
+          "endLine": 282
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "jspwiki-main/src/main/java/org/apache/wiki/url/DefaultURLConstructor.java",
+          "startLine": 1,
+          "endLine": 282
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/jspwiki/commit/88d89d6523802c044cfcb7930cba40d8eeb21da2"
+      ],
+      "sourceToSinkEvidence": "HttpServletRequest.getPathInfo is returned as the forward-page choice.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Downstream servlet forwarding and container routing are required; caller wiring is not a complete project here.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "jspwiki-main/src/main/java/org/apache/wiki/url/DefaultURLConstructor.java",
+          "url": "https://raw.githubusercontent.com/apache/jspwiki/f140a2a4371735ad24d04a1d78c6e1d9ceaed76f/jspwiki-main/src/main/java/org/apache/wiki/url/DefaultURLConstructor.java",
+          "sha256": "ef247510c6105cdca6270c482c6fcd33ef10e0faf25fb379281f62a1f4bf6183"
+        }
+      ],
+      "improvementProposal": "Servlet path source to forwarding across classes",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-18-fixed",
+      "pairId": "vul4j-18",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/jspwiki",
+      "repositoryCommitSha": "88d89d6523802c044cfcb7930cba40d8eeb21da2",
+      "vulnerableCommitSha": "f140a2a4371735ad24d04a1d78c6e1d9ceaed76f",
+      "fixedCommitSha": "88d89d6523802c044cfcb7930cba40d8eeb21da2",
+      "repositoryGroup": "apache/jspwiki",
+      "forkGroup": "apache/jspwiki",
+      "vulnerabilityFamily": "servlet-forward-target",
+      "cve": "CVE-2019-0225",
+      "ghsa": null,
+      "cwe": "CWE-22",
+      "datasetCwe": "CWE-22",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "jspwiki implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "jspwiki-main/src/main/java/org/apache/wiki/url/DefaultURLConstructor.java",
+          "startLine": 272,
+          "endLine": 282
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "jspwiki-main/src/main/java/org/apache/wiki/url/DefaultURLConstructor.java",
+          "startLine": 1,
+          "endLine": 282
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/jspwiki/commit/88d89d6523802c044cfcb7930cba40d8eeb21da2"
+      ],
+      "sourceToSinkEvidence": "HttpServletRequest.getPathInfo is returned as the forward-page choice.",
+      "mitigationEvidence": "getForwardPage returns the fixed Wiki.jsp page.",
+      "requiredConditions": "Downstream servlet forwarding and container routing are required; caller wiring is not a complete project here.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "jspwiki-main/src/main/java/org/apache/wiki/url/DefaultURLConstructor.java",
+          "url": "https://raw.githubusercontent.com/apache/jspwiki/88d89d6523802c044cfcb7930cba40d8eeb21da2/jspwiki-main/src/main/java/org/apache/wiki/url/DefaultURLConstructor.java",
+          "sha256": "c2792ea901c1552856fd4c0d60c2c5fdbcc833308fa217685e6686905ae0fdb1"
+        }
+      ],
+      "improvementProposal": "Servlet path source to forwarding across classes",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-22-parent",
+      "pairId": "vul4j-22",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/shiro",
+      "repositoryCommitSha": "d41afcc6e722ec112918c2cc56a386dd6267a1d5",
+      "vulnerableCommitSha": "d41afcc6e722ec112918c2cc56a386dd6267a1d5",
+      "fixedCommitSha": "b15ab927709ca18ea4a02538be01919a19ab65af",
+      "repositoryGroup": "apache/shiro",
+      "forkGroup": "apache/shiro",
+      "vulnerabilityFamily": "authorization-path-canonicalization",
+      "cve": "CVE-2016-6802",
+      "ghsa": null,
+      "cwe": "CWE-284",
+      "datasetCwe": "CWE-284",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "AUTHORIZATION",
+      "language": "JAVA",
+      "framework": "shiro implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "web/src/main/java/org/apache/shiro/web/util/WebUtils.java",
+          "startLine": 243,
+          "endLine": 263
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "web/src/main/java/org/apache/shiro/web/util/WebUtils.java",
+          "startLine": 1,
+          "endLine": 674
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/shiro/commit/b15ab927709ca18ea4a02538be01919a19ab65af"
+      ],
+      "sourceToSinkEvidence": "Servlet context path decoding without consistent normalization can disagree with access-control path matching.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Servlet container decoding and Shiro filters determine exploitability; no authorization bypass executed.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "web/src/main/java/org/apache/shiro/web/util/WebUtils.java",
+          "url": "https://raw.githubusercontent.com/apache/shiro/d41afcc6e722ec112918c2cc56a386dd6267a1d5/web/src/main/java/org/apache/shiro/web/util/WebUtils.java",
+          "sha256": "1b67ed3c9d92dfd29966062dc0fe089de6493740e1cea7bb8023bfc39a995b68"
+        }
+      ],
+      "improvementProposal": "Canonicalization consistency at authorization boundary",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-22-fixed",
+      "pairId": "vul4j-22",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apache/shiro",
+      "repositoryCommitSha": "b15ab927709ca18ea4a02538be01919a19ab65af",
+      "vulnerableCommitSha": "d41afcc6e722ec112918c2cc56a386dd6267a1d5",
+      "fixedCommitSha": "b15ab927709ca18ea4a02538be01919a19ab65af",
+      "repositoryGroup": "apache/shiro",
+      "forkGroup": "apache/shiro",
+      "vulnerabilityFamily": "authorization-path-canonicalization",
+      "cve": "CVE-2016-6802",
+      "ghsa": null,
+      "cwe": "CWE-284",
+      "datasetCwe": "CWE-284",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "AUTHORIZATION",
+      "language": "JAVA",
+      "framework": "shiro implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "web/src/main/java/org/apache/shiro/web/util/WebUtils.java",
+          "startLine": 243,
+          "endLine": 264
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "web/src/main/java/org/apache/shiro/web/util/WebUtils.java",
+          "startLine": 1,
+          "endLine": 675
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apache/shiro/commit/b15ab927709ca18ea4a02538be01919a19ab65af"
+      ],
+      "sourceToSinkEvidence": "Servlet context path decoding without consistent normalization can disagree with access-control path matching.",
+      "mitigationEvidence": "Context path is decoded and normalized before slash special handling.",
+      "requiredConditions": "Servlet container decoding and Shiro filters determine exploitability; no authorization bypass executed.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "web/src/main/java/org/apache/shiro/web/util/WebUtils.java",
+          "url": "https://raw.githubusercontent.com/apache/shiro/b15ab927709ca18ea4a02538be01919a19ab65af/web/src/main/java/org/apache/shiro/web/util/WebUtils.java",
+          "sha256": "38fce9c5a0d92e1820e8b051f0690f81bd39da273c0ff543e53ff94ee439c20f"
+        }
+      ],
+      "improvementProposal": "Canonicalization consistency at authorization boundary",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-38-parent",
+      "pairId": "vul4j-38",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apereo/java-cas-client",
+      "repositoryCommitSha": "fd962da5c4a30e445583413c4e612baed6b11bd4",
+      "vulnerableCommitSha": "fd962da5c4a30e445583413c4e612baed6b11bd4",
+      "fixedCommitSha": "ab6cbdc3daa451b4fef89c0bd0f4e6568f3aa9ef",
+      "repositoryGroup": "apereo/java-cas-client",
+      "forkGroup": "apereo/java-cas-client",
+      "vulnerabilityFamily": "cas-query-value-encoding",
+      "cve": "CVE-2014-4172",
+      "ghsa": null,
+      "cwe": "CWE-74",
+      "datasetCwe": "CWE-74",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "java-cas-client implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "cas-client-core/src/main/java/org/jasig/cas/client/validation/AbstractUrlBasedTicketValidator.java",
+          "startLine": 105,
+          "endLine": 121
+        },
+        {
+          "filePath": "cas-client-core/src/main/java/org/jasig/cas/client/validation/AbstractUrlBasedTicketValidator.java",
+          "startLine": 139,
+          "endLine": 155
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "cas-client-core/src/main/java/org/jasig/cas/client/validation/AbstractUrlBasedTicketValidator.java",
+          "startLine": 1,
+          "endLine": 248
+        },
+        {
+          "filePath": "cas-client-core/src/main/java/org/jasig/cas/client/validation/Cas20ServiceTicketValidator.java",
+          "startLine": 1,
+          "endLine": 249
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apereo/java-cas-client/commit/ab6cbdc3daa451b4fef89c0bd0f4e6568f3aa9ef"
+      ],
+      "sourceToSinkEvidence": "Ticket and other URL parameter values are appended to the CAS validation URL without consistent value encoding.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "CAS validation endpoint and caller-controlled ticket are needed; patched path is not proof of entire CAS security.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "cas-client-core/src/main/java/org/jasig/cas/client/validation/AbstractUrlBasedTicketValidator.java",
+          "url": "https://raw.githubusercontent.com/apereo/java-cas-client/fd962da5c4a30e445583413c4e612baed6b11bd4/cas-client-core/src/main/java/org/jasig/cas/client/validation/AbstractUrlBasedTicketValidator.java",
+          "sha256": "18c4b7e42bed4d4a9d6fccaf3c3b48b6cdfff4570465268181fea49b7a170a6e"
+        },
+        {
+          "path": "cas-client-core/src/main/java/org/jasig/cas/client/validation/Cas20ServiceTicketValidator.java",
+          "url": "https://raw.githubusercontent.com/apereo/java-cas-client/fd962da5c4a30e445583413c4e612baed6b11bd4/cas-client-core/src/main/java/org/jasig/cas/client/validation/Cas20ServiceTicketValidator.java",
+          "sha256": "4117ef6d70df6f8a1dd75f8a45e50a2502704ca121ea998df8fb64a32ebdee9a"
+        }
+      ],
+      "improvementProposal": "URL parameter encoding versus request destination control",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-38-fixed",
+      "pairId": "vul4j-38",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/apereo/java-cas-client",
+      "repositoryCommitSha": "ab6cbdc3daa451b4fef89c0bd0f4e6568f3aa9ef",
+      "vulnerableCommitSha": "fd962da5c4a30e445583413c4e612baed6b11bd4",
+      "fixedCommitSha": "ab6cbdc3daa451b4fef89c0bd0f4e6568f3aa9ef",
+      "repositoryGroup": "apereo/java-cas-client",
+      "forkGroup": "apereo/java-cas-client",
+      "vulnerabilityFamily": "cas-query-value-encoding",
+      "cve": "CVE-2014-4172",
+      "ghsa": null,
+      "cwe": "CWE-74",
+      "datasetCwe": "CWE-74",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "java-cas-client implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "cas-client-core/src/main/java/org/jasig/cas/client/validation/AbstractUrlBasedTicketValidator.java",
+          "startLine": 105,
+          "endLine": 121
+        },
+        {
+          "filePath": "cas-client-core/src/main/java/org/jasig/cas/client/validation/AbstractUrlBasedTicketValidator.java",
+          "startLine": 139,
+          "endLine": 156
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "cas-client-core/src/main/java/org/jasig/cas/client/validation/AbstractUrlBasedTicketValidator.java",
+          "startLine": 1,
+          "endLine": 249
+        },
+        {
+          "filePath": "cas-client-core/src/main/java/org/jasig/cas/client/validation/Cas20ServiceTicketValidator.java",
+          "startLine": 1,
+          "endLine": 249
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/apereo/java-cas-client/commit/ab6cbdc3daa451b4fef89c0bd0f4e6568f3aa9ef"
+      ],
+      "sourceToSinkEvidence": "Ticket and other URL parameter values are appended to the CAS validation URL without consistent value encoding.",
+      "mitigationEvidence": "All parameter values are encoded once when appended; previously pre-encoded values are no longer pre-encoded.",
+      "requiredConditions": "CAS validation endpoint and caller-controlled ticket are needed; patched path is not proof of entire CAS security.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "cas-client-core/src/main/java/org/jasig/cas/client/validation/AbstractUrlBasedTicketValidator.java",
+          "url": "https://raw.githubusercontent.com/apereo/java-cas-client/ab6cbdc3daa451b4fef89c0bd0f4e6568f3aa9ef/cas-client-core/src/main/java/org/jasig/cas/client/validation/AbstractUrlBasedTicketValidator.java",
+          "sha256": "a05913b9ad51a0408aefde475def245e98ae12d8058570f0544934f1b54e9fb5"
+        },
+        {
+          "path": "cas-client-core/src/main/java/org/jasig/cas/client/validation/Cas20ServiceTicketValidator.java",
+          "url": "https://raw.githubusercontent.com/apereo/java-cas-client/ab6cbdc3daa451b4fef89c0bd0f4e6568f3aa9ef/cas-client-core/src/main/java/org/jasig/cas/client/validation/Cas20ServiceTicketValidator.java",
+          "sha256": "c7863bdc6ea2595b903400b56d1e47566f862414cc4f40d451455e67e3a0ef79"
+        }
+      ],
+      "improvementProposal": "URL parameter encoding versus request destination control",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-41-parent",
+      "pairId": "vul4j-41",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/codehaus-plexus/plexus-archiver",
+      "repositoryCommitSha": "97c0d97504632a2a80b7d847bccdd9b37d27aea1",
+      "vulnerableCommitSha": "97c0d97504632a2a80b7d847bccdd9b37d27aea1",
+      "fixedCommitSha": "58bc24e465c0842981692adbf6d75680298989de",
+      "repositoryGroup": "codehaus-plexus/plexus-archiver",
+      "forkGroup": "codehaus-plexus/plexus-archiver",
+      "vulnerabilityFamily": "archive-entry-containment",
+      "cve": "CVE-2018-1002200",
+      "ghsa": null,
+      "cwe": "CWE-22",
+      "datasetCwe": "CWE-22",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "plexus-archiver implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/codehaus/plexus/archiver/AbstractUnArchiver.java",
+          "startLine": 303,
+          "endLine": 318
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/codehaus/plexus/archiver/AbstractUnArchiver.java",
+          "startLine": 1,
+          "endLine": 363
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/codehaus-plexus/plexus-archiver/commit/58bc24e465c0842981692adbf6d75680298989de"
+      ],
+      "sourceToSinkEvidence": "Archive entryName is resolved under dir and later written as an extracted file.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "SAFE is restricted to canonical paths outside the prefix. String-prefix sibling-directory cases and symlink races are NOT certified by this historical patch.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "src/main/java/org/codehaus/plexus/archiver/AbstractUnArchiver.java",
+          "url": "https://raw.githubusercontent.com/codehaus-plexus/plexus-archiver/97c0d97504632a2a80b7d847bccdd9b37d27aea1/src/main/java/org/codehaus/plexus/archiver/AbstractUnArchiver.java",
+          "sha256": "396317b351b167947d3d394999ac06fb5e7cd1a17da3fe968a7e2e9740974315"
+        }
+      ],
+      "improvementProposal": "Archive entry path propagation and boundary-aware containment",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-41-fixed",
+      "pairId": "vul4j-41",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/codehaus-plexus/plexus-archiver",
+      "repositoryCommitSha": "58bc24e465c0842981692adbf6d75680298989de",
+      "vulnerableCommitSha": "97c0d97504632a2a80b7d847bccdd9b37d27aea1",
+      "fixedCommitSha": "58bc24e465c0842981692adbf6d75680298989de",
+      "repositoryGroup": "codehaus-plexus/plexus-archiver",
+      "forkGroup": "codehaus-plexus/plexus-archiver",
+      "vulnerabilityFamily": "archive-entry-containment",
+      "cve": "CVE-2018-1002200",
+      "ghsa": null,
+      "cwe": "CWE-22",
+      "datasetCwe": "CWE-22",
+      "cweProvenance": "VUL4J_DATASET",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "plexus-archiver implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/codehaus/plexus/archiver/AbstractUnArchiver.java",
+          "startLine": 303,
+          "endLine": 327
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/codehaus/plexus/archiver/AbstractUnArchiver.java",
+          "startLine": 1,
+          "endLine": 372
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/codehaus-plexus/plexus-archiver/commit/58bc24e465c0842981692adbf6d75680298989de"
+      ],
+      "sourceToSinkEvidence": "Archive entryName is resolved under dir and later written as an extracted file.",
+      "mitigationEvidence": "Patch rejects canonical destination paths that do not start with canonical target directory.",
+      "requiredConditions": "SAFE is restricted to canonical paths outside the prefix. String-prefix sibling-directory cases and symlink races are NOT certified by this historical patch.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "src/main/java/org/codehaus/plexus/archiver/AbstractUnArchiver.java",
+          "url": "https://raw.githubusercontent.com/codehaus-plexus/plexus-archiver/58bc24e465c0842981692adbf6d75680298989de/src/main/java/org/codehaus/plexus/archiver/AbstractUnArchiver.java",
+          "sha256": "63b23b01e908b5c50fd5ba6ca20a86182947eed6fdcd342322d6612064949a7e"
+        }
+      ],
+      "improvementProposal": "Archive entry path propagation and boundary-aware containment",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-48-parent",
+      "pairId": "vul4j-48",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/inversoft/prime-jwt",
+      "repositoryCommitSha": "8d73248b7e4c8bdeed807a9be89ea51d348764e0",
+      "vulnerableCommitSha": "8d73248b7e4c8bdeed807a9be89ea51d348764e0",
+      "fixedCommitSha": "abb0d479389a2509f939452a6767dc424bb5e6ba",
+      "repositoryGroup": "inversoft/prime-jwt",
+      "forkGroup": "inversoft/prime-jwt",
+      "vulnerabilityFamily": "jwt-algorithm-verification",
+      "cve": "CVE-2018-1000531",
+      "ghsa": null,
+      "cwe": "CWE-347",
+      "datasetCwe": "CWE-20",
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "CRYPTOGRAPHY",
+      "language": "JAVA",
+      "framework": "prime-jwt implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/primeframework/jwt/JWTDecoder.java",
+          "startLine": 146,
+          "endLine": 174
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/primeframework/jwt/JWTDecoder.java",
+          "startLine": 1,
+          "endLine": 198
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/inversoft/prime-jwt/commit/abb0d479389a2509f939452a6767dc424bb5e6ba"
+      ],
+      "sourceToSinkEvidence": "JWT header algorithm=none enters the verifier-required decode path.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Only the verifier-required path is labelled; intentional unsigned parsing elsewhere is not a defect. CWE-347 is analyst classification.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "src/main/java/org/primeframework/jwt/JWTDecoder.java",
+          "url": "https://raw.githubusercontent.com/inversoft/prime-jwt/8d73248b7e4c8bdeed807a9be89ea51d348764e0/src/main/java/org/primeframework/jwt/JWTDecoder.java",
+          "sha256": "1ff0aa6514b429a245e86eb95bb6bb400251fa95444a355aba1eec1bf80eacb8"
+        }
+      ],
+      "improvementProposal": "JWT API overload and validation option semantics",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-48-fixed",
+      "pairId": "vul4j-48",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/inversoft/prime-jwt",
+      "repositoryCommitSha": "abb0d479389a2509f939452a6767dc424bb5e6ba",
+      "vulnerableCommitSha": "8d73248b7e4c8bdeed807a9be89ea51d348764e0",
+      "fixedCommitSha": "abb0d479389a2509f939452a6767dc424bb5e6ba",
+      "repositoryGroup": "inversoft/prime-jwt",
+      "forkGroup": "inversoft/prime-jwt",
+      "vulnerabilityFamily": "jwt-algorithm-verification",
+      "cve": "CVE-2018-1000531",
+      "ghsa": null,
+      "cwe": "CWE-347",
+      "datasetCwe": "CWE-20",
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "CRYPTOGRAPHY",
+      "language": "JAVA",
+      "framework": "prime-jwt implementation",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/primeframework/jwt/JWTDecoder.java",
+          "startLine": 146,
+          "endLine": 180
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/primeframework/jwt/JWTDecoder.java",
+          "startLine": 1,
+          "endLine": 204
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/inversoft/prime-jwt/commit/abb0d479389a2509f939452a6767dc424bb5e6ba"
+      ],
+      "sourceToSinkEvidence": "JWT header algorithm=none enters the verifier-required decode path.",
+      "mitigationEvidence": "Internal decode rejects none when callers have not explicitly allowed it.",
+      "requiredConditions": "Only the verifier-required path is labelled; intentional unsigned parsing elsewhere is not a defect. CWE-347 is analyst classification.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "src/main/java/org/primeframework/jwt/JWTDecoder.java",
+          "url": "https://raw.githubusercontent.com/inversoft/prime-jwt/abb0d479389a2509f939452a6767dc424bb5e6ba/src/main/java/org/primeframework/jwt/JWTDecoder.java",
+          "sha256": "e1830ace1956b4aab2909f866ed51383aec74eb55bf8be48e50c17b96da6eae7"
+        }
+      ],
+      "improvementProposal": "JWT API overload and validation option semantics",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-51-parent",
+      "pairId": "vul4j-51",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/jenkinsci/ccm-plugin",
+      "repositoryCommitSha": "fed6ee7435429b7f6a4576acb823a84277c669fc",
+      "vulnerableCommitSha": "fed6ee7435429b7f6a4576acb823a84277c669fc",
+      "fixedCommitSha": "066cb43b4413b3490d822ec8b8a32072ebd213ca",
+      "repositoryGroup": "jenkinsci/ccm-plugin",
+      "forkGroup": "jenkinsci/ccm-plugin",
+      "vulnerabilityFamily": "xml-external-entity",
+      "cve": "CVE-2018-1000054",
+      "ghsa": null,
+      "cwe": "CWE-611",
+      "datasetCwe": "CWE-918",
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "ccm-plugin implementation",
+      "license": "MIT",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/hudson/plugins/ccm/parser/CcmParser.java",
+          "startLine": 19,
+          "endLine": 44
+        },
+        {
+          "filePath": "src/main/java/hudson/plugins/ccm/parser/CcmParser.java",
+          "startLine": 79,
+          "endLine": 97
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/hudson/plugins/ccm/parser/CcmParser.java",
+          "startLine": 1,
+          "endLine": 180
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/jenkinsci/ccm-plugin/commit/066cb43b4413b3490d822ec8b8a32072ebd213ca"
+      ],
+      "sourceToSinkEvidence": "CCM report InputStream is parsed by a general Digester without external entity hardening.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Malicious report and dependency SecureDigester behavior required. Vul4J row says CWE-918 but actual patch is XXE; preserve both classifications.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/hudson/plugins/ccm/parser/CcmParser.java",
+          "url": "https://raw.githubusercontent.com/jenkinsci/ccm-plugin/fed6ee7435429b7f6a4576acb823a84277c669fc/src/main/java/hudson/plugins/ccm/parser/CcmParser.java",
+          "sha256": "95cdda38c65658976bec4b1415af038f120e783cef48c0f516bbd1670fe6f138"
+        }
+      ],
+      "improvementProposal": "XML parser wrapper semantics and dependency defenses",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "vul4j-51-fixed",
+      "pairId": "vul4j-51",
+      "sourceDataset": "Vul4J official CSV",
+      "repositoryUrl": "https://github.com/jenkinsci/ccm-plugin",
+      "repositoryCommitSha": "066cb43b4413b3490d822ec8b8a32072ebd213ca",
+      "vulnerableCommitSha": "fed6ee7435429b7f6a4576acb823a84277c669fc",
+      "fixedCommitSha": "066cb43b4413b3490d822ec8b8a32072ebd213ca",
+      "repositoryGroup": "jenkinsci/ccm-plugin",
+      "forkGroup": "jenkinsci/ccm-plugin",
+      "vulnerabilityFamily": "xml-external-entity",
+      "cve": "CVE-2018-1000054",
+      "ghsa": null,
+      "cwe": "CWE-611",
+      "datasetCwe": "CWE-918",
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "FILE_DESERIALIZATION",
+      "language": "JAVA",
+      "framework": "ccm-plugin implementation",
+      "license": "MIT",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/hudson/plugins/ccm/parser/CcmParser.java",
+          "startLine": 19,
+          "endLine": 44
+        },
+        {
+          "filePath": "src/main/java/hudson/plugins/ccm/parser/CcmParser.java",
+          "startLine": 79,
+          "endLine": 95
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/hudson/plugins/ccm/parser/CcmParser.java",
+          "startLine": 1,
+          "endLine": 178
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+        "https://github.com/jenkinsci/ccm-plugin/commit/066cb43b4413b3490d822ec8b8a32072ebd213ca"
+      ],
+      "sourceToSinkEvidence": "CCM report InputStream is parsed by a general Digester without external entity hardening.",
+      "mitigationEvidence": "SecureDigester replaces the general Digester.",
+      "requiredConditions": "Malicious report and dependency SecureDigester behavior required. Vul4J row says CWE-918 but actual patch is XXE; preserve both classifications.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/hudson/plugins/ccm/parser/CcmParser.java",
+          "url": "https://raw.githubusercontent.com/jenkinsci/ccm-plugin/066cb43b4413b3490d822ec8b8a32072ebd213ca/src/main/java/hudson/plugins/ccm/parser/CcmParser.java",
+          "sha256": "742532ccfc4c2625bfb6bda83b4280a982bc51d64ea64ffeb284cf45a5b0c1c0"
+        }
+      ],
+      "improvementProposal": "XML parser wrapper semantics and dependency defenses",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-34351-parent",
+      "pairId": "cvefixes-cve-2024-34351",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/vercel/next.js",
+      "repositoryCommitSha": "18200a849b8feb74de3fc51583731d49cba3ce2b",
+      "vulnerableCommitSha": "18200a849b8feb74de3fc51583731d49cba3ce2b",
+      "fixedCommitSha": "8f7a6ca7d21a97bc9f7a1bbe10427b5ad74b9085",
+      "repositoryGroup": "vercel/next.js",
+      "forkGroup": "vercel/next.js",
+      "vulnerabilityFamily": "server-action-host-ssrf",
+      "cve": "CVE-2024-34351",
+      "ghsa": null,
+      "cwe": "CWE-918",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "INPUT_INJECTION",
+      "language": "TYPESCRIPT",
+      "framework": "Next.js server internals",
+      "license": "MIT",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "packages/next/src/server/app-render/action-handler.ts",
+          "startLine": 174,
+          "endLine": 192
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "packages/next/src/server/app-render/action-handler.ts",
+          "startLine": 1,
+          "endLine": 773
+        },
+        {
+          "filePath": "packages/next/src/server/lib/start-server.ts",
+          "startLine": 1,
+          "endLine": 400
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [
+        "TS_SSRF_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/vercel/next.js/commit/8f7a6ca7d21a97bc9f7a1bbe10427b5ad74b9085"
+      ],
+      "sourceToSinkEvidence": "Request-derived originalHost is interpolated into the server action redirect fetch URL.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Self-hosted Next server, server action redirect and internal-host initialization matter. Fallback still uses originalHost; not universally safe.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "packages/next/src/server/app-render/action-handler.ts",
+          "url": "https://raw.githubusercontent.com/vercel/next.js/18200a849b8feb74de3fc51583731d49cba3ce2b/packages/next/src/server/app-render/action-handler.ts",
+          "sha256": "8981302f391b7caec10f350bfd8b440ec29a9c2d03c527d60dbb32b14a2998e8"
+        },
+        {
+          "path": "packages/next/src/server/lib/start-server.ts",
+          "url": "https://raw.githubusercontent.com/vercel/next.js/18200a849b8feb74de3fc51583731d49cba3ce2b/packages/next/src/server/lib/start-server.ts",
+          "sha256": "412366b179442f8ab02f40f27c5cda9cd4235f1237fd1197f19326345cf8fb6e"
+        }
+      ],
+      "improvementProposal": "Next server entry contracts and request-host to fetch destination",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-34351-fixed",
+      "pairId": "cvefixes-cve-2024-34351",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/vercel/next.js",
+      "repositoryCommitSha": "8f7a6ca7d21a97bc9f7a1bbe10427b5ad74b9085",
+      "vulnerableCommitSha": "18200a849b8feb74de3fc51583731d49cba3ce2b",
+      "fixedCommitSha": "8f7a6ca7d21a97bc9f7a1bbe10427b5ad74b9085",
+      "repositoryGroup": "vercel/next.js",
+      "forkGroup": "vercel/next.js",
+      "vulnerabilityFamily": "server-action-host-ssrf",
+      "cve": "CVE-2024-34351",
+      "ghsa": null,
+      "cwe": "CWE-918",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "INPUT_INJECTION",
+      "language": "TYPESCRIPT",
+      "framework": "Next.js server internals",
+      "license": "MIT",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "packages/next/src/server/app-render/action-handler.ts",
+          "startLine": 174,
+          "endLine": 196
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "packages/next/src/server/app-render/action-handler.ts",
+          "startLine": 1,
+          "endLine": 777
+        },
+        {
+          "filePath": "packages/next/src/server/lib/start-server.ts",
+          "startLine": 1,
+          "endLine": 401
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [
+        "TS_SSRF_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/vercel/next.js/commit/8f7a6ca7d21a97bc9f7a1bbe10427b5ad74b9085"
+      ],
+      "sourceToSinkEvidence": "Request-derived originalHost is interpolated into the server action redirect fetch URL.",
+      "mitigationEvidence": "Server startup sets an internal host; request construction prefers it to the incoming host.",
+      "requiredConditions": "Self-hosted Next server, server action redirect and internal-host initialization matter. Fallback still uses originalHost; not universally safe.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "packages/next/src/server/app-render/action-handler.ts",
+          "url": "https://raw.githubusercontent.com/vercel/next.js/8f7a6ca7d21a97bc9f7a1bbe10427b5ad74b9085/packages/next/src/server/app-render/action-handler.ts",
+          "sha256": "3409fd24ee6af04324e197fde611e71aa91f2a9ec0c7d333e3df839d82534b88"
+        },
+        {
+          "path": "packages/next/src/server/lib/start-server.ts",
+          "url": "https://raw.githubusercontent.com/vercel/next.js/8f7a6ca7d21a97bc9f7a1bbe10427b5ad74b9085/packages/next/src/server/lib/start-server.ts",
+          "sha256": "e62273baab0996d1cb4fea4556dffa9379126c6d925259c52a2104d2e7db8076"
+        }
+      ],
+      "improvementProposal": "Next server entry contracts and request-host to fetch destination",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-23334-parent",
+      "pairId": "cvefixes-cve-2024-23334",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/aio-libs/aiohttp",
+      "repositoryCommitSha": "33ccdfb0a12690af5bb49bda2319ec0907fa7827",
+      "vulnerableCommitSha": "33ccdfb0a12690af5bb49bda2319ec0907fa7827",
+      "fixedCommitSha": "1c335944d6a8b1298baf179b7c0b3069f10c514b",
+      "repositoryGroup": "aio-libs/aiohttp",
+      "forkGroup": "aio-libs/aiohttp",
+      "vulnerabilityFamily": "static-resource-containment",
+      "cve": "CVE-2024-23334",
+      "ghsa": null,
+      "cwe": "CWE-22",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "FILE_DESERIALIZATION",
+      "language": "PYTHON",
+      "framework": "aiohttp static routing",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "aiohttp/web_urldispatcher.py",
+          "startLine": 568,
+          "endLine": 586
+        },
+        {
+          "filePath": "aiohttp/web_urldispatcher.py",
+          "startLine": 635,
+          "endLine": 652
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "aiohttp/web_urldispatcher.py",
+          "startLine": 1,
+          "endLine": 1252
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [
+        "PY_FILE_PATH_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/aio-libs/aiohttp/commit/1c335944d6a8b1298baf179b7c0b3069f10c514b"
+      ],
+      "sourceToSinkEvidence": "StaticResource request filename reaches path resolution with follow_symlinks enabled.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "follow_symlinks=True and attacker-influenced static path; the option still permits intentional symlink escape. SAFE excludes other symlink policies.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "aiohttp/web_urldispatcher.py",
+          "url": "https://raw.githubusercontent.com/aio-libs/aiohttp/33ccdfb0a12690af5bb49bda2319ec0907fa7827/aiohttp/web_urldispatcher.py",
+          "sha256": "aaa86823d42cc61c66b6ebf56ea81b2a1a3224c7dba6db2a7b230596a59e29c4"
+        }
+      ],
+      "improvementProposal": "aiohttp route contracts and lexical versus filesystem path validation",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-23334-fixed",
+      "pairId": "cvefixes-cve-2024-23334",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/aio-libs/aiohttp",
+      "repositoryCommitSha": "1c335944d6a8b1298baf179b7c0b3069f10c514b",
+      "vulnerableCommitSha": "33ccdfb0a12690af5bb49bda2319ec0907fa7827",
+      "fixedCommitSha": "1c335944d6a8b1298baf179b7c0b3069f10c514b",
+      "repositoryGroup": "aio-libs/aiohttp",
+      "forkGroup": "aio-libs/aiohttp",
+      "vulnerabilityFamily": "static-resource-containment",
+      "cve": "CVE-2024-23334",
+      "ghsa": null,
+      "cwe": "CWE-22",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "FILE_DESERIALIZATION",
+      "language": "PYTHON",
+      "framework": "aiohttp static routing",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "aiohttp/web_urldispatcher.py",
+          "startLine": 568,
+          "endLine": 591
+        },
+        {
+          "filePath": "aiohttp/web_urldispatcher.py",
+          "startLine": 640,
+          "endLine": 662
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "aiohttp/web_urldispatcher.py",
+          "startLine": 1,
+          "endLine": 1262
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [
+        "PY_FILE_PATH_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/aio-libs/aiohttp/commit/1c335944d6a8b1298baf179b7c0b3069f10c514b"
+      ],
+      "sourceToSinkEvidence": "StaticResource request filename reaches path resolution with follow_symlinks enabled.",
+      "mitigationEvidence": "Lexically normalized unresolved path must be relative to static root before symlink resolution.",
+      "requiredConditions": "follow_symlinks=True and attacker-influenced static path; the option still permits intentional symlink escape. SAFE excludes other symlink policies.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "aiohttp/web_urldispatcher.py",
+          "url": "https://raw.githubusercontent.com/aio-libs/aiohttp/1c335944d6a8b1298baf179b7c0b3069f10c514b/aiohttp/web_urldispatcher.py",
+          "sha256": "9a5a8c41100704344814efa1c97e351b93f62d17fae54c02c62aaa4c40dfc439"
+        }
+      ],
+      "improvementProposal": "aiohttp route contracts and lexical versus filesystem path validation",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-32681-parent",
+      "pairId": "cvefixes-cve-2023-32681",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/psf/requests",
+      "repositoryCommitSha": "302225334678490ec66b3614a9dddb8a02c5f4fe",
+      "vulnerableCommitSha": "302225334678490ec66b3614a9dddb8a02c5f4fe",
+      "fixedCommitSha": "74ea7cf7a6a27a4eeb2ae24e162bcc942a6706d5",
+      "repositoryGroup": "psf/requests",
+      "forkGroup": "psf/requests",
+      "vulnerabilityFamily": "redirect-proxy-credential-propagation",
+      "cve": "CVE-2023-32681",
+      "ghsa": null,
+      "cwe": "CWE-200",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "SENSITIVE_EXPOSURE",
+      "language": "PYTHON",
+      "framework": "Requests HTTP client",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "requests/sessions.py",
+          "startLine": 319,
+          "endLine": 335
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "requests/sessions.py",
+          "startLine": 1,
+          "endLine": 831
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/psf/requests/commit/74ea7cf7a6a27a4eeb2ae24e162bcc942a6706d5"
+      ],
+      "sourceToSinkEvidence": "Proxy credentials are attached as Proxy-Authorization during redirected HTTPS requests and may reach the destination.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Authenticated proxy, redirect and TLS tunnel conditions; remote requests and credentials are not tested.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "requests/sessions.py",
+          "url": "https://raw.githubusercontent.com/psf/requests/302225334678490ec66b3614a9dddb8a02c5f4fe/requests/sessions.py",
+          "sha256": "294a8971144ba2f35e7d4b3b49c39749454271f49ac93156b5b889ee03929532"
+        }
+      ],
+      "improvementProposal": "Sensitive header propagation across redirect and transport boundaries",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-32681-fixed",
+      "pairId": "cvefixes-cve-2023-32681",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/psf/requests",
+      "repositoryCommitSha": "74ea7cf7a6a27a4eeb2ae24e162bcc942a6706d5",
+      "vulnerableCommitSha": "302225334678490ec66b3614a9dddb8a02c5f4fe",
+      "fixedCommitSha": "74ea7cf7a6a27a4eeb2ae24e162bcc942a6706d5",
+      "repositoryGroup": "psf/requests",
+      "forkGroup": "psf/requests",
+      "vulnerabilityFamily": "redirect-proxy-credential-propagation",
+      "cve": "CVE-2023-32681",
+      "ghsa": null,
+      "cwe": "CWE-200",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "SENSITIVE_EXPOSURE",
+      "language": "PYTHON",
+      "framework": "Requests HTTP client",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "requests/sessions.py",
+          "startLine": 319,
+          "endLine": 337
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "requests/sessions.py",
+          "startLine": 1,
+          "endLine": 833
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/psf/requests/commit/74ea7cf7a6a27a4eeb2ae24e162bcc942a6706d5"
+      ],
+      "sourceToSinkEvidence": "Proxy credentials are attached as Proxy-Authorization during redirected HTTPS requests and may reach the destination.",
+      "mitigationEvidence": "Do not append the proxy header for HTTPS tunneling; standard adapter handles proxy auth.",
+      "requiredConditions": "Authenticated proxy, redirect and TLS tunnel conditions; remote requests and credentials are not tested.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "requests/sessions.py",
+          "url": "https://raw.githubusercontent.com/psf/requests/74ea7cf7a6a27a4eeb2ae24e162bcc942a6706d5/requests/sessions.py",
+          "sha256": "f8bbd3ceb3ed7ad493ad1ddbbb1bb85e176032b2452c1d6ae43ecffbe2f65e1c"
+        }
+      ],
+      "improvementProposal": "Sensitive header propagation across redirect and transport boundaries",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-29041-parent",
+      "pairId": "cvefixes-cve-2024-29041",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/expressjs/express",
+      "repositoryCommitSha": "567c9c665d0de4c344b8e160146050770233783c",
+      "vulnerableCommitSha": "567c9c665d0de4c344b8e160146050770233783c",
+      "fixedCommitSha": "0867302ddbde0e9463d0564fea5861feb708c2dd",
+      "repositoryGroup": "expressjs/express",
+      "forkGroup": "expressjs/express",
+      "vulnerabilityFamily": "redirect-host-encoding",
+      "cve": "CVE-2024-29041",
+      "ghsa": null,
+      "cwe": "CWE-601",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "INPUT_INJECTION",
+      "language": "JAVASCRIPT",
+      "framework": "Express response prototype",
+      "license": "MIT",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "lib/response.js",
+          "startLine": 29,
+          "endLine": 44
+        },
+        {
+          "filePath": "lib/response.js",
+          "startLine": 906,
+          "endLine": 923
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "lib/response.js",
+          "startLine": 1,
+          "endLine": 1169
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/expressjs/express/commit/0867302ddbde0e9463d0564fea5861feb708c2dd"
+      ],
+      "sourceToSinkEvidence": "Untrusted redirect URL is encoded before Location header emission, potentially changing its parsed host.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Application redirect allowlist and malformed URL conditions required; patch does not make arbitrary redirects trusted.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "lib/response.js",
+          "url": "https://raw.githubusercontent.com/expressjs/express/567c9c665d0de4c344b8e160146050770233783c/lib/response.js",
+          "sha256": "7fdb8547558f9ea42606888eed597a30d84ac67d66b487244a417cd1c3d8a97e"
+        }
+      ],
+      "improvementProposal": "URL parser and encoder agreement with application allowlists",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-29041-fixed",
+      "pairId": "cvefixes-cve-2024-29041",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/expressjs/express",
+      "repositoryCommitSha": "0867302ddbde0e9463d0564fea5861feb708c2dd",
+      "vulnerableCommitSha": "567c9c665d0de4c344b8e160146050770233783c",
+      "fixedCommitSha": "0867302ddbde0e9463d0564fea5861feb708c2dd",
+      "repositoryGroup": "expressjs/express",
+      "forkGroup": "expressjs/express",
+      "vulnerabilityFamily": "redirect-host-encoding",
+      "cve": "CVE-2024-29041",
+      "ghsa": null,
+      "cwe": "CWE-601",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "INPUT_INJECTION",
+      "language": "JAVASCRIPT",
+      "framework": "Express response prototype",
+      "license": "MIT",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "lib/response.js",
+          "startLine": 29,
+          "endLine": 45
+        },
+        {
+          "filePath": "lib/response.js",
+          "startLine": 907,
+          "endLine": 941
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "lib/response.js",
+          "startLine": 1,
+          "endLine": 1187
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/expressjs/express/commit/0867302ddbde0e9463d0564fea5861feb708c2dd"
+      ],
+      "sourceToSinkEvidence": "Untrusted redirect URL is encoded before Location header emission, potentially changing its parsed host.",
+      "mitigationEvidence": "Compare parsed original and encoded hosts and avoid changed-host encoding.",
+      "requiredConditions": "Application redirect allowlist and malformed URL conditions required; patch does not make arbitrary redirects trusted.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "lib/response.js",
+          "url": "https://raw.githubusercontent.com/expressjs/express/0867302ddbde0e9463d0564fea5861feb708c2dd/lib/response.js",
+          "sha256": "b4fd393eb95259ee014a1e157a1a4843358ef7b628609b1e1e1b8292a8ed4731"
+        }
+      ],
+      "improvementProposal": "URL parser and encoder agreement with application allowlists",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-2954-parent",
+      "pairId": "cvefixes-cve-2023-2954",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/liangliangyy/djangoblog",
+      "repositoryCommitSha": "ad98e00f7e3c26fef27c12ddc1d08128a47447e8",
+      "vulnerableCommitSha": "ad98e00f7e3c26fef27c12ddc1d08128a47447e8",
+      "fixedCommitSha": "c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719",
+      "repositoryGroup": "liangliangyy/djangoblog",
+      "forkGroup": "liangliangyy/djangoblog",
+      "vulnerabilityFamily": "stored-markdown-html",
+      "cve": "CVE-2023-2954",
+      "ghsa": null,
+      "cwe": "CWE-79",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "INPUT_INJECTION",
+      "language": "PYTHON",
+      "framework": "Django application template filters",
+      "license": "MIT",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "blog/templatetags/blog_tags.py",
+          "startLine": 9,
+          "endLine": 25
+        },
+        {
+          "filePath": "blog/templatetags/blog_tags.py",
+          "startLine": 48,
+          "endLine": 63
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "blog/templatetags/blog_tags.py",
+          "startLine": 1,
+          "endLine": 331
+        },
+        {
+          "filePath": "djangoblog/utils.py",
+          "startLine": 1,
+          "endLine": 222
+        },
+        {
+          "filePath": "templates/comments/tags/comment_item.html",
+          "startLine": 1,
+          "endLine": 34
+        },
+        {
+          "filePath": "templates/comments/tags/comment_item_tree.html",
+          "startLine": 1,
+          "endLine": 55
+        },
+        {
+          "filePath": "comments/models.py",
+          "startLine": 1,
+          "endLine": 38
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/liangliangyy/djangoblog/commit/c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719"
+      ],
+      "sourceToSinkEvidence": "Stored comment body passes escape then Markdown and mark_safe into comment HTML.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Stored attacker comment rendered by changed templates; external Markdown/Bleach semantics not executed or version-audited.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "blog/templatetags/blog_tags.py",
+          "url": "https://raw.githubusercontent.com/liangliangyy/djangoblog/ad98e00f7e3c26fef27c12ddc1d08128a47447e8/blog/templatetags/blog_tags.py",
+          "sha256": "c69327e7da26ca6099517fb9c7a99a797ed418339a6816ad3aaebb4f1da2c466"
+        },
+        {
+          "path": "djangoblog/utils.py",
+          "url": "https://raw.githubusercontent.com/liangliangyy/djangoblog/ad98e00f7e3c26fef27c12ddc1d08128a47447e8/djangoblog/utils.py",
+          "sha256": "e3d1c059a393e2372d1197a85f73dce567f3b4af07010e6ba73dfc2126e39483"
+        },
+        {
+          "path": "templates/comments/tags/comment_item.html",
+          "url": "https://raw.githubusercontent.com/liangliangyy/djangoblog/ad98e00f7e3c26fef27c12ddc1d08128a47447e8/templates/comments/tags/comment_item.html",
+          "sha256": "52aff170d9ff09e6d31ae4a038fd229f9448f3fc8c60b314977409dab44184fd"
+        },
+        {
+          "path": "templates/comments/tags/comment_item_tree.html",
+          "url": "https://raw.githubusercontent.com/liangliangyy/djangoblog/ad98e00f7e3c26fef27c12ddc1d08128a47447e8/templates/comments/tags/comment_item_tree.html",
+          "sha256": "f974d1a6ef3dd2611a19eefc42f7af0ea8c4f1159ab71a85de4aaeb89199d355"
+        },
+        {
+          "path": "comments/models.py",
+          "url": "https://raw.githubusercontent.com/liangliangyy/djangoblog/ad98e00f7e3c26fef27c12ddc1d08128a47447e8/comments/models.py",
+          "sha256": "b073067591514a972ed2d142e4f8f80b942b79611f012aa83ab3aeca2441da40"
+        }
+      ],
+      "improvementProposal": "Template filters, persistent input and output-context sanitation",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-2954-fixed",
+      "pairId": "cvefixes-cve-2023-2954",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/liangliangyy/djangoblog",
+      "repositoryCommitSha": "c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719",
+      "vulnerableCommitSha": "ad98e00f7e3c26fef27c12ddc1d08128a47447e8",
+      "fixedCommitSha": "c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719",
+      "repositoryGroup": "liangliangyy/djangoblog",
+      "forkGroup": "liangliangyy/djangoblog",
+      "vulnerabilityFamily": "stored-markdown-html",
+      "cve": "CVE-2023-2954",
+      "ghsa": null,
+      "cwe": "CWE-79",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "INPUT_INJECTION",
+      "language": "PYTHON",
+      "framework": "Django application template filters",
+      "license": "MIT",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "blog/templatetags/blog_tags.py",
+          "startLine": 9,
+          "endLine": 25
+        },
+        {
+          "filePath": "blog/templatetags/blog_tags.py",
+          "startLine": 48,
+          "endLine": 70
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "blog/templatetags/blog_tags.py",
+          "startLine": 1,
+          "endLine": 338
+        },
+        {
+          "filePath": "djangoblog/utils.py",
+          "startLine": 1,
+          "endLine": 232
+        },
+        {
+          "filePath": "templates/comments/tags/comment_item.html",
+          "startLine": 1,
+          "endLine": 34
+        },
+        {
+          "filePath": "templates/comments/tags/comment_item_tree.html",
+          "startLine": 1,
+          "endLine": 55
+        },
+        {
+          "filePath": "comments/models.py",
+          "startLine": 1,
+          "endLine": 38
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/liangliangyy/djangoblog/commit/c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719"
+      ],
+      "sourceToSinkEvidence": "Stored comment body passes escape then Markdown and mark_safe into comment HTML.",
+      "mitigationEvidence": "Comment templates select comment_markdown; Markdown output is sanitized with a Bleach tag/attribute allowlist before mark_safe.",
+      "requiredConditions": "Stored attacker comment rendered by changed templates; external Markdown/Bleach semantics not executed or version-audited.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "blog/templatetags/blog_tags.py",
+          "url": "https://raw.githubusercontent.com/liangliangyy/djangoblog/c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719/blog/templatetags/blog_tags.py",
+          "sha256": "5bc90d833530d726d164f776c6dc7acf1805ea264b5c0eb11cdabaca284977e9"
+        },
+        {
+          "path": "djangoblog/utils.py",
+          "url": "https://raw.githubusercontent.com/liangliangyy/djangoblog/c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719/djangoblog/utils.py",
+          "sha256": "dd73ad2c2efcec44e9e31a7256caf9dc23472411324b767786822595178a95e4"
+        },
+        {
+          "path": "templates/comments/tags/comment_item.html",
+          "url": "https://raw.githubusercontent.com/liangliangyy/djangoblog/c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719/templates/comments/tags/comment_item.html",
+          "sha256": "d0edcc07ed9f3b11e959a38fba85561cff02dacd71d51f49ff3c7724d01078f2"
+        },
+        {
+          "path": "templates/comments/tags/comment_item_tree.html",
+          "url": "https://raw.githubusercontent.com/liangliangyy/djangoblog/c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719/templates/comments/tags/comment_item_tree.html",
+          "sha256": "a2b281886fee6692a0518745b215b961cc1c43a878b90ea1b8c765ce2730fb2a"
+        },
+        {
+          "path": "comments/models.py",
+          "url": "https://raw.githubusercontent.com/liangliangyy/djangoblog/c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719/comments/models.py",
+          "sha256": "b073067591514a972ed2d142e4f8f80b942b79611f012aa83ab3aeca2441da40"
+        }
+      ],
+      "improvementProposal": "Template filters, persistent input and output-context sanitation",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-34110-parent",
+      "pairId": "cvefixes-cve-2023-34110",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/dpgaspar/Flask-AppBuilder",
+      "repositoryCommitSha": "98e38086c3dcc17f954e8f82d074db97b82313a5",
+      "vulnerableCommitSha": "98e38086c3dcc17f954e8f82d074db97b82313a5",
+      "fixedCommitSha": "ae25ad4c87a9051ebe4a4e8f02aee73232642626",
+      "repositoryGroup": "dpgaspar/flask-appbuilder",
+      "forkGroup": "dpgaspar/flask-appbuilder",
+      "vulnerabilityFamily": "exception-message-disclosure",
+      "cve": "CVE-2023-34110",
+      "ghsa": null,
+      "cwe": "CWE-209",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "SENSITIVE_EXPOSURE",
+      "language": "PYTHON",
+      "framework": "Flask-AppBuilder model interface",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 1,
+          "endLine": 19
+        },
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 731,
+          "endLine": 751
+        },
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 755,
+          "endLine": 775
+        },
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 780,
+          "endLine": 800
+        },
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 804,
+          "endLine": 823
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 1,
+          "endLine": 1068
+        },
+        {
+          "filePath": "flask_appbuilder/models/base.py",
+          "startLine": 1,
+          "endLine": 360
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [
+        "PY_ERROR_DETAIL_EXPOSURE"
+      ],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/dpgaspar/Flask-AppBuilder/commit/ae25ad4c87a9051ebe4a4e8f02aee73232642626"
+      ],
+      "sourceToSinkEvidence": "Database exception class and detail enter user-facing model messages and exception logs.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Selected add/edit/delete paths only. log.exception still records traceback; do not claim all log disclosures fixed. CWE is analyst classification.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "flask_appbuilder/models/sqla/interface.py",
+          "url": "https://raw.githubusercontent.com/dpgaspar/Flask-AppBuilder/98e38086c3dcc17f954e8f82d074db97b82313a5/flask_appbuilder/models/sqla/interface.py",
+          "sha256": "43f6ed90b1bdd27a500bdf0cc141b51d5092844ef4d315333d254a21cb15eea3"
+        },
+        {
+          "path": "flask_appbuilder/models/base.py",
+          "url": "https://raw.githubusercontent.com/dpgaspar/Flask-AppBuilder/98e38086c3dcc17f954e8f82d074db97b82313a5/flask_appbuilder/models/base.py",
+          "sha256": "2028624c0bf2c6316dae7a716144417513280646e351d43cdd2e533b33416139"
+        }
+      ],
+      "improvementProposal": "Exception-to-message flow and distinction between client and server logs",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-34110-fixed",
+      "pairId": "cvefixes-cve-2023-34110",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/dpgaspar/Flask-AppBuilder",
+      "repositoryCommitSha": "ae25ad4c87a9051ebe4a4e8f02aee73232642626",
+      "vulnerableCommitSha": "98e38086c3dcc17f954e8f82d074db97b82313a5",
+      "fixedCommitSha": "ae25ad4c87a9051ebe4a4e8f02aee73232642626",
+      "repositoryGroup": "dpgaspar/flask-appbuilder",
+      "forkGroup": "dpgaspar/flask-appbuilder",
+      "vulnerabilityFamily": "exception-message-disclosure",
+      "cve": "CVE-2023-34110",
+      "ghsa": null,
+      "cwe": "CWE-209",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "SENSITIVE_EXPOSURE",
+      "language": "PYTHON",
+      "framework": "Flask-AppBuilder model interface",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 1,
+          "endLine": 16
+        },
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 728,
+          "endLine": 745
+        },
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 749,
+          "endLine": 766
+        },
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 771,
+          "endLine": 788
+        },
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 792,
+          "endLine": 808
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "flask_appbuilder/models/sqla/interface.py",
+          "startLine": 1,
+          "endLine": 1053
+        },
+        {
+          "filePath": "flask_appbuilder/models/base.py",
+          "startLine": 1,
+          "endLine": 362
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [
+        "PY_ERROR_DETAIL_EXPOSURE"
+      ],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/dpgaspar/Flask-AppBuilder/commit/ae25ad4c87a9051ebe4a4e8f02aee73232642626"
+      ],
+      "sourceToSinkEvidence": "Database exception class and detail enter user-facing model messages and exception logs.",
+      "mitigationEvidence": "Generic Database Error message replaces exception-derived message and formatted exception detail in selected paths.",
+      "requiredConditions": "Selected add/edit/delete paths only. log.exception still records traceback; do not claim all log disclosures fixed. CWE is analyst classification.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "flask_appbuilder/models/sqla/interface.py",
+          "url": "https://raw.githubusercontent.com/dpgaspar/Flask-AppBuilder/ae25ad4c87a9051ebe4a4e8f02aee73232642626/flask_appbuilder/models/sqla/interface.py",
+          "sha256": "6ad41b596cbeb1c8afbf3cdd179ef90a650530a34b84740186ce5d1c31f481dd"
+        },
+        {
+          "path": "flask_appbuilder/models/base.py",
+          "url": "https://raw.githubusercontent.com/dpgaspar/Flask-AppBuilder/ae25ad4c87a9051ebe4a4e8f02aee73232642626/flask_appbuilder/models/base.py",
+          "sha256": "968fd448b475556a6c4c6b50e7b0f58abb5c756cdd27a951f673fa5ba1146d51"
+        }
+      ],
+      "improvementProposal": "Exception-to-message flow and distinction between client and server logs",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2017-0881-parent",
+      "pairId": "cvefixes-cve-2017-0881",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/zulip/zulip",
+      "repositoryCommitSha": "7e0ce22808f70793ba1aeab6da46c539296cdec7",
+      "vulnerableCommitSha": "7e0ce22808f70793ba1aeab6da46c539296cdec7",
+      "fixedCommitSha": "7ecda1ac8e26d8fb3725e954b2dc4723dda2255f",
+      "repositoryGroup": "zulip/zulip",
+      "forkGroup": "zulip/zulip",
+      "vulnerabilityFamily": "private-stream-subscription",
+      "cve": "CVE-2017-0881",
+      "ghsa": null,
+      "cwe": "CWE-862",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "AUTHORIZATION",
+      "language": "PYTHON",
+      "framework": "Django Zulip stream endpoint",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "zerver/views/streams.py",
+          "startLine": 476,
+          "endLine": 492
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "zerver/views/streams.py",
+          "startLine": 1,
+          "endLine": 573
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/zulip/zulip/commit/7ecda1ac8e26d8fb3725e954b2dc4723dda2255f"
+      ],
+      "sourceToSinkEvidence": "Request stream id and autosubscribe can reach bulk_add_subscriptions for an invite-only stream.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Authenticated user, existing private stream and autosubscribe request needed; surrounding decorators and subscriptions service still matter.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "zerver/views/streams.py",
+          "url": "https://raw.githubusercontent.com/zulip/zulip/7e0ce22808f70793ba1aeab6da46c539296cdec7/zerver/views/streams.py",
+          "sha256": "a4752ce5c8c6e9606526b5e37b2e5d83002fda1f4f946d0831234168b1cbfd58"
+        }
+      ],
+      "improvementProposal": "Resource policy state and guarded authorization side effects",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2017-0881-fixed",
+      "pairId": "cvefixes-cve-2017-0881",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/zulip/zulip",
+      "repositoryCommitSha": "7ecda1ac8e26d8fb3725e954b2dc4723dda2255f",
+      "vulnerableCommitSha": "7e0ce22808f70793ba1aeab6da46c539296cdec7",
+      "fixedCommitSha": "7ecda1ac8e26d8fb3725e954b2dc4723dda2255f",
+      "repositoryGroup": "zulip/zulip",
+      "forkGroup": "zulip/zulip",
+      "vulnerabilityFamily": "private-stream-subscription",
+      "cve": "CVE-2017-0881",
+      "ghsa": null,
+      "cwe": "CWE-862",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "AUTHORIZATION",
+      "language": "PYTHON",
+      "framework": "Django Zulip stream endpoint",
+      "license": "Apache-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "zerver/views/streams.py",
+          "startLine": 476,
+          "endLine": 492
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "zerver/views/streams.py",
+          "startLine": 1,
+          "endLine": 573
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/zulip/zulip/commit/7ecda1ac8e26d8fb3725e954b2dc4723dda2255f"
+      ],
+      "sourceToSinkEvidence": "Request stream id and autosubscribe can reach bulk_add_subscriptions for an invite-only stream.",
+      "mitigationEvidence": "Subscription side effect additionally requires not stream.invite_only.",
+      "requiredConditions": "Authenticated user, existing private stream and autosubscribe request needed; surrounding decorators and subscriptions service still matter.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "zerver/views/streams.py",
+          "url": "https://raw.githubusercontent.com/zulip/zulip/7ecda1ac8e26d8fb3725e954b2dc4723dda2255f/zerver/views/streams.py",
+          "sha256": "d58edcd899caa999d0316ea80dc3b4088948e784cc0b3a8f9b210d35311c9129"
+        }
+      ],
+      "improvementProposal": "Resource policy state and guarded authorization side effects",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2020-15084-parent",
+      "pairId": "cvefixes-cve-2020-15084",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/auth0/express-jwt",
+      "repositoryCommitSha": "e9ed6d240d945fca8f8911c1f1d743dfe3f1f8e3",
+      "vulnerableCommitSha": "e9ed6d240d945fca8f8911c1f1d743dfe3f1f8e3",
+      "fixedCommitSha": "7ecab5f8f0cab5297c2b863596566eb0c019cdef",
+      "repositoryGroup": "auth0/express-jwt",
+      "forkGroup": "auth0/express-jwt",
+      "vulnerabilityFamily": "jwt-algorithm-verification",
+      "cve": "CVE-2020-15084",
+      "ghsa": null,
+      "cwe": "CWE-347",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "CRYPTOGRAPHY",
+      "language": "JAVASCRIPT",
+      "framework": "Express CommonJS JWT middleware",
+      "license": "MIT",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "lib/index.js",
+          "startLine": 13,
+          "endLine": 28
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "lib/index.js",
+          "startLine": 1,
+          "endLine": 138
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/auth0/express-jwt/commit/7ecab5f8f0cab5297c2b863596566eb0c019cdef"
+      ],
+      "sourceToSinkEvidence": "JWT middleware accepts verifier configuration without requiring an explicit allowed algorithms list.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "JWT library algorithm/key type behavior and caller options required; algorithm itself is not inherently vulnerable.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "lib/index.js",
+          "url": "https://raw.githubusercontent.com/auth0/express-jwt/e9ed6d240d945fca8f8911c1f1d743dfe3f1f8e3/lib/index.js",
+          "sha256": "13029b3d95dab2d3aa7c69632a63a6a917b933725490d3de594214371817a7f4"
+        }
+      ],
+      "improvementProposal": "CommonJS middleware factory and verifier configuration contracts",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2020-15084-fixed",
+      "pairId": "cvefixes-cve-2020-15084",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/auth0/express-jwt",
+      "repositoryCommitSha": "7ecab5f8f0cab5297c2b863596566eb0c019cdef",
+      "vulnerableCommitSha": "e9ed6d240d945fca8f8911c1f1d743dfe3f1f8e3",
+      "fixedCommitSha": "7ecab5f8f0cab5297c2b863596566eb0c019cdef",
+      "repositoryGroup": "auth0/express-jwt",
+      "forkGroup": "auth0/express-jwt",
+      "vulnerabilityFamily": "jwt-algorithm-verification",
+      "cve": "CVE-2020-15084",
+      "ghsa": null,
+      "cwe": "CWE-347",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "CRYPTOGRAPHY",
+      "language": "JAVASCRIPT",
+      "framework": "Express CommonJS JWT middleware",
+      "license": "MIT",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "lib/index.js",
+          "startLine": 13,
+          "endLine": 31
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "lib/index.js",
+          "startLine": 1,
+          "endLine": 141
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/auth0/express-jwt/commit/7ecab5f8f0cab5297c2b863596566eb0c019cdef"
+      ],
+      "sourceToSinkEvidence": "JWT middleware accepts verifier configuration without requiring an explicit allowed algorithms list.",
+      "mitigationEvidence": "Middleware rejects missing or non-array algorithms configuration.",
+      "requiredConditions": "JWT library algorithm/key type behavior and caller options required; algorithm itself is not inherently vulnerable.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "lib/index.js",
+          "url": "https://raw.githubusercontent.com/auth0/express-jwt/7ecab5f8f0cab5297c2b863596566eb0c019cdef/lib/index.js",
+          "sha256": "55c016594f71072164598e50c872a8bb9931c58db44469c27a327c1c923bd19d"
+        }
+      ],
+      "improvementProposal": "CommonJS middleware factory and verifier configuration contracts",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-32879-parent",
+      "pairId": "cvefixes-cve-2024-32879",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/python-social-auth/social-app-django",
+      "repositoryCommitSha": "7033ff73993a4c3666d989930bbc15e87925abc9",
+      "vulnerableCommitSha": "7033ff73993a4c3666d989930bbc15e87925abc9",
+      "fixedCommitSha": "31c3e0c7edb187004d8abbde7e9c4f7ef9098138",
+      "repositoryGroup": "python-social-auth/social-app-django",
+      "forkGroup": "python-social-auth/social-app-django",
+      "vulnerabilityFamily": "identity-collation-mismatch",
+      "cve": "CVE-2024-32879",
+      "ghsa": null,
+      "cwe": "CWE-287",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "AUTHORIZATION",
+      "language": "PYTHON",
+      "framework": "Django social authentication model",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "social_django/models.py",
+          "startLine": 49,
+          "endLine": 69
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "social_django/models.py",
+          "startLine": 1,
+          "endLine": 150
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/python-social-auth/social-app-django/commit/31c3e0c7edb187004d8abbde7e9c4f7ef9098138"
+      ],
+      "sourceToSinkEvidence": "Social login provider/uid lookup may use case-insensitive database collation and return another identity.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Case-insensitive DB collation such as MySQL/MariaDB; no real accounts or login attempts used.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "social_django/models.py",
+          "url": "https://raw.githubusercontent.com/python-social-auth/social-app-django/7033ff73993a4c3666d989930bbc15e87925abc9/social_django/models.py",
+          "sha256": "1c101521494b975963146ade35b90dba92fa4a6e55c919784f9bb595b0ff2d3e"
+        }
+      ],
+      "improvementProposal": "Identity comparison versus ORM collation semantics",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-32879-fixed",
+      "pairId": "cvefixes-cve-2024-32879",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/python-social-auth/social-app-django",
+      "repositoryCommitSha": "31c3e0c7edb187004d8abbde7e9c4f7ef9098138",
+      "vulnerableCommitSha": "7033ff73993a4c3666d989930bbc15e87925abc9",
+      "fixedCommitSha": "31c3e0c7edb187004d8abbde7e9c4f7ef9098138",
+      "repositoryGroup": "python-social-auth/social-app-django",
+      "forkGroup": "python-social-auth/social-app-django",
+      "vulnerabilityFamily": "identity-collation-mismatch",
+      "cve": "CVE-2024-32879",
+      "ghsa": null,
+      "cwe": "CWE-287",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "AUTHORIZATION",
+      "language": "PYTHON",
+      "framework": "Django social authentication model",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "social_django/models.py",
+          "startLine": 49,
+          "endLine": 73
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "social_django/models.py",
+          "startLine": 1,
+          "endLine": 154
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/python-social-auth/social-app-django/commit/31c3e0c7edb187004d8abbde7e9c4f7ef9098138"
+      ],
+      "sourceToSinkEvidence": "Social login provider/uid lookup may use case-insensitive database collation and return another identity.",
+      "mitigationEvidence": "Candidates returned by DB are compared to uid case-sensitively before returning a user binding.",
+      "requiredConditions": "Case-insensitive DB collation such as MySQL/MariaDB; no real accounts or login attempts used.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "social_django/models.py",
+          "url": "https://raw.githubusercontent.com/python-social-auth/social-app-django/31c3e0c7edb187004d8abbde7e9c4f7ef9098138/social_django/models.py",
+          "sha256": "1e59cfbb3cb21831de62ba20a51815dd3ae0684a9bf307ee4c010b8cc4652dd3"
+        }
+      ],
+      "improvementProposal": "Identity comparison versus ORM collation semantics",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2016-9964-parent",
+      "pairId": "cvefixes-cve-2016-9964",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/bottlepy/bottle",
+      "repositoryCommitSha": "58882c718889533e2f848b70d9733c1474f8ed44",
+      "vulnerableCommitSha": "58882c718889533e2f848b70d9733c1474f8ed44",
+      "fixedCommitSha": "6d7e13da0f998820800ecb3fe9ccee4189aefb54",
+      "repositoryGroup": "bottlepy/bottle",
+      "forkGroup": "bottlepy/bottle",
+      "vulnerabilityFamily": "http-header-crlf",
+      "cve": "CVE-2016-9964",
+      "ghsa": null,
+      "cwe": "CWE-93",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "INPUT_INJECTION",
+      "language": "PYTHON",
+      "framework": "Bottle header internals",
+      "license": "MIT",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "bottle.py",
+          "startLine": 1568,
+          "endLine": 1586
+        },
+        {
+          "filePath": "bottle.py",
+          "startLine": 2165,
+          "endLine": 2181
+        },
+        {
+          "filePath": "bottle.py",
+          "startLine": 2184,
+          "endLine": 2218
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "bottle.py",
+          "startLine": 1,
+          "endLine": 4317
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/bottlepy/bottle/commit/6d7e13da0f998820800ecb3fe9ccee4189aefb54"
+      ],
+      "sourceToSinkEvidence": "Application-derived redirect/header value reaches HeaderDict without CR/LF validation.",
+      "mitigationEvidence": "The named patch defense is absent in this parent revision.",
+      "requiredConditions": "Attacker-controlled header value supplied by an application; Python 2 compatibility paths may not parse in the current Python worker.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "bottle.py",
+          "url": "https://raw.githubusercontent.com/bottlepy/bottle/58882c718889533e2f848b70d9733c1474f8ed44/bottle.py",
+          "sha256": "bb8a0edc0eb2bb90337dadb33265706d05e57393dcb7d56c93bbb9b15d87c586"
+        }
+      ],
+      "improvementProposal": "HTTP header output context and custom validation helpers",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    },
+    {
+      "caseId": "cvefixes-cve-2016-9964-fixed",
+      "pairId": "cvefixes-cve-2016-9964",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repositoryUrl": "https://github.com/bottlepy/bottle",
+      "repositoryCommitSha": "6d7e13da0f998820800ecb3fe9ccee4189aefb54",
+      "vulnerableCommitSha": "58882c718889533e2f848b70d9733c1474f8ed44",
+      "fixedCommitSha": "6d7e13da0f998820800ecb3fe9ccee4189aefb54",
+      "repositoryGroup": "bottlepy/bottle",
+      "forkGroup": "bottlepy/bottle",
+      "vulnerabilityFamily": "http-header-crlf",
+      "cve": "CVE-2016-9964",
+      "ghsa": null,
+      "cwe": "CWE-93",
+      "datasetCwe": null,
+      "cweProvenance": "ANALYST_PATH_CLASSIFICATION",
+      "area": "INPUT_INJECTION",
+      "language": "PYTHON",
+      "framework": "Bottle header internals",
+      "license": "MIT",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "DATASET_FIX_AND_ORIGINAL_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Reviewed patch neighborhoods; see original commit hunk function context",
+      "targetSites": [
+        {
+          "filePath": "bottle.py",
+          "startLine": 1568,
+          "endLine": 1593
+        },
+        {
+          "filePath": "bottle.py",
+          "startLine": 2172,
+          "endLine": 2187
+        },
+        {
+          "filePath": "bottle.py",
+          "startLine": 2190,
+          "endLine": 2221
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "bottle.py",
+          "startLine": 1,
+          "endLine": 4320
+        }
+      ],
+      "sourceSiteScope": "Whole retained implementation file; library caller input may remain absent. Matching a request-origin trace is still required.",
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip",
+        "https://github.com/bottlepy/bottle/commit/6d7e13da0f998820800ecb3fe9ccee4189aefb54"
+      ],
+      "sourceToSinkEvidence": "Application-derived redirect/header value reaches HeaderDict without CR/LF validation.",
+      "mitigationEvidence": "Header keys and values reject CR/LF/NUL; assignment and append use the shared validator.",
+      "requiredConditions": "Attacker-controlled header value supplied by an application; Python 2 compatibility paths may not parse in the current Python worker.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "bottle.py",
+          "url": "https://raw.githubusercontent.com/bottlepy/bottle/6d7e13da0f998820800ecb3fe9ccee4189aefb54/bottle.py",
+          "sha256": "ff55e7f52c3a9310ac3c65949210fc82e5564ebf8f256caf1d1f33f69ed4484d"
+        }
+      ],
+      "improvementProposal": "HTTP header output context and custom validation helpers",
+      "unknownFacts": [
+        "No upstream code, build, install or PoV executed.",
+        "SAFE applies only to the named changed condition under the stated assumptions.",
+        "Selected original application/library files and local context, not a complete deployed application.",
+        "Parent is first parent of the official patch; merge parents are recorded in retained metadata.",
+        "Patch neighborhoods are not a complete source-to-sink ground-truth trace; missing callers remain explicit."
+      ],
+      "collectionTimestamp": "2026-10-19T17:27:57.218410+00:00"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/apache/xmlgraphics-batik/660ef628d637af636ea113243fe73f170ac43958/LICENSE",
+      "repository": "apache/xmlgraphics-batik",
+      "sha256": "d92a946963232d6d81e81b4617cb9754b0acfaf3f8d24d2357bba9bdb90a825d"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/apache/xmlgraphics-batik/commits/660ef628d637af636ea113243fe73f170ac43958",
+      "sha256": "64a582371f2d5f78e47cc9ed944334fc5553da023cddcf052e5f3d94b3852045"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/apache/commons-configuration/add7375cf37fd316d4838c6c56b054fc293b4641/LICENSE.txt",
+      "repository": "apache/commons-configuration",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/apache/commons-configuration/commits/add7375cf37fd316d4838c6c56b054fc293b4641",
+      "sha256": "3ee71488431a153861f2d212a4c1ef40e653e1b1cee08e88c12e250973c5c8e7"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/apache/commons-fileupload/163a6061fbc077d4b6e4787d26857c2baba495d1/LICENSE.txt",
+      "repository": "apache/commons-fileupload",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/apache/commons-fileupload/commits/163a6061fbc077d4b6e4787d26857c2baba495d1",
+      "sha256": "d233cd039adf5ac0135552ba0b8b7fc8fa3f31c6eceac43ef2453f0c5ac4d28e"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/apache/commons-io/2736b6fe0b3fa22ec8e2b4184897ecadb021fc78/LICENSE.txt",
+      "repository": "apache/commons-io",
+      "sha256": "8c6db340475136df3c1201d458fa5755698eace76e510471ecc9d857d6083dac"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/apache/commons-io/commits/2736b6fe0b3fa22ec8e2b4184897ecadb021fc78",
+      "sha256": "41ee967342a0d4886457391e2fd47141ca1ef4e9f70231af97efbaf7adce43f6"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/apache/jspwiki/88d89d6523802c044cfcb7930cba40d8eeb21da2/LICENSE",
+      "repository": "apache/jspwiki",
+      "sha256": "96d968e38324356741b6c7fb7ba029232bf1b47fa1084feb84432d9a60caa0bd"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/apache/jspwiki/commits/88d89d6523802c044cfcb7930cba40d8eeb21da2",
+      "sha256": "5fa165a108b7154c184c5f08c92691ed4a2ee8558eeb2758951f180932fe19bd"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/apache/shiro/b15ab927709ca18ea4a02538be01919a19ab65af/LICENSE",
+      "repository": "apache/shiro",
+      "sha256": "5ad8c213095c573921d7388edf93f6a9f54490b8ebf3b165ae8ef1947cf70846"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/apache/shiro/commits/b15ab927709ca18ea4a02538be01919a19ab65af",
+      "sha256": "e407ec911ddd16fb7d8d6ef3226b4a2a38defd4ea951b79b2f3113d69ff14032"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/apereo/java-cas-client/ab6cbdc3daa451b4fef89c0bd0f4e6568f3aa9ef/LICENSE",
+      "repository": "apereo/java-cas-client",
+      "sha256": "b1a3e87ce562a392ba6fa9e082020644f6cfb746000e9b793bd9cd5f76dc82eb"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/apereo/java-cas-client/commits/ab6cbdc3daa451b4fef89c0bd0f4e6568f3aa9ef",
+      "sha256": "37caba6033bd891d28e6c47dbb6b769c630b66bf2456c72a193af29a94c7ccc0"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/codehaus-plexus/plexus-archiver/58bc24e465c0842981692adbf6d75680298989de/LICENSE",
+      "repository": "codehaus-plexus/plexus-archiver",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/codehaus-plexus/plexus-archiver/commits/58bc24e465c0842981692adbf6d75680298989de",
+      "sha256": "32424b5745a30589d9a4fc05222d733a9359bf35e07144ef76411c30f7ad6843"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/inversoft/prime-jwt/abb0d479389a2509f939452a6767dc424bb5e6ba/LICENSE",
+      "repository": "inversoft/prime-jwt",
+      "sha256": "6dc0e068dcf3a5bc8e054205b85b7720e1d49265bbc64bf515d2cf79197df69a"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/inversoft/prime-jwt/commits/abb0d479389a2509f939452a6767dc424bb5e6ba",
+      "sha256": "9999c5bdbbb0cdc5c9e1768024839743073cacf12fa6fd126977831d83ceb5b7"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/jenkinsci/ccm-plugin/066cb43b4413b3490d822ec8b8a32072ebd213ca/src/main/java/hudson/plugins/ccm/parser/CcmParser.java",
+      "repository": "jenkinsci/ccm-plugin",
+      "sha256": "742532ccfc4c2625bfb6bda83b4280a982bc51d64ea64ffeb284cf45a5b0c1c0"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/jenkinsci/ccm-plugin/commits/066cb43b4413b3490d822ec8b8a32072ebd213ca",
+      "sha256": "d14a5e8451960ea8b7ddd86b76cd3ce5c6d1848a38fddc9f52cf0129deb1ab50"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/vercel/next.js/8f7a6ca7d21a97bc9f7a1bbe10427b5ad74b9085/license.md",
+      "repository": "vercel/next.js",
+      "sha256": "e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/vercel/next.js/commits/8f7a6ca7d21a97bc9f7a1bbe10427b5ad74b9085",
+      "sha256": "3752dcd2f18eb48789115452f9553fa4c2907543a99790cad1fd391bf61c4dea"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/aio-libs/aiohttp/1c335944d6a8b1298baf179b7c0b3069f10c514b/LICENSE.txt",
+      "repository": "aio-libs/aiohttp",
+      "sha256": "9f80d0db7d755a941db4572172c270ecbd8f082ba215ddd095985942ed94a9eb"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/aio-libs/aiohttp/commits/1c335944d6a8b1298baf179b7c0b3069f10c514b",
+      "sha256": "00ef43939aaefd4a5fd6d640f7c688fc19270e1215a30337bb9bfe33f1f99fd5"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/psf/requests/74ea7cf7a6a27a4eeb2ae24e162bcc942a6706d5/LICENSE",
+      "repository": "psf/requests",
+      "sha256": "09e8a9bcec8067104652c168685ab0931e7868f9c8284b66f5ae6edae5f1130b"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/psf/requests/commits/74ea7cf7a6a27a4eeb2ae24e162bcc942a6706d5",
+      "sha256": "8f568037378bf84a42f904cc3881c619cd78389ad9de1993a517adbea74e9982"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/expressjs/express/0867302ddbde0e9463d0564fea5861feb708c2dd/LICENSE",
+      "repository": "expressjs/express",
+      "sha256": "95a5762890e5c1c9808921cef095661fc482c5e1f0bba31446ac85595df6237c"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/expressjs/express/commits/0867302ddbde0e9463d0564fea5861feb708c2dd",
+      "sha256": "fe717ea985204ae5cf526f208a5492bb46d6f098337164650d09c112a4e69fe0"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/liangliangyy/djangoblog/c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719/LICENSE",
+      "repository": "liangliangyy/djangoblog",
+      "sha256": "07175b1cf8fca1dac6ae9e0baece2eb77a1a37d3376aefc7e5f3ac257d496b1f"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/liangliangyy/djangoblog/commits/c2bfdb18c5f32b13ea4b50aa689b8ea4beb38719",
+      "sha256": "6bf59d6a34296b8aff4bf588f339e3363c8054879ff5db1be0ec14930f843862"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/dpgaspar/Flask-AppBuilder/ae25ad4c87a9051ebe4a4e8f02aee73232642626/LICENSE",
+      "repository": "dpgaspar/Flask-AppBuilder",
+      "sha256": "a59f9a8e6d48ff487dd5ad697a864549e9a488513c90ad47ff1995fdcc654256"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/dpgaspar/Flask-AppBuilder/commits/ae25ad4c87a9051ebe4a4e8f02aee73232642626",
+      "sha256": "54c868e2a232fdb3482ddf5aa8077cf6fc2ce181e50376ce578c01f134503c97"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/zulip/zulip/7ecda1ac8e26d8fb3725e954b2dc4723dda2255f/LICENSE",
+      "repository": "zulip/zulip",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/zulip/zulip/commits/7ecda1ac8e26d8fb3725e954b2dc4723dda2255f",
+      "sha256": "9c8206dfbe35c6a2a68dc8fd1ebd192d5287f5074f77fce2001d18ee95d5581a"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/auth0/express-jwt/7ecab5f8f0cab5297c2b863596566eb0c019cdef/LICENSE",
+      "repository": "auth0/express-jwt",
+      "sha256": "701fbe0ff1f35cf1355a5e54190fc7a893e828d8e9067fed7f0f091826fe537a"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/auth0/express-jwt/commits/7ecab5f8f0cab5297c2b863596566eb0c019cdef",
+      "sha256": "8e76a40cb11ce8a4bc98ad1536ff71284814194dce86c5e90e653b90bc2e4278"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/python-social-auth/social-app-django/31c3e0c7edb187004d8abbde7e9c4f7ef9098138/LICENSE",
+      "repository": "python-social-auth/social-app-django",
+      "sha256": "25106b856a7ecf971d5c8a3ca82a15c3adbc8613d2f9abe75e78f79420dceb36"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/python-social-auth/social-app-django/commits/31c3e0c7edb187004d8abbde7e9c4f7ef9098138",
+      "sha256": "fcdc5ba126c245b8e737cf743b12e878c9bed9a2882b2f05f45c13504d2c376f"
+    },
+    {
+      "kind": "upstream-license",
+      "url": "https://raw.githubusercontent.com/bottlepy/bottle/6d7e13da0f998820800ecb3fe9ccee4189aefb54/LICENSE",
+      "repository": "bottlepy/bottle",
+      "sha256": "29b9d5427975bc6736881b8982b18264631e3681b7eaf039b042fe50347b3f84"
+    },
+    {
+      "kind": "patch-metadata",
+      "url": "https://api.github.com/repos/bottlepy/bottle/commits/6d7e13da0f998820800ecb3fe9ccee4189aefb54",
+      "sha256": "28d79ddab4c02dbd9c0542c977b77d0d3f6fbb6f49635bb1ec6900356dcc8692"
+    },
+    {
+      "kind": "dataset-metadata",
+      "url": "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/dataset/vul4j_dataset.csv",
+      "sha256": "5c272508bfc6dccdc52569667457463dbe4e9d2d32bf4a7e821f4622054f51eb"
+    },
+    {
+      "kind": "dataset-license",
+      "url": "https://raw.githubusercontent.com/tuhh-softsec/vul4j/376411da11fa705019f731404de1d0679fe73537/DATA_LICENSE",
+      "sha256": "f5b745ef98087f531e719ee8ca6a96809444573ecc7173c6fa68eaad39b3cc3f"
+    },
+    {
+      "kind": "dataset-license",
+      "url": "https://raw.githubusercontent.com/secureIT-project/CVEfixes/9283b50b3f04e3c5b0a17fc419ab0feea23fc438/LICENSE.txt",
+      "sha256": "d07bb159eeb228277d10fdac65dcce55393e951a6285702b180f85621ea383c6"
+    }
+  ],
+  "collection": {
+    "timestamp": "2026-10-19T17:27:57.218410+00:00",
+    "requests": 0,
+    "bytes": 1676216
+  }
+}

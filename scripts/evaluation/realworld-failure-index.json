@@ -1,0 +1,351 @@
+{
+  "packs": [
+    {
+      "caseId": "vul4j-2-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-2-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-9-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-9-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-10-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-10-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-38-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-38-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-51-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-51-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-32681-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-32681-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2017-0881-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2017-0881-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2016-9964-parent",
+      "group": "RESOURCE_LIMIT",
+      "confirmed": true,
+      "verdict": "RESOURCE_LIMIT",
+      "structuralVerdict": "RESOURCE_LIMIT"
+    },
+    {
+      "caseId": "cvefixes-cve-2016-9964-fixed",
+      "group": "RESOURCE_LIMIT",
+      "confirmed": true,
+      "verdict": "RESOURCE_LIMIT",
+      "structuralVerdict": "RESOURCE_LIMIT"
+    },
+    {
+      "caseId": "vul4j-14-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-14-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-18-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-18-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-41-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-41-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-23334-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-23334-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-2954-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-2954-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-34110-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2023-34110-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-32879-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-32879-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-22-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-22-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-48-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "vul4j-48-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-34351-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-34351-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-29041-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2024-29041-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2020-15084-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "cvefixes-cve-2020-15084-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    }
+  ],
+  "groups": {
+    "UNSUPPORTED_LANGUAGE_FRAMEWORK": [
+      "vul4j-2-parent",
+      "vul4j-2-fixed",
+      "vul4j-9-parent",
+      "vul4j-9-fixed",
+      "vul4j-10-parent",
+      "vul4j-10-fixed",
+      "vul4j-38-parent",
+      "vul4j-38-fixed",
+      "vul4j-51-parent",
+      "vul4j-51-fixed",
+      "cvefixes-cve-2023-32681-parent",
+      "cvefixes-cve-2023-32681-fixed",
+      "cvefixes-cve-2017-0881-parent",
+      "cvefixes-cve-2017-0881-fixed",
+      "vul4j-14-parent",
+      "vul4j-14-fixed",
+      "vul4j-18-parent",
+      "vul4j-18-fixed",
+      "vul4j-41-parent",
+      "vul4j-41-fixed",
+      "cvefixes-cve-2024-23334-parent",
+      "cvefixes-cve-2024-23334-fixed",
+      "cvefixes-cve-2023-2954-parent",
+      "cvefixes-cve-2023-2954-fixed",
+      "cvefixes-cve-2023-34110-parent",
+      "cvefixes-cve-2023-34110-fixed",
+      "cvefixes-cve-2024-32879-parent",
+      "cvefixes-cve-2024-32879-fixed",
+      "vul4j-22-parent",
+      "vul4j-22-fixed",
+      "vul4j-48-parent",
+      "vul4j-48-fixed",
+      "cvefixes-cve-2024-34351-parent",
+      "cvefixes-cve-2024-34351-fixed",
+      "cvefixes-cve-2024-29041-parent",
+      "cvefixes-cve-2024-29041-fixed",
+      "cvefixes-cve-2020-15084-parent",
+      "cvefixes-cve-2020-15084-fixed"
+    ],
+    "RESOURCE_LIMIT": [
+      "cvefixes-cve-2016-9964-parent",
+      "cvefixes-cve-2016-9964-fixed"
+    ]
+  },
+  "groupStatistics": [
+    {
+      "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "caseCount": 38,
+      "repositoryCount": 19,
+      "manuallyConfirmed": 38,
+      "finalFalsePositives": 0,
+      "finalFalseNegatives": 0,
+      "scopeGapCount": 38
+    },
+    {
+      "category": "RESOURCE_LIMIT",
+      "caseCount": 2,
+      "repositoryCount": 1,
+      "manuallyConfirmed": 2,
+      "finalFalsePositives": 0,
+      "finalFalseNegatives": 0,
+      "scopeGapCount": 2
+    }
+  ],
+  "priorityPolicy": "Evidence and cross-repository recurrence before raw frequency; scope gaps are not confirmed vulnerabilities; automatic groups are hypotheses, not confirmed causes."
+}

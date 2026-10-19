@@ -1,0 +1,4814 @@
+{
+  "schemaVersion": 1,
+  "engineCommit": "c71863844df520bebe9185bebbc54fef081e4184",
+  "manifestSha256": "560aae30308d3454706eb3b070828ae0cf81a3a69cc08851cbcbed1727b11ec3",
+  "runnerVersion": "2a480cd052218d6db6e438b0fd95131eae93bbe7140aa2f3ba83029b5d5e6da9",
+  "accountingVersion": "e479d30e207051d401024fcf38ecd596e20bca5567e628c02404a27c9d554aaa",
+  "externalLookups": "NOT_RUN",
+  "warnings": [
+    "Scores are target-path alert accounting, not exploitation or whole-project safety.",
+    "NOT_SUPPORTED/UNKNOWN/NOT_INSPECTED are not TN; unsupported cases remain in effective coverage.",
+    "Related public source families and single-reviewer labels are not a blind independent benchmark.",
+    "Wilson intervals are descriptive; paired/correlated cases are not IID."
+  ],
+  "split": "ALL",
+  "results": [
+    {
+      "caseId": "vul4j-2-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "xmlgraphics-batik implementation",
+      "cwe": "CWE-611",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        187,
+        176
+      ],
+      "parentHeapUsedBytes": [
+        85033128,
+        87130280
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-2-fixed",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "xmlgraphics-batik implementation",
+      "cwe": "CWE-611",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        174,
+        157
+      ],
+      "parentHeapUsedBytes": [
+        57401696,
+        58450272
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-9-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "commons-configuration implementation",
+      "cwe": "CWE-502",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        144,
+        143
+      ],
+      "parentHeapUsedBytes": [
+        59498848,
+        59498848
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-9-fixed",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "commons-configuration implementation",
+      "cwe": "CWE-502",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        145,
+        159
+      ],
+      "parentHeapUsedBytes": [
+        60547424,
+        61596000
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-10-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "commons-fileupload implementation",
+      "cwe": "CWE-20",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        150,
+        150
+      ],
+      "parentHeapUsedBytes": [
+        62644576,
+        64741728
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-10-fixed",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "commons-fileupload implementation",
+      "cwe": "CWE-20",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        164,
+        164
+      ],
+      "parentHeapUsedBytes": [
+        65790304,
+        67887456
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-38-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "java-cas-client implementation",
+      "cwe": "CWE-74",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        180,
+        160
+      ],
+      "parentHeapUsedBytes": [
+        68936032,
+        69984608
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-38-fixed",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "java-cas-client implementation",
+      "cwe": "CWE-74",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        161,
+        173
+      ],
+      "parentHeapUsedBytes": [
+        71033184,
+        72081760
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-51-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "ccm-plugin implementation",
+      "cwe": "CWE-611",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        148,
+        148
+      ],
+      "parentHeapUsedBytes": [
+        73130336,
+        74178912
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-51-fixed",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "ccm-plugin implementation",
+      "cwe": "CWE-611",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        146,
+        145
+      ],
+      "parentHeapUsedBytes": [
+        74178912,
+        75227488
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2023-32681-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "Requests HTTP client",
+      "cwe": "CWE-200",
+      "area": "SENSITIVE_EXPOSURE",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        86,
+        44
+      ],
+      "parentHeapUsedBytes": [
+        81518944,
+        82567520
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2023-32681-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "Requests HTTP client",
+      "cwe": "CWE-200",
+      "area": "SENSITIVE_EXPOSURE",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        43,
+        43
+      ],
+      "parentHeapUsedBytes": [
+        82567520,
+        83616096
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2017-0881-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "Django Zulip stream endpoint",
+      "cwe": "CWE-862",
+      "area": "AUTHORIZATION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        43,
+        43
+      ],
+      "parentHeapUsedBytes": [
+        84664672,
+        84664672
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2017-0881-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "Django Zulip stream endpoint",
+      "cwe": "CWE-862",
+      "area": "AUTHORIZATION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        42,
+        43
+      ],
+      "parentHeapUsedBytes": [
+        85713248,
+        86761824
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2016-9964-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "Bottle header internals",
+      "cwe": "CWE-93",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "reviewCandidate": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "finalUser": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        }
+      },
+      "elapsedMs": [
+        0,
+        0
+      ],
+      "parentHeapUsedBytes": [
+        86761824,
+        87810400
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2016-9964-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "Bottle header internals",
+      "cwe": "CWE-93",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "reviewCandidate": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "finalUser": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        }
+      },
+      "elapsedMs": [
+        0,
+        0
+      ],
+      "parentHeapUsedBytes": [
+        58775072,
+        59823648
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-14-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "commons-io implementation",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        201,
+        180
+      ],
+      "parentHeapUsedBytes": [
+        64894464,
+        68040192
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-14-fixed",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "commons-io implementation",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        181,
+        181
+      ],
+      "parentHeapUsedBytes": [
+        71185920,
+        74331648
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-18-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "jspwiki implementation",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        159,
+        146
+      ],
+      "parentHeapUsedBytes": [
+        75380224,
+        76428800
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-18-fixed",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "jspwiki implementation",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        147,
+        146
+      ],
+      "parentHeapUsedBytes": [
+        77477376,
+        57281040
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-41-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "plexus-archiver implementation",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        160,
+        150
+      ],
+      "parentHeapUsedBytes": [
+        58329616,
+        58329616
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-41-fixed",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "plexus-archiver implementation",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        153,
+        164
+      ],
+      "parentHeapUsedBytes": [
+        59378192,
+        60426768
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2024-23334-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "aiohttp static routing",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        98,
+        60
+      ],
+      "parentHeapUsedBytes": [
+        57007648,
+        59104800
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2024-23334-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "aiohttp static routing",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        56,
+        55
+      ],
+      "parentHeapUsedBytes": [
+        59104800,
+        59104800
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2023-2954-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "Django application template filters",
+      "cwe": "CWE-79",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        48,
+        44
+      ],
+      "parentHeapUsedBytes": [
+        60153376,
+        61201952
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2023-2954-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "Django application template filters",
+      "cwe": "CWE-79",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        44,
+        44
+      ],
+      "parentHeapUsedBytes": [
+        62250528,
+        63299104
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2023-34110-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "Flask-AppBuilder model interface",
+      "cwe": "CWE-209",
+      "area": "SENSITIVE_EXPOSURE",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        57,
+        56
+      ],
+      "parentHeapUsedBytes": [
+        64347680,
+        65396256
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2023-34110-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "Flask-AppBuilder model interface",
+      "cwe": "CWE-209",
+      "area": "SENSITIVE_EXPOSURE",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        55,
+        54
+      ],
+      "parentHeapUsedBytes": [
+        66444832,
+        67493408
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2024-32879-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "Django social authentication model",
+      "cwe": "CWE-287",
+      "area": "AUTHORIZATION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        35,
+        36
+      ],
+      "parentHeapUsedBytes": [
+        67493408,
+        68541984
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2024-32879-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "Django social authentication model",
+      "cwe": "CWE-287",
+      "area": "AUTHORIZATION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        37,
+        36
+      ],
+      "parentHeapUsedBytes": [
+        68541984,
+        69590560
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-22-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "shiro implementation",
+      "cwe": "CWE-284",
+      "area": "AUTHORIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        178,
+        158
+      ],
+      "parentHeapUsedBytes": [
+        95968784,
+        98065936
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-22-fixed",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "shiro implementation",
+      "cwe": "CWE-284",
+      "area": "AUTHORIZATION",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        169,
+        153
+      ],
+      "parentHeapUsedBytes": [
+        100163088,
+        102260240
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-48-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "prime-jwt implementation",
+      "cwe": "CWE-347",
+      "area": "CRYPTOGRAPHY",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        158,
+        158
+      ],
+      "parentHeapUsedBytes": [
+        104357392,
+        105405968
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "vul4j-48-fixed",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "prime-jwt implementation",
+      "cwe": "CWE-347",
+      "area": "CRYPTOGRAPHY",
+      "sourceDataset": "Vul4J official CSV",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        162,
+        161
+      ],
+      "parentHeapUsedBytes": [
+        107503120,
+        108551696
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2024-34351-parent",
+      "truth": "DANGEROUS",
+      "language": "TYPESCRIPT",
+      "framework": "Next.js server internals",
+      "cwe": "CWE-918",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        242,
+        184
+      ],
+      "parentHeapUsedBytes": [
+        115891728,
+        119037456
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2024-34351-fixed",
+      "truth": "SAFE",
+      "language": "TYPESCRIPT",
+      "framework": "Next.js server internals",
+      "cwe": "CWE-918",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        186,
+        183
+      ],
+      "parentHeapUsedBytes": [
+        121134608,
+        123231760
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2024-29041-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVASCRIPT",
+      "framework": "Express response prototype",
+      "cwe": "CWE-601",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        185,
+        182
+      ],
+      "parentHeapUsedBytes": [
+        125328912,
+        127426064
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 65,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2024-29041-fixed",
+      "truth": "SAFE",
+      "language": "JAVASCRIPT",
+      "framework": "Express response prototype",
+      "cwe": "CWE-601",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        179,
+        180
+      ],
+      "parentHeapUsedBytes": [
+        129523216,
+        131620368
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 65,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2020-15084-parent",
+      "truth": "DANGEROUS",
+      "language": "JAVASCRIPT",
+      "framework": "Express CommonJS JWT middleware",
+      "cwe": "CWE-347",
+      "area": "CRYPTOGRAPHY",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        171,
+        171
+      ],
+      "parentHeapUsedBytes": [
+        132668944,
+        133717520
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "cvefixes-cve-2020-15084-fixed",
+      "truth": "SAFE",
+      "language": "JAVASCRIPT",
+      "framework": "Express CommonJS JWT middleware",
+      "cwe": "CWE-347",
+      "area": "CRYPTOGRAPHY",
+      "sourceDataset": "CVEfixes v1.0.8 fixes table",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        172,
+        170
+      ],
+      "parentHeapUsedBytes": [
+        135814672,
+        136863248
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    }
+  ],
+  "summary": {
+    "rule": {
+      "counts": {
+        "NOT_SUPPORTED": 40
+      },
+      "precision": null,
+      "recallWithinScoredScope": null,
+      "falsePositiveRate": null,
+      "precisionWilson95": null,
+      "scoredCoverage": 0.0,
+      "sampleSize": 40,
+      "effectiveDangerousDetectionCoverage": 0.0
+    },
+    "filteredRule": {
+      "counts": {
+        "NOT_SUPPORTED": 40
+      },
+      "precision": null,
+      "recallWithinScoredScope": null,
+      "falsePositiveRate": null,
+      "precisionWilson95": null,
+      "scoredCoverage": 0.0,
+      "sampleSize": 40,
+      "effectiveDangerousDetectionCoverage": 0.0
+    },
+    "ast": {
+      "counts": {
+        "NOT_SUPPORTED": 38,
+        "RESOURCE_LIMIT": 2
+      },
+      "precision": null,
+      "recallWithinScoredScope": null,
+      "falsePositiveRate": null,
+      "precisionWilson95": null,
+      "scoredCoverage": 0.0,
+      "sampleSize": 40,
+      "effectiveDangerousDetectionCoverage": 0.0
+    },
+    "reviewCandidate": {
+      "counts": {
+        "NOT_SUPPORTED": 38,
+        "RESOURCE_LIMIT": 2
+      },
+      "precision": null,
+      "recallWithinScoredScope": null,
+      "falsePositiveRate": null,
+      "precisionWilson95": null,
+      "scoredCoverage": 0.0,
+      "sampleSize": 40,
+      "effectiveDangerousDetectionCoverage": 0.0
+    },
+    "finalUser": {
+      "counts": {
+        "NOT_SUPPORTED": 38,
+        "RESOURCE_LIMIT": 2
+      },
+      "precision": null,
+      "recallWithinScoredScope": null,
+      "falsePositiveRate": null,
+      "precisionWilson95": null,
+      "scoredCoverage": 0.0,
+      "sampleSize": 40,
+      "effectiveDangerousDetectionCoverage": 0.0
+    }
+  },
+  "groups": {
+    "language": {
+      "JAVA": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        }
+      },
+      "JAVASCRIPT": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        }
+      },
+      "PYTHON": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 14
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 14
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 14
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 14
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 12,
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 14
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 12,
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 14
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 12,
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 14
+        }
+      },
+      "TYPESCRIPT": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      }
+    },
+    "framework": {
+      "Bottle header internals": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "Django Zulip stream endpoint": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "Django application template filters": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "Django social authentication model": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "Express CommonJS JWT middleware": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "Express response prototype": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "Flask-AppBuilder model interface": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "Next.js server internals": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "Requests HTTP client": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "aiohttp static routing": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "ccm-plugin implementation": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "commons-configuration implementation": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "commons-fileupload implementation": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "commons-io implementation": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "java-cas-client implementation": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "jspwiki implementation": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "plexus-archiver implementation": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "prime-jwt implementation": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "shiro implementation": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "xmlgraphics-batik implementation": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      }
+    },
+    "cwe": {
+      "CWE-20": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-200": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-209": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-22": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 8
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 8
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 8
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 8
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 8
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 8
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 8
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 8
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 8
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 8
+        }
+      },
+      "CWE-284": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-287": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-347": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        }
+      },
+      "CWE-502": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-601": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-611": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        }
+      },
+      "CWE-74": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-79": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-862": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-918": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-93": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 2
+        }
+      }
+    },
+    "area": {
+      "AUTHORIZATION": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 6
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 6
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 6
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 6
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 6
+        }
+      },
+      "CRYPTOGRAPHY": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        }
+      },
+      "FILE_DESERIALIZATION": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 16
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 16
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 16
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 16
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 16
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 16
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 16
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 16
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 16
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 16
+        }
+      },
+      "INPUT_INJECTION": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 10
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 10
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 10
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 10
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 8,
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 10
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 8,
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 10
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 8,
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 10
+        }
+      },
+      "SENSITIVE_EXPOSURE": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 4
+        }
+      }
+    },
+    "sourceDataset": {
+      "CVEfixes v1.0.8 fixes table": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 18,
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 18,
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 18,
+            "RESOURCE_LIMIT": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        }
+      },
+      "Vul4J official CSV": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 20
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0.0,
+          "sampleSize": 20
+        }
+      }
+    }
+  },
+  "effectiveDangerousDetectionCoverage": 0.0,
+  "exactDuplicateRate": 0.0,
+  "targetRiskCaseCounts": {
+    "BLOCKING": 0,
+    "REVIEW_REQUIRED": 0,
+    "SHOULD_FIX": 0,
+    "INFORMATIONAL": 0
+  },
+  "allRepeatsConsistent": true
+}

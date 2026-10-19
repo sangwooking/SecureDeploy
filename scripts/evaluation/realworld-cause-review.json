@@ -1,0 +1,477 @@
+{
+  "manifestSha256": "560aae30308d3454706eb3b070828ae0cf81a3a69cc08851cbcbed1727b11ec3",
+  "engineCommit": "c71863844df520bebe9185bebbc54fef081e4184",
+  "runnerVersion": "2a480cd052218d6db6e438b0fd95131eae93bbe7140aa2f3ba83029b5d5e6da9",
+  "cases": {
+    "vul4j-2-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "XML parser feature configuration and caller input contracts"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-2-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "XML parser feature configuration and caller input contracts"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-9-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Library deserialization input contracts and constructor defenses"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-9-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Library deserialization input contracts and constructor defenses"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-10-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Deserialized field state and file write effects"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-10-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Deserialized field state and file write effects"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-38-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "URL parameter encoding versus request destination control"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-38-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "URL parameter encoding versus request destination control"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-51-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "XML parser wrapper semantics and dependency defenses"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-51-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "XML parser wrapper semantics and dependency defenses"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2023-32681-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Sensitive header propagation across redirect and transport boundaries"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2023-32681-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Sensitive header propagation across redirect and transport boundaries"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2017-0881-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Resource policy state and guarded authorization side effects"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2017-0881-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Resource policy state and guarded authorization side effects"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2016-9964-parent": [
+      {
+        "category": "RESOURCE_LIMIT",
+        "evidence": "Retained Bottle file exceeds Python FILE_CHARACTER_LIMIT; worker reports LIMIT_EXCEEDED and NOT_RUN. This is not TN/FN.",
+        "improvementProposal": "Bounded structural file selection or safe parsing slices with explicit coverage, never silently remove limits."
+      }
+    ],
+    "cvefixes-cve-2016-9964-fixed": [
+      {
+        "category": "RESOURCE_LIMIT",
+        "evidence": "Retained Bottle file exceeds Python FILE_CHARACTER_LIMIT; worker reports LIMIT_EXCEEDED and NOT_RUN. This is not TN/FN.",
+        "improvementProposal": "Bounded structural file selection or safe parsing slices with explicit coverage, never silently remove limits."
+      }
+    ],
+    "vul4j-14-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Normalization contracts, validation and downstream callers"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-14-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Normalization contracts, validation and downstream callers"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-18-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Servlet path source to forwarding across classes"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-18-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Servlet path source to forwarding across classes"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-41-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Archive entry path propagation and boundary-aware containment"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-41-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Archive entry path propagation and boundary-aware containment"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2024-23334-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "aiohttp route contracts and lexical versus filesystem path validation"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2024-23334-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "aiohttp route contracts and lexical versus filesystem path validation"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2023-2954-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Template filters, persistent input and output-context sanitation"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2023-2954-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Template filters, persistent input and output-context sanitation"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2023-34110-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Exception-to-message flow and distinction between client and server logs"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2023-34110-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Exception-to-message flow and distinction between client and server logs"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2024-32879-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Identity comparison versus ORM collation semantics"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2024-32879-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Identity comparison versus ORM collation semantics"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-22-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Canonicalization consistency at authorization boundary"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-22-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Canonicalization consistency at authorization boundary"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-48-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "JWT API overload and validation option semantics"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "vul4j-48-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "JWT API overload and validation option semantics"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2024-34351-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Next server entry contracts and request-host to fetch destination"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2024-34351-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "Next server entry contracts and request-host to fetch destination"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2024-29041-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "URL parser and encoder agreement with application allowlists"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2024-29041-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "URL parser and encoder agreement with application allowlists"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2020-15084-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "CommonJS middleware factory and verifier configuration contracts"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ],
+    "cvefixes-cve-2020-15084-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": "Retained implementation files parse, but actual worker records zero supported request entrypoints. Targeted API/security condition has no validated path finding; this does not prove an exploitable miss.",
+        "improvementProposal": "CommonJS middleware factory and verifier configuration contracts"
+      },
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": "Only the named original implementation and selected local context are present; application caller/wiring, third-party behavior and runtime assumptions are not fully acquired or executed.",
+        "improvementProposal": "Acquire bounded original caller/routing context before classifying a concrete data-flow defect; preserve labels and both revisions."
+      }
+    ]
+  }
+}
