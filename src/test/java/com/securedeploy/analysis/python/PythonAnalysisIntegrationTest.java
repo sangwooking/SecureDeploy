@@ -114,6 +114,31 @@ class PythonAnalysisIntegrationTest {
         mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
         assertThat(zip.at("/semanticReview/semanticReviewStatus").asText()).isEqualTo("NOT_REQUESTED");
     }
+    @Test void tokenEvidenceUsesCommonSourcesAndPreservesRiskAndIsolation() throws Exception {
+        String code=PythonTokenFindingTest.SOURCE;
+        String token=signup();var zip=upload(token,code);
+        var checked=upload(token,code.replace("'verify_signature':False","'verify_signature':True"));
+        var evidence=zip.at("/serverAnalysis/pythonAnalysis");
+        assertThat(evidence.path("tokenUses")).hasSize(1);
+        assertThat(evidence.path("validatedFindings")).hasSize(1);
+        assertThat(checked.at("/serverAnalysis/pythonAnalysis/validatedFindings")).isEmpty();
+        for(String key:List.of("securityScore","vulnerabilityCount","deploymentStatus"))assertThat(zip.path(key)).isEqualTo(checked.path(key));
+        for(String key:List.of("prioritySummary","prioritizedDeploymentAssessment"))assertThat(zip.path("riskAssessment").path(key)).isEqualTo(checked.path("riskAssessment").path(key));
+        Path pub=source("token-public",code),prv=source("token-private",code);
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/tokens",pub,pub));
+        var publicResult=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/tokens\",\"scanMode\":\"STANDARD\"}");
+        var metadata=new GitHubSourceSnapshot("fixture","tokens","https://github.com/fixture/tokens","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/tokens",prv,prv,metadata));
+        var privateResult=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        assertThat(publicResult.at("/serverAnalysis/pythonAnalysis")).isEqualTo(evidence);
+        assertThat(privateResult.at("/serverAnalysis/pythonAnalysis")).isEqualTo(evidence);
+        assertThat(pub).doesNotExist();assertThat(prv).doesNotExist();
+        long id=zip.path("reviewId").asLong();
+        assertThat(detail(token,id).at("/serverAnalysis/pythonAnalysis")).isEqualTo(evidence);
+        assertThat(zip.at("/coverage/analyzers").toString()).contains("PYTHON_TOKEN_SECURITY");
+        assertThat(zip.at("/semanticReview/semanticReviewStatus").asText()).isEqualTo("NOT_REQUESTED");
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+    }
     Path source(String dir, String code) throws Exception {
         Path root=Files.createDirectory(temp.resolve(dir)); Files.writeString(root.resolve("views.py"),code);return root;
     }

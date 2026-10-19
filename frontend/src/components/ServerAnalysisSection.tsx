@@ -2,8 +2,15 @@ import { useState } from 'react';
 import type { AnalysisLocation, ServerAnalysisSnapshot } from '../types/serverAnalysis';
 import { DeploymentAnalysisSection } from './DeploymentAnalysisSection';
 import { AuthorizationContextDetails } from './AuthorizationContextDetails';
+import { TokenSecurityDetails } from './TokenSecurityDetails';
 
 const labels: Record<string, string> = {
+  TOKEN_API_CALL: 'JWT API 호출', TOKEN_SECURITY_USE: '토큰의 보안 사용 위치', TOKEN_CLAIM_DECISION: '토큰 값으로 접근 조건 판단',
+  TOKEN_TRANSFORM_OR_EXTERNAL_VALIDATION_UNKNOWN: '다른 함수의 토큰 변환·검증 효과 미확인',
+  TOKEN_VALUE_OR_EXECUTION_UNRESOLVED: '토큰 값 전달 또는 실행 경로 일부 미확인',
+  TOKEN_CALLS_OUTSIDE_TRACED_FLOW: '구문에서 발견한 JWT API 후보 중 추적하지 못한 호출이 있음',
+  PYJWT_2_API_SHAPE_LIBRARY_VERSION_NOT_VERIFIED: 'PyJWT 2.x API 형태 · 실제 설치 라이브러리·버전 미확인',
+  EXTERNAL_TOKEN_VALIDATION_NOT_VERIFIED: '다른 계층의 토큰 검증 미확인',
   AUTH_LOGIC_CANDIDATE_NOT_EXPLOIT_PROOF: '비교·차단 로직의 검토 후보이며 실제 권한 우회 성공은 미검증',
   AUTH_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED: '외부 미들웨어·실행 환경의 추가 보호는 미확인',
   RESOURCE_LOOKUP: '요청 식별자로 리소스 조회', INVERTED_OWNER_REJECTION: '소유자 일치 시 차단하는 분기',
@@ -151,7 +158,9 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
       <h4>{finding.ruleId === 'TS_SSRF_INPUT_FLOW' ? '서버 요청 주소의 처리 과정을 확인해 주세요'
         : finding.ruleId === 'PY_FILE_PATH_INPUT_FLOW' ? '입력된 파일 경로의 제한을 확인해 주세요'
         : finding.ruleId === 'PY_UNSAFE_DESERIALIZATION_INPUT_FLOW' ? '외부 데이터의 복원 방식을 확인해 주세요'
-        : finding.ruleId === 'PY_AUTHORIZATION_INVERTED_OWNER_GUARD' ? '사용자 비교와 차단 분기의 의도를 확인해 주세요' : '요청 값이 데이터베이스 쿼리에 들어갑니다'}</h4><p>{finding.message}</p>
+        : finding.ruleId === 'PY_AUTHORIZATION_INVERTED_OWNER_GUARD' ? '사용자 비교와 차단 분기의 의도를 확인해 주세요'
+        : finding.ruleId === 'PY_JWT_UNVERIFIED_ACCESS_DECISION' ? '토큰을 신뢰하기 전 서명 검증을 확인해 주세요'
+        : finding.ruleId === 'PY_JWT_FIXED_SIGNING_KEY' ? '토큰 서명 키의 관리 방식을 확인해 주세요' : '요청 값이 데이터베이스 쿼리에 들어갑니다'}</h4><p>{finding.message}</p>
       <p>{snapshot.validatedFindings == null ? '이 이력은 실행 경로 Finding 연결 이전의 기록입니다. 과거 결과를 새 기준으로 추측하여 승격하지 않습니다.'
         : '중간 처리 또는 실행 호출을 충분히 확인하지 못해 검증된 흐름 Finding으로 연결하지 않았습니다.'}</p>
       <p>{finding.recommendation}</p>
@@ -159,6 +168,9 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
         <FlowEvidence finding={finding} />
       </details>
     </article>)}</div>
+    {python && <details className="coverage-details"><summary>토큰 서명·사용 근거 ({snapshot.tokenUses?.length ?? '미기록'})</summary>
+      <TokenSecurityDetails uses={snapshot.tokenUses} />
+    </details>}
     {python && <details className="coverage-details"><summary>파일 접근·데이터 복원 근거 ({snapshot.resourceUses?.length ?? '미기록'})</summary>
       {snapshot.resourceUses == null ? <p>이 이력에는 파일 접근·데이터 복원 추적 기록이 없습니다. 과거 결과를 새 기준으로 판단하지 않습니다.</p>
         : <ul className="coverage-file-list">{snapshot.resourceUses.map((use, i) => <li key={i}>

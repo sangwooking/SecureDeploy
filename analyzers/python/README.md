@@ -1,6 +1,20 @@
 # Bounded Python server flow analysis
 
-Trusted CPython standard-library AST worker, version `py-django-v4`.
+Trusted CPython standard-library AST worker, version `py-django-v5`.
+
+Version 5 records PyJWT 2.x-compatible encode/decode API shapes in supported Django/DRF flows.
+Explicit signature-disable options alone are NOT findings: request-derived claims must reach a
+known access-rejection branch. Fixed non-placeholder keys must reach a HMAC signing call.
+Environment references, example-shaped keys, unknown options/transforms and legacy verify arguments
+remain separate observations. Header algorithm overrides are unresolved. HS256 is not inherently unsafe.
+The actual installed jwt distribution/version, external signature validation and runtime execution are
+NOT verified; these are conditional REVIEW_REQUIRED candidates, not exploit proof. Version-1-only
+verify=False semantics, custom validators, general crypto/password-hash/randomness analysis and other
+JWT libraries are not supported. Local jwt modules suppress library assumptions.
+No literal keys/tokens, payloads or source excerpts leave this worker; only classifications and locations.
+The operator-owned `token_security.py` beside worker.py is required in addition to authorization.py.
+API references: [PyJWT 2.10.1](https://pyjwt.readthedocs.io/en/2.10.1/api.html),
+[PyJWT 2.0.0](https://pyjwt.readthedocs.io/en/2.0.0/api.html).
 
 Version 4 adds bounded authorization evidence to existing request evaluation. It records explicit
 View/action/static get_permissions declarations; global defaults remain candidates with unknown activation.

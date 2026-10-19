@@ -11,7 +11,20 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
         List<AuthorizationContext> authorizationContexts, List<String> limitations,
         List<ServerFlowFinding> validatedFindings, List<HttpUse> httpUses, ServerAnalysisSnapshot pythonAnalysis,
         SelectionCoverage selectionCoverage, com.securedeploy.analysis.deployment.DeploymentSnapshot deploymentAnalysis,
-        List<ResourceUse> resourceUses) {
+        List<ResourceUse> resourceUses, List<TokenUse> tokenUses) {
+    public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
+            String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
+            List<AuthorizationContext> authorizationContexts, List<String> limitations,
+            List<ServerFlowFinding> validatedFindings, List<HttpUse> httpUses, ServerAnalysisSnapshot pythonAnalysis,
+            SelectionCoverage selectionCoverage, com.securedeploy.analysis.deployment.DeploymentSnapshot deploymentAnalysis,
+            List<ResourceUse> resourceUses) {
+        this(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses, authorizationContexts,
+                limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, deploymentAnalysis, resourceUses, null);
+    }
+    public ServerAnalysisSnapshot withTokenUses(List<TokenUse> value) {
+        return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses,
+                authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, deploymentAnalysis, resourceUses, value);
+    }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
             String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
             List<AuthorizationContext> authorizationContexts, List<String> limitations,
@@ -22,7 +35,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
     }
     public ServerAnalysisSnapshot withResourceUses(List<ResourceUse> value) {
         return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses,
-                authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, deploymentAnalysis, value);
+                authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, deploymentAnalysis, value, tokenUses);
     }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
             String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
@@ -34,7 +47,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
     }
     public ServerAnalysisSnapshot withDeploymentAnalysis(com.securedeploy.analysis.deployment.DeploymentSnapshot value) {
         return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses,
-                authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, value, resourceUses);
+                authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, value, resourceUses, tokenUses);
     }
     public record SelectionCoverage(int discoveredFiles, int submittedFiles, int omittedFiles, int omittedDetails,
             int submittedCharacters, Map<String, Integer> omissionReasons) { }
@@ -47,7 +60,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
     }
     public ServerAnalysisSnapshot withSelectionCoverage(SelectionCoverage selection) {
         return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings,
-                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selection, deploymentAnalysis, resourceUses);
+                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selection, deploymentAnalysis, resourceUses, tokenUses);
     }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
             String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
@@ -58,7 +71,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
     }
     public ServerAnalysisSnapshot withPythonAnalysis(ServerAnalysisSnapshot value) {
         return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings,
-                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, value, selectionCoverage, deploymentAnalysis, resourceUses);
+                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, value, selectionCoverage, deploymentAnalysis, resourceUses, tokenUses);
     }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
             String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
@@ -111,6 +124,8 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
             List<Location> defenses, List<String> limitations) { }
     public record ResourceUse(String ruleId, String kind, Location location, List<Location> trace,
             List<Location> defenses, List<String> limitations, boolean executionObserved) { }
+    public record TokenUse(String operation, Location location, String signatureStatus, String keySource,
+            String usageStatus, List<Location> trace, List<String> limitations) { }
     public record AuthorizationContext(Location entry, List<Location> checks, List<Location> defenses,
             List<Location> resources, String conclusion, List<String> limitations, AuthorizationDetails details) {
         public AuthorizationContext(Location entry, List<Location> checks, List<Location> defenses,
@@ -152,6 +167,10 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
                 python ? "Django/DRF 진입점의 제한된 SQL·파일 경로·pickle/YAML 값 전달 검사. 전체 Python, 인증·소유권, 파일시스템·실행 가능성은 미검증이며 기존 Risk 계산과 분리됩니다."
                 : "Workers/Pages 진입점의 제한된 구문·값 전달 검사. 전체 TypeScript, 실행 가능성, 인증·소유권 보증 및 Risk 계산에는 포함되지 않습니다.", counts));
         if (python) {
+            if (tokenUses != null || "py-django-v5".equals(analyzerVersion)) analyzers.add(new CoverageLedger.Analyzer("PYTHON_TOKEN_SECURITY", files.isEmpty() ? "NOT_APPLICABLE"
+                    : List.of("COMPLETE", "PARTIAL").contains(status) ? "PARTIAL" : status,
+                    "지원 Django/DRF 경로의 PyJWT 2.x API 형태·검증 생략 사용·서명 키 출처 검사. 실제 설치 버전·외부 검증·전체 암호화는 미확인.",
+                    tokenUses == null ? Map.of("UNRECORDED", 1) : Map.of("TOKEN_CALLS_TRACED", tokenUses.size())));
             var authorization = new LinkedHashMap<String, Integer>();
             authorizationContexts.forEach(context -> {
                 if (context.details() == null) { authorization.merge("LEGACY_OR_UNRECORDED", 1, Integer::sum); return; }

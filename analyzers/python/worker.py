@@ -16,7 +16,12 @@ _auth_module = importlib.util.module_from_spec(_auth_spec)
 _auth_spec.loader.exec_module(_auth_module)
 AuthorizationEvidence = _auth_module.AuthorizationEvidence
 
-VERSION = "py-django-v4"
+_token_spec = importlib.util.spec_from_file_location("securedeploy_token_security", Path(__file__).with_name("token_security.py"))
+_token_module = importlib.util.module_from_spec(_token_spec)
+_token_spec.loader.exec_module(_token_module)
+TokenEvidence = _token_module.TokenEvidence
+
+VERSION = "py-django-v5"
 MAX_NODES = 60000
 MAX_STEPS = 30000
 MAX_DEPTH = 5
@@ -33,6 +38,7 @@ class Value:
     tag: str = ""
     defenses: tuple = ()
     elements: tuple | None = None
+    tokens: tuple = ()
 
 
 def merge(*values):
@@ -55,7 +61,8 @@ def merge(*values):
     return Value(tuple(trace[:40]), any(v.unknown for v in values) or len(trace) > 40,
                  first.literal if all(v.literal == first.literal for v in values) else UNKNOWN,
                  first.symbol if all(v.symbol == first.symbol for v in values) else "",
-                 first.tag if all(v.tag == first.tag for v in values) else "", tuple(defenses[:20]), elements)
+                 first.tag if all(v.tag == first.tag for v in values) else "", tuple(defenses[:20]), elements,
+                 tuple(dict.fromkeys(t for v in values for t in v.tokens))[:200])
 
 
 class BudgetExceeded(Exception):
@@ -71,7 +78,9 @@ class Analyzer:
         self.shadowed = {}
         self.findings, self.sql, self.auth = [], [], []
         self.resources = []
+        self.token_sites = {}
         self.authorization = AuthorizationEvidence(self, Value)
+        self.token_security = TokenEvidence(self, Value)
         self.visited, self.traced = set(), set()
         self.path, self.function, self.stack = "", "<module>", []
         self.partial = False
@@ -195,6 +204,7 @@ class Analyzer:
         if shadowed:
             self.note("MODULE_BINDING_REASSIGNED", path)
         self.imports[path], self.globals[path] = imports, globals_
+        self.token_sites[path] = sum(isinstance(n, ast.Call) and self.symbol(n.func, path) in {"jwt.encode", "jwt.decode"} for n in ast.walk(tree))
         self.coverage[path]["prepareCallSites"] = sum(isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
                                                         and n.func.attr in {"execute", "executemany", "raw"} for n in ast.walk(tree))
         self.coverage[path]["resourceCallSites"] = sum(self.resource_call_candidate(n) for n in ast.walk(tree))
@@ -325,6 +335,9 @@ class Analyzer:
         except (BudgetExceeded, RecursionError):
             self.note("ANALYSIS_BUDGET_EXCEEDED")
         for path, c in self.coverage.items():
+            traced_tokens = len({(use["location"]["line"], use["location"]["column"]) for use in self.token_security.uses if use["location"]["filePath"] == path})
+            if self.token_sites.get(path, 0) > traced_tokens:
+                self.note("TOKEN_CALLS_OUTSIDE_TRACED_FLOW", path)
             c["tracedResourceCallSites"] = len({(r["location"]["line"], r["location"]["column"]) for r in self.resources if r["location"]["filePath"] == path})
             if c.get("resourceCallSites", 0) > c["tracedResourceCallSites"]:
                 self.note("RESOURCE_CALLS_OUTSIDE_TRACED_FLOW", path)
@@ -343,7 +356,7 @@ class Analyzer:
                     authorizationContexts=self.auth, limitations=["BOUNDED_DJANGO_DRF_ONLY", "MIDDLEWARE_SETTINGS_AND_OWNERSHIP_NOT_VERIFIED",
                     "STATIC_FLOW_NOT_EXPLOIT_PROOF", "NO_OS_SANDBOX", "BOUNDED_PYTHON_FILE_AND_DESERIALIZATION_ONLY",
                     "SYMLINKS_PERMISSIONS_AND_RUNTIME_NOT_VERIFIED"], validatedFindings=None, deploymentAnalysis=deployment,
-                    resourceUses=self.resources)
+                    resourceUses=self.resources, tokenUses=self.token_security.uses)
 
     def deployment_settings(self):
         keys = {"DEBUG", "SECRET_KEY", "ALLOWED_HOSTS", "SESSION_COOKIE_SECURE", "CSRF_COOKIE_SECURE",
@@ -577,7 +590,7 @@ class Analyzer:
             or (isinstance(n, ast.Attribute) and n.attr in {"GET", "POST", "data", "query_params", "headers", "META", "body"}
                 and isinstance(n.value, ast.Name) and env.get(n.value.id, Value()).tag == "request")
             for n in ast.walk(node))
-        if condition.unknown and (condition.trace or predicate_input):
+        if (condition.unknown or condition.tokens) and (condition.trace or predicate_input):
             self.note("INPUT_GUARD_UNRESOLVED")
             self.partial = True
 
@@ -610,6 +623,7 @@ class Analyzer:
                 return env, returns, True
             elif isinstance(node, ast.If):
                 condition = self.expr(node.test, env)
+                self.token_security.decision(condition, node, env)
                 self.guard_partial(condition, node.test, env)
                 for context in self.contexts:
                     if len(context["checks"]) < 40:
@@ -661,7 +675,7 @@ class Analyzer:
         if isinstance(node, ast.Name):
             env[node.id] = value
         elif isinstance(node, (ast.Tuple, ast.List)):
-            if value.elements is not None and len(node.elts) == len(value.elements) and not value.unknown:
+            if value.tag != "token-options" and value.elements is not None and len(node.elts) == len(value.elements) and not value.unknown:
                 for target, element in zip(node.elts, value.elements):
                     self.assign(target, self.step(element, target, "ASSIGNMENT"), env)
             else:
@@ -726,6 +740,10 @@ class Analyzer:
                 return replace(base, tag="", literal=UNKNOWN)
             if base.tag == "upload-map" and not base.unknown:
                 return replace(base, tag="uploaded-file", literal=UNKNOWN)
+            if base.tag == "token-claims" and base.tokens and not base.unknown:
+                return replace(base, tag="token-claim", literal=UNKNOWN)
+            if base.symbol == "os.environ" and not base.unknown:
+                return Value(tag="token-key-env", unknown=True)
             return replace(merge(base, index), unknown=True, literal=UNKNOWN, tag="", symbol="")
         if isinstance(node, ast.BinOp):
             left = self.expr(node.left, env)
@@ -750,12 +768,14 @@ class Analyzer:
             values = []
             for k, v in zip(node.keys, node.values):
                 values += [self.expr(k, env), self.expr(v, env)]
-            return replace(merge(*values), tag="collection", literal=UNKNOWN)
+            token_options = any(isinstance(k, ast.Constant) and k.value == "verify_signature" for k in node.keys)
+            return replace(merge(*values), tag="token-options" if token_options else "collection", literal=UNKNOWN,
+                           elements=tuple(values) if token_options else None)
         if isinstance(node, ast.UnaryOp):
             value = self.expr(node.operand, env)
             if isinstance(node.op, ast.Not) and value.literal is not UNKNOWN:
                 return Value(literal=not bool(value.literal))
-            return replace(value, unknown=True, literal=UNKNOWN)
+            return replace(value, unknown=value.unknown if isinstance(node.op, ast.Not) and value.tokens else True, literal=UNKNOWN)
         if isinstance(node, ast.IfExp):
             condition = self.expr(node.test, env)
             if condition.literal is not UNKNOWN:
@@ -787,10 +807,12 @@ class Analyzer:
             return value
         if isinstance(node, ast.Compare):
             left = self.expr(node.left, env)
+            token_values = [left]
             uncertain = False
             for op, item in zip(node.ops, node.comparators):
                 branch = dict(env) if uncertain else env
                 right = self.expr(item, branch)
+                token_values.append(right)
                 if uncertain:
                     env.update(self.join_env(env, branch))
                 known = UNKNOWN
@@ -806,6 +828,9 @@ class Analyzer:
                     return Value(literal=False) if not uncertain else Value(unknown=True)
                 uncertain |= known is UNKNOWN
                 left = right
+            if any(v.tokens for v in token_values):
+                value = merge(*token_values)
+                return replace(value, unknown=any(v.unknown for v in token_values), literal=UNKNOWN, tag="")
             return Value(unknown=True) if uncertain else Value(literal=True)
         if isinstance(node, ast.Call):
             return self.call(node, env)
@@ -829,6 +854,9 @@ class Analyzer:
         if any(isinstance(a, ast.Starred) for a in node.args) or None in keywords:
             self.note("VARIADIC_CALL_UNRESOLVED")
             return replace(merge(*(args + list(keywords.values()))), unknown=True)
+        token_value = self.token_security.call(node, function, base, name, args, keywords)
+        if token_value is not None:
+            return token_value
         authorization_value = self.authorization.call(node, function, base, name, args, keywords, env)
         if authorization_value is not None:
             return authorization_value
@@ -872,12 +900,13 @@ class Analyzer:
             self.authorization.helper_after(function.symbol, args, keywords, env)
             return result
         value = merge(*(args + list(keywords.values()) + ([base] if base else [])))
+        self.token_security.uncertain_call(args + list(keywords.values()) + ([base] if base else []), env)
         self.authorization.uncertain_call(node,args+list(keywords.values())+([base] if base else []),env)
         self.note("CALL_TARGET_UNRESOLVED")
-        if any(v.tag == "collection" for v in args + list(keywords.values()) + ([base] if base else [])):
+        if any(v.tag in {"collection", "token-options"} for v in args + list(keywords.values()) + ([base] if base else [])):
             self.note("MUTABLE_OBJECT_WRITE_UNRESOLVED")
             for key, v in env.items():
-                if v.tag == "collection":
+                if v.tag in {"collection", "token-options"}:
                     env[key] = replace(v, unknown=True, elements=None)
         return replace(value, unknown=True, literal=UNKNOWN, symbol="", tag="")
 

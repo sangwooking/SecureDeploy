@@ -15,6 +15,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         var findings = new ArrayList<>(connectSql(snapshot));
         findings.addAll(connectResources(snapshot));
         findings.addAll(connectAuthorization(snapshot));
+        findings.addAll(connectTokens(snapshot));
         if (snapshot.httpUses() == null) return List.copyOf(findings);
         Map<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>> groups = new LinkedHashMap<>();
         for (var candidate : snapshot.findings()) {
@@ -109,6 +110,32 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
             String key = version + "\n" + ruleId + "\n" + location.filePath() + "\n" + location.line() + ":" + location.column();
             return (ruleId.startsWith("PY_") ? "py-flow:" : "ts-flow:") + HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(key.getBytes(StandardCharsets.UTF_8)));
         } catch (java.security.NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
+    }
+
+    private static List<ServerFlowFinding> connectTokens(ServerAnalysisSnapshot snapshot) {
+        if (snapshot.tokenUses() == null) return List.of();
+        var groups = new LinkedHashMap<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>>();
+        for (var candidate : snapshot.findings()) {
+            boolean signing = candidate.ruleId().equals("PY_JWT_FIXED_SIGNING_KEY");
+            if (!signing && !candidate.ruleId().equals("PY_JWT_UNVERIFIED_ACCESS_DECISION")) continue;
+            boolean observed = snapshot.tokenUses().stream().anyMatch(t -> signing
+                    ? t.operation().equals("SIGN") && t.signatureStatus().equals("HMAC_SIGN_CALL") && t.keySource().equals("FIXED_LITERAL") && t.location().equals(candidate.source())
+                    : t.signatureStatus().equals("EXPLICITLY_DISABLED") && t.usageStatus().equals("ACCESS_REJECTION_BRANCH")
+                        && t.trace().contains(candidate.source()) && t.trace().stream().anyMatch(l -> l.filePath().equals(candidate.sink().filePath()) && l.line() == candidate.sink().line()));
+            if (observed && candidate.confidence().equals("HIGH")) {
+                var evidence = groups.computeIfAbsent(candidate.sink(), ignored -> new ArrayList<>());
+                if (!evidence.contains(candidate)) evidence.add(candidate);
+            }
+        }
+        return groups.entrySet().stream().map(g -> {
+            var first = g.getValue().get(0);
+            return new ServerFlowFinding(identity(snapshot.analyzerVersion(), first.ruleId(), g.getKey()), "PYTHON_DATA_FLOW", snapshot.analyzerVersion(),
+                    first.ruleId(), RiskPriority.REVIEW_REQUIRED, "NOT_COMPARED", g.getKey(), List.copyOf(g.getValue()), List.of(g.getKey()), first.message(),
+                    "지원하는 PyJWT API 형태와 정적 사용 경로를 확인했습니다. 실제 라이브러리 버전·외부 검증·공격 성공은 확인하지 않았습니다. 기존 점수·배포 판단에는 합산하지 않습니다.",
+                    first.recommendation(), List.of("표시한 호출·사용 위치와 실제 설치한 JWT 라이브러리·버전을 확인하세요.",
+                    "로컬 테스트에서 변조 서명·잘못된 키·만료 토큰이 거부되는지 확인하세요. 단순 표시용 디코딩과 인증 판단을 분리하세요.",
+                    "키를 화면·로그에 출력하지 말고 설정 변경 및 키 교체 후 재검사하세요."));
+        }).toList();
     }
 
     private static List<ServerFlowFinding> connectAuthorization(ServerAnalysisSnapshot snapshot) {

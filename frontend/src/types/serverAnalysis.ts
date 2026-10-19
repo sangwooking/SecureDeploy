@@ -14,6 +14,8 @@ export interface ServerFlowFinding {
   title: string; riskExplanation: string; recommendedAction: string; verificationSteps: string[];
 }
 export interface ServerAnalysisSnapshot {
+  tokenUses?: { operation: string; location: AnalysisLocation; signatureStatus: string; keySource: string;
+    usageStatus: string; trace: AnalysisLocation[]; limitations: string[] }[] | null;
   deploymentAnalysis?: import('./deploymentAnalysis').DeploymentAnalysis | null;
   pythonAnalysis?: ServerAnalysisSnapshot | null;
   selectionCoverage?: { discoveredFiles: number; submittedFiles: number; omittedFiles: number; omittedDetails: number;
