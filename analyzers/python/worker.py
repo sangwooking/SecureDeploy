@@ -5,11 +5,12 @@ import sys
 import time
 import resource
 import re
+import posixpath
 from dataclasses import dataclass, replace
 from pathlib import PurePosixPath
 from collections import Counter
 
-VERSION = "py-django-v2"
+VERSION = "py-django-v3"
 MAX_NODES = 60000
 MAX_STEPS = 30000
 MAX_DEPTH = 5
@@ -61,6 +62,7 @@ class Analyzer:
         self.coverage, self.imports, self.globals = {}, {}, {}
         self.shadowed = {}
         self.findings, self.sql, self.auth = [], [], []
+        self.resources = []
         self.visited, self.traced = set(), set()
         self.path, self.function, self.stack = "", "<module>", []
         self.partial = False
@@ -162,6 +164,15 @@ class Analyzer:
                     if isinstance(target, ast.Name):
                         bindings[target.id] += 1
                         globals_[target.id] = Value(literal=node.value.value) if isinstance(node.value, ast.Constant) else Value(unknown=True)
+                    elif isinstance(target, (ast.Attribute, ast.Subscript)):
+                        if isinstance(target, ast.Subscript) and isinstance(target.value, ast.Attribute) and target.value.attr == "environ" and isinstance(target.value.value, ast.Name) and imports.get(target.value.value.id) == "os":
+                            continue
+                        root = target
+                        while isinstance(root, (ast.Attribute, ast.Subscript)):
+                            root = root.value
+                        if isinstance(root, ast.Name):
+                            bindings[root.id] += 2
+                            self.note("MODULE_OBJECT_WRITE_UNRESOLVED", path)
             elif not isinstance(node, (ast.Expr, ast.Pass)):
                 self.note("MODULE_CONTROL_FLOW_UNRESOLVED", path)
                 for n in ast.walk(node):
@@ -177,6 +188,12 @@ class Analyzer:
         self.imports[path], self.globals[path] = imports, globals_
         self.coverage[path]["prepareCallSites"] = sum(isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
                                                         and n.func.attr in {"execute", "executemany", "raw"} for n in ast.walk(tree))
+        self.coverage[path]["resourceCallSites"] = sum(self.resource_call_candidate(n) for n in ast.walk(tree))
+
+    @staticmethod
+    def resource_call_candidate(node):
+        return isinstance(node, ast.Call) and ((isinstance(node.func, ast.Name) and node.func.id == "open") or
+            (isinstance(node.func, ast.Attribute) and node.func.attr in {"open", "read_text", "read_bytes", "write_text", "write_bytes", "unlink", "loads", "load", "load_all", "unsafe_load", "unsafe_load_all", "safe_load", "safe_load_all"}))
 
     def symbol(self, node, path):
         if isinstance(node, ast.Name):
@@ -291,6 +308,9 @@ class Analyzer:
         except (BudgetExceeded, RecursionError):
             self.note("ANALYSIS_BUDGET_EXCEEDED")
         for path, c in self.coverage.items():
+            c["tracedResourceCallSites"] = len({(r["location"]["line"], r["location"]["column"]) for r in self.resources if r["location"]["filePath"] == path})
+            if c.get("resourceCallSites", 0) > c["tracedResourceCallSites"]:
+                self.note("RESOURCE_CALLS_OUTSIDE_TRACED_FLOW", path)
             c["functionsAnalyzed"] = sum(p == path for p, _ in self.visited)
             c["tracedPrepareCallSites"] = sum(p == path for p, _ in self.traced)
             if not c["functionsAnalyzed"] and c["parseStatus"] == "PARSED":
@@ -304,7 +324,9 @@ class Analyzer:
                     status="PARTIAL" if any(c["limitations"] for c in self.coverage.values()) else "COMPLETE",
                     files=list(self.coverage.values()), findings=self.findings, sqlUses=self.sql, httpUses=[],
                     authorizationContexts=self.auth, limitations=["BOUNDED_DJANGO_DRF_ONLY", "MIDDLEWARE_SETTINGS_AND_OWNERSHIP_NOT_VERIFIED",
-                    "STATIC_FLOW_NOT_EXPLOIT_PROOF", "NO_OS_SANDBOX"], validatedFindings=None, deploymentAnalysis=deployment)
+                    "STATIC_FLOW_NOT_EXPLOIT_PROOF", "NO_OS_SANDBOX", "BOUNDED_PYTHON_FILE_AND_DESERIALIZATION_ONLY",
+                    "SYMLINKS_PERMISSIONS_AND_RUNTIME_NOT_VERIFIED"], validatedFindings=None, deploymentAnalysis=deployment,
+                    resourceUses=self.resources)
 
     def deployment_settings(self):
         keys = {"DEBUG", "SECRET_KEY", "ALLOWED_HOSTS", "SESSION_COOKIE_SECURE", "CSRF_COOKIE_SECURE",
@@ -593,7 +615,7 @@ class Analyzer:
                 supported = True
                 for item in node.items:
                     value = self.expr(item.context_expr, env)
-                    supported &= value.tag == "cursor"
+                    supported &= value.tag in {"cursor", "file-handle", "uploaded-file", "binary-stream"}
                     if item.optional_vars:
                         self.assign(item.optional_vars, value, env)
                 self.partial |= not supported
@@ -638,7 +660,7 @@ class Analyzer:
             result = replace(result, literal=(a.literal + b.literal)[:10000])
         else:
             result = replace(result, literal=UNKNOWN)
-        return self.step(result, node, "SQL_STRING_CONSTRUCTION")
+        return self.step(replace(result, tag=""), node, "SQL_STRING_CONSTRUCTION")
 
     def expr(self, node, env):
         self.tick()
@@ -647,7 +669,7 @@ class Analyzer:
         if isinstance(node, ast.Constant):
             return Value(literal=node.value)
         if isinstance(node, ast.Name):
-            return env.get(node.id, Value(symbol=node.id) if node.id in {"str", "int"} else Value(unknown=True))
+            return env.get(node.id, Value(symbol=node.id) if node.id in {"str", "int"} else Value(symbol="builtins.open") if node.id == "open" else Value(unknown=True))
         if isinstance(node, ast.NamedExpr):
             value = self.expr(node.value, env)
             self.assign(node.target, value, env)
@@ -655,6 +677,8 @@ class Analyzer:
         if isinstance(node, ast.Attribute):
             base = self.expr(node.value, env)
             if base.tag == "request" and not base.unknown:
+                if node.attr == "FILES":
+                    return Value(trace=(self.loc(node, "UPLOADED_FILE"),), tag="upload-map")
                 if node.attr in {"GET", "POST", "data", "query_params", "headers", "META", "body"}:
                     kind = "REQUEST_BODY" if node.attr in {"POST", "data", "body"} else "REQUEST_HEADER" if node.attr in {"headers", "META"} else "QUERY_PARAMETER"
                     return Value(trace=(self.loc(node, kind),), tag="input-map")
@@ -673,10 +697,14 @@ class Analyzer:
             index = self.expr(node.slice, env)
             if base.tag == "input-map" and not base.unknown:
                 return replace(base, tag="", literal=UNKNOWN)
+            if base.tag == "upload-map" and not base.unknown:
+                return replace(base, tag="uploaded-file", literal=UNKNOWN)
             return replace(merge(base, index), unknown=True, literal=UNKNOWN, tag="", symbol="")
         if isinstance(node, ast.BinOp):
             left = self.expr(node.left, env)
             right = self.expr(node.right, env)
+            if isinstance(node.op, ast.Div) and left.tag in {"path", "guarded-path"}:
+                return self.step(replace(merge(left, right), literal=UNKNOWN, tag="path", symbol=""), node, "PATH_CONSTRUCTION")
             value = self.construct(left, right, node)
             return value if isinstance(node.op, (ast.Add, ast.Mod)) else replace(value, unknown=True)
         if isinstance(node, (ast.JoinedStr, ast.FormattedValue)):
@@ -774,6 +802,9 @@ class Analyzer:
         if any(isinstance(a, ast.Starred) for a in node.args) or None in keywords:
             self.note("VARIADIC_CALL_UNRESOLVED")
             return replace(merge(*(args + list(keywords.values()))), unknown=True)
+        handled = self.resource_call(node, function, base, name, args, keywords)
+        if handled is not None:
+            return handled
         if base and base.tag == "input-map" and name in {"get", "getlist"} and not base.unknown:
             return replace(merge(base, *args), tag="", literal=UNKNOWN, symbol="")
         if function.symbol == "django.db.connection.cursor" and not function.unknown:
@@ -816,6 +847,106 @@ class Analyzer:
                 if v.tag == "collection":
                     env[key] = replace(v, unknown=True, elements=None)
         return replace(value, unknown=True, literal=UNKNOWN, symbol="", tag="")
+
+    def resource_call(self, node, function, base, name, args, keywords):
+        if function.unknown and not (base and base.tag in {"path", "guarded-path", "file-handle", "uploaded-file", "binary-stream"}):
+            return None
+        symbol = function.symbol
+        first = args[0] if args else keywords.get("file", keywords.get("stream", Value(unknown=True)))
+        if base and base.tag == "upload-map" and name == "get" and not base.unknown:
+            return replace(base, tag="uploaded-file", literal=UNKNOWN)
+        if base and base.tag == "request" and name == "read" and not base.unknown:
+            return Value(trace=(self.loc(node, "REQUEST_BODY"),))
+        if symbol == "pathlib.Path":
+            value = merge(*args) if args else Value(literal=".")
+            return self.step(replace(value, tag="guarded-path" if len(args) == 1 and value.tag == "guarded-path" else "path", symbol=""), node, "PATH_CONSTRUCTION")
+        if symbol == "io.BytesIO":
+            text_input = isinstance(first.literal, str) or not first.unknown and first.trace and first.trace[0]["kind"] in {"QUERY_PARAMETER", "REQUEST_HEADER"}
+            return replace(first, tag="binary-stream", symbol="", unknown=first.unknown or bool(text_input))
+        if symbol in {"os.path.join", "posixpath.join", "ntpath.join"}:
+            return self.step(replace(merge(*args), tag="path", literal=UNKNOWN, symbol=""), node, "PATH_CONSTRUCTION")
+        if symbol in {"os.path.normpath", "os.path.abspath", "os.path.realpath"}:
+            return replace(self.step(first, node, "PATH_NORMALIZATION"), tag="path", literal=UNKNOWN, symbol="")
+        if symbol == "django.utils._os.safe_join":
+            value = merge(*args)
+            if len(args) >= 2 and isinstance(args[0].literal, str) and args[0].literal.startswith("/") and "\x00" not in args[0].literal and posixpath.normpath(args[0].literal) not in {"/", "//"} and not args[0].unknown:
+                return replace(value, literal=UNKNOWN, tag="guarded-path", symbol="",
+                               defenses=(*value.defenses, self.loc(node, "DJANGO_SAFE_JOIN_LITERAL_BASE")))
+            return replace(value, unknown=True, tag="path", literal=UNKNOWN, symbol="")
+        if base and base.tag in {"path", "guarded-path"}:
+            if name == "joinpath":
+                return self.step(replace(merge(base, *args), tag="path", literal=UNKNOWN, symbol=""), node, "PATH_CONSTRUCTION")
+            if name in {"resolve", "absolute"}:
+                return replace(self.step(base, node, "PATH_NORMALIZATION"), tag="path", literal=UNKNOWN,
+                               unknown=base.unknown or base.tag == "guarded-path", symbol="")
+            if name in {"open", "read_text", "read_bytes", "write_text", "write_bytes", "unlink"}:
+                self.resource_sink(node, base, "PY_FILE_PATH_INPUT_FLOW", "FILE_ACCESS_CALL")
+                return replace(base, unknown=True, tag="file-handle" if name == "open" else "", literal=UNKNOWN, symbol="")
+        if symbol in {"builtins.open", "io.open"}:
+            path = replace(first, unknown=True) if "opener" in keywords else first
+            self.resource_sink(node, path, "PY_FILE_PATH_INPUT_FLOW", "FILE_ACCESS_CALL")
+            return replace(path, tag="file-handle", unknown=True, literal=UNKNOWN, symbol="")
+        if base and base.tag in {"uploaded-file", "file-handle", "binary-stream"} and name == "read":
+            return replace(base, tag="", unknown=base.unknown or base.tag == "file-handle", literal=UNKNOWN, symbol="")
+        if symbol in {"pickle.loads", "pickle.load", "yaml.unsafe_load", "yaml.unsafe_load_all", "yaml.load", "yaml.load_all", "yaml.safe_load", "yaml.safe_load_all", "json.loads", "json.load"}:
+            rule = "PY_UNSAFE_DESERIALIZATION_INPUT_FLOW"
+            unknown = len(args) > (2 if symbol in {"yaml.load", "yaml.load_all"} else 1)
+            safe = symbol in {"yaml.safe_load", "yaml.safe_load_all", "json.loads", "json.load"}
+            if symbol in {"yaml.load", "yaml.load_all"}:
+                loader = args[1] if len(args) > 1 else keywords.get("Loader", Value(unknown=True))
+                safe = not loader.unknown and loader.symbol in {"yaml.SafeLoader", "yaml.CSafeLoader", "yaml.BaseLoader", "yaml.CBaseLoader"}
+                unknown |= not safe and (loader.unknown or loader.symbol not in {"yaml.Loader", "yaml.CLoader", "yaml.UnsafeLoader", "yaml.CUnsafeLoader"})
+            if symbol == "pickle.load" and first.tag not in {"uploaded-file", "binary-stream"}:
+                unknown = True
+            invalid_type = symbol == "pickle.loads" and (isinstance(first.literal, str) or not first.unknown and first.trace and first.trace[0]["kind"] in {"QUERY_PARAMETER", "REQUEST_HEADER"})
+            if symbol.startswith("yaml.") and first.tag == "file-handle":
+                unknown = True
+            lazy = symbol.endswith("_all")
+            if safe:
+                self.resource_sink(node, first, rule, "SAFE_DATA_PARSER", safe=True, lazy=lazy)
+            else:
+                self.resource_sink(node, replace(first, unknown=first.unknown or unknown or lazy), rule, "DESERIALIZATION_CALL", lazy=lazy, invalid_type=bool(invalid_type))
+            # Parsing arbitrary structures is not proof that their future fields are safe path/SQL values.
+            return replace(first, unknown=True, literal=UNKNOWN, tag="", symbol="")
+        return None
+
+    def resource_sink(self, node, value, rule, operation, safe=False, lazy=False, invalid_type=False):
+        limitations = ["SYMLINKS_PERMISSIONS_AND_RUNTIME_NOT_VERIFIED"] if rule == "PY_FILE_PATH_INPUT_FLOW" else ["LIBRARY_VERSION_AND_EXPLOITABILITY_NOT_VERIFIED"]
+        unresolved = value.unknown or self.partial or len(value.trace) >= 40
+        if unresolved:
+            limitations.append("RESOURCE_FLOW_UNRESOLVED")
+            self.note("RESOURCE_FLOW_UNRESOLVED")
+        if lazy:
+            limitations.append("LAZY_DESERIALIZATION_EXECUTION_NOT_VERIFIED")
+        if invalid_type:
+            kind = "UNSUPPORTED_ARGUMENT_TYPE"
+            limitations.append("PICKLE_LOADS_REQUIRES_BYTES_NOT_REQUEST_TEXT")
+        elif safe:
+            kind = "SAFE_PARSER_DECLARATION"
+        elif rule == "PY_FILE_PATH_INPUT_FLOW" and value.tag == "guarded-path" and not unresolved:
+            kind = "LEXICALLY_CONFINED_PATH"
+        elif unresolved or not value.trace and value.literal is UNKNOWN:
+            kind = "UNRESOLVED_RESOURCE"
+        elif value.trace:
+            kind = "INPUT_IN_FILE_PATH" if rule == "PY_FILE_PATH_INPUT_FLOW" else "INPUT_TO_UNSAFE_DESERIALIZATION"
+        else:
+            kind = "FIXED_SOURCE_NO_REQUEST_FLOW"
+        location = self.loc(node, operation)
+        record = dict(ruleId=rule, kind=kind, location=location, trace=list(value.trace), defenses=list(value.defenses), limitations=limitations, executionObserved=not lazy)
+        if len(self.resources) >= MAX_RESULTS:
+            self.note("RESULT_LIMIT_EXCEEDED")
+            return
+        if record not in self.resources:
+            self.resources.append(record)
+        if not value.trace or safe or invalid_type or kind == "LEXICALLY_CONFINED_PATH" or len(self.findings) >= MAX_RESULTS:
+            return
+        path = rule == "PY_FILE_PATH_INPUT_FLOW"
+        candidate = dict(ruleId=rule, kind="CWE-22" if path else "CWE-502", confidence="MEDIUM" if kind == "UNRESOLVED_RESOURCE" else "HIGH",
+                         disposition="REVIEW_REQUIRED", source=value.trace[0], sink=location, flow=list(value.trace), defenses=list(value.defenses), limitations=limitations,
+                         message="요청 값이 파일 경로에 전달됩니다. 실제 허용 디렉터리와 파일시스템 상태를 확인하세요." if path else "외부 입력이 객체 복원 호출에 전달됩니다. 입력 신뢰도와 로더 설정을 확인하세요.",
+                         recommendation="서버의 고정 파일 식별자를 사용하거나 기준 디렉터리와 경로 경계를 검증하고 심볼릭 링크 정책을 확인하세요." if path else "외부 입력의 pickle 복원을 피하고 JSON 스키마 검증 또는 YAML SafeLoader 사용을 검토하세요.")
+        if candidate not in self.findings:
+            self.findings.append(candidate)
 
     def is_model(self, key):
         if key not in self.classes:

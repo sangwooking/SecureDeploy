@@ -34,7 +34,7 @@ public record InspectionScope(int schemaVersion, String assurance, boolean evide
         for (var file : files) {
             if (file.type() == ProjectFileType.PYTHON) {
                 add(groups, "PYTHON_SOURCE", "Python 서버 코드 일부", "PARTIAL", file.relativePath(),
-                        "Django/DRF의 지원되는 진입점과 제한된 SQL 값 전달만 확인합니다. 파일별 구문·추적 상태를 확인하세요. 미들웨어·동적 기능·인증·소유권·전체 실행 경로는 검증하지 않습니다.");
+                        "Django/DRF의 지원되는 진입점에서 제한된 SQL·파일 경로·pickle/YAML 값 전달을 확인합니다. 파일별 구문·추적 상태를 확인하세요. 파일시스템·미들웨어·동적 기능·인증·소유권·전체 실행 경로는 검증하지 않습니다.");
             }
             if (file.type() == ProjectFileType.PYTHON_REQUIREMENTS || file.type() == ProjectFileType.PYTHON_PROJECT) {
                 add(groups, "PYTHON_DEPENDENCIES", "Python 의존성 선언", "PARTIAL", file.relativePath(),

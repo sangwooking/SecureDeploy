@@ -1,6 +1,12 @@
 # Bounded Python server flow analysis
 
-Trusted CPython standard-library AST worker, version `py-django-v2`.
+Trusted CPython standard-library AST worker, version `py-django-v3`.
+
+Version 3 adds bounded request-to-file and pickle/YAML evidence using the existing Django/DRF flow evaluator.
+Supported calls include open/io.open, pathlib.Path file operations, pickle.load/loads and selected PyYAML loaders.
+Literal-base Django safe_join is lexical confinement evidence only; symlinks, permissions and runtime activation remain unverified.
+Unknown transforms, unknown YAML loaders, lazy load_all execution and unsupported argument types are not confirmed resource findings.
+Java/Spring and general Node.js file/deserialization flows are outside this milestone.
 No Django install, target import, target evaluation, build, pip, or network requests.
 
 ## Runtime

@@ -84,6 +84,39 @@ class PythonAnalysisIntegrationTest {
         assertThat(result.path("coverage").path("analyzers").toString()).contains("PYTHON_SERVER", "AST_PARSE_FAILED");
         assertThat(detail(token, result.path("reviewId").asLong()).path("serverAnalysis")).isEqualTo(result.path("serverAnalysis"));
     }
+    @Test void resourceEvidenceSharesTransportPersistenceAndOwnershipWithoutRiskPromotion() throws Exception {
+        String code = "import pickle\nfrom rest_framework.decorators import api_view\n@api_view(['POST'])\ndef endpoint(request):\n open(request.GET['path'])\n return pickle.loads(request.body)\n";
+        String token = signup(); var zip = upload(token, code);
+        var safe = upload(token, code.replace("open(request.GET['path'])", "open('/fixed')").replace("import pickle", "import json").replace("pickle.loads", "json.loads"));
+        var snapshot = zip.at("/serverAnalysis/pythonAnalysis");
+        assertThat(snapshot.path("resourceUses")).hasSize(2);
+        assertThat(snapshot.path("validatedFindings")).hasSize(2);
+        for (var finding : snapshot.path("validatedFindings")) {
+            assertThat(finding.path("priority").asText()).isEqualTo("REVIEW_REQUIRED");
+            assertThat(finding.path("comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        }
+        assertThat(safe.at("/serverAnalysis/pythonAnalysis/validatedFindings")).isEmpty();
+        for (String key : List.of("securityScore", "vulnerabilityCount", "deploymentStatus")) assertThat(zip.path(key)).isEqualTo(safe.path(key));
+        for (String key : List.of("prioritySummary", "prioritizedDeploymentAssessment")) assertThat(zip.path("riskAssessment").path(key)).isEqualTo(safe.path("riskAssessment").path(key));
+        Path publicRoot=source("resource-public",code);
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture", "https://github.com/fixture/files", publicRoot, publicRoot));
+        var publicResult=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/files\",\"scanMode\":\"STANDARD\"}");
+        Path privateRoot=source("resource-private",code);
+        var metadata=new GitHubSourceSnapshot("fixture","files","https://github.com/fixture/files","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/files",privateRoot,privateRoot,metadata));
+        var privateResult=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        assertThat(publicResult.at("/serverAnalysis/pythonAnalysis")).isEqualTo(snapshot);
+        assertThat(privateResult.at("/serverAnalysis/pythonAnalysis")).isEqualTo(snapshot);
+        assertThat(publicRoot).doesNotExist(); assertThat(privateRoot).doesNotExist();
+        long id=zip.path("reviewId").asLong();
+        assertThat(detail(token,id).at("/serverAnalysis/pythonAnalysis")).isEqualTo(snapshot);
+        assertThat(zip.at("/coverage/analyzers").toString()).contains("RESOURCE_INPUT_IN_FILE_PATH", "RESOURCE_INPUT_TO_UNSAFE_DESERIALIZATION");
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+        assertThat(zip.at("/semanticReview/semanticReviewStatus").asText()).isEqualTo("NOT_REQUESTED");
+    }
+    Path source(String dir, String code) throws Exception {
+        Path root=Files.createDirectory(temp.resolve(dir)); Files.writeString(root.resolve("views.py"),code);return root;
+    }
     Path source(String dir) throws Exception {
         Path root = Files.createDirectory(temp.resolve(dir)); Files.writeString(root.resolve("views.py"), PythonServerAnalyzerTest.UNSAFE); return root;
     }

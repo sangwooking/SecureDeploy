@@ -13,6 +13,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
 
     public static List<ServerFlowFinding> connect(ServerAnalysisSnapshot snapshot) {
         var findings = new ArrayList<>(connectSql(snapshot));
+        findings.addAll(connectResources(snapshot));
         if (snapshot.httpUses() == null) return List.copyOf(findings);
         Map<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>> groups = new LinkedHashMap<>();
         for (var candidate : snapshot.findings()) {
@@ -68,6 +69,38 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
                         "정상 값과 따옴표 등이 포함된 테스트 입력으로 값 바인딩을 검증하세요. 실제 운영 서버에서 공격 테스트를 하지 마세요.",
                         "수정 후 같은 프로젝트를 재검사하여 해당 위치의 흐름 근거를 다시 확인하세요. 이 항목은 기존 해결 건수에 자동 합산되지 않습니다.")))
                 .toList();
+    }
+
+    private static List<ServerFlowFinding> connectResources(ServerAnalysisSnapshot snapshot) {
+        if (snapshot.resourceUses() == null) return List.of();
+        var groups = new LinkedHashMap<String, List<ServerAnalysisSnapshot.Finding>>();
+        for (var candidate : snapshot.findings()) {
+            if (!Set.of("PY_FILE_PATH_INPUT_FLOW", "PY_UNSAFE_DESERIALIZATION_INPUT_FLOW").contains(candidate.ruleId())
+                    || !"HIGH".equals(candidate.confidence()) || candidate.limitations().contains("RESOURCE_FLOW_UNRESOLVED")) continue;
+            boolean observed = snapshot.resourceUses().stream().anyMatch(use -> use.executionObserved()
+                    && Set.of("INPUT_IN_FILE_PATH", "INPUT_TO_UNSAFE_DESERIALIZATION").contains(use.kind())
+                    && use.ruleId().equals(candidate.ruleId()) && use.location().equals(candidate.sink())
+                    && use.trace().equals(candidate.flow()) && !use.limitations().contains("RESOURCE_FLOW_UNRESOLVED"));
+            if (!observed) continue;
+            String id = identity(snapshot.analyzerVersion(), candidate.ruleId(), candidate.sink());
+            var evidence = groups.computeIfAbsent(id, ignored -> new ArrayList<>());
+            if (!evidence.contains(candidate)) evidence.add(candidate);
+        }
+        return groups.entrySet().stream().map(group -> {
+            var first = group.getValue().get(0);
+            boolean path = first.ruleId().equals("PY_FILE_PATH_INPUT_FLOW");
+            return new ServerFlowFinding(group.getKey(), "PYTHON_DATA_FLOW", snapshot.analyzerVersion(), first.ruleId(),
+                    RiskPriority.REVIEW_REQUIRED, "NOT_COMPARED", first.sink(), List.copyOf(group.getValue()), List.of(first.sink()),
+                    path ? "사용자가 입력한 경로로 서버가 다른 파일에 접근할 가능성이 있습니다" : "외부에서 받은 데이터를 위험한 방식으로 복원할 가능성이 있습니다",
+                    path ? "요청 값이 파일 접근 경로에 전달되는 정적 근거입니다(CWE-22). 허용 디렉터리 밖 접근이나 실제 파일 유출을 확인한 것은 아닙니다."
+                    : "요청 데이터가 pickle 또는 확인된 unsafe YAML 복원 호출에 전달됩니다(CWE-502). 실제 코드 실행이나 공격 성공은 검증하지 않았습니다.",
+                    first.recommendation(), List.of(
+                        path ? "입력·파일 접근 위치와 실제 기준 디렉터리, 정규화 후 경계 검사, 심볼릭 링크·접근 권한을 확인하세요."
+                        : "입력 출처와 로더를 확인하고 외부 데이터의 객체 복원을 피하세요. JSON 스키마 검증 또는 YAML SafeLoader 사용 시 기능 호환성도 확인하세요.",
+                        path ? "임시 테스트 디렉터리에서 정상 파일명·상위 경로·절대 경로·심볼릭 링크가 정책대로 처리되는지 검증하세요."
+                        : "로컬 Mock에서 정상 데이터·잘못된 형식·크기 제한과 거부 동작을 검증하세요. 실제 악성 객체를 실행하지 마세요.",
+                        "변경 후 같은 프로젝트를 재검사하세요. 이 검토 항목은 기존 점수·배포 판단·해결 건수와 별도입니다."));
+        }).toList();
     }
 
     private static String identity(String version, String ruleId, ServerAnalysisSnapshot.Location location) {

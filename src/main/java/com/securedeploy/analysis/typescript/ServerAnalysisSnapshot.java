@@ -10,7 +10,20 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
         String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
         List<AuthorizationContext> authorizationContexts, List<String> limitations,
         List<ServerFlowFinding> validatedFindings, List<HttpUse> httpUses, ServerAnalysisSnapshot pythonAnalysis,
-        SelectionCoverage selectionCoverage, com.securedeploy.analysis.deployment.DeploymentSnapshot deploymentAnalysis) {
+        SelectionCoverage selectionCoverage, com.securedeploy.analysis.deployment.DeploymentSnapshot deploymentAnalysis,
+        List<ResourceUse> resourceUses) {
+    public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
+            String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
+            List<AuthorizationContext> authorizationContexts, List<String> limitations,
+            List<ServerFlowFinding> validatedFindings, List<HttpUse> httpUses, ServerAnalysisSnapshot pythonAnalysis,
+            SelectionCoverage selectionCoverage, com.securedeploy.analysis.deployment.DeploymentSnapshot deploymentAnalysis) {
+        this(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses, authorizationContexts,
+                limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, deploymentAnalysis, null);
+    }
+    public ServerAnalysisSnapshot withResourceUses(List<ResourceUse> value) {
+        return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses,
+                authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, deploymentAnalysis, value);
+    }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
             String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
             List<AuthorizationContext> authorizationContexts, List<String> limitations,
@@ -21,7 +34,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
     }
     public ServerAnalysisSnapshot withDeploymentAnalysis(com.securedeploy.analysis.deployment.DeploymentSnapshot value) {
         return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses,
-                authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, value);
+                authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, value, resourceUses);
     }
     public record SelectionCoverage(int discoveredFiles, int submittedFiles, int omittedFiles, int omittedDetails,
             int submittedCharacters, Map<String, Integer> omissionReasons) { }
@@ -34,7 +47,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
     }
     public ServerAnalysisSnapshot withSelectionCoverage(SelectionCoverage selection) {
         return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings,
-                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selection, deploymentAnalysis);
+                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selection, deploymentAnalysis, resourceUses);
     }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
             String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
@@ -45,7 +58,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
     }
     public ServerAnalysisSnapshot withPythonAnalysis(ServerAnalysisSnapshot value) {
         return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings,
-                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, value, selectionCoverage, deploymentAnalysis);
+                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, value, selectionCoverage, deploymentAnalysis, resourceUses);
     }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
             String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
@@ -62,7 +75,14 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
     public record Location(String filePath, int line, int column, String functionName, String kind) { }
     public record FileCoverage(String filePath, String parseStatus, String flowStatus, int entrypoints,
             int functionsAnalyzed, int prepareCallSites, int tracedPrepareCallSites, List<String> limitations,
-            Integer httpCallSites, Integer tracedHttpCallSites, String selectionReason) {
+            Integer httpCallSites, Integer tracedHttpCallSites, String selectionReason,
+            Integer resourceCallSites, Integer tracedResourceCallSites) {
+        public FileCoverage(String filePath, String parseStatus, String flowStatus, int entrypoints,
+                int functionsAnalyzed, int prepareCallSites, int tracedPrepareCallSites, List<String> limitations,
+                Integer httpCallSites, Integer tracedHttpCallSites, String selectionReason) {
+            this(filePath, parseStatus, flowStatus, entrypoints, functionsAnalyzed, prepareCallSites,
+                    tracedPrepareCallSites, limitations, httpCallSites, tracedHttpCallSites, selectionReason, null, null);
+        }
         public FileCoverage(String filePath, String parseStatus, String flowStatus, int entrypoints,
                 int functionsAnalyzed, int prepareCallSites, int tracedPrepareCallSites, List<String> limitations,
                 Integer httpCallSites, Integer tracedHttpCallSites) {
@@ -71,7 +91,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
         }
         public FileCoverage withSelectionReason(String reason) {
             return new FileCoverage(filePath, parseStatus, flowStatus, entrypoints, functionsAnalyzed,
-                    prepareCallSites, tracedPrepareCallSites, limitations, httpCallSites, tracedHttpCallSites, reason);
+                    prepareCallSites, tracedPrepareCallSites, limitations, httpCallSites, tracedHttpCallSites, reason, resourceCallSites, tracedResourceCallSites);
         }
         public FileCoverage(String filePath, String parseStatus, String flowStatus, int entrypoints,
                 int functionsAnalyzed, int prepareCallSites, int tracedPrepareCallSites, List<String> limitations) {
@@ -89,6 +109,8 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
             List<String> limitations, boolean executionObserved, List<Location> executionLocations) { }
     public record HttpUse(String kind, String controlledPart, Location location, List<Location> trace,
             List<Location> defenses, List<String> limitations) { }
+    public record ResourceUse(String ruleId, String kind, Location location, List<Location> trace,
+            List<Location> defenses, List<String> limitations, boolean executionObserved) { }
     public record AuthorizationContext(Location entry, List<Location> checks, List<Location> defenses,
             List<Location> resources, String conclusion, List<String> limitations) { }
 
@@ -112,10 +134,11 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
             counts.put("SUBMITTED_PYTHON_FILES", selectionCoverage.submittedFiles());
             counts.put("OMITTED_PYTHON_FILES", selectionCoverage.omittedFiles());
         }
+        if (resourceUses != null) resourceUses.forEach(use -> counts.merge("RESOURCE_" + use.kind(), 1, Integer::sum));
         var analyzers = new java.util.ArrayList<>(ledger.analyzers());
         boolean python = analyzerVersion.startsWith("py-django-");
         analyzers.add(new CoverageLedger.Analyzer(python ? "PYTHON_SERVER" : "TYPESCRIPT_SERVER", status,
-                python ? "Django/DRF 진입점의 제한된 SQL 값 전달 검사. 전체 Python, 인증·소유권, 실행 가능성은 보증하지 않으며 기존 Risk 계산과 분리됩니다."
+                python ? "Django/DRF 진입점의 제한된 SQL·파일 경로·pickle/YAML 값 전달 검사. 전체 Python, 인증·소유권, 파일시스템·실행 가능성은 미검증이며 기존 Risk 계산과 분리됩니다."
                 : "Workers/Pages 진입점의 제한된 구문·값 전달 검사. 전체 TypeScript, 실행 가능성, 인증·소유권 보증 및 Risk 계산에는 포함되지 않습니다.", counts));
         String combined = "FAILED".equals(ledger.status()) ? "FAILED"
                 : !List.of("COMPLETE", "NOT_APPLICABLE").contains(status) ? "PARTIAL" : ledger.status();

@@ -21,6 +21,10 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       python.validatedFindings[0].ruleId = 'PY_SQL_INPUT_FLOW';
       python.validatedFindings[0].recommendedAction = 'SQL은 고정하고 execute(sql, params) 또는 Django ORM을 사용하세요.';
       python.findings[0].ruleId = 'PY_SQL_INPUT_FLOW';
+      const resourceFindings=require('../resource-fixture.cjs')();
+      python.validatedFindings.push(...resourceFindings);
+      python.findings.push(...resourceFindings.flatMap(f=>f.evidence));
+      python.resourceUses=resourceFindings.map(f=>({ruleId:f.ruleId,kind:f.ruleId.includes('FILE_PATH')?'INPUT_IN_FILE_PATH':'INPUT_TO_UNSAFE_DESERIALIZATION',location:f.location,trace:f.evidence[0].flow,defenses:[],limitations:f.evidence[0].limitations,executionObserved:true}));
       result.serverAnalysis.pythonAnalysis = python;
       const ssrfSource={filePath:'functions/proxy.ts',line:3,functionName:'onRequest',kind:'REQUEST_HEADER'};
       const ssrfSink={...ssrfSource,line:5,kind:'HTTP_REQUEST_CALL'};
@@ -67,7 +71,11 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
         await page.screenshot({path:require('node:path').join(process.env.SCREENSHOT_DIR,`deployment-${width}.png`)});
       }
       await pythonSection.waitFor({ state: 'visible' });
-      assert.equal(await pythonSection.locator('article').count(), 1);
+      assert.equal(await pythonSection.locator('article').count(), 3);
+      for(const phrase of ['사용자가 입력한 경로로 서버가 다른 파일','외부에서 받은 데이터를 위험한 방식','YAML SafeLoader'])assert.ok((await pythonSection.innerText()).includes(phrase),phrase);
+      await pythonSection.getByText('파일 접근·데이터 복원 근거 (2)',{exact:true}).click();
+      assert.ok((await pythonSection.innerText()).includes('심볼릭 링크'));
+      if(process.env.SCREENSHOT_DIR) await pythonSection.locator('article').nth(1).screenshot({path:require('node:path').join(process.env.SCREENSHOT_DIR,`file-flow-${width}.png`)});
       assert.ok((await pythonSection.innerText()).includes('execute(sql, params)'));
       assert.ok((await pythonSection.innerText()).includes('전체 Python 코드'));
       for (const phrase of ['구문 파싱 2개','자원 제한 1개','보안 검사를 모두 마쳤다는 뜻이 아닙니다','미선택 1개'])

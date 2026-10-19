@@ -3,6 +3,22 @@ import type { AnalysisLocation, ServerAnalysisSnapshot } from '../types/serverAn
 import { DeploymentAnalysisSection } from './DeploymentAnalysisSection';
 
 const labels: Record<string, string> = {
+  UPLOADED_FILE: '업로드된 파일 데이터', PATH_CONSTRUCTION: '파일 경로 구성', PATH_NORMALIZATION: '경로 정규화 · 디렉터리 제한 증거는 아님',
+  FILE_ACCESS_CALL: '파일 접근 호출', DESERIALIZATION_CALL: '데이터 복원 호출',
+  INPUT_IN_FILE_PATH: '요청 값이 파일 경로에 전달됨', INPUT_TO_UNSAFE_DESERIALIZATION: '요청 데이터가 위험한 복원 호출에 전달됨',
+  LEXICALLY_CONFINED_PATH: '고정 기준 디렉터리와 safe_join의 문자열 경계 제한 확인',
+  SAFE_PARSER_DECLARATION: 'JSON 또는 안전 로더 호출 형태 확인 · 다른 위험까지 보증하지 않음',
+  FIXED_SOURCE_NO_REQUEST_FLOW: '고정 값에서 호출 · 요청 입력 전달은 확인되지 않음', UNRESOLVED_RESOURCE: '파일·데이터 출처 또는 처리 과정 미확인',
+  RESOURCE_FLOW_UNRESOLVED: '입력 전달·변환·실행 조건 중 일부를 확인하지 못함',
+  RESOURCE_CALLS_OUTSIDE_TRACED_FLOW: '구문에서 발견한 파일·복원 API 후보 중 추적하지 못한 호출이 있음',
+  DJANGO_SAFE_JOIN_LITERAL_BASE: '고정 기준 디렉터리의 Django safe_join 확인',
+  SYMLINKS_PERMISSIONS_AND_RUNTIME_NOT_VERIFIED: '심볼릭 링크·파일시스템 상태·접근 권한·운영 실행은 미검증',
+  LIBRARY_VERSION_AND_EXPLOITABILITY_NOT_VERIFIED: '라이브러리 버전별 동작과 실제 공격 가능성은 미검증',
+  BOUNDED_PYTHON_FILE_AND_DESERIALIZATION_ONLY: 'Python의 지원 파일 API·pickle·YAML 호출만 제한적으로 추적',
+  MODULE_OBJECT_WRITE_UNRESOLVED: '모듈 객체 변경으로 호출 대상의 원래 동작을 확인하지 못함',
+  LAZY_DESERIALIZATION_EXECUTION_NOT_VERIFIED: '지연 복원 결과의 실제 순회·실행 여부는 확인하지 못함',
+  UNSUPPORTED_ARGUMENT_TYPE: '요청 문자열은 이 복원 API가 요구하는 바이트 형식과 다름 · 취약점으로 연결하지 않음',
+  PICKLE_LOADS_REQUIRES_BYTES_NOT_REQUEST_TEXT: 'pickle.loads는 바이트 입력을 요구합니다. 확인한 문자열 흐름을 실행 가능한 복원 위험으로 계산하지 않았습니다.',
   COMPLETE: '제한된 범위 확인 완료', PARTIAL: '일부만 확인', NOT_APPLICABLE: '대상 파일 없음',
   UNAVAILABLE: '분석하지 못함', TIMEOUT: '분석 시간 초과', DISABLED: '실행하지 않음',
   PARSED: '구문 확인', PARSE_FAILED: '구문 파싱 실패', LIMIT_EXCEEDED: '크기·자원 제한', NOT_RUN: '미실행',
@@ -12,7 +28,7 @@ const labels: Record<string, string> = {
   QUERY_PARAMETER: 'URL에서 받은 값', REQUEST_BODY: '요청 본문', ROUTE_PARAMETER: '경로에서 받은 값',
   REQUEST_URL: '요청 URL', VARIABLE: '변수로 전달', ASSIGNMENT: '변수에 대입', FUNCTION_ARGUMENT: '함수 인자로 전달',
   D1_PREPARE: '데이터베이스 쿼리 구성', VALUE_BINDING: '값 매개변수 바인딩',
-  SQL_STRING_CONSTRUCTION: '쿼리에 전달할 문자열 구성', SQL_EXECUTION_CALL: '쿼리 실행 호출',
+  SQL_STRING_CONSTRUCTION: '문자열 구성 · 실제 사용 위치는 전달 근거 참조', SQL_EXECUTION_CALL: '쿼리 실행 호출',
   LITERAL_IDENTIFIER_ALLOWLIST: '고정된 식별자 허용 목록과 분기 확인',
   SCHEDULED_ENTRY_NOT_SUPPORTED: '예약 실행 진입점은 현재 추적 대상이 아님',
   LOGIN_CONTEXT_REFERENCE: '로그인 문맥 참조', CONDITIONAL_CHECK: '조건 분기',
@@ -45,7 +61,7 @@ const labels: Record<string, string> = {
   WHOLE_URL: '전체 주소', HOST_OR_AUTHORITY: '호스트 또는 주소 권한부', WHOLE_URL_OR_HOST: '전체 주소 또는 호스트',
   PATH_QUERY_OR_NONE: '경로·검색값 또는 입력 영향 없음', UNKNOWN: '확인 불가',
   SERVER_ENTRY: '서버 요청 진입점', AUTH_DECLARATION: '인증·권한 설정 선언',
-  BOUNDED_DJANGO_DRF_ONLY: 'Django/DRF의 일부 진입점·SQL 전달만 검사',
+  BOUNDED_DJANGO_DRF_ONLY: 'Django/DRF의 일부 진입점과 지원되는 값 전달만 검사',
   MIDDLEWARE_SETTINGS_AND_OWNERSHIP_NOT_VERIFIED: '미들웨어·전역 설정·리소스 소유권은 미검증',
   STATIC_FLOW_NOT_EXPLOIT_PROOF: '정적 전달 경로이며 공격 성공을 확인한 것은 아님',
   NO_OS_SANDBOX: '시간·입출력 제한 프로세스이며 OS 수준 완전 격리는 아님',
@@ -103,7 +119,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
   const current = Math.min(page, Math.max(0, Math.ceil(snapshot.files.length / 10) - 1));
   return <section className="server-analysis-section" aria-label={title}>
     <h3>{title}</h3><p>{text(snapshot.status)}</p>
-    {python && <p>Django/DRF에서 연결된 일부 요청 경로와 SQL 값 전달을 확인한 결과입니다. 전체 Python 코드·인증·권한·미들웨어를 검사한 것은 아닙니다.</p>}
+    {python && <p>Django/DRF에서 연결된 일부 요청 경로의 SQL·파일 경로·pickle/YAML 값 전달을 확인한 결과입니다. 전체 Python 코드·인증·권한·미들웨어를 검사한 것은 아닙니다.</p>}
     {python && <PythonCoverageSummary snapshot={snapshot} />}
     <p className="review-caution">코드 구조에서 확인한 별도 검토 항목입니다. 기존 점수·위험 판정·반드시 처리 건수에 합산하지 않습니다. 항목이 없어도 전체 코드가 안전하다는 의미는 아닙니다.</p>
     {snapshot.findings.length === 0 && <p>지원 범위에서 보고된 요청 값 전달 위험 항목은 없습니다. 미검사·미지원 범위를 함께 확인하세요.</p>}
@@ -127,7 +143,9 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
     {candidates.length > 0 && <h4>추가 문맥이 필요한 후보</h4>}
     <div className="vulnerability-list">{candidates.map((finding, i) => <article className="vulnerability-item action-finding" key={i}>
       <span className="risk-badge risk-review_required">코드 흐름 · 추가 확인 필요</span>
-      <h4>{finding.ruleId === 'TS_SSRF_INPUT_FLOW' ? '서버 요청 주소의 처리 과정을 확인해 주세요' : '요청 값이 데이터베이스 쿼리에 들어갑니다'}</h4><p>{finding.message}</p>
+      <h4>{finding.ruleId === 'TS_SSRF_INPUT_FLOW' ? '서버 요청 주소의 처리 과정을 확인해 주세요'
+        : finding.ruleId === 'PY_FILE_PATH_INPUT_FLOW' ? '입력된 파일 경로의 제한을 확인해 주세요'
+        : finding.ruleId === 'PY_UNSAFE_DESERIALIZATION_INPUT_FLOW' ? '외부 데이터의 복원 방식을 확인해 주세요' : '요청 값이 데이터베이스 쿼리에 들어갑니다'}</h4><p>{finding.message}</p>
       <p>{snapshot.validatedFindings == null ? '이 이력은 실행 경로 Finding 연결 이전의 기록입니다. 과거 결과를 새 기준으로 추측하여 승격하지 않습니다.'
         : '중간 처리 또는 실행 호출을 충분히 확인하지 못해 검증된 흐름 Finding으로 연결하지 않았습니다.'}</p>
       <p>{finding.recommendation}</p>
@@ -135,6 +153,15 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
         <FlowEvidence finding={finding} />
       </details>
     </article>)}</div>
+    {python && <details className="coverage-details"><summary>파일 접근·데이터 복원 근거 ({snapshot.resourceUses?.length ?? '미기록'})</summary>
+      {snapshot.resourceUses == null ? <p>이 이력에는 파일 접근·데이터 복원 추적 기록이 없습니다. 과거 결과를 새 기준으로 판단하지 않습니다.</p>
+        : <ul className="coverage-file-list">{snapshot.resourceUses.map((use, i) => <li key={i}>
+          <code className="finding-location">{location(use.location)}</code><span>{text(use.kind)}</span>
+          {use.defenses.map((d, j) => <span key={`d${j}`}>{text(d.kind)}</span>)}
+          {use.limitations.map(l => <span key={l}>{text(l)}</span>)}
+        </li>)}</ul>}
+      <p>문자열 경계 검사를 확인했더라도 심볼릭 링크·운영 파일 권한을 보증하지 않습니다. 고정 데이터도 신뢰된 운영 데이터라고 확정하지 않습니다. Java·일반 Node.js 파일 흐름은 이번 범위에 포함되지 않습니다.</p>
+    </details>}
     <details className="coverage-details"><summary>쿼리 값 처리와 방어 근거 ({snapshot.sqlUses.length})</summary>
       <ul className="coverage-file-list">{snapshot.sqlUses.map((sql, i) => <li key={i}>
         <code className="finding-location">{location(sql.location)}</code><span>{text(sql.kind)}</span>
@@ -165,6 +192,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
         {python && <span>확인한 요청 진입점 {f.entrypoints}개{f.selectionReason ? ` · ${text(f.selectionReason)}` : ''}</span>}
         {f.prepareCallSites != null && <span>{python ? 'SQL 실행 후보' : 'prepare'} 호출 구문 {f.prepareCallSites}곳 · 경로 확인 {f.tracedPrepareCallSites ?? '미기록'}곳 (모든 구문이 실제 SQL 호출이라는 뜻은 아님)</span>}
         {f.httpCallSites != null && <span>fetch 호출 구문 {f.httpCallSites}곳 · 목적지 추적 {f.tracedHttpCallSites ?? '미기록'}곳 (모든 HTTP client를 지원하는 것은 아님)</span>}
+        {python && f.resourceCallSites != null && <span>파일·복원 API 후보 구문 {f.resourceCallSites}곳 · 호출 근거 추적 {f.tracedResourceCallSites ?? '미기록'}곳 (이름 후보이며 실제 API 사용을 모두 증명한 것은 아님)</span>}
         {f.limitations.map(l => <span key={l}>{text(l)}</span>)}
       </li>)}</ul>
       {snapshot.files.length > 10 && <nav className="finding-pagination" aria-label="서버 분석 파일 페이지">

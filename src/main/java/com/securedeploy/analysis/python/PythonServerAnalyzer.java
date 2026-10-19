@@ -100,7 +100,7 @@ public class PythonServerAnalyzer {
             return new ServerAnalysisSnapshot(parsed.schemaVersion(), parsed.analyzerVersion(), parsed.parserVersion(),
                     omitted.isEmpty() ? parsed.status() : "PARTIAL", List.copyOf(files), parsed.findings(), parsed.sqlUses(),
                     parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses())
-                    .withSelectionCoverage(selection).withDeploymentAnalysis(deployment);
+                    .withSelectionCoverage(selection).withDeploymentAnalysis(deployment).withResourceUses(parsed.resourceUses());
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
             return unavailable("UNAVAILABLE", unavailableFiles, "ANALYSIS_INTERRUPTED").withSelectionCoverage(selection);
@@ -117,7 +117,7 @@ public class PythonServerAnalyzer {
     }
 
     private ServerAnalysisSnapshot unavailable(String status, List<FileCoverage> files, String reason) {
-        return new ServerAnalysisSnapshot(1, "py-django-v2", null, status, files, List.of(), List.of(), List.of(), List.of(reason), List.of(), List.of());
+        return new ServerAnalysisSnapshot(1, "py-django-v3", null, status, files, List.of(), List.of(), List.of(), List.of(reason), List.of(), List.of());
     }
 
     private FileCoverage skipped(String path, String reason) {
@@ -125,9 +125,10 @@ public class PythonServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"py-django-v2".equals(result.analyzerVersion()) || result.parserVersion() == null || !result.parserVersion().matches("CPython-3\\.\\d+\\.\\d+")
+        if (result.schemaVersion() != 1 || !"py-django-v3".equals(result.analyzerVersion()) || result.parserVersion() == null || !result.parserVersion().matches("CPython-3\\.\\d+\\.\\d+")
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
+                || result.resourceUses() == null || result.resourceUses().size() > 200
                 || result.authorizationContexts().size() > 200) throw new IllegalArgumentException("INVALID_ANALYZER_RESPONSE");
         if (!result.files().stream().map(FileCoverage::filePath).collect(java.util.stream.Collectors.toSet()).equals(files.keySet()))
             throw new IllegalArgumentException("INVALID_ANALYZER_FILES");
@@ -146,6 +147,7 @@ public class PythonServerAnalyzer {
         result.sqlUses().forEach(s -> { locations.add(s.location()); locations.addAll(s.trace()); locations.addAll(s.defenses());
             if (s.executionLocations() != null) locations.addAll(s.executionLocations()); });
         result.httpUses().forEach(s -> { locations.add(s.location()); locations.addAll(s.trace()); locations.addAll(s.defenses()); });
+        result.resourceUses().forEach(s -> { locations.add(s.location()); locations.addAll(s.trace()); locations.addAll(s.defenses()); });
         result.authorizationContexts().forEach(c -> { locations.add(c.entry()); locations.addAll(c.checks()); locations.addAll(c.defenses()); locations.addAll(c.resources()); });
         for (var location : locations) if (location == null || !files.containsKey(location.filePath()) || location.line() < 1
                 || location.line() > files.get(location.filePath())) throw new IllegalArgumentException("INVALID_ANALYZER_LOCATION");

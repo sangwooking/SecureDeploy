@@ -16,13 +16,15 @@ export interface ServerAnalysisSnapshot {
   status: string;
   files: { filePath: string; parseStatus: string; flowStatus: string; entrypoints: number; functionsAnalyzed: number;
     prepareCallSites?: number; tracedPrepareCallSites?: number; httpCallSites?: number | null; tracedHttpCallSites?: number | null;
-    selectionReason?: string | null; limitations: string[] }[];
+    selectionReason?: string | null; resourceCallSites?: number | null; tracedResourceCallSites?: number | null; limitations: string[] }[];
   findings: { ruleId: string; kind: string; confidence: string; disposition: string;
     source: AnalysisLocation; sink: AnalysisLocation; flow: AnalysisLocation[]; defenses: AnalysisLocation[];
     limitations: string[]; message: string; recommendation: string }[];
   validatedFindings?: ServerFlowFinding[] | null;
   httpUses?: { kind: string; controlledPart: string; location: AnalysisLocation; trace: AnalysisLocation[];
     defenses: AnalysisLocation[]; limitations: string[] }[] | null;
+  resourceUses?: { ruleId: string; kind: string; location: AnalysisLocation; trace: AnalysisLocation[];
+    defenses: AnalysisLocation[]; limitations: string[]; executionObserved: boolean }[] | null;
   sqlUses: { kind: string; location: AnalysisLocation; trace: AnalysisLocation[]; defenses: AnalysisLocation[];
     limitations: string[]; executionObserved: boolean; executionLocations?: AnalysisLocation[] | null }[];
   authorizationContexts: { entry: AnalysisLocation; checks: AnalysisLocation[]; defenses: AnalysisLocation[];
