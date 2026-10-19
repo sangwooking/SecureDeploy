@@ -69,3 +69,18 @@ tasks.register('benchmarkEngine', JavaExec) {
         if (project.hasProperty('benchmarkCase')) args project.property('benchmarkCase')
     }
 }
+
+tasks.register('applicationEvaluation', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.securedeploy.evaluation.ApplicationEvaluationRunner'
+    maxHeapSize = '512m'
+    environment = System.getenv().findAll { key, value -> key in ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'JAVA_HOME'] }
+    doFirst {
+        if (!project.hasProperty('applicationRoot') || !project.hasProperty('applicationOutput')) {
+            throw new GradleException('Use -PapplicationRoot=OUTSIDE_GIT -PapplicationOutput=NEW_JSON')
+        }
+        args project.property('applicationRoot'), project.property('applicationOutput')
+        if (project.hasProperty('applicationProjectId')) args project.property('applicationProjectId')
+    }
+}

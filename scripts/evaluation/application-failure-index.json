@@ -1,0 +1,175 @@
+{
+  "packs": [
+    {
+      "caseId": "nodegoat-request-eval",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "DANGEROUS",
+      "observed": "NOT_SUPPORTED_NOT_CONFIRMED_FN",
+      "cause": "UNSUPPORTED_EXPRESS_ENTRY_AND_EVAL_SINK",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "General Express route/callback argument binding and explicit security sink contracts; use dangerous, safe and unknown pairs, not project names."
+    },
+    {
+      "caseId": "nodegoat-owner-selection",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "DANGEROUS",
+      "observed": "NOT_SUPPORTED_NOT_CONFIRMED_FN",
+      "cause": "UNSUPPORTED_RESOURCE_AUTHORIZATION_FLOW",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Distinguish authentication, selected object identity and enforced owner; bounded cross-module evidence with rejection-path tests."
+    },
+    {
+      "caseId": "nodegoat-nosql-query-construction",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "DANGEROUS",
+      "observed": "NOT_SUPPORTED_NOT_CONFIRMED_FN",
+      "cause": "UNSUPPORTED_NOSQL_EXECUTION_CONTRACT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "After entry/call tracking reliability, explicitly model NoSQL query operators and tainted executable query construction with version/context limits."
+    },
+    {
+      "caseId": "northwind-bound-product-lookup",
+      "projectId": "cloudflare--d1-northwind",
+      "groundTruthLabel": "SAFE",
+      "observed": "NOT_SUPPORTED_NOT_TRUE_NEGATIVE",
+      "cause": "UNSUPPORTED_REACT_ROUTER_LOADER_AND_D1_SESSION_WRAPPER",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Framework adapter for React Router loader context, D1 sessions and bounded array/helper argument flow; retain dynamic SQL and unknown-transform tests."
+    },
+    {
+      "caseId": "next-inactive-delete-action",
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "groundTruthLabel": "SAFE",
+      "observed": "NOT_SUPPORTED_NOT_TRUE_NEGATIVE",
+      "cause": "NO_EXECUTABLE_MUTATION_IN_REVIEWED_ACTION",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Separate reachable actions from declarations/comments and retain framework authorization uncertainty."
+    },
+    {
+      "caseId": "next-svg-namespace-alerts",
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "groundTruthLabel": "SAFE",
+      "observed": "CONFIRMED_FALSE_POSITIVE",
+      "cause": "PATTERN_CONTEXT_FALSE_POSITIVE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Distinguish URI namespace identifiers and JSX attributes from network destinations."
+    },
+    {
+      "caseId": "netbox-secret-button-label",
+      "projectId": "netbox-community--netbox",
+      "groundTruthLabel": "SAFE",
+      "observed": "CONFIRMED_FALSE_POSITIVE",
+      "cause": "PATTERN_CONTEXT_FALSE_POSITIVE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Require literal/value and security-use evidence instead of matching secret vocabulary in UI text."
+    },
+    {
+      "caseId": "northwind-generated-type-comment",
+      "projectId": "cloudflare--d1-northwind",
+      "groundTruthLabel": "SAFE",
+      "observed": "CONFIRMED_FALSE_POSITIVE",
+      "cause": "PATTERN_CONTEXT_FALSE_POSITIVE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Bounded handling of declaration/comment evidence, never treat parser omission as a verified request."
+    },
+    {
+      "caseId": "spring-projects--spring-petclinic-java-worker-memory",
+      "projectId": "spring-projects--spring-petclinic",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "ANALYZER_FAILED_NOT_SAFE",
+      "cause": "JAVA_WORKER_MEMORY_FAILURE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Investigate Javac context/file-manager retention under the existing 192 MiB heap and 96 MiB metaspace limits; preserve partial evidence and budgets, do not blindly raise limits."
+    },
+    {
+      "caseId": "macrozheng--mall-tiny-java-worker-memory",
+      "projectId": "macrozheng--mall-tiny",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "ANALYZER_FAILED_NOT_SAFE",
+      "cause": "JAVA_WORKER_MEMORY_FAILURE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Investigate Javac context/file-manager retention under the existing 192 MiB heap and 96 MiB metaspace limits; preserve partial evidence and budgets, do not blindly raise limits."
+    },
+    {
+      "caseId": "wagtail--bakerydemo-scope",
+      "projectId": "wagtail--bakerydemo",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "FRAMEWORK_INHERITANCE_AND_SOURCE_BUDGET",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Bounded inherited framework entry contracts plus structural import/route selection; do not flag public contact forms for missing login."
+    },
+    {
+      "caseId": "vercel--nextjs-postgres-nextauth-tailwindcss-template-scope",
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "UNSUPPORTED_NEXT_SERVER_ENTRY",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Explicit Next server action and route contracts; keep inactive, authenticated, unsafe and unknown pairs."
+    },
+    {
+      "caseId": "cloudflare--d1-northwind-scope",
+      "projectId": "cloudflare--d1-northwind",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "FRAMEWORK_DELEGATION_NOT_TRACKED",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Model framework dispatch and D1 session/helper contracts before adding new sink names."
+    },
+    {
+      "caseId": "OWASP--NodeGoat-scope",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "UNSUPPORTED_EXPRESS_ROUTE_CALLBACK",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "General Express router/callback binding with positive/negative independent evaluation."
+    },
+    {
+      "caseId": "netbox-community--netbox-scope",
+      "projectId": "netbox-community--netbox",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "PARTIAL_DRF_INHERITANCE_AND_BUDGET",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Prioritize routing/base permission/queryset helpers under current budgets; preserve inherited/custom protection UNKNOWN rather than absence equals IDOR."
+    },
+    {
+      "caseId": "petclinic-deployment-review",
+      "projectId": "spring-projects--spring-petclinic",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "REVIEW_CANDIDATE_NOT_CONFIRMED_ATTACK",
+      "cause": "DECLARATION_REQUIRES_OPERATIONAL_CONTEXT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Explain declaration, actual use, environment and editable parent; group shared fixes without discarding distinct evidence."
+    },
+    {
+      "caseId": "mall-security-review",
+      "projectId": "macrozheng--mall-tiny",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "REVIEW_CANDIDATE_NOT_CONFIRMED_ATTACK",
+      "cause": "DECLARATION_REQUIRES_OPERATIONAL_CONTEXT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Explain declaration, actual use, environment and editable parent; group shared fixes without discarding distinct evidence."
+    },
+    {
+      "caseId": "nodegoat-configuration-and-package-review",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "REVIEW_CANDIDATE_NOT_CONFIRMED_ATTACK",
+      "cause": "DECLARATION_REQUIRES_OPERATIONAL_CONTEXT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Explain declaration, actual use, environment and editable parent; group shared fixes without discarding distinct evidence."
+    },
+    {
+      "caseId": "starter-collection-policy",
+      "projectId": "sahat--hackathon-starter",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "COLLECTION_FAILED_NOT_ANALYZED",
+      "cause": "ENCODED_FILENAME_POLICY",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Review safe literal filename identity versus URL transport decoding; never weaken traversal checks or bypass the recorded failure."
+    }
+  ]
+}

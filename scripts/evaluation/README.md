@@ -205,3 +205,91 @@ Next decisions should separate lexical warning quality, missing context and
 unsupported framework/sink contracts. Expand bounded original app context
 before calling scope gaps proven data-flow bugs. Move any family used for
 engine tuning into regression in a NEW manifest; preserve this baseline.
+
+## URL hardening and separate application track
+
+A engine commit `bd12409888f28bd1316b34c70f92052706d6f952` uses a bounded
+official TypeScript syntax worker to reconcile only INSECURE_API_URL matches.
+Proven comments and inert URL parser bases are excluded; aliases sent to fetch,
+unknown calls, mutations, parser failures and limits retain warnings. Uncertain
+request context is LOW confidence/REVIEW_REQUIRED under the unchanged Risk policy.
+Loopback exemption uses an exact parsed host, not a hostname prefix. Uploaded
+code is not run. If changing the URL worker, bump its protocol/version in both
+Node and Java and recheck comparison fingerprints.
+
+`url-hardening-delta.json` records actual before/after results on the same
+40 frozen cases: 12 false warning observations removed, two uncertain retained,
+no new warning locations, no claimed improvement to the unsupported CVE paths.
+The actual old run is c718638 (production code identical to milestone f24d831);
+old results are preserved. Scores change because warnings were removed, not
+because the score/Risk formulas changed. Rule fingerprints differ, so old
+Reviews must not be silently reclassified as RESOLVED or recomputed.
+
+Library/Framework track and Real-World Web Application track are distinct.
+The latter has 19 inspected candidate metadata records, eight selected public
+repositories and seven acquired/analyzed trees at pinned SHAs. Each completed
+tree was run twice through actual production beans in isolated H2. SHA/path
+verification precedes scanning. The remaining selected repository failed strict
+encoded-filename policy; one pinned public tree lookup confirms the cause.
+No failed acquisition is converted into zero findings or a SAFE project.
+
+```sh
+ROOT="$HOME/.local/share/securedeploy/benchmark/applications-new"
+python3 -B scripts/evaluation/application_track.py collect scripts/evaluation/application-selection.json "$ROOT"
+python3 -B scripts/evaluation/application_track.py run "$ROOT" "$ROOT/raw.json"
+python3 -B scripts/evaluation/application_track.py run "$ROOT" "$ROOT/replay.json" --project cloudflare--d1-northwind
+python3 -B scripts/evaluation/application_track.py summarize "$ROOT" "$ROOT/packs" --raw "$ROOT/raw.json" --review scripts/evaluation/application-review.json
+```
+
+The committed review is tied to the original plan hash: a fresh collection has
+to be verified as the same source/inventory before a NEW review is frozen; do
+not patch hashes to bypass this guard. Full sources/results/packs stay under
+`~/.local/share/securedeploy/benchmark/applications-2026-10-20-v2/`; only public
+metadata and tooling belong in Git. No archive is saved wholesale: 32 MB
+compressed, 128 MB expanded, 4 MB/member, 20,000 entries; links/special files,
+generated/binary assets and credential-shaped text are explicitly omitted.
+Original root licenses and per-file license headers remain with sources.
+Root license metadata does not relicense third-party/generated files.
+
+An expanded credential-shape audit found a Google-key-shaped value in the
+public Bakery example base settings file. Its value was never printed or
+validated. The file was removed from our v1 copy and omitted from v2 with an
+explicit reason; v1 is no longer an intact replay corpus. V2 is a verified
+projection of the same pinned SHAs: every retained file is byte-identical and
+was re-evaluated twice without downloading again. Effective Bakery settings
+are not fully reviewed. `application-privacy-receipt.json` records this change.
+Shape checks are not a guarantee that arbitrary credentials cannot be present.
+
+The seven trees contain 3,008 discovered files: 1,761 selected by production
+scanner, 1,010 unsupported, 234 excluded, three acquisition-size limits.
+AST parse counts are not complete security analysis. Actual Java parser replay
+confirms OutOfMemoryError at JavacTask creation for both Spring apps under
+unchanged 192 MiB heap / 96 MiB metaspace limits. Framework delegation and
+Python budgets remain explicit. No engine fix or limit increase is hidden here.
+
+19 reviewed packs include three conditional dangerous NodeGoat paths, five
+narrowly safe paths/conditions and 11 unverified context/failure records. They
+do NOT establish whole-project recall. The source-supported dangerous paths
+are outside current entry/sink contracts, not labelled confirmed engine FN.
+New app review confirms seven false warning observations (five SVG namespaces,
+one generated-type license comment, one UI label). The UI-label warning causes
+NetBox BLOCKED in this evaluation. Preserve that false-block evidence rather
+than rewriting policy or dismissing it. App-wide pre-A evaluation was NOT run.
+
+SCA extraction runs, but OSV/EPSS/KEV/AI lookups are NOT RUN; Risk receives SCA
+UNKNOWN and actual risk-v1.2. These are not deployed-service safety decisions.
+No user PostgreSQL/Review, target install/build/import, PoV, attack or remote
+write. No new browser E2E; frontend source is unchanged. Times exclude Gradle/
+Spring startup and memory values are parent samples, not total peak RSS.
+Observed holdouts become development material after use; future engine gains
+need NEW projects. Exact/whitespace code clone checks found no cross-project
+groups; semantic clones and unrecorded forks remain unverified.
+
+V2 repeated engine segments total 8,616 ms; maximum sampled parent heap is
+145,228,800 bytes. These are observations, not a performance guarantee.
+A separate single-project replay matched the frozen Cloudflare signals and
+metadata, excluding clocks/heap. Public metadata contains no source bodies;
+the 19 complete packs remain outside Git and can be regenerated from the
+version-bound manual review and unchanged corpus. Java failure diagnosis is
+the earlier trusted v1 worker replay on byte-identical retained Java input;
+the v2 full run independently repeats JAVA_WORKER_FAILED.

@@ -1,0 +1,35 @@
+{
+  "results": [
+    {
+      "projectId": "spring-projects--spring-petclinic",
+      "exitCode": 1,
+      "exceptionTypes": [
+        "java.lang.OutOfMemoryError"
+      ],
+      "workerFrames": [
+        "com.securedeploy.analysis.javaflow.JavaSqlWorker$Engine.run(JavaSqlWorker.java:137)",
+        "com.securedeploy.analysis.javaflow.JavaSqlWorker.main(JavaSqlWorker.java:38)"
+      ],
+      "stdoutBytes": 0,
+      "targetExecuted": false,
+      "scope": "Trusted SecureDeploy worker replay with same retained source; exception messages/source/stderr not persisted."
+    },
+    {
+      "projectId": "macrozheng--mall-tiny",
+      "exitCode": 1,
+      "exceptionTypes": [
+        "java.lang.OutOfMemoryError"
+      ],
+      "workerFrames": [
+        "com.securedeploy.analysis.javaflow.JavaSqlWorker$Engine.run(JavaSqlWorker.java:137)",
+        "com.securedeploy.analysis.javaflow.JavaSqlWorker.main(JavaSqlWorker.java:38)"
+      ],
+      "stdoutBytes": 0,
+      "targetExecuted": false,
+      "scope": "Trusted SecureDeploy worker replay with same retained source; exception messages/source/stderr not persisted."
+    }
+  ],
+  "diagnosticCorpus": "applications-2026-10-20-v1",
+  "validForV2": "All retained Java source paths and hashes identical; v2 full engine run independently repeats JAVA_WORKER_FAILED. Diagnostic is the earlier trusted worker replay, not an extra v2 diagnostic run.",
+  "engineCommit": "bd12409888f28bd1316b34c70f92052706d6f952"
+}

@@ -1,0 +1,17 @@
+{
+  "removed": [
+    {
+      "projectId": "wagtail--bakerydemo",
+      "filePath": "bakerydemo/settings/base.py",
+      "originalSha256": "3d67be6ba0873bfc9e25e676253d6761c3ce1cced44fe3ba7d903f63b76c9012"
+    }
+  ],
+  "externalRequests": 0,
+  "targetExecuted": false,
+  "valuesPrinted": false,
+  "validityChecked": false,
+  "oldSourceCopiesRemoved": true,
+  "planSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+  "engineCommit": "bd12409888f28bd1316b34c70f92052706d6f952",
+  "oldCorpusReplayStatus": "INVALIDATED_SOURCE_COPY_REMOVED_NOT_INTACT"
+}

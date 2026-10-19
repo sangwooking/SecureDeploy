@@ -1,0 +1,1235 @@
+{
+  "schemaVersion": 1,
+  "track": "REAL_WORLD_WEB_APPLICATION",
+  "engineCommit": "bd12409888f28bd1316b34c70f92052706d6f952",
+  "planSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+  "projects": [
+    {
+      "projectId": "spring-projects--spring-petclinic",
+      "repositoryUrl": "https://github.com/spring-projects/spring-petclinic",
+      "commitSha": "500158f732419217507c7656904b8e6aa1bcc0d6",
+      "default_branch": "main",
+      "license": "Apache-2.0",
+      "evaluationSplit": "REGRESSION",
+      "collectionStatus": "COLLECTED_WITH_EXPLICIT_OMISSIONS",
+      "discoveredArchiveFiles": 132,
+      "retainedFiles": 118,
+      "omissionCounts": {
+        "BINARY_ASSET_NOT_ANALYZED": 12,
+        "NON_UTF8_NOT_ANALYZED": 2
+      },
+      "failureReason": null,
+      "evaluationStatus": "ANALYZED_WITH_SCOPE_LIMITS_NOT_SAFETY_CERTIFICATION",
+      "wholeProjectTruth": "UNVERIFIED",
+      "repeatConsistent": true,
+      "coverage": {
+        "status": "PARTIAL",
+        "discoveredFiles": 132,
+        "selectedFiles": 60,
+        "unsupportedFiles": 58,
+        "excludedFiles": 14,
+        "failedFiles": 0,
+        "inventoryComplete": true,
+        "omittedEntries": 0
+      },
+      "ruleCounts": {
+        "K8S_SECRET_PLAIN_TEXT": 1,
+        "K8S_NODEPORT_EXPOSURE": 1,
+        "EXPOSED_ACTUATOR": 1
+      },
+      "supplementalCounts": {
+        "COMPOSE_PORT_BINDING": 2
+      },
+      "ruleSignals": [
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "k8s/db.yml",
+          "line": 14,
+          "ruleId": "K8S_SECRET_PLAIN_TEXT",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "k8s/petclinic.yml",
+          "line": 7,
+          "ruleId": "K8S_NODEPORT_EXPOSURE",
+          "severity": "MEDIUM"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/main/resources/application.properties",
+          "line": 21,
+          "ruleId": "EXPOSED_ACTUATOR",
+          "severity": "HIGH"
+        }
+      ],
+      "securityScore": 65,
+      "prioritySummary": {
+        "BLOCKING": 0,
+        "SHOULD_FIX": 1,
+        "REVIEW_REQUIRED": 3,
+        "INFORMATIONAL": 0
+      },
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "riskPolicyVersion": "risk-v1.2",
+      "assessmentCoverage": {
+        "overall": "PARTIAL",
+        "ruleEngine": "COMPLETE",
+        "sca": "UNKNOWN",
+        "ai": "NOT_INCLUDED",
+        "scopeNote": "지원 파일·정적 룰·정확한 의존성 버전과 분석 당시 악용 정보 범위의 판단입니다. 전체 코드, 실제 설치, 도달 가능성, 외부 노출, AI 진단은 포함하지 않습니다. READY도 절대적 안전을 보장하지 않습니다.",
+        "threatIntelligence": "NOT_APPLICABLE"
+      },
+      "engineFingerprint": "coverage-v2:54676c9536006b937efe6015be9ac5a2051aeb41b73bdf942dc62bc9cc2dbbca",
+      "sca": {
+        "observationCount": 2,
+        "componentCount": 50,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN"
+      },
+      "elapsedMs": [
+        929,
+        890
+      ],
+      "sampledParentHeapBytes": [
+        130768384,
+        66315328
+      ],
+      "analyzers": {
+        "java": {
+          "status": "UNAVAILABLE",
+          "fileRecords": 50,
+          "parseStatuses": {
+            "NOT_RUN": 50
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "JAVA_WORKER_FAILED"
+          ],
+          "analyzerVersion": "java-sql-v1",
+          "parserVersion": null
+        },
+        "python": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_PYTHON_FILES"
+          ],
+          "analyzerVersion": "py-django-v7",
+          "parserVersion": null
+        },
+        "typescript": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_JAVASCRIPT_OR_TYPESCRIPT_FILES"
+          ],
+          "analyzerVersion": "ts-server-v6",
+          "parserVersion": null
+        }
+      }
+    },
+    {
+      "projectId": "macrozheng--mall-tiny",
+      "repositoryUrl": "https://github.com/macrozheng/mall-tiny",
+      "commitSha": "a81ec4740a0c7c99a06ebffb43a14168beadffc3",
+      "default_branch": "master",
+      "license": "Apache-2.0",
+      "evaluationSplit": "VALIDATION",
+      "collectionStatus": "COLLECTED_WITH_EXPLICIT_OMISSIONS",
+      "discoveredArchiveFiles": 109,
+      "retainedFiles": 100,
+      "omissionCounts": {
+        "BINARY_ASSET_NOT_ANALYZED": 9
+      },
+      "failureReason": null,
+      "evaluationStatus": "ANALYZED_WITH_SCOPE_LIMITS_NOT_SAFETY_CERTIFICATION",
+      "wholeProjectTruth": "UNVERIFIED",
+      "repeatConsistent": true,
+      "coverage": {
+        "status": "PARTIAL",
+        "discoveredFiles": 109,
+        "selectedFiles": 84,
+        "unsupportedFiles": 16,
+        "excludedFiles": 9,
+        "failedFiles": 0,
+        "inventoryComplete": true,
+        "omittedEntries": 0
+      },
+      "ruleCounts": {
+        "HARDCODED_SECRET": 1,
+        "WEAK_JWT_SECRET": 1,
+        "PERMIT_ALL_USAGE": 2
+      },
+      "supplementalCounts": {
+        "COMPOSE_PORT_BINDING": 2
+      },
+      "ruleSignals": [
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/main/resources/application.yml",
+          "line": 26,
+          "ruleId": "HARDCODED_SECRET",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/main/resources/application.yml",
+          "line": 26,
+          "ruleId": "WEAK_JWT_SECRET",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/main/java/com/macro/mall/tiny/security/config/SecurityConfig.java",
+          "line": 50,
+          "ruleId": "PERMIT_ALL_USAGE",
+          "severity": "MEDIUM"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/main/java/com/macro/mall/tiny/security/config/SecurityConfig.java",
+          "line": 54,
+          "ruleId": "PERMIT_ALL_USAGE",
+          "severity": "MEDIUM"
+        }
+      ],
+      "securityScore": 58,
+      "prioritySummary": {
+        "BLOCKING": 1,
+        "SHOULD_FIX": 1,
+        "REVIEW_REQUIRED": 3,
+        "INFORMATIONAL": 0
+      },
+      "deploymentAssessment": "BLOCKED",
+      "riskPolicyVersion": "risk-v1.2",
+      "assessmentCoverage": {
+        "overall": "PARTIAL",
+        "ruleEngine": "COMPLETE",
+        "sca": "UNKNOWN",
+        "ai": "NOT_INCLUDED",
+        "scopeNote": "지원 파일·정적 룰·정확한 의존성 버전과 분석 당시 악용 정보 범위의 판단입니다. 전체 코드, 실제 설치, 도달 가능성, 외부 노출, AI 진단은 포함하지 않습니다. READY도 절대적 안전을 보장하지 않습니다.",
+        "threatIntelligence": "NOT_APPLICABLE"
+      },
+      "engineFingerprint": "coverage-v2:54676c9536006b937efe6015be9ac5a2051aeb41b73bdf942dc62bc9cc2dbbca",
+      "sca": {
+        "observationCount": 1,
+        "componentCount": 18,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN"
+      },
+      "elapsedMs": [
+        1441,
+        1422
+      ],
+      "sampledParentHeapBytes": [
+        82043968,
+        96724032
+      ],
+      "analyzers": {
+        "java": {
+          "status": "UNAVAILABLE",
+          "fileRecords": 80,
+          "parseStatuses": {
+            "NOT_RUN": 80
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "JAVA_WORKER_FAILED"
+          ],
+          "analyzerVersion": "java-sql-v1",
+          "parserVersion": null
+        },
+        "python": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_PYTHON_FILES"
+          ],
+          "analyzerVersion": "py-django-v7",
+          "parserVersion": null
+        },
+        "typescript": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_JAVASCRIPT_OR_TYPESCRIPT_FILES"
+          ],
+          "analyzerVersion": "ts-server-v6",
+          "parserVersion": null
+        }
+      }
+    },
+    {
+      "projectId": "wagtail--bakerydemo",
+      "repositoryUrl": "https://github.com/wagtail/bakerydemo",
+      "commitSha": "c9b38d7a7170dba8bb84254beb7e5dc5a955e024",
+      "default_branch": "main",
+      "license": "BSD-3-Clause",
+      "evaluationSplit": "REGRESSION",
+      "collectionStatus": "COLLECTED_WITH_EXPLICIT_OMISSIONS",
+      "discoveredArchiveFiles": 252,
+      "retainedFiles": 204,
+      "omissionCounts": {
+        "BINARY_ASSET_NOT_ANALYZED": 47,
+        "CREDENTIAL_SHAPED_CONTENT_NOT_PERSISTED": 1
+      },
+      "failureReason": null,
+      "evaluationStatus": "ANALYZED_WITH_SCOPE_LIMITS_NOT_SAFETY_CERTIFICATION",
+      "wholeProjectTruth": "UNVERIFIED",
+      "repeatConsistent": true,
+      "coverage": {
+        "status": "PARTIAL",
+        "discoveredFiles": 252,
+        "selectedFiles": 124,
+        "unsupportedFiles": 80,
+        "excludedFiles": 48,
+        "failedFiles": 0,
+        "inventoryComplete": true,
+        "omittedEntries": 0
+      },
+      "ruleCounts": {},
+      "supplementalCounts": {
+        "COMPOSE_PORT_BINDING": 1
+      },
+      "ruleSignals": [],
+      "securityScore": 100,
+      "prioritySummary": {
+        "BLOCKING": 0,
+        "SHOULD_FIX": 0,
+        "REVIEW_REQUIRED": 1,
+        "INFORMATIONAL": 0
+      },
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "riskPolicyVersion": "risk-v1.2",
+      "assessmentCoverage": {
+        "overall": "PARTIAL",
+        "ruleEngine": "COMPLETE",
+        "sca": "UNKNOWN",
+        "ai": "NOT_INCLUDED",
+        "scopeNote": "지원 파일·정적 룰·정확한 의존성 버전과 분석 당시 악용 정보 범위의 판단입니다. 전체 코드, 실제 설치, 도달 가능성, 외부 노출, AI 진단은 포함하지 않습니다. READY도 절대적 안전을 보장하지 않습니다.",
+        "threatIntelligence": "NOT_APPLICABLE"
+      },
+      "engineFingerprint": "coverage-v2:54676c9536006b937efe6015be9ac5a2051aeb41b73bdf942dc62bc9cc2dbbca",
+      "sca": {
+        "observationCount": 6,
+        "componentCount": 233,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN"
+      },
+      "elapsedMs": [
+        438,
+        341
+      ],
+      "sampledParentHeapBytes": [
+        84828112,
+        141451216
+      ],
+      "analyzers": {
+        "java": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "analyzerVersion": "java-sql-v1",
+          "parserVersion": null
+        },
+        "python": {
+          "status": "PARTIAL",
+          "fileRecords": 111,
+          "parseStatuses": {
+            "PARSED": 100,
+            "LIMIT_EXCEEDED": 11
+          },
+          "entrypoints": 1,
+          "functions": 1,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 1,
+          "limitations": [
+            "BOUNDED_DJANGO_DRF_ONLY",
+            "MIDDLEWARE_SETTINGS_AND_OWNERSHIP_NOT_VERIFIED",
+            "STATIC_FLOW_NOT_EXPLOIT_PROOF",
+            "NO_OS_SANDBOX",
+            "BOUNDED_PYTHON_FILE_AND_DESERIALIZATION_ONLY",
+            "SYMLINKS_PERMISSIONS_AND_RUNTIME_NOT_VERIFIED",
+            "RSS_CHECK_NOT_HARD_MEMORY_LIMIT",
+            "SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED",
+            "LEXICAL_SELECTION_HINTS_NOT_VERIFIED_ENTRIES"
+          ],
+          "analyzerVersion": "py-django-v7",
+          "parserVersion": "CPython-3.14.5"
+        },
+        "typescript": {
+          "status": "PARTIAL",
+          "fileRecords": 2,
+          "parseStatuses": {
+            "PARSED": 2
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+          ],
+          "analyzerVersion": "ts-server-v6",
+          "parserVersion": "6.0.3"
+        }
+      }
+    },
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "repositoryUrl": "https://github.com/vercel/nextjs-postgres-nextauth-tailwindcss-template",
+      "commitSha": "fe026711c19ac3ee4589c86a738f59b84e611559",
+      "default_branch": "main",
+      "license": "MIT",
+      "evaluationSplit": "HOLDOUT",
+      "collectionStatus": "COLLECTED_WITH_EXPLICIT_OMISSIONS",
+      "discoveredArchiveFiles": 46,
+      "retainedFiles": 43,
+      "omissionCounts": {
+        "BINARY_ASSET_NOT_ANALYZED": 3
+      },
+      "failureReason": null,
+      "evaluationStatus": "ANALYZED_WITH_SCOPE_LIMITS_NOT_SAFETY_CERTIFICATION",
+      "wholeProjectTruth": "UNVERIFIED",
+      "repeatConsistent": true,
+      "coverage": {
+        "status": "PARTIAL",
+        "discoveredFiles": 46,
+        "selectedFiles": 35,
+        "unsupportedFiles": 8,
+        "excludedFiles": 3,
+        "failedFiles": 0,
+        "inventoryComplete": true,
+        "omittedEntries": 0
+      },
+      "ruleCounts": {
+        "INSECURE_API_URL": 5
+      },
+      "supplementalCounts": {},
+      "ruleSignals": [
+        {
+          "falsePositiveRisk": "MEDIUM",
+          "confidence": "LOW",
+          "filePath": "components/icons.tsx",
+          "line": 5,
+          "ruleId": "INSECURE_API_URL",
+          "severity": "MEDIUM"
+        },
+        {
+          "falsePositiveRisk": "MEDIUM",
+          "confidence": "LOW",
+          "filePath": "components/icons.tsx",
+          "line": 27,
+          "ruleId": "INSECURE_API_URL",
+          "severity": "MEDIUM"
+        },
+        {
+          "falsePositiveRisk": "MEDIUM",
+          "confidence": "LOW",
+          "filePath": "components/icons.tsx",
+          "line": 47,
+          "ruleId": "INSECURE_API_URL",
+          "severity": "MEDIUM"
+        },
+        {
+          "falsePositiveRisk": "MEDIUM",
+          "confidence": "LOW",
+          "filePath": "components/icons.tsx",
+          "line": 68,
+          "ruleId": "INSECURE_API_URL",
+          "severity": "MEDIUM"
+        },
+        {
+          "falsePositiveRisk": "MEDIUM",
+          "confidence": "LOW",
+          "filePath": "components/icons.tsx",
+          "line": 98,
+          "ruleId": "INSECURE_API_URL",
+          "severity": "MEDIUM"
+        }
+      ],
+      "securityScore": 65,
+      "prioritySummary": {
+        "BLOCKING": 0,
+        "SHOULD_FIX": 0,
+        "REVIEW_REQUIRED": 6,
+        "INFORMATIONAL": 0
+      },
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "riskPolicyVersion": "risk-v1.2",
+      "assessmentCoverage": {
+        "overall": "PARTIAL",
+        "ruleEngine": "COMPLETE",
+        "sca": "UNKNOWN",
+        "ai": "NOT_INCLUDED",
+        "scopeNote": "지원 파일·정적 룰·정확한 의존성 버전과 분석 당시 악용 정보 범위의 판단입니다. 전체 코드, 실제 설치, 도달 가능성, 외부 노출, AI 진단은 포함하지 않습니다. READY도 절대적 안전을 보장하지 않습니다.",
+        "threatIntelligence": "NOT_APPLICABLE"
+      },
+      "engineFingerprint": "coverage-v2:54676c9536006b937efe6015be9ac5a2051aeb41b73bdf942dc62bc9cc2dbbca",
+      "sca": {
+        "observationCount": 1,
+        "componentCount": 30,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN"
+      },
+      "elapsedMs": [
+        357,
+        346
+      ],
+      "sampledParentHeapBytes": [
+        63970176,
+        70261632
+      ],
+      "analyzers": {
+        "java": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "analyzerVersion": "java-sql-v1",
+          "parserVersion": null
+        },
+        "python": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_PYTHON_FILES"
+          ],
+          "analyzerVersion": "py-django-v7",
+          "parserVersion": null
+        },
+        "typescript": {
+          "status": "PARTIAL",
+          "fileRecords": 33,
+          "parseStatuses": {
+            "PARSED": 33
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+          ],
+          "analyzerVersion": "ts-server-v6",
+          "parserVersion": "6.0.3"
+        }
+      }
+    },
+    {
+      "projectId": "cloudflare--d1-northwind",
+      "repositoryUrl": "https://github.com/cloudflare/d1-northwind",
+      "commitSha": "766fd0d8b454b6eadd3323f9188a5ac1f8dfab64",
+      "default_branch": "main",
+      "license": "MIT",
+      "evaluationSplit": "VALIDATION",
+      "collectionStatus": "COLLECTED_WITH_EXPLICIT_OMISSIONS",
+      "discoveredArchiveFiles": 59,
+      "retainedFiles": 57,
+      "omissionCounts": {
+        "ACQUISITION_FILE_SIZE_LIMIT": 1,
+        "BINARY_ASSET_NOT_ANALYZED": 1
+      },
+      "failureReason": null,
+      "evaluationStatus": "ANALYZED_WITH_SCOPE_LIMITS_NOT_SAFETY_CERTIFICATION",
+      "wholeProjectTruth": "UNVERIFIED",
+      "repeatConsistent": true,
+      "coverage": {
+        "status": "FAILED",
+        "discoveredFiles": 59,
+        "selectedFiles": 47,
+        "unsupportedFiles": 10,
+        "excludedFiles": 1,
+        "failedFiles": 1,
+        "inventoryComplete": true,
+        "omittedEntries": 0
+      },
+      "ruleCounts": {
+        "INSECURE_API_URL": 1
+      },
+      "supplementalCounts": {},
+      "ruleSignals": [
+        {
+          "falsePositiveRisk": "MEDIUM",
+          "confidence": "LOW",
+          "filePath": "worker-configuration.d.ts",
+          "line": 22,
+          "ruleId": "INSECURE_API_URL",
+          "severity": "MEDIUM"
+        }
+      ],
+      "securityScore": 93,
+      "prioritySummary": {
+        "BLOCKING": 0,
+        "SHOULD_FIX": 0,
+        "REVIEW_REQUIRED": 2,
+        "INFORMATIONAL": 0
+      },
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "riskPolicyVersion": "risk-v1.2",
+      "assessmentCoverage": {
+        "overall": "PARTIAL",
+        "ruleEngine": "COMPLETE",
+        "sca": "UNKNOWN",
+        "ai": "NOT_INCLUDED",
+        "scopeNote": "지원 파일·정적 룰·정확한 의존성 버전과 분석 당시 악용 정보 범위의 판단입니다. 전체 코드, 실제 설치, 도달 가능성, 외부 노출, AI 진단은 포함하지 않습니다. READY도 절대적 안전을 보장하지 않습니다.",
+        "threatIntelligence": "NOT_APPLICABLE"
+      },
+      "engineFingerprint": "coverage-v2:54676c9536006b937efe6015be9ac5a2051aeb41b73bdf942dc62bc9cc2dbbca",
+      "sca": {
+        "observationCount": 2,
+        "componentCount": 272,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN"
+      },
+      "elapsedMs": [
+        238,
+        236
+      ],
+      "sampledParentHeapBytes": [
+        144710528,
+        116633560
+      ],
+      "analyzers": {
+        "java": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "analyzerVersion": "java-sql-v1",
+          "parserVersion": null
+        },
+        "python": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_PYTHON_FILES"
+          ],
+          "analyzerVersion": "py-django-v7",
+          "parserVersion": null
+        },
+        "typescript": {
+          "status": "PARTIAL",
+          "fileRecords": 43,
+          "parseStatuses": {
+            "PARSED": 42,
+            "LIMIT_EXCEEDED": 1
+          },
+          "entrypoints": 1,
+          "functions": 1,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 1,
+          "limitations": [
+            "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.",
+            "SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED"
+          ],
+          "analyzerVersion": "ts-server-v6",
+          "parserVersion": "6.0.3"
+        }
+      }
+    },
+    {
+      "projectId": "OWASP--NodeGoat",
+      "repositoryUrl": "https://github.com/OWASP/NodeGoat",
+      "commitSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "default_branch": "master",
+      "license": "Apache-2.0",
+      "evaluationSplit": "REGRESSION",
+      "collectionStatus": "COLLECTED_WITH_EXPLICIT_OMISSIONS",
+      "discoveredArchiveFiles": 111,
+      "retainedFiles": 92,
+      "omissionCounts": {
+        "BINARY_ASSET_NOT_ANALYZED": 3,
+        "DIRECTORY_POLICY": 15,
+        "CREDENTIAL_SHAPED_CONTENT_NOT_PERSISTED": 1
+      },
+      "failureReason": null,
+      "evaluationStatus": "ANALYZED_WITH_SCOPE_LIMITS_NOT_SAFETY_CERTIFICATION",
+      "wholeProjectTruth": "UNVERIFIED",
+      "repeatConsistent": true,
+      "coverage": {
+        "status": "PARTIAL",
+        "discoveredFiles": 111,
+        "selectedFiles": 50,
+        "unsupportedFiles": 42,
+        "excludedFiles": 19,
+        "failedFiles": 0,
+        "inventoryComplete": true,
+        "omittedEntries": 0
+      },
+      "ruleCounts": {
+        "INSECURE_API_URL": 1,
+        "HARDCODED_FRONTEND_SECRET": 3,
+        "VULNERABLE_NPM_DEPENDENCY": 3
+      },
+      "supplementalCounts": {
+        "COMPOSE_PORT_BINDING": 1
+      },
+      "ruleSignals": [
+        {
+          "falsePositiveRisk": "MEDIUM",
+          "confidence": "LOW",
+          "filePath": "test/e2e/plugins/index.js",
+          "line": 20,
+          "ruleId": "INSECURE_API_URL",
+          "severity": "MEDIUM"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "config/env/development.js",
+          "line": 6,
+          "ruleId": "HARDCODED_FRONTEND_SECRET",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "config/env/all.js",
+          "line": 8,
+          "ruleId": "HARDCODED_FRONTEND_SECRET",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "config/env/test.js",
+          "line": 6,
+          "ruleId": "HARDCODED_FRONTEND_SECRET",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "package-lock.json",
+          "line": 2541,
+          "ruleId": "VULNERABLE_NPM_DEPENDENCY",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "package-lock.json",
+          "line": 6583,
+          "ruleId": "VULNERABLE_NPM_DEPENDENCY",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "package-lock.json",
+          "line": 6876,
+          "ruleId": "VULNERABLE_NPM_DEPENDENCY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "securityScore": 16,
+      "prioritySummary": {
+        "BLOCKING": 3,
+        "SHOULD_FIX": 0,
+        "REVIEW_REQUIRED": 5,
+        "INFORMATIONAL": 0
+      },
+      "deploymentAssessment": "BLOCKED",
+      "riskPolicyVersion": "risk-v1.2",
+      "assessmentCoverage": {
+        "overall": "PARTIAL",
+        "ruleEngine": "COMPLETE",
+        "sca": "UNKNOWN",
+        "ai": "NOT_INCLUDED",
+        "scopeNote": "지원 파일·정적 룰·정확한 의존성 버전과 분석 당시 악용 정보 범위의 판단입니다. 전체 코드, 실제 설치, 도달 가능성, 외부 노출, AI 진단은 포함하지 않습니다. READY도 절대적 안전을 보장하지 않습니다.",
+        "threatIntelligence": "NOT_APPLICABLE"
+      },
+      "engineFingerprint": "coverage-v2:54676c9536006b937efe6015be9ac5a2051aeb41b73bdf942dc62bc9cc2dbbca",
+      "sca": {
+        "observationCount": 2,
+        "componentCount": 1479,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN"
+      },
+      "elapsedMs": [
+        465,
+        442
+      ],
+      "sampledParentHeapBytes": [
+        145228800,
+        116661624
+      ],
+      "analyzers": {
+        "java": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "analyzerVersion": "java-sql-v1",
+          "parserVersion": null
+        },
+        "python": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_PYTHON_FILES"
+          ],
+          "analyzerVersion": "py-django-v7",
+          "parserVersion": null
+        },
+        "typescript": {
+          "status": "PARTIAL",
+          "fileRecords": 44,
+          "parseStatuses": {
+            "PARSED": 44
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+          ],
+          "analyzerVersion": "ts-server-v6",
+          "parserVersion": "6.0.3"
+        }
+      }
+    },
+    {
+      "projectId": "netbox-community--netbox",
+      "repositoryUrl": "https://github.com/netbox-community/netbox",
+      "commitSha": "9f8b55c196501a82ea800f8f3d720165db9173a6",
+      "default_branch": "main",
+      "license": "Apache-2.0",
+      "evaluationSplit": "VALIDATION",
+      "collectionStatus": "COLLECTED_WITH_EXPLICIT_OMISSIONS",
+      "discoveredArchiveFiles": 2299,
+      "retainedFiles": 2157,
+      "omissionCounts": {
+        "ACQUISITION_FILE_SIZE_LIMIT": 2,
+        "BINARY_ASSET_NOT_ANALYZED": 39,
+        "DIRECTORY_POLICY": 84,
+        "NON_UTF8_NOT_ANALYZED": 17
+      },
+      "failureReason": null,
+      "evaluationStatus": "ANALYZED_WITH_SCOPE_LIMITS_NOT_SAFETY_CERTIFICATION",
+      "wholeProjectTruth": "UNVERIFIED",
+      "repeatConsistent": true,
+      "coverage": {
+        "status": "FAILED",
+        "discoveredFiles": 2299,
+        "selectedFiles": 1361,
+        "unsupportedFiles": 796,
+        "excludedFiles": 140,
+        "failedFiles": 2,
+        "inventoryComplete": true,
+        "omittedEntries": 299
+      },
+      "ruleCounts": {
+        "HARDCODED_FRONTEND_SECRET": 1
+      },
+      "supplementalCounts": {},
+      "ruleSignals": [
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "netbox/project-static/src/buttons/secretToggle.ts",
+          "line": 16,
+          "ruleId": "HARDCODED_FRONTEND_SECRET",
+          "severity": "HIGH"
+        }
+      ],
+      "securityScore": 86,
+      "prioritySummary": {
+        "BLOCKING": 1,
+        "SHOULD_FIX": 0,
+        "REVIEW_REQUIRED": 1,
+        "INFORMATIONAL": 0
+      },
+      "deploymentAssessment": "BLOCKED",
+      "riskPolicyVersion": "risk-v1.2",
+      "assessmentCoverage": {
+        "overall": "PARTIAL",
+        "ruleEngine": "COMPLETE",
+        "sca": "UNKNOWN",
+        "ai": "NOT_INCLUDED",
+        "scopeNote": "지원 파일·정적 룰·정확한 의존성 버전과 분석 당시 악용 정보 범위의 판단입니다. 전체 코드, 실제 설치, 도달 가능성, 외부 노출, AI 진단은 포함하지 않습니다. READY도 절대적 안전을 보장하지 않습니다.",
+        "threatIntelligence": "NOT_APPLICABLE"
+      },
+      "engineFingerprint": "coverage-v2:54676c9536006b937efe6015be9ac5a2051aeb41b73bdf942dc62bc9cc2dbbca",
+      "sca": {
+        "observationCount": 5,
+        "componentCount": 110,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN"
+      },
+      "elapsedMs": [
+        546,
+        525
+      ],
+      "sampledParentHeapBytes": [
+        132299568,
+        89167704
+      ],
+      "analyzers": {
+        "java": {
+          "status": "NOT_APPLICABLE",
+          "fileRecords": 0,
+          "parseStatuses": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "analyzerVersion": "java-sql-v1",
+          "parserVersion": null
+        },
+        "python": {
+          "status": "PARTIAL",
+          "fileRecords": 200,
+          "parseStatuses": {
+            "PARSED": 77,
+            "LIMIT_EXCEEDED": 123
+          },
+          "entrypoints": 20,
+          "functions": 24,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 20,
+          "limitations": [
+            "BOUNDED_DJANGO_DRF_ONLY",
+            "MIDDLEWARE_SETTINGS_AND_OWNERSHIP_NOT_VERIFIED",
+            "STATIC_FLOW_NOT_EXPLOIT_PROOF",
+            "NO_OS_SANDBOX",
+            "BOUNDED_PYTHON_FILE_AND_DESERIALIZATION_ONLY",
+            "SYMLINKS_PERMISSIONS_AND_RUNTIME_NOT_VERIFIED",
+            "RSS_CHECK_NOT_HARD_MEMORY_LIMIT",
+            "SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED",
+            "LEXICAL_SELECTION_HINTS_NOT_VERIFIED_ENTRIES",
+            "SELECTION_HINT_LIMIT",
+            "OMITTED_FILE_DETAILS_TRUNCATED"
+          ],
+          "analyzerVersion": "py-django-v7",
+          "parserVersion": "CPython-3.14.5"
+        },
+        "typescript": {
+          "status": "PARTIAL",
+          "fileRecords": 53,
+          "parseStatuses": {
+            "PARSED": 53
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlObservations": 0,
+          "httpObservations": 0,
+          "resourceObservations": 0,
+          "authorizationContexts": 0,
+          "limitations": [
+            "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+          ],
+          "analyzerVersion": "ts-server-v6",
+          "parserVersion": "6.0.3"
+        }
+      }
+    },
+    {
+      "projectId": "sahat--hackathon-starter",
+      "repositoryUrl": "https://github.com/sahat/hackathon-starter",
+      "commitSha": "d320edb22ea0c42d7cb17f3a7837f1ce5163e234",
+      "default_branch": "master",
+      "license": "MIT",
+      "evaluationSplit": "REGRESSION",
+      "collectionStatus": "COLLECTION_FAILED",
+      "discoveredArchiveFiles": null,
+      "retainedFiles": null,
+      "omissionCounts": null,
+      "failureReason": "SOURCE_PATH",
+      "evaluationStatus": "COLLECTION_FAILED_NOT_ANALYZED",
+      "wholeProjectTruth": "UNVERIFIED"
+    }
+  ],
+  "crossProjectExactCodeHashGroups": 0,
+  "crossProjectWhitespaceCloneGroups": 0,
+  "duplicationLimit": "Exact/whitespace checks only; semantic clones and unrecorded forks remain unverified.",
+  "externalLookups": "NOT_RUN",
+  "riskMeaning": "Actual Rule score and Risk policy with SCA UNKNOWN; not complete original-project deployment clearance.",
+  "metricsPolicy": "Do not calculate whole-project TP/FN/recall without scoped ground truth.",
+  "measurementLimits": "Timing excludes Gradle/Spring startup; heap is parent sample, not peak RSS or worker total.",
+  "reviews": [
+    {
+      "caseId": "nodegoat-request-eval",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "DANGEROUS",
+      "observed": "NOT_SUPPORTED_NOT_CONFIRMED_FN",
+      "cause": "UNSUPPORTED_EXPRESS_ENTRY_AND_EVAL_SINK",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "General Express route/callback argument binding and explicit security sink contracts; use dangerous, safe and unknown pairs, not project names."
+    },
+    {
+      "caseId": "nodegoat-owner-selection",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "DANGEROUS",
+      "observed": "NOT_SUPPORTED_NOT_CONFIRMED_FN",
+      "cause": "UNSUPPORTED_RESOURCE_AUTHORIZATION_FLOW",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Distinguish authentication, selected object identity and enforced owner; bounded cross-module evidence with rejection-path tests."
+    },
+    {
+      "caseId": "nodegoat-nosql-query-construction",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "DANGEROUS",
+      "observed": "NOT_SUPPORTED_NOT_CONFIRMED_FN",
+      "cause": "UNSUPPORTED_NOSQL_EXECUTION_CONTRACT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "After entry/call tracking reliability, explicitly model NoSQL query operators and tainted executable query construction with version/context limits."
+    },
+    {
+      "caseId": "northwind-bound-product-lookup",
+      "projectId": "cloudflare--d1-northwind",
+      "groundTruthLabel": "SAFE",
+      "observed": "NOT_SUPPORTED_NOT_TRUE_NEGATIVE",
+      "cause": "UNSUPPORTED_REACT_ROUTER_LOADER_AND_D1_SESSION_WRAPPER",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Framework adapter for React Router loader context, D1 sessions and bounded array/helper argument flow; retain dynamic SQL and unknown-transform tests."
+    },
+    {
+      "caseId": "next-inactive-delete-action",
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "groundTruthLabel": "SAFE",
+      "observed": "NOT_SUPPORTED_NOT_TRUE_NEGATIVE",
+      "cause": "NO_EXECUTABLE_MUTATION_IN_REVIEWED_ACTION",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Separate reachable actions from declarations/comments and retain framework authorization uncertainty."
+    },
+    {
+      "caseId": "next-svg-namespace-alerts",
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "groundTruthLabel": "SAFE",
+      "observed": "CONFIRMED_FALSE_POSITIVE",
+      "cause": "PATTERN_CONTEXT_FALSE_POSITIVE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Distinguish URI namespace identifiers and JSX attributes from network destinations."
+    },
+    {
+      "caseId": "netbox-secret-button-label",
+      "projectId": "netbox-community--netbox",
+      "groundTruthLabel": "SAFE",
+      "observed": "CONFIRMED_FALSE_POSITIVE",
+      "cause": "PATTERN_CONTEXT_FALSE_POSITIVE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Require literal/value and security-use evidence instead of matching secret vocabulary in UI text."
+    },
+    {
+      "caseId": "northwind-generated-type-comment",
+      "projectId": "cloudflare--d1-northwind",
+      "groundTruthLabel": "SAFE",
+      "observed": "CONFIRMED_FALSE_POSITIVE",
+      "cause": "PATTERN_CONTEXT_FALSE_POSITIVE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Bounded handling of declaration/comment evidence, never treat parser omission as a verified request."
+    },
+    {
+      "caseId": "spring-projects--spring-petclinic-java-worker-memory",
+      "projectId": "spring-projects--spring-petclinic",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "ANALYZER_FAILED_NOT_SAFE",
+      "cause": "JAVA_WORKER_MEMORY_FAILURE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Investigate Javac context/file-manager retention under the existing 192 MiB heap and 96 MiB metaspace limits; preserve partial evidence and budgets, do not blindly raise limits."
+    },
+    {
+      "caseId": "macrozheng--mall-tiny-java-worker-memory",
+      "projectId": "macrozheng--mall-tiny",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "ANALYZER_FAILED_NOT_SAFE",
+      "cause": "JAVA_WORKER_MEMORY_FAILURE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Investigate Javac context/file-manager retention under the existing 192 MiB heap and 96 MiB metaspace limits; preserve partial evidence and budgets, do not blindly raise limits."
+    },
+    {
+      "caseId": "wagtail--bakerydemo-scope",
+      "projectId": "wagtail--bakerydemo",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "FRAMEWORK_INHERITANCE_AND_SOURCE_BUDGET",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Bounded inherited framework entry contracts plus structural import/route selection; do not flag public contact forms for missing login."
+    },
+    {
+      "caseId": "vercel--nextjs-postgres-nextauth-tailwindcss-template-scope",
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "UNSUPPORTED_NEXT_SERVER_ENTRY",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Explicit Next server action and route contracts; keep inactive, authenticated, unsafe and unknown pairs."
+    },
+    {
+      "caseId": "cloudflare--d1-northwind-scope",
+      "projectId": "cloudflare--d1-northwind",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "FRAMEWORK_DELEGATION_NOT_TRACKED",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Model framework dispatch and D1 session/helper contracts before adding new sink names."
+    },
+    {
+      "caseId": "OWASP--NodeGoat-scope",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "UNSUPPORTED_EXPRESS_ROUTE_CALLBACK",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "General Express router/callback binding with positive/negative independent evaluation."
+    },
+    {
+      "caseId": "netbox-community--netbox-scope",
+      "projectId": "netbox-community--netbox",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "PARTIAL_DRF_INHERITANCE_AND_BUDGET",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Prioritize routing/base permission/queryset helpers under current budgets; preserve inherited/custom protection UNKNOWN rather than absence equals IDOR."
+    },
+    {
+      "caseId": "petclinic-deployment-review",
+      "projectId": "spring-projects--spring-petclinic",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "REVIEW_CANDIDATE_NOT_CONFIRMED_ATTACK",
+      "cause": "DECLARATION_REQUIRES_OPERATIONAL_CONTEXT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Explain declaration, actual use, environment and editable parent; group shared fixes without discarding distinct evidence."
+    },
+    {
+      "caseId": "mall-security-review",
+      "projectId": "macrozheng--mall-tiny",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "REVIEW_CANDIDATE_NOT_CONFIRMED_ATTACK",
+      "cause": "DECLARATION_REQUIRES_OPERATIONAL_CONTEXT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Explain declaration, actual use, environment and editable parent; group shared fixes without discarding distinct evidence."
+    },
+    {
+      "caseId": "nodegoat-configuration-and-package-review",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "REVIEW_CANDIDATE_NOT_CONFIRMED_ATTACK",
+      "cause": "DECLARATION_REQUIRES_OPERATIONAL_CONTEXT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Explain declaration, actual use, environment and editable parent; group shared fixes without discarding distinct evidence."
+    },
+    {
+      "caseId": "starter-collection-policy",
+      "projectId": "sahat--hackathon-starter",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "COLLECTION_FAILED_NOT_ANALYZED",
+      "cause": "ENCODED_FILENAME_POLICY",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "improvementProposal": "Review safe literal filename identity versus URL transport decoding; never weaken traversal checks or bypass the recorded failure."
+    }
+  ]
+}

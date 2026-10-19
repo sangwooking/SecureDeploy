@@ -1,0 +1,492 @@
+{
+  "schemaVersion": 1,
+  "engineCommit": "bd12409888f28bd1316b34c70f92052706d6f952",
+  "planSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+  "pathReviews": [
+    {
+      "caseId": "nodegoat-request-eval",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "DANGEROUS",
+      "observed": "NOT_SUPPORTED_NOT_CONFIRMED_FN",
+      "cause": "UNSUPPORTED_EXPRESS_ENTRY_AND_EVAL_SINK",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "app/routes/index.js",
+          "line": 52
+        },
+        {
+          "filePath": "app/routes/contributions.js",
+          "line": 32
+        },
+        {
+          "filePath": "app/routes/contributions.js",
+          "line": 33
+        },
+        {
+          "filePath": "app/routes/contributions.js",
+          "line": 34
+        },
+        {
+          "filePath": "app/views/tutorial/a1.html",
+          "line": 2
+        }
+      ],
+      "evidence": "Authenticated POST dispatches to ContributionsHandler; three body fields are evaluated before numeric validation. The official bundled A1 teaching source and code identify the dangerous path. Login does not neutralize eval; the parseInt alternative is commented out.",
+      "improvementProposal": "General Express route/callback argument binding and explicit security sink contracts; use dangerous, safe and unknown pairs, not project names.",
+      "requiredConditions": "Route must execute with attacker-controlled body. No payload, MongoDB connection or application run was performed.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "nodegoat-owner-selection",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "DANGEROUS",
+      "observed": "NOT_SUPPORTED_NOT_CONFIRMED_FN",
+      "cause": "UNSUPPORTED_RESOURCE_AUTHORIZATION_FLOW",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "app/routes/index.js",
+          "line": 63
+        },
+        {
+          "filePath": "app/routes/allocations.js",
+          "line": 18
+        },
+        {
+          "filePath": "app/data/allocations-dao.js",
+          "line": 57
+        },
+        {
+          "filePath": "app/routes/session.js",
+          "line": 36
+        },
+        {
+          "filePath": "app/views/tutorial/a4.html",
+          "line": 2
+        }
+      ],
+      "evidence": "Route checks login but takes the selected owner from URL parameters. DAO constrains records to that URL id, not the authenticated user. The session-id fix is only a comment. Official A4 teaching and retained caller/DAO support the conditional ownership defect.",
+      "improvementProposal": "Distinguish authentication, selected object identity and enforced owner; bounded cross-module evidence with rejection-path tests.",
+      "requiredConditions": "Authenticated caller, another populated owner id and no external access-control layer. Runtime bypass was not tested.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "nodegoat-nosql-query-construction",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "DANGEROUS",
+      "observed": "NOT_SUPPORTED_NOT_CONFIRMED_FN",
+      "cause": "UNSUPPORTED_NOSQL_EXECUTION_CONTRACT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "app/routes/allocations.js",
+          "line": 21
+        },
+        {
+          "filePath": "app/data/allocations-dao.js",
+          "line": 73
+        },
+        {
+          "filePath": "app/data/allocations-dao.js",
+          "line": 86
+        },
+        {
+          "filePath": "app/views/tutorial/a1.html",
+          "line": 2
+        }
+      ],
+      "evidence": "Query threshold reaches the active MongoDB $where JavaScript expression and find call. The numeric alternative is commented out. This is not SQL/D1 and is outside the present declared sink family.",
+      "improvementProposal": "After entry/call tracking reliability, explicitly model NoSQL query operators and tainted executable query construction with version/context limits.",
+      "requiredConditions": "MongoDB must permit $where/server-side JavaScript; actual deployed DB behavior and attack success are unverified.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "northwind-bound-product-lookup",
+      "projectId": "cloudflare--d1-northwind",
+      "groundTruthLabel": "SAFE",
+      "observed": "NOT_SUPPORTED_NOT_TRUE_NEGATIVE",
+      "cause": "UNSUPPORTED_REACT_ROUTER_LOADER_AND_D1_SESSION_WRAPPER",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "workers/app.ts",
+          "line": 21
+        },
+        {
+          "filePath": "app/routes/product.$id.tsx",
+          "line": 9
+        },
+        {
+          "filePath": "app/routes/product.$id.tsx",
+          "line": 17
+        },
+        {
+          "filePath": "app/lib/utils.ts",
+          "line": 82
+        }
+      ],
+      "evidence": "Worker delegates to React Router. Named product loader sends route id in a value list for fixed SQL; helper binds values separately. The optional dynamic count-table branch is disabled by false at this call. SAFE only for this parameterization condition, not all loaders or permissions.",
+      "improvementProposal": "Framework adapter for React Router loader context, D1 sessions and bounded array/helper argument flow; retain dynamic SQL and unknown-transform tests.",
+      "requiredConditions": "The framework invokes this loader and D1 bind semantics hold. Dependencies were not installed or executed; this is not a full runtime safety result.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "next-inactive-delete-action",
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "groundTruthLabel": "SAFE",
+      "observed": "NOT_SUPPORTED_NOT_TRUE_NEGATIVE",
+      "cause": "NO_EXECUTABLE_MUTATION_IN_REVIEWED_ACTION",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "app/(dashboard)/actions.ts",
+          "line": 6
+        },
+        {
+          "filePath": "lib/db.ts",
+          "line": 70
+        },
+        {
+          "filePath": "middleware.ts",
+          "line": 1
+        },
+        {
+          "filePath": "lib/auth.ts",
+          "line": 4
+        }
+      ],
+      "evidence": "The exported action body contains only commented conversion/delete/revalidation. The DB deletion helper exists but is not called here. Do not fabricate an executed SQL/auth defect merely because both names exist. Auth.js middleware is present; effective authorization remains external context.",
+      "improvementProposal": "Separate reachable actions from declarations/comments and retain framework authorization uncertainty.",
+      "requiredConditions": "SAFE means this exact action has no active mutation at the pinned SHA; no general authorization guarantee.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "next-svg-namespace-alerts",
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "groundTruthLabel": "SAFE",
+      "observed": "CONFIRMED_FALSE_POSITIVE",
+      "cause": "PATTERN_CONTEXT_FALSE_POSITIVE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "components/icons.tsx",
+          "line": 5
+        },
+        {
+          "filePath": "components/icons.tsx",
+          "line": 27
+        },
+        {
+          "filePath": "components/icons.tsx",
+          "line": 47
+        },
+        {
+          "filePath": "components/icons.tsx",
+          "line": 68
+        },
+        {
+          "filePath": "components/icons.tsx",
+          "line": 98
+        }
+      ],
+      "evidence": "All five warned URI values are SVG xmlns identifiers, not requests to an HTTP API.",
+      "improvementProposal": "Distinguish URI namespace identifiers and JSX attributes from network destinations.",
+      "requiredConditions": "SAFE is scoped to the named warning condition only; observations from repeated elements are not independent defects.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "netbox-secret-button-label",
+      "projectId": "netbox-community--netbox",
+      "groundTruthLabel": "SAFE",
+      "observed": "CONFIRMED_FALSE_POSITIVE",
+      "cause": "PATTERN_CONTEXT_FALSE_POSITIVE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "netbox/project-static/src/buttons/secretToggle.ts",
+          "line": 16
+        }
+      ],
+      "evidence": "The flagged line selects Show Secret / Hide Secret UI labels; it contains no hardcoded credential. DOM-held actual secret handling is a separate question. The current Risk snapshot is BLOCKED, demonstrating false-blocking impact.",
+      "improvementProposal": "Require literal/value and security-use evidence instead of matching secret vocabulary in UI text.",
+      "requiredConditions": "SAFE is scoped to the named warning condition only; observations from repeated elements are not independent defects.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "northwind-generated-type-comment",
+      "projectId": "cloudflare--d1-northwind",
+      "groundTruthLabel": "SAFE",
+      "observed": "CONFIRMED_FALSE_POSITIVE",
+      "cause": "PATTERN_CONTEXT_FALSE_POSITIVE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "worker-configuration.d.ts",
+          "line": 22
+        }
+      ],
+      "evidence": "The flagged HTTP URI is in a generated declaration file comment, not an executing API request. File exceeds URL/TS parser character budget; conservative fallback retains the alert.",
+      "improvementProposal": "Bounded handling of declaration/comment evidence, never treat parser omission as a verified request.",
+      "requiredConditions": "SAFE is scoped to the named warning condition only; observations from repeated elements are not independent defects.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false,
+      "fileLicense": "Apache-2.0"
+    },
+    {
+      "caseId": "spring-projects--spring-petclinic-java-worker-memory",
+      "projectId": "spring-projects--spring-petclinic",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "ANALYZER_FAILED_NOT_SAFE",
+      "cause": "JAVA_WORKER_MEMORY_FAILURE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 1
+        }
+      ],
+      "evidence": "Actual Java worker reports JAVA_WORKER_FAILED with all inputs NOT_RUN. A separate trusted worker replay exits 1 with OutOfMemoryError at JavaSqlWorker.Engine.run line 137 (JavacTask creation). This is parser failure, not proof of missing vulnerabilities.",
+      "improvementProposal": "Investigate Javac context/file-manager retention under the existing 192 MiB heap and 96 MiB metaspace limits; preserve partial evidence and budgets, do not blindly raise limits.",
+      "requiredConditions": "Target code was parsed only, never compiled/loaded. Precise heap-vs-metaspace root cause remains unverified.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "macrozheng--mall-tiny-java-worker-memory",
+      "projectId": "macrozheng--mall-tiny",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "ANALYZER_FAILED_NOT_SAFE",
+      "cause": "JAVA_WORKER_MEMORY_FAILURE",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsAdminController.java",
+          "line": 1
+        }
+      ],
+      "evidence": "Actual Java worker reports JAVA_WORKER_FAILED with all inputs NOT_RUN. A separate trusted worker replay exits 1 with OutOfMemoryError at JavaSqlWorker.Engine.run line 137 (JavacTask creation). This is parser failure, not proof of missing vulnerabilities.",
+      "improvementProposal": "Investigate Javac context/file-manager retention under the existing 192 MiB heap and 96 MiB metaspace limits; preserve partial evidence and budgets, do not blindly raise limits.",
+      "requiredConditions": "Target code was parsed only, never compiled/loaded. Precise heap-vs-metaspace root cause remains unverified.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "wagtail--bakerydemo-scope",
+      "projectId": "wagtail--bakerydemo",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "FRAMEWORK_INHERITANCE_AND_SOURCE_BUDGET",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "bakerydemo/base/models.py",
+          "line": 532
+        }
+      ],
+      "evidence": "Wagtail FormPage inherits external AbstractEmailForm request processing. Routing reaches Wagtail views; Python recorded parse statuses {'PARSED': 100, 'LIMIT_EXCEEDED': 11}. The base settings file is intentionally excluded after credential-shape screening; effective settings are not fully reviewed. No code finding is not whole-site clearance.",
+      "improvementProposal": "Bounded inherited framework entry contracts plus structural import/route selection; do not flag public contact forms for missing login.",
+      "requiredConditions": "External framework implementation, dynamic wiring and uninspected files remain unknown; no runtime tests.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "vercel--nextjs-postgres-nextauth-tailwindcss-template-scope",
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "UNSUPPORTED_NEXT_SERVER_ENTRY",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "app/(dashboard)/actions.ts",
+          "line": 6
+        }
+      ],
+      "evidence": "Next server action/Auth.js/Drizzle context was retained. TypeScript parsed 33 files but recognized no supported server entries. The observed action is inactive, so do not invent a mutation vulnerability.",
+      "improvementProposal": "Explicit Next server action and route contracts; keep inactive, authenticated, unsafe and unknown pairs.",
+      "requiredConditions": "External framework implementation, dynamic wiring and uninspected files remain unknown; no runtime tests.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "cloudflare--d1-northwind-scope",
+      "projectId": "cloudflare--d1-northwind",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "FRAMEWORK_DELEGATION_NOT_TRACKED",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "workers/app.ts",
+          "line": 20
+        }
+      ],
+      "evidence": "A fetch entry is recognized, but it delegates through React Router virtual build to loaders and D1 sessions. No SQL use was traced despite retained loader/helper code.",
+      "improvementProposal": "Model framework dispatch and D1 session/helper contracts before adding new sink names.",
+      "requiredConditions": "External framework implementation, dynamic wiring and uninspected files remain unknown; no runtime tests.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "OWASP--NodeGoat-scope",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "UNSUPPORTED_EXPRESS_ROUTE_CALLBACK",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "app/routes/index.js",
+          "line": 52
+        }
+      ],
+      "evidence": "Express route registration, controller functions, DAO and official teaching files are retained. TypeScript parsed 44 files, zero supported entries. Three static dangerous paths are separately scoped; not counted as supported-engine FN.",
+      "improvementProposal": "General Express router/callback binding with positive/negative independent evaluation.",
+      "requiredConditions": "External framework implementation, dynamic wiring and uninspected files remain unknown; no runtime tests.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "netbox-community--netbox-scope",
+      "projectId": "netbox-community--netbox",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "PARTIAL_OR_UNSUPPORTED_NOT_SAFE",
+      "cause": "PARTIAL_DRF_INHERITANCE_AND_BUDGET",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "netbox/netbox/api/viewsets/__init__.py",
+          "line": 83
+        }
+      ],
+      "evidence": "BaseViewSet.initial applies queryset.restrict(request.user, action); utilities/querysets.py implements allowed-object filtering. This is real protection evidence, not a globally proven permission policy. Python records 77 parsed, 123 limited with omitted details truncated, 20 entries and 24 functions.",
+      "improvementProposal": "Prioritize routing/base permission/queryset helpers under current budgets; preserve inherited/custom protection UNKNOWN rather than absence equals IDOR.",
+      "requiredConditions": "External framework implementation, dynamic wiring and uninspected files remain unknown; no runtime tests.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "petclinic-deployment-review",
+      "projectId": "spring-projects--spring-petclinic",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "REVIEW_CANDIDATE_NOT_CONFIRMED_ATTACK",
+      "cause": "DECLARATION_REQUIRES_OPERATIONAL_CONTEXT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "k8s/db.yml",
+          "line": 14
+        },
+        {
+          "filePath": "k8s/petclinic.yml",
+          "line": 7
+        },
+        {
+          "filePath": "src/main/resources/application.properties",
+          "line": 21
+        }
+      ],
+      "evidence": "Warnings match a repository Secret manifest, NodePort and actuator exposure declaration. Demo configuration, actual sensitive values, active profile and network protection are not established. Do not report a live credential or successful exposure.",
+      "improvementProposal": "Explain declaration, actual use, environment and editable parent; group shared fixes without discarding distinct evidence.",
+      "requiredConditions": "No runtime, credential validation, OSV or operational network verification. Existing scores/priorities are recorded, never rewritten.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "mall-security-review",
+      "projectId": "macrozheng--mall-tiny",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "REVIEW_CANDIDATE_NOT_CONFIRMED_ATTACK",
+      "cause": "DECLARATION_REQUIRES_OPERATIONAL_CONTEXT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "src/main/resources/application.yml",
+          "line": 26
+        },
+        {
+          "filePath": "src/main/java/com/macro/mall/tiny/security/config/SecurityConfig.java",
+          "line": 50
+        },
+        {
+          "filePath": "src/main/java/com/macro/mall/tiny/security/config/SecurityConfig.java",
+          "line": 54
+        }
+      ],
+      "evidence": "The same jwt.secret declaration produces HARDCODED_SECRET and WEAK_JWT_SECRET: overlapping remediation, different rule evidence. JwtTokenUtil consumes the property; BCrypt password matching is present in UmsAdminServiceImpl. permitAll includes intentionally public paths; absence of authentication cannot be inferred from names alone.",
+      "improvementProposal": "Explain declaration, actual use, environment and editable parent; group shared fixes without discarding distinct evidence.",
+      "requiredConditions": "No runtime, credential validation, OSV or operational network verification. Existing scores/priorities are recorded, never rewritten.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "nodegoat-configuration-and-package-review",
+      "projectId": "OWASP--NodeGoat",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "REVIEW_CANDIDATE_NOT_CONFIRMED_ATTACK",
+      "cause": "DECLARATION_REQUIRES_OPERATIONAL_CONTEXT",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [
+        {
+          "filePath": "test/e2e/plugins/index.js",
+          "line": 20
+        },
+        {
+          "filePath": "config/env/development.js",
+          "line": 6
+        },
+        {
+          "filePath": "config/env/all.js",
+          "line": 8
+        },
+        {
+          "filePath": "config/env/test.js",
+          "line": 6
+        },
+        {
+          "filePath": "package-lock.json",
+          "line": 2541
+        },
+        {
+          "filePath": "package-lock.json",
+          "line": 6583
+        },
+        {
+          "filePath": "package-lock.json",
+          "line": 6876
+        }
+      ],
+      "evidence": "Three coded demo key declarations and three built-in dependency-version candidates are present, plus a test HTTP configuration. No key validity or live deployment was checked. Backend JS config is not proof of frontend bundle exposure. Lockfile candidates are not newly OSV-confirmed advisories; direct edit location needs package ancestry review.",
+      "improvementProposal": "Explain declaration, actual use, environment and editable parent; group shared fixes without discarding distinct evidence.",
+      "requiredConditions": "No runtime, credential validation, OSV or operational network verification. Existing scores/priorities are recorded, never rewritten.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    },
+    {
+      "caseId": "starter-collection-policy",
+      "projectId": "sahat--hackathon-starter",
+      "groundTruthLabel": "UNVERIFIED",
+      "observed": "COLLECTION_FAILED_NOT_ANALYZED",
+      "cause": "ENCODED_FILENAME_POLICY",
+      "causeConfidence": "MANUALLY_REVIEWED_STATIC_EVIDENCE",
+      "sites": [],
+      "evidence": "Selected archive failed strict source-path policy. One pinned Git tree read confirmed 28 percent-encoded literal paths; no truncated tree, authorization or network denial. Not a SecureDeploy engine zero-finding result.",
+      "improvementProposal": "Review safe literal filename identity versus URL transport decoding; never weaken traversal checks or bypass the recorded failure.",
+      "requiredConditions": "Partial external acquisition folder retained privately; not analyzed. Original failure was not replaced with a successful retry.",
+      "reviewer": "Same curator, not independent/blind",
+      "attackExecuted": false
+    }
+  ],
+  "groundTruthPolicy": "Only three conditional dangerous and five narrowly safe paths are labelled; entire apps remain UNVERIFIED.",
+  "privateSourceIncluded": false,
+  "extraCalls": "One anonymous pinned Git tree check and two trusted local Java parser diagnostic replays; no attack or target execution.",
+  "privacyRevision": "v2: expanded AWS/Google/Slack/private-key shape screening. One public example settings file excluded; no validity check. Original v1 source copy removed and v1 corpus no longer replayable intact. Existing source SHAs remain unchanged for every retained file."
+}
