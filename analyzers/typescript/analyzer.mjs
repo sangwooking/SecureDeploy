@@ -1,8 +1,9 @@
 import ts from 'typescript';
 import path from 'node:path';
 import { destinationOf, joinDestinations, concatenatedDestination, constructedUrl, unresolvedDestination } from './destination.mjs';
+import { credentialShape, sources as exposureSources, uncertain as exposureUncertain, trails as exposureTrails } from './exposure.mjs';
 
-export const VERSION = 'ts-server-v4';
+export const VERSION = 'ts-server-v5';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -15,7 +16,7 @@ const nullish = v => hasConstant(v) ? v.constant == null : v.ref || ['function',
 function addition(left, right) {
   if (hasConstant(left) && hasConstant(right)) {
     const combined = left.constant + right.constant;
-    if (typeof combined !== 'string' || combined.length <= 1000) return constant(combined);
+    if (typeof combined !== 'string' || combined.length <= 1000) return { ...constant(combined), exposures: [...exposureSources(left), ...exposureSources(right)], exposureTrail: [...exposureTrails(left),...exposureTrails(right)].slice(0,10) };
   }
   const combined = union(left, right);
   const { constant: ignored, ...withoutConstant } = combined;
@@ -42,6 +43,9 @@ function union(...values) {
       .map(key => [key, union(...refs.map(r => r.properties.get(key) ?? unknown()))]));
   }
   const merged = { trace, unknown: allTrace.length > 20 || values.some(v => v?.unknown) || Boolean(mixedRefs),
+    exposures: values.flatMap(v => exposureSources(v)).slice(0, 20),
+    exposureTrail: values.flatMap(v => exposureTrails(v)).slice(0, 10),
+    responseLocations: values.flatMap(v => v?.responseLocations ?? []).slice(0, 20),
     destination: joinDestinations(values),
     predicateInput: values.some(v => v?.predicateInput) ? {
       trace: values.flatMap(v => (v?.predicateInput ?? v)?.trace ?? []).slice(0, 20),
@@ -68,7 +72,7 @@ export function analyze(input, overrides = {}) {
     k in DEFAULTS && Number.isInteger(v) && v > 0).map(([k, v]) => [k, Math.min(v, DEFAULTS[k])])) };
   const deadline = Date.now() + limits.timeoutMs;
   const result = { schemaVersion: 1, analyzerVersion: VERSION, parserVersion: ts.version,
-    status: 'COMPLETE', files: [], findings: [], sqlUses: [], httpUses: [], authorizationContexts: [], limitations: [LIMITATION] };
+    status: 'COMPLETE', files: [], findings: [], sqlUses: [], httpUses: [], exposureUses: [], authorizationContexts: [], limitations: [LIMITATION] };
   const modules = new Map();
   let chars = 0, steps = 0, totalFunctions = 0;
   const safeName = text => /^[A-Za-z_$][\w$]{0,79}$/.test(text ?? '') && !/^(?:sk_|gh[pousr]_|AKIA)/.test(text) ? text : '[identifier]';
@@ -83,6 +87,7 @@ export function analyze(input, overrides = {}) {
   }
   function note(mod, reason) { mod.record.limitations.add(reason); }
   function step(v, location, mod) {
+    if (exposureSources(v).length) v = { ...v, exposureTrail: [...exposureTrails(v), location].slice(-10) };
     if (!v.trace.length) return v;
     if (v.trace.length < 20) return { ...v, trace: [...v.trace, location] };
     note(mod, 'TRACE_DETAILS_TRUNCATED');
@@ -91,6 +96,25 @@ export function analyze(input, overrides = {}) {
   function append(list, item, mod) {
     if (list.length >= limits.maxResults) { note(mod, 'RESULT_LIMIT_EXCEEDED'); return; }
     if (!list.some(existing => JSON.stringify(existing) === JSON.stringify(item))) list.push(item);
+  }
+  function literal(text, node, mod, fn) {
+    return { ...constant(text), exposures: credentialShape(text) ? [loc(node, mod, 'CREDENTIAL_SHAPED_LITERAL', fn)] : [] };
+  }
+  function observeExposure(v, node, state, kind) {
+    const origins = exposureSources(v);
+    if (!origins.length) return;
+    const location = kind === 'HTTP_RESPONSE_RETURN' && v.responseLocations?.length ? v.responseLocations[0] : loc(node, state.mod, kind, state.fn);
+    const unresolved = exposureUncertain(v) || state.uncertain || state.exposureUncertain;
+    const supported = origins.filter(o => ['CREDENTIAL_SHAPED_LITERAL', 'AUTHENTICATION_HEADER'].includes(o.kind));
+    const status = unresolved ? 'FLOW_UNRESOLVED' : supported.length ? 'SENSITIVE_FLOW_CANDIDATE' : 'SENSITIVITY_UNVERIFIED';
+    const limitations = ['STATIC_EXPOSURE_NOT_RUNTIME_LEAK_PROOF', 'MASKING_LOG_ACCESS_AND_DEPLOYMENT_UNKNOWN'];
+    const trace = [...origins,...exposureTrails(v)].slice(0,20);
+    append(result.exposureUses, { kind, status, location, trace, limitations }, state.mod);
+    if (status !== 'SENSITIVE_FLOW_CANDIDATE') return;
+    append(result.findings, { ruleId: 'TS_SENSITIVE_DATA_EXPOSURE', kind: 'CWE-200', confidence: 'HIGH', disposition: 'REVIEW_REQUIRED',
+      source: supported[0], sink: location, flow: [...trace, location], defenses: [], limitations,
+      message: '보호해야 할 정보 후보가 서버 응답 또는 로그에 전달되는 경로를 확인해 주세요.',
+      recommendation: '응답·로그에서 해당 값을 제거하거나 목적에 맞게 마스킹하세요. 실제 노출이 확인됐다면 자격증명 교체를 검토하고 로컬 테스트와 재검사로 확인하세요. 클라이언트 공개 환경변수로 옮기는 것은 해결이 아닙니다.' }, state.mod);
   }
   for (const file of input.files ?? []) {
     if (result.files.length >= limits.maxFiles) { result.limitations.push('FILE_COUNT_LIMIT_EXCEEDED'); break; }
@@ -141,7 +165,7 @@ export function analyze(input, overrides = {}) {
           mod.declared.add(d.name.text);
           const init = unwrap(d.initializer);
           if (init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init))) register(d.name.text, init, exported);
-          else if (init && (ts.isStringLiteral(init) || ts.isNumericLiteral(init)) && (s.declarationList.flags & ts.NodeFlags.Const)) mod.constants.set(d.name.text, constant(ts.isNumericLiteral(init) ? Number(init.text) : init.text));
+          else if (init && (ts.isStringLiteral(init) || ts.isNumericLiteral(init)) && (s.declarationList.flags & ts.NodeFlags.Const)) mod.constants.set(d.name.text, literal(ts.isNumericLiteral(init) ? Number(init.text) : init.text, init, mod));
         }
       }
       for (const s of ast.statements) {
@@ -199,7 +223,7 @@ export function analyze(input, overrides = {}) {
       if (key === 'params') return value('route', [loc(node, mod, 'ROUTE_PARAMETER', fn)]);
       if (key === 'data') return value('contextData', [], { unknown: true });
     }
-    if (base.tag === 'env') return value('database', [], { unknown: base.unknown });
+    if (base.tag === 'env') return value('database', [], { unknown: base.unknown, exposures: [loc(node, mod, 'ENVIRONMENT_VALUE_UNVERIFIED', fn)] });
     if (base.tag === 'contextData' && ['user', 'session', 'principal'].includes(key)) {
       state.context.checks.push(loc(node, mod, 'LOGIN_CONTEXT_REFERENCE', fn));
     }
@@ -315,7 +339,7 @@ export function analyze(input, overrides = {}) {
       mergeVars(state, [skipped, taken]);
       return { ...union(result, constant(undefined)), unknown: true };
     }
-    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return constant(node.text);
+    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return literal(node.text, node, mod, fn);
     if (ts.isNumericLiteral(node)) return constant(Number(node.text));
     if (ts.isIdentifier(node)) {
       const found = state.vars.get(node.text) ?? mod.constants.get(node.text);
@@ -419,11 +443,19 @@ export function analyze(input, overrides = {}) {
       const callable = receiverInput ? undefined : expr(callee, state);
       const global = ts.isIdentifier(callee) && !state.vars.has(callee.text) && !mod.imports.has(callee.text) && !mod.declared.has(callee.text);
       const args = (node.arguments ?? []).map(a => expr(a, state));
+      const globalObject = name => ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) && callee.expression.text === name
+        && !state.vars.has(name) && !mod.imports.has(name) && !mod.declared.has(name);
+      if (globalObject('console') && ['log','info','warn','error','debug'].includes(callee.name.text)) {
+        observeExposure(union(...args), node, state, 'LOG_ARGUMENT'); return constant(undefined);
+      }
+      if (globalObject('JSON') && callee.name.text === 'stringify') return { tag: 'serialized', trace: [], exposures: exposureSources(args[0]), exposureTrail: exposureTrails(args[0]), unknown: exposureUncertain(args[0]) || args.length > 1 };
+      if (global && callee.text === 'Response' && ts.isNewExpression(node) || globalObject('Response') && callee.name.text === 'json')
+        return { tag: 'exposureResponse', trace: [], exposures: exposureSources(args[0]), exposureTrail: exposureTrails(args[0]), unknown: exposureUncertain(args[0]) || state.uncertain || state.exposureUncertain, responseLocations: [loc(node, mod, 'HTTP_RESPONSE', fn)] };
       if (ts.isIdentifier(callee)) {
         const target = callable?.target;
         if (target && ts.isCallExpression(node)) {
           const passed = args.map(a => step(a, loc(node, mod, 'FUNCTION_ARGUMENT', fn), mod));
-          return invoke(target, passed, state.depth + 1, state.context, state.stack, state.uncertain);
+          return invoke(target, passed, state.depth + 1, state.context, state.stack, state.uncertain, state.exposureUncertain);
         }
         if (global) {
           if (callee.text === 'URL' && ts.isNewExpression(node)) {
@@ -465,7 +497,8 @@ export function analyze(input, overrides = {}) {
         if (receiver.tag === 'headers' && ['set', 'append', 'delete'].includes(method)) {
           state.context.headersMutated = true; note(mod, 'HEADER_MUTATION_PARTIAL'); return constant(undefined);
         }
-        if (receiver.tag === 'headers' && method === 'get') return value('input', [loc(node, mod, 'REQUEST_HEADER', fn)], { unknown: receiver.unknown || state.context.headersMutated, inputShape: 'STRING' });
+        if (receiver.tag === 'headers' && method === 'get') return value('input', [loc(node, mod, 'REQUEST_HEADER', fn)], { unknown: receiver.unknown || state.context.headersMutated, inputShape: 'STRING',
+          exposures: hasConstant(args[0] ?? unknown()) && /^(authorization|cookie)$/i.test(args[0].constant) ? [loc(node, mod, 'AUTHENTICATION_HEADER', fn)] : [] });
         if (method === 'includes' && args[0]?.urlMember && ts.isArrayLiteralExpression(unwrap(callee.expression))
             && unwrap(callee.expression).elements.every(e => ts.isStringLiteral(e))) return value('boolean');
         if (receiver.tag === 'request' && ['json', 'text', 'formData'].includes(method)) return value('input', [loc(node, mod, 'REQUEST_BODY', fn)], { unknown: receiver.unknown, inputShape: method === 'text' ? 'STRING' : undefined });
@@ -573,8 +606,10 @@ export function analyze(input, overrides = {}) {
     }
     state.vars = merged;
     state.uncertain = state.uncertain || branches.some(b => b.uncertain);
+    state.exposureUncertain = state.exposureUncertain || branches.some(b => b.exposureUncertain);
   }
   function guardBranches(node, condition, yes, no) {
+    yes.exposureUncertain = no.exposureUncertain = true;
     const predicate = condition.predicateInput ?? condition;
     if (predicate.unknown && predicate.trace.length) for (const branch of [yes, no]) {
       for (const [name, v] of branch.vars) if (v.trace.some(t => predicate.trace.some(c => JSON.stringify(c) === JSON.stringify(t))))
@@ -740,13 +775,13 @@ export function analyze(input, overrides = {}) {
     }
     return { values: [], stops: false };
   }
-  function invoke(fn, args, depth, context, stack, uncertain = false) {
+  function invoke(fn, args, depth, context, stack, uncertain = false, exposureUncertain = false) {
     const { mod, node } = fn;
     if (depth > limits.maxDepth || stack.has(fn)) {
       note(mod, 'CALL_DEPTH_EXCEEDED'); return { ...union(...args), unknown: true };
     }
     tick(mod); mod.visited.add(fn); mod.record.functionsAnalyzed = mod.visited.size;
-    const state = { mod, fn, vars: new Map(), depth, context, uncertain, stack: new Set([...stack, fn]) };
+    const state = { mod, fn, vars: new Map(), depth, context, uncertain, exposureUncertain, stack: new Set([...stack, fn]) };
     const names = (binding, callback) => {
       if (ts.isIdentifier(binding)) callback(binding.text);
       else if (ts.isObjectBindingPattern(binding) || ts.isArrayBindingPattern(binding))
@@ -783,7 +818,8 @@ export function analyze(input, overrides = {}) {
   for (const mod of modules.values()) for (const entry of mod.entries) {
     const context = { entry: loc(entry.fn.node, mod, entry.kind, entry.fn), checks: [], defenses: [], resources: [] };
     try {
-      invoke(entry.fn, entry.kind === 'WORKER_FETCH' ? [value('request'), value('env')] : [value('context')], 0, context, new Set());
+      const returned = invoke(entry.fn, entry.kind === 'WORKER_FETCH' ? [value('request'), value('env')] : [value('context')], 0, context, new Set());
+      if (returned.responseLocations?.length) observeExposure(returned, entry.fn.node, { mod, fn: entry.fn, uncertain: false }, 'HTTP_RESPONSE_RETURN');
     } catch { note(mod, 'ANALYSIS_BUDGET_EXCEEDED'); }
     for (const field of ['checks', 'defenses', 'resources']) {
       context[field] = context[field].filter((item, i, all) => all.findIndex(other => JSON.stringify(item) === JSON.stringify(other)) === i);

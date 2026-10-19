@@ -66,6 +66,28 @@ class ServerAnalysisIntegrationTest {
         mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
     }
 
+    @Test void exposureUsesCommonInputSourcesWithoutChangingRiskOrResolvedCounts() throws Exception {
+        String token=signup(),code="export default {fetch(request){return Response.json({value:request.headers.get('Authorization')});}}";
+        var zip=upload(token,code);var normal=upload(token,code.replace("Authorization","X-Request-ID"));
+        assertThat(zip.at("/serverAnalysis/validatedFindings/0/ruleId").asText()).isEqualTo("TS_SENSITIVE_DATA_EXPOSURE");
+        assertThat(zip.at("/serverAnalysis/exposureUses")).hasSize(1);
+        Path pub=Files.createDirectory(temp.resolve("exposure-public")),prv=Files.createDirectory(temp.resolve("exposure-private"));
+        Files.writeString(pub.resolve("worker.ts"),code);Files.writeString(prv.resolve("worker.ts"),code);
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/exposure",pub,pub));
+        var publicResult=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/exposure\",\"scanMode\":\"STANDARD\"}");
+        var metadata=new GitHubSourceSnapshot("fixture","exposure","https://github.com/fixture/exposure","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/exposure",prv,prv,metadata));
+        var privateResult=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        assertThat(publicResult.path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));assertThat(privateResult.path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        assertThat(pub).doesNotExist();assertThat(prv).doesNotExist();
+        assertThat(normal.at("/serverAnalysis/validatedFindings")).isEmpty();assertThat(normal.at("/comparison/counts/RESOLVED").asInt()).isZero();
+        for(String key:List.of("securityScore","vulnerabilityCount","deploymentStatus"))assertThat(zip.path(key)).isEqualTo(normal.path(key));
+        for(String key:List.of("prioritySummary","prioritizedDeploymentAssessment"))assertThat(zip.path("riskAssessment").path(key)).isEqualTo(normal.path("riskAssessment").path(key));
+        assertThat(detail(token,zip.path("reviewId").asLong()).path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        assertThat(zip.at("/coverage/analyzers").toString()).contains("TYPESCRIPT_EXPOSURE");
+        mvc.perform(get("/api/reviews/"+zip.path("reviewId").asLong()).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+    }
+
     @Test void correctedStatePersistsWithoutChangingRiskOrCountingAFalselyResolvedIssue() throws Exception {
         String token = signup();
         String start = "export default { fetch(request,env) { let id=new URL(request.url).searchParams.get('id'); ";

@@ -3,8 +3,13 @@ import type { AnalysisLocation, ServerAnalysisSnapshot } from '../types/serverAn
 import { DeploymentAnalysisSection } from './DeploymentAnalysisSection';
 import { AuthorizationContextDetails } from './AuthorizationContextDetails';
 import { TokenSecurityDetails } from './TokenSecurityDetails';
+import { ExposureDetails } from './ExposureDetails';
 
 const labels: Record<string, string> = {
+  CREDENTIAL_SHAPED_LITERAL:'자격증명 형식의 고정 값 · 원문은 저장하지 않음', FRAMEWORK_SECRET_SETTING:'Django 서버 비밀 설정 참조',
+  AUTHENTICATION_HEADER:'인증·쿠키 헤더', ENVIRONMENT_VALUE_UNVERIFIED:'환경 설정 참조 · 실제 민감성 미확인', HTTP_RESPONSE:'응답 생성 위치',
+  HTTP_RESPONSE_RETURN:'서버 응답 반환', LOG_ARGUMENT:'로그 인자 전달', STATIC_EXPOSURE_NOT_RUNTIME_LEAK_PROOF:'정적 전달 근거이며 실제 유출은 미검증',
+  MASKING_LOG_ACCESS_AND_DEPLOYMENT_UNKNOWN:'외부 마스킹·로그 접근·배포 실행 문맥 미확인',
   TOKEN_API_CALL: 'JWT API 호출', TOKEN_SECURITY_USE: '토큰의 보안 사용 위치', TOKEN_CLAIM_DECISION: '토큰 값으로 접근 조건 판단',
   TOKEN_TRANSFORM_OR_EXTERNAL_VALIDATION_UNKNOWN: '다른 함수의 토큰 변환·검증 효과 미확인',
   TOKEN_VALUE_OR_EXECUTION_UNRESOLVED: '토큰 값 전달 또는 실행 경로 일부 미확인',
@@ -160,7 +165,8 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
         : finding.ruleId === 'PY_UNSAFE_DESERIALIZATION_INPUT_FLOW' ? '외부 데이터의 복원 방식을 확인해 주세요'
         : finding.ruleId === 'PY_AUTHORIZATION_INVERTED_OWNER_GUARD' ? '사용자 비교와 차단 분기의 의도를 확인해 주세요'
         : finding.ruleId === 'PY_JWT_UNVERIFIED_ACCESS_DECISION' ? '토큰을 신뢰하기 전 서명 검증을 확인해 주세요'
-        : finding.ruleId === 'PY_JWT_FIXED_SIGNING_KEY' ? '토큰 서명 키의 관리 방식을 확인해 주세요' : '요청 값이 데이터베이스 쿼리에 들어갑니다'}</h4><p>{finding.message}</p>
+        : finding.ruleId === 'PY_JWT_FIXED_SIGNING_KEY' ? '토큰 서명 키의 관리 방식을 확인해 주세요'
+        : finding.ruleId.endsWith('_SENSITIVE_DATA_EXPOSURE') ? '보호할 정보가 응답·로그에 전달되는지 확인해 주세요' : '요청 값이 데이터베이스 쿼리에 들어갑니다'}</h4><p>{finding.message}</p>
       <p>{snapshot.validatedFindings == null ? '이 이력은 실행 경로 Finding 연결 이전의 기록입니다. 과거 결과를 새 기준으로 추측하여 승격하지 않습니다.'
         : '중간 처리 또는 실행 호출을 충분히 확인하지 못해 검증된 흐름 Finding으로 연결하지 않았습니다.'}</p>
       <p>{finding.recommendation}</p>
@@ -168,6 +174,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
         <FlowEvidence finding={finding} />
       </details>
     </article>)}</div>
+    <details className="coverage-details"><summary>응답·로그 정보 전달 근거 ({snapshot.exposureUses?.length ?? '미기록'})</summary><ExposureDetails uses={snapshot.exposureUses}/></details>
     {python && <details className="coverage-details"><summary>토큰 서명·사용 근거 ({snapshot.tokenUses?.length ?? '미기록'})</summary>
       <TokenSecurityDetails uses={snapshot.tokenUses} />
     </details>}

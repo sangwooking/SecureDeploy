@@ -1,5 +1,14 @@
 # Bounded server analysis runtime
 
+Version ts-server-v5 adds bounded Workers/Pages response-return and console log provenance. Sources
+are selected credential-shaped literals, explicit authentication/cookie request headers and environment
+references (sensitivity unknown). Names and VITE_/NEXT_PUBLIC_ prefixes alone are not secrets.
+Response construction must reach the supported entry return; JSON.stringify retains provenance but
+custom replacers, unknown transforms and unknown conditional paths are unresolved. Actual log access,
+credential validity, middleware masking, Next.js server/client boundaries and browser bundles are not
+verified. Only location/classification metadata is stored. Ship operator-owned exposure.mjs with the
+runtime. Old exposureUses remain null; new candidates are supplemental REVIEW_REQUIRED/NOT_COMPARED.
+
 This is SecureDeploy-owned tooling, not an uploaded project's dependency install.
 Install the locked parser with `npm ci --ignore-scripts` in this directory. Node
 22.13+ with the permission flag is required; local verification used Node 26.0.0

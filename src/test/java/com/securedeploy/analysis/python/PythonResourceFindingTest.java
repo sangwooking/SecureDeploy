@@ -8,7 +8,7 @@ class PythonResourceFindingTest {
     @Test void groundedResourceFlowsConnectAndRoundTripWithoutChangingPriority() throws Exception {
         String code="import pickle\nfrom rest_framework.decorators import api_view\n@api_view(['POST'])\ndef endpoint(request):\n open(request.GET['file'])\n return pickle.loads(request.body)\n";
         var result=new PythonServerAnalyzer(new PythonAnalysisProperties()).analyze(PythonServerAnalyzerTest.project(code));
-        assertThat(result.analyzerVersion()).isEqualTo("py-django-v5");
+        assertThat(result.analyzerVersion()).isEqualTo("py-django-v6");
         assertThat(result.resourceUses()).hasSize(2);
         assertThat(result.validatedFindings()).hasSize(2).allMatch(f -> f.priority().name().equals("REVIEW_REQUIRED") && f.comparisonPolicy().equals("NOT_COMPARED"));
         assertThat(result.validatedFindings()).extracting(ServerFlowFinding::ruleId).containsExactly("PY_FILE_PATH_INPUT_FLOW","PY_UNSAFE_DESERIALIZATION_INPUT_FLOW");

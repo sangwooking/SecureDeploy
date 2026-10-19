@@ -16,6 +16,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         findings.addAll(connectResources(snapshot));
         findings.addAll(connectAuthorization(snapshot));
         findings.addAll(connectTokens(snapshot));
+        findings.addAll(connectExposure(snapshot));
         if (snapshot.httpUses() == null) return List.copyOf(findings);
         Map<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>> groups = new LinkedHashMap<>();
         for (var candidate : snapshot.findings()) {
@@ -110,6 +111,26 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
             String key = version + "\n" + ruleId + "\n" + location.filePath() + "\n" + location.line() + ":" + location.column();
             return (ruleId.startsWith("PY_") ? "py-flow:" : "ts-flow:") + HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(key.getBytes(StandardCharsets.UTF_8)));
         } catch (java.security.NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
+    }
+
+    private static List<ServerFlowFinding> connectExposure(ServerAnalysisSnapshot snapshot) {
+        if (snapshot.exposureUses() == null) return List.of();
+        var groups = new LinkedHashMap<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>>();
+        for (var candidate : snapshot.findings()) {
+            if (!List.of("TS_SENSITIVE_DATA_EXPOSURE", "PY_SENSITIVE_DATA_EXPOSURE").contains(candidate.ruleId()) || !"HIGH".equals(candidate.confidence())) continue;
+            boolean observed = snapshot.exposureUses().stream().anyMatch(u -> u.location().equals(candidate.sink()) && u.trace().contains(candidate.source()) && "SENSITIVE_FLOW_CANDIDATE".equals(u.status()));
+            if (observed) {
+                var evidence = groups.computeIfAbsent(candidate.sink(), ignored -> new ArrayList<>());
+                if (!evidence.contains(candidate)) evidence.add(candidate);
+            }
+        }
+        return groups.entrySet().stream().map(g -> {
+            var f=g.getValue().get(0);
+            return new ServerFlowFinding(identity(snapshot.analyzerVersion(),f.ruleId(),g.getKey()),f.ruleId().startsWith("PY_") ? "PYTHON_DATA_FLOW" : "TYPESCRIPT_DATA_FLOW",
+                    snapshot.analyzerVersion(),f.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",g.getKey(),List.copyOf(g.getValue()),List.of(g.getKey()),f.message(),
+                    "자격증명 형식·인증 헤더·서버 비밀 설정에서 응답 또는 로그로의 정적 전달 근거입니다. 실제 비밀값의 유효성·운영 노출·접근 권한은 확인하지 않았으며 기존 위험 건수와 점수에는 합산하지 않습니다.",
+                    f.recommendation(),List.of("표시된 출처와 전달·노출 위치에서 실제로 필요한 공개 정보인지 확인하세요.","원문 대신 필요한 필드만 반환하고 로컬 로그·응답 테스트에서 비밀값이 제외되는지 확인하세요.","실제 유출이 확인됐다면 해당 자격증명 교체·접근 기록 검토 후 재검사하세요."));
+        }).toList();
     }
 
     private static List<ServerFlowFinding> connectTokens(ServerAnalysisSnapshot snapshot) {

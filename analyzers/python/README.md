@@ -1,6 +1,15 @@
 # Bounded Python server flow analysis
 
-Trusted CPython standard-library AST worker, version `py-django-v5`.
+Trusted CPython standard-library AST worker, version `py-django-v6`.
+
+Version 6 adds bounded response-return and standard logging/print provenance. Sources are selected
+credential-shaped literals, Django settings.SECRET_KEY, explicit authentication/cookie headers, and
+environment references (sensitivity unknown). Names alone are not secrets. Known response constructors
+must reach a supported entry return; unused constructors are not external exposure. Unknown branches,
+masking, custom encoders and transforms remain unresolved. Only location/classification metadata is stored.
+No runtime credential validation, log access inspection, browser bundle analysis or Java flow support.
+Ship operator-owned exposure.py beside worker.py; target modules are never loaded. Older exposureUses
+remain null; supplemental candidates do not change Risk/score or resolved counts.
 
 Version 5 records PyJWT 2.x-compatible encode/decode API shapes in supported Django/DRF flows.
 Explicit signature-disable options alone are NOT findings: request-derived claims must reach a

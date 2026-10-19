@@ -1,0 +1,7 @@
+const {test}=require('node:test');const assert=require('node:assert/strict');const React=require('react');const {renderToStaticMarkup}=require('react-dom/server');
+const {ExposureDetails}=require('./load-component.cjs')('ExposureDetails');
+const render=uses=>renderToStaticMarkup(React.createElement(ExposureDetails,{uses}));
+const use={kind:'HTTP_RESPONSE_RETURN',status:'SENSITIVE_FLOW_CANDIDATE',location:{filePath:'api/views.py',line:5,functionName:'endpoint'},trace:[{filePath:'api/views.py',line:4,kind:'CREDENTIAL_SHAPED_LITERAL'}],limitations:['STATIC_EXPOSURE_NOT_RUNTIME_LEAK_PROOF']};
+test('exposure evidence is conditional and actionable without source or credential contents',()=>{const h=render([use]);for(const x of ['api/views.py:5','실제 유출은 미검증','기존 위험 건수','공개 클라이언트 환경변수','원문이 제외'])assert.ok(h.includes(x),x);});
+test('unknown environment and missing legacy records never become clean results',()=>{const h=render([{...use,status:'SENSITIVITY_UNVERIFIED',trace:[{...use.trace[0],kind:'ENVIRONMENT_VALUE_UNVERIFIED'}]}]);assert.ok(h.includes('민감한지 확인하지 못함'));assert.ok(render(null).includes('기록되지'));assert.ok(render([]).includes('보증은 아닙니다'));});
+test('exposure locations are escaped',()=>{const h=render([{...use,location:{...use.location,filePath:'<img src=x>'}}]);assert.ok(!h.includes('<img'));assert.ok(h.includes('&lt;img'));});

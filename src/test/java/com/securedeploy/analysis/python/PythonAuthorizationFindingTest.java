@@ -25,7 +25,7 @@ class PythonAuthorizationFindingTest {
     @Test void groundedCandidateConnectsButCorrectGuardAndMissingGuardDoNotBecomeFindings() throws Exception {
         var analyzer=new PythonServerAnalyzer(new PythonAnalysisProperties());
         var result=analyzer.analyze(PythonServerAnalyzerTest.project(UNSAFE));
-        assertThat(result.analyzerVersion()).isEqualTo("py-django-v5");
+        assertThat(result.analyzerVersion()).isEqualTo("py-django-v6");
         assertThat(result.validatedFindings()).hasSize(1);
         var finding=result.validatedFindings().get(0);
         assertThat(finding.ruleId()).isEqualTo("PY_AUTHORIZATION_INVERTED_OWNER_GUARD");

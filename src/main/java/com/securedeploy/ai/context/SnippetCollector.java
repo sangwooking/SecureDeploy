@@ -11,6 +11,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SnippetCollector {
+    private final com.securedeploy.ai.remediation.RemediationSanitizer sanitizer;
+
+    public SnippetCollector(com.securedeploy.ai.remediation.RemediationSanitizer sanitizer) {
+        this.sanitizer = sanitizer;
+    }
 
     private static final int MAX_FILES = 10;
     private static final int MAX_CHARS_PER_FILE = 1_500;
@@ -140,7 +145,7 @@ public class SnippetCollector {
     }
 
     private String sanitize(String content) {
-        return content
+        return sanitizer.text(content, MAX_CHARS_PER_FILE + 100)
                 .replaceAll("(?i)(openai[_-]?api[_-]?key\s*[:=]\s*)([^\s\"']+)", "$1[REDACTED]")
                 .replaceAll("(?i)((?:vite[_-]?)?[a-z0-9_]*api[_-]?key\s*[:=]\s*)([^\s\"']+)", "$1[REDACTED]")
                 .replaceAll("(?i)(password\s*[:=]\s*)([^\s\"']+)", "$1[REDACTED]")

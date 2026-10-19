@@ -21,7 +21,13 @@ _token_module = importlib.util.module_from_spec(_token_spec)
 _token_spec.loader.exec_module(_token_module)
 TokenEvidence = _token_module.TokenEvidence
 
-VERSION = "py-django-v5"
+_exposure_spec = importlib.util.spec_from_file_location("securedeploy_exposure", Path(__file__).with_name("exposure.py"))
+_exposure_module = importlib.util.module_from_spec(_exposure_spec)
+_exposure_spec.loader.exec_module(_exposure_module)
+ExposureEvidence = _exposure_module.ExposureEvidence
+credential_shape = _exposure_module.credential_shape
+
+VERSION = "py-django-v6"
 MAX_NODES = 60000
 MAX_STEPS = 30000
 MAX_DEPTH = 5
@@ -39,6 +45,9 @@ class Value:
     defenses: tuple = ()
     elements: tuple | None = None
     tokens: tuple = ()
+    exposures: tuple = ()
+    response_locations: tuple = ()
+    exposure_trail: tuple = ()
 
 
 def merge(*values):
@@ -62,7 +71,10 @@ def merge(*values):
                  first.literal if all(v.literal == first.literal for v in values) else UNKNOWN,
                  first.symbol if all(v.symbol == first.symbol for v in values) else "",
                  first.tag if all(v.tag == first.tag for v in values) else "", tuple(defenses[:20]), elements,
-                 tuple(dict.fromkeys(t for v in values for t in v.tokens))[:200])
+                 tuple(dict.fromkeys(t for v in values for t in v.tokens))[:200],
+                 tuple(dict(o) for o in dict.fromkeys(tuple(sorted(o.items())) for v in values for o in v.exposures))[:20],
+                 tuple(dict(o) for o in dict.fromkeys(tuple(sorted(o.items())) for v in values for o in v.response_locations))[:20],
+                 tuple(dict(o) for o in dict.fromkeys(tuple(sorted(o.items())) for v in values for o in v.exposure_trail))[:10])
 
 
 class BudgetExceeded(Exception):
@@ -81,6 +93,7 @@ class Analyzer:
         self.token_sites = {}
         self.authorization = AuthorizationEvidence(self, Value)
         self.token_security = TokenEvidence(self, Value)
+        self.exposure = ExposureEvidence(self, Value)
         self.visited, self.traced = set(), set()
         self.path, self.function, self.stack = "", "<module>", []
         self.partial = False
@@ -136,6 +149,8 @@ class Analyzer:
                     functionName=self.function, kind=kind)
 
     def step(self, value, node, kind):
+        if value.exposures:
+            value = replace(value, exposure_trail=(*value.exposure_trail, self.loc(node,kind))[-10:])
         if not value.trace:
             return value
         return merge(value, replace(value, trace=(self.loc(node, kind),)))
@@ -204,6 +219,14 @@ class Analyzer:
         if shadowed:
             self.note("MODULE_BINDING_REASSIGNED", path)
         self.imports[path], self.globals[path] = imports, globals_
+        for item in tree.body:
+            if isinstance(item, (ast.Assign, ast.AnnAssign)):
+                for target in item.targets if isinstance(item, ast.Assign) else [item.target]:
+                    if isinstance(target, ast.Name) and target.id not in shadowed:
+                        if isinstance(item.value, ast.Constant) and credential_shape(item.value.value):
+                            globals_[target.id] = replace(globals_[target.id], exposures=(dict(filePath=path,line=item.value.lineno,column=item.value.col_offset+1,functionName='<module>',kind='CREDENTIAL_SHAPED_LITERAL'),))
+                        elif isinstance(item.value, ast.Call) and self.symbol(item.value.func,path) == 'logging.getLogger':
+                            globals_[target.id] = Value(tag='exposure-logger')
         self.token_sites[path] = sum(isinstance(n, ast.Call) and self.symbol(n.func, path) in {"jwt.encode", "jwt.decode"} for n in ast.walk(tree))
         self.coverage[path]["prepareCallSites"] = sum(isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
                                                         and n.func.attr in {"execute", "executemany", "raw"} for n in ast.walk(tree))
@@ -318,6 +341,7 @@ class Analyzer:
                 context = dict(entry=self.loc(node, "SERVER_ENTRY"), checks=[], defenses=[], resources=[],
                                conclusion="NOT_ESTABLISHED", limitations=["MIDDLEWARE_SETTINGS_AND_OWNERSHIP_NOT_VERIFIED"])
                 self.contexts = [context]
+                self.exposure.uncertain = False
                 context["details"] = self.authorization.begin(key)
                 for dec in node.decorator_list:
                     name = self.symbol(dec.func if isinstance(dec, ast.Call) else dec, path)
@@ -327,7 +351,9 @@ class Analyzer:
                     for item in self.classes[cls][1].body:
                         if isinstance(item, ast.Assign) and any(isinstance(t, ast.Name) and t.id in {"permission_classes", "authentication_classes"} for t in item.targets):
                             context["checks"].append(self.loc(item, "AUTH_DECLARATION"))
-                self.call_function(key, values, {})
+                returned = self.call_function(key, values, {})
+                for location in returned.response_locations:
+                    self.exposure.observe(returned, location, 'HTTP_RESPONSE_RETURN')
                 self.authorization.finish()
                 if len(self.auth) < MAX_RESULTS:
                     self.auth.append(context)
@@ -356,7 +382,7 @@ class Analyzer:
                     authorizationContexts=self.auth, limitations=["BOUNDED_DJANGO_DRF_ONLY", "MIDDLEWARE_SETTINGS_AND_OWNERSHIP_NOT_VERIFIED",
                     "STATIC_FLOW_NOT_EXPLOIT_PROOF", "NO_OS_SANDBOX", "BOUNDED_PYTHON_FILE_AND_DESERIALIZATION_ONLY",
                     "SYMLINKS_PERMISSIONS_AND_RUNTIME_NOT_VERIFIED"], validatedFindings=None, deploymentAnalysis=deployment,
-                    resourceUses=self.resources, tokenUses=self.token_security.uses)
+                    resourceUses=self.resources, tokenUses=self.token_security.uses, exposureUses=self.exposure.uses)
 
     def deployment_settings(self):
         keys = {"DEBUG", "SECRET_KEY", "ALLOWED_HOSTS", "SESSION_COOKIE_SECURE", "CSRF_COOKIE_SECURE",
@@ -634,6 +660,7 @@ class Analyzer:
                     if end:
                         return env, returns, True
                 else:
+                    self.exposure.uncertain = True
                     before = self.partial
                     a, ra, ta = self.block(node.body, self.authorization.branch(node, env, True))
                     pa = self.partial
@@ -705,15 +732,17 @@ class Analyzer:
         if node is None:
             return Value(literal=None)
         if isinstance(node, ast.Constant):
-            return Value(literal=node.value)
+            return Value(literal=node.value, exposures=(self.loc(node,'CREDENTIAL_SHAPED_LITERAL'),) if credential_shape(node.value) else ())
         if isinstance(node, ast.Name):
-            return env.get(node.id, Value(symbol=node.id) if node.id in {"str", "int"} else Value(symbol="builtins.open") if node.id == "open" else Value(unknown=True))
+            return env.get(node.id, Value(symbol=node.id) if node.id in {"str", "int"} else Value(symbol="builtins."+node.id) if node.id in {"open","print"} else Value(unknown=True))
         if isinstance(node, ast.NamedExpr):
             value = self.expr(node.value, env)
             self.assign(node.target, value, env)
             return value
         if isinstance(node, ast.Attribute):
             base = self.expr(node.value, env)
+            if base.symbol == 'django.conf.settings' and node.attr == 'SECRET_KEY' and not base.unknown:
+                return Value(exposures=(self.loc(node,'FRAMEWORK_SECRET_SETTING'),))
             if base.tag == "request" and not base.unknown:
                 if node.attr == "FILES":
                     return Value(trace=(self.loc(node, "UPLOADED_FILE"),), tag="upload-map")
@@ -737,13 +766,13 @@ class Analyzer:
             base = self.expr(node.value, env)
             index = self.expr(node.slice, env)
             if base.tag == "input-map" and not base.unknown:
-                return replace(base, tag="", literal=UNKNOWN)
+                return replace(base, tag="", literal=UNKNOWN, exposures=(self.loc(node,'AUTHENTICATION_HEADER'),) if base.trace and base.trace[0]['kind'] == 'REQUEST_HEADER' and index.literal in {'Authorization','authorization','Cookie','cookie','HTTP_AUTHORIZATION','HTTP_COOKIE'} else ())
             if base.tag == "upload-map" and not base.unknown:
                 return replace(base, tag="uploaded-file", literal=UNKNOWN)
             if base.tag == "token-claims" and base.tokens and not base.unknown:
                 return replace(base, tag="token-claim", literal=UNKNOWN)
             if base.symbol == "os.environ" and not base.unknown:
-                return Value(tag="token-key-env", unknown=True)
+                return Value(tag="token-key-env", unknown=True, exposures=(self.loc(node,'ENVIRONMENT_VALUE_UNVERIFIED'),))
             return replace(merge(base, index), unknown=True, literal=UNKNOWN, tag="", symbol="")
         if isinstance(node, ast.BinOp):
             left = self.expr(node.left, env)
@@ -856,7 +885,12 @@ class Analyzer:
             return replace(merge(*(args + list(keywords.values()))), unknown=True)
         token_value = self.token_security.call(node, function, base, name, args, keywords)
         if token_value is not None:
+            if token_value.tag in {'token-key-env','token-key-env-fallback'}:
+                token_value = replace(token_value, exposures=(self.loc(node,'ENVIRONMENT_VALUE_UNVERIFIED'),))
             return token_value
+        exposure_value = self.exposure.call(node, function, base, name, args, keywords)
+        if exposure_value is not None:
+            return exposure_value
         authorization_value = self.authorization.call(node, function, base, name, args, keywords, env)
         if authorization_value is not None:
             return authorization_value
@@ -864,7 +898,7 @@ class Analyzer:
         if handled is not None:
             return handled
         if base and base.tag == "input-map" and name in {"get", "getlist"} and not base.unknown:
-            return replace(merge(base, *args), tag="", literal=UNKNOWN, symbol="")
+            return replace(merge(base, *args), tag="", literal=UNKNOWN, symbol="", exposures=(self.loc(node,'AUTHENTICATION_HEADER'),) if base.trace and base.trace[0]['kind'] == 'REQUEST_HEADER' and args and args[0].literal in {'Authorization','authorization','Cookie','cookie','HTTP_AUTHORIZATION','HTTP_COOKIE'} else ())
         if function.symbol == "django.db.connection.cursor" and not function.unknown:
             return Value(tag="cursor")
         if base and base.tag == "cursor" and name in {"execute", "executemany"} and not base.unknown:
