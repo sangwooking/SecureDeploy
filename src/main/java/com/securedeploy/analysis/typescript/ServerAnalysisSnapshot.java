@@ -112,7 +112,18 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
     public record ResourceUse(String ruleId, String kind, Location location, List<Location> trace,
             List<Location> defenses, List<String> limitations, boolean executionObserved) { }
     public record AuthorizationContext(Location entry, List<Location> checks, List<Location> defenses,
-            List<Location> resources, String conclusion, List<String> limitations) { }
+            List<Location> resources, String conclusion, List<String> limitations, AuthorizationDetails details) {
+        public AuthorizationContext(Location entry, List<Location> checks, List<Location> defenses,
+                List<Location> resources, String conclusion, List<String> limitations) {
+            this(entry, checks, defenses, resources, conclusion, limitations, null);
+        }
+    }
+    public record PermissionDeclaration(String source, List<String> permissions, Location location) { }
+    public record AuthorizationAccess(String operation, Location location, Location resourceLocation,
+            List<Location> identifierInputs, List<Location> checks, String conclusion, List<String> limitations) { }
+    public record AuthorizationDetails(String authenticationStatus, String objectAuthorizationStatus, String permissionSource,
+            List<PermissionDeclaration> permissionDeclarations, List<Location> principalReferences,
+            List<Location> ownershipComparisons, List<AuthorizationAccess> accesses, List<String> limitations) { }
 
     public static ServerAnalysisSnapshot unavailable(String status, List<FileCoverage> files, String reason) {
         return new ServerAnalysisSnapshot(1, "ts-server-v4", null, status, files, List.of(), List.of(), List.of(), List.of(reason));
@@ -140,8 +151,20 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
         analyzers.add(new CoverageLedger.Analyzer(python ? "PYTHON_SERVER" : "TYPESCRIPT_SERVER", status,
                 python ? "Django/DRF 진입점의 제한된 SQL·파일 경로·pickle/YAML 값 전달 검사. 전체 Python, 인증·소유권, 파일시스템·실행 가능성은 미검증이며 기존 Risk 계산과 분리됩니다."
                 : "Workers/Pages 진입점의 제한된 구문·값 전달 검사. 전체 TypeScript, 실행 가능성, 인증·소유권 보증 및 Risk 계산에는 포함되지 않습니다.", counts));
+        if (python) {
+            var authorization = new LinkedHashMap<String, Integer>();
+            authorizationContexts.forEach(context -> {
+                if (context.details() == null) { authorization.merge("LEGACY_OR_UNRECORDED", 1, Integer::sum); return; }
+                authorization.merge("CONTEXTS_TRACED", 1, Integer::sum);
+                authorization.merge("AUTHENTICATION_" + context.details().authenticationStatus(), 1, Integer::sum);
+                authorization.merge("OBJECT_" + context.details().objectAuthorizationStatus(), 1, Integer::sum);
+            });
+            analyzers.add(new CoverageLedger.Analyzer("PYTHON_AUTHORIZATION", files.isEmpty() ? "NOT_APPLICABLE"
+                    : List.of("COMPLETE", "PARTIAL").contains(status) ? "PARTIAL" : status,
+                    "지원 Django/DRF 진입점의 권한 선언·사용자/FK 조회 범위·차단 분기 근거. 전역 설정 활성화·미들웨어·상속·전체 객체 권한은 미검증. 인증은 소유권 보증이 아닙니다.", authorization));
+        }
         String combined = "FAILED".equals(ledger.status()) ? "FAILED"
-                : !List.of("COMPLETE", "NOT_APPLICABLE").contains(status) ? "PARTIAL" : ledger.status();
+                : !List.of("COMPLETE", "NOT_APPLICABLE").contains(status) || python && !files.isEmpty() ? "PARTIAL" : ledger.status();
         return new CoverageLedger(ledger.schemaVersion(), ledger.policyVersion(), combined, ledger.discoveredFiles(),
                 ledger.selectedFiles(), ledger.unsupportedFiles(), ledger.excludedFiles(), ledger.failedFiles(),
                 ledger.inventoryComplete(), ledger.omittedEntries(), ledger.entries(), List.copyOf(analyzers), ledger.inspectionScope());

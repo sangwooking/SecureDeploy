@@ -1,4 +1,12 @@
 export interface AnalysisLocation { filePath: string; line: number; column?: number; functionName: string; kind: string }
+export interface AuthorizationDetails {
+  authenticationStatus: string; objectAuthorizationStatus: string; permissionSource: string;
+  permissionDeclarations: { source: string; permissions: string[]; location: AnalysisLocation }[];
+  principalReferences: AnalysisLocation[]; ownershipComparisons: AnalysisLocation[];
+  accesses: { operation: string; location: AnalysisLocation; resourceLocation: AnalysisLocation; identifierInputs: AnalysisLocation[];
+    checks: AnalysisLocation[]; conclusion: string; limitations: string[] }[];
+  limitations: string[];
+}
 export interface ServerFlowFinding {
   findingId: string; sourceType: 'TYPESCRIPT_DATA_FLOW' | 'PYTHON_DATA_FLOW'; analyzerVersion: string; ruleId: string;
   priority: 'REVIEW_REQUIRED'; comparisonPolicy: 'NOT_COMPARED'; location: AnalysisLocation;
@@ -28,6 +36,6 @@ export interface ServerAnalysisSnapshot {
   sqlUses: { kind: string; location: AnalysisLocation; trace: AnalysisLocation[]; defenses: AnalysisLocation[];
     limitations: string[]; executionObserved: boolean; executionLocations?: AnalysisLocation[] | null }[];
   authorizationContexts: { entry: AnalysisLocation; checks: AnalysisLocation[]; defenses: AnalysisLocation[];
-    resources: AnalysisLocation[]; conclusion: string; limitations: string[] }[];
+    resources: AnalysisLocation[]; conclusion: string; limitations: string[]; details?: AuthorizationDetails | null }[];
   limitations: string[];
 }

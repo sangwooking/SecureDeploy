@@ -1,6 +1,14 @@
 # Bounded Python server flow analysis
 
-Trusted CPython standard-library AST worker, version `py-django-v3`.
+Trusted CPython standard-library AST worker, version `py-django-v4`.
+
+Version 4 adds bounded authorization evidence to existing request evaluation. It records explicit
+View/action/static get_permissions declarations; global defaults remain candidates with unknown activation.
+Authentication, known user-FK query scope, owner/role rejection guards and object-permission calls
+are distinct. Only a request-selected object mutation after an inverted owner rejection can become
+a supplemental CWE-863 review candidate. Missing checks, AllowAny and unknown middleware never
+generate an IDOR finding by themselves. Details are optional for historical snapshots.
+The operator-owned `authorization.py` beside worker.py is required; no target module is loaded.
 
 Version 3 adds bounded request-to-file and pickle/YAML evidence using the existing Django/DRF flow evaluator.
 Supported calls include open/io.open, pathlib.Path file operations, pickle.load/loads and selected PyYAML loaders.

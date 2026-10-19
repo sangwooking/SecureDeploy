@@ -117,7 +117,7 @@ public class PythonServerAnalyzer {
     }
 
     private ServerAnalysisSnapshot unavailable(String status, List<FileCoverage> files, String reason) {
-        return new ServerAnalysisSnapshot(1, "py-django-v3", null, status, files, List.of(), List.of(), List.of(), List.of(reason), List.of(), List.of());
+        return new ServerAnalysisSnapshot(1, "py-django-v4", null, status, files, List.of(), List.of(), List.of(), List.of(reason), List.of(), List.of());
     }
 
     private FileCoverage skipped(String path, String reason) {
@@ -125,7 +125,7 @@ public class PythonServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"py-django-v3".equals(result.analyzerVersion()) || result.parserVersion() == null || !result.parserVersion().matches("CPython-3\\.\\d+\\.\\d+")
+        if (result.schemaVersion() != 1 || !"py-django-v4".equals(result.analyzerVersion()) || result.parserVersion() == null || !result.parserVersion().matches("CPython-3\\.\\d+\\.\\d+")
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.resourceUses() == null || result.resourceUses().size() > 200
@@ -149,6 +149,22 @@ public class PythonServerAnalyzer {
         result.httpUses().forEach(s -> { locations.add(s.location()); locations.addAll(s.trace()); locations.addAll(s.defenses()); });
         result.resourceUses().forEach(s -> { locations.add(s.location()); locations.addAll(s.trace()); locations.addAll(s.defenses()); });
         result.authorizationContexts().forEach(c -> { locations.add(c.entry()); locations.addAll(c.checks()); locations.addAll(c.defenses()); locations.addAll(c.resources()); });
+        for (var context : result.authorizationContexts()) {
+            var details = context.details();
+            if (details == null) throw new IllegalArgumentException("MISSING_AUTHORIZATION_DETAILS");
+            if (details.permissionDeclarations().size() > 40 || details.principalReferences().size() > 40
+                    || details.ownershipComparisons().size() > 40 || details.accesses().size() > 40)
+                throw new IllegalArgumentException("INVALID_AUTHORIZATION_LIMIT");
+            locations.addAll(details.principalReferences()); locations.addAll(details.ownershipComparisons());
+            for (var declaration : details.permissionDeclarations()) {
+                if (declaration.permissions().size() > 20) throw new IllegalArgumentException("INVALID_PERMISSION_LIMIT");
+                locations.add(declaration.location());
+            }
+            for (var access : details.accesses()) {
+                if (access.identifierInputs().size() > 40 || access.checks().size() > 20) throw new IllegalArgumentException("INVALID_ACCESS_LIMIT");
+                locations.add(access.location()); locations.add(access.resourceLocation()); locations.addAll(access.identifierInputs()); locations.addAll(access.checks());
+            }
+        }
         for (var location : locations) if (location == null || !files.containsKey(location.filePath()) || location.line() < 1
                 || location.line() > files.get(location.filePath())) throw new IllegalArgumentException("INVALID_ANALYZER_LOCATION");
     }

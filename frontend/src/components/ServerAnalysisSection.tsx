@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import type { AnalysisLocation, ServerAnalysisSnapshot } from '../types/serverAnalysis';
 import { DeploymentAnalysisSection } from './DeploymentAnalysisSection';
+import { AuthorizationContextDetails } from './AuthorizationContextDetails';
 
 const labels: Record<string, string> = {
+  AUTH_LOGIC_CANDIDATE_NOT_EXPLOIT_PROOF: '비교·차단 로직의 검토 후보이며 실제 권한 우회 성공은 미검증',
+  AUTH_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED: '외부 미들웨어·실행 환경의 추가 보호는 미확인',
+  RESOURCE_LOOKUP: '요청 식별자로 리소스 조회', INVERTED_OWNER_REJECTION: '소유자 일치 시 차단하는 분기',
+  RESOURCE_WRITE: '리소스 저장 호출', RESOURCE_DELETE: '리소스 삭제 호출',
   UPLOADED_FILE: '업로드된 파일 데이터', PATH_CONSTRUCTION: '파일 경로 구성', PATH_NORMALIZATION: '경로 정규화 · 디렉터리 제한 증거는 아님',
   FILE_ACCESS_CALL: '파일 접근 호출', DESERIALIZATION_CALL: '데이터 복원 호출',
   INPUT_IN_FILE_PATH: '요청 값이 파일 경로에 전달됨', INPUT_TO_UNSAFE_DESERIALIZATION: '요청 데이터가 위험한 복원 호출에 전달됨',
@@ -145,7 +150,8 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
       <span className="risk-badge risk-review_required">코드 흐름 · 추가 확인 필요</span>
       <h4>{finding.ruleId === 'TS_SSRF_INPUT_FLOW' ? '서버 요청 주소의 처리 과정을 확인해 주세요'
         : finding.ruleId === 'PY_FILE_PATH_INPUT_FLOW' ? '입력된 파일 경로의 제한을 확인해 주세요'
-        : finding.ruleId === 'PY_UNSAFE_DESERIALIZATION_INPUT_FLOW' ? '외부 데이터의 복원 방식을 확인해 주세요' : '요청 값이 데이터베이스 쿼리에 들어갑니다'}</h4><p>{finding.message}</p>
+        : finding.ruleId === 'PY_UNSAFE_DESERIALIZATION_INPUT_FLOW' ? '외부 데이터의 복원 방식을 확인해 주세요'
+        : finding.ruleId === 'PY_AUTHORIZATION_INVERTED_OWNER_GUARD' ? '사용자 비교와 차단 분기의 의도를 확인해 주세요' : '요청 값이 데이터베이스 쿼리에 들어갑니다'}</h4><p>{finding.message}</p>
       <p>{snapshot.validatedFindings == null ? '이 이력은 실행 경로 Finding 연결 이전의 기록입니다. 과거 결과를 새 기준으로 추측하여 승격하지 않습니다.'
         : '중간 처리 또는 실행 호출을 충분히 확인하지 못해 검증된 흐름 Finding으로 연결하지 않았습니다.'}</p>
       <p>{finding.recommendation}</p>
@@ -181,6 +187,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
     <details className="coverage-details"><summary>인증·권한 관련 문맥 ({snapshot.authorizationContexts.length})</summary>
       {snapshot.authorizationContexts.map((context, i) => <div key={i}>
         <h4 className="finding-location">{location(context.entry)}</h4>
+        {context.details && <AuthorizationContextDetails details={context.details} />}
         <p>{context.checks.length ? `조건·로그인 문맥 ${context.checks.length}곳 확인` : '지원 범위에서 조건·로그인 문맥을 확인하지 못함'}</p>
         <ul>{[...context.checks, ...context.defenses].map((c, j) => <li key={j}>{text(c.kind)} · <code className="finding-location">{location(c)}</code></li>)}</ul>
         <p>권한 검증의 적절성은 확인되지 않았습니다. 검사가 보이지 않는다는 이유만으로 접근 권한 취약점으로 판단하지 않습니다.</p>
@@ -212,6 +219,7 @@ function PythonCoverageSummary({ snapshot }: { snapshot: ServerAnalysisSnapshot 
   const failed = snapshot.files.filter(f => f.parseStatus === 'PARSE_FAILED').length;
   const entries = snapshot.files.reduce((sum, f) => sum + f.entrypoints, 0);
   return <div aria-label="Python 검사 범위 단계">
+    {snapshot.authorizationContexts.some(c => c.details != null) && <p>권한 상세 문맥 {snapshot.authorizationContexts.filter(c => c.details != null).length}개 · 로그인 선언과 객체 접근 권한은 별도로 확인했습니다. 실제 활성 정책과 외부 보호는 미확인입니다.</p>}
     {snapshot.selectionCoverage && <p>공통 파일 수집기를 통과한 Python 파일 {snapshot.selectionCoverage.discoveredFiles}개 · 분석기에 전달 {snapshot.selectionCoverage.submittedFiles}개 · 미선택 {snapshot.selectionCoverage.omittedFiles}개</p>}
     <p>파일 기록 {snapshot.files.length}개 · 구문 파싱 {parsed}개 · 요청 진입점 {entries}개 · 값 전달을 추적한 파일 {traced}개</p>
     <p>자원 제한 {limited}개 · 파싱 실패 {failed}개 · 파싱 후 흐름 미추적 {snapshot.files.filter(f => f.parseStatus === 'PARSED' && f.functionsAnalyzed === 0).length}개</p>

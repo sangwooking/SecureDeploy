@@ -7,10 +7,16 @@ import resource
 import re
 import posixpath
 from dataclasses import dataclass, replace
-from pathlib import PurePosixPath
+from pathlib import PurePosixPath, Path
+import importlib.util
 from collections import Counter
 
-VERSION = "py-django-v3"
+_auth_spec = importlib.util.spec_from_file_location("securedeploy_authorization", Path(__file__).with_name("authorization.py"))
+_auth_module = importlib.util.module_from_spec(_auth_spec)
+_auth_spec.loader.exec_module(_auth_module)
+AuthorizationEvidence = _auth_module.AuthorizationEvidence
+
+VERSION = "py-django-v4"
 MAX_NODES = 60000
 MAX_STEPS = 30000
 MAX_DEPTH = 5
@@ -41,6 +47,8 @@ def merge(*values):
             if entry not in defenses:
                 defenses.append(entry)
     first = values[0]
+    authorization_kinds = {"USER_FOREIGN_KEY_QUERY_SCOPE", "OWNER_REJECTION_GUARD", "ROLE_REJECTION_GUARD", "LOGIN_REJECTION_GUARD", "INVERTED_OWNER_REJECTION"}
+    defenses = [d for d in defenses if d["kind"] not in authorization_kinds or all(d in v.defenses for v in values)]
     elements = None
     if all(v.elements is not None for v in values) and len({len(v.elements) for v in values}) == 1:
         elements = tuple(merge(*(v.elements[i] for v in values)) for i in range(len(first.elements)))
@@ -63,6 +71,7 @@ class Analyzer:
         self.shadowed = {}
         self.findings, self.sql, self.auth = [], [], []
         self.resources = []
+        self.authorization = AuthorizationEvidence(self, Value)
         self.visited, self.traced = set(), set()
         self.path, self.function, self.stack = "", "<module>", []
         self.partial = False
@@ -266,6 +275,11 @@ class Analyzer:
             if key + "." + name in self.functions:
                 self.entries.add(key + "." + name)
                 self.route_parameters.setdefault(key + "." + name, {}).update(parameters)
+        if self.framework_class(key) == "drf":
+            for method, (path, node, cls) in self.functions.items():
+                if cls == key and any(self.symbol(d.func if isinstance(d, ast.Call) else d, path) == "rest_framework.decorators.action" for d in node.decorator_list):
+                    self.entries.add(method)
+                    self.route_parameters.setdefault(method, {}).update(parameters)
 
     def run(self):
         self.discover()
@@ -294,6 +308,7 @@ class Analyzer:
                 context = dict(entry=self.loc(node, "SERVER_ENTRY"), checks=[], defenses=[], resources=[],
                                conclusion="NOT_ESTABLISHED", limitations=["MIDDLEWARE_SETTINGS_AND_OWNERSHIP_NOT_VERIFIED"])
                 self.contexts = [context]
+                context["details"] = self.authorization.begin(key)
                 for dec in node.decorator_list:
                     name = self.symbol(dec.func if isinstance(dec, ast.Call) else dec, path)
                     if name.startswith("django.contrib.auth.decorators.") or name in {"rest_framework.decorators.permission_classes", "rest_framework.decorators.authentication_classes"}:
@@ -303,8 +318,10 @@ class Analyzer:
                         if isinstance(item, ast.Assign) and any(isinstance(t, ast.Name) and t.id in {"permission_classes", "authentication_classes"} for t in item.targets):
                             context["checks"].append(self.loc(item, "AUTH_DECLARATION"))
                 self.call_function(key, values, {})
+                self.authorization.finish()
                 if len(self.auth) < MAX_RESULTS:
                     self.auth.append(context)
+                self.authorization.active = None
         except (BudgetExceeded, RecursionError):
             self.note("ANALYSIS_BUDGET_EXCEEDED")
         for path, c in self.coverage.items():
@@ -566,6 +583,9 @@ class Analyzer:
 
     def returned(self, value):
         # Carry path uncertainty out of a helper instead of resetting it with the call frame.
+        if self.partial and value.tag in {"auth-resource", "auth-queryset"}:
+            return replace(value, unknown=True, defenses=(*value.defenses, dict(filePath=self.path,line=self.functions[self.stack[-1]][1].lineno,
+                column=1,functionName=self.function,kind="AUTH_VALUE_FLOW_UNRESOLVED")))
         return replace(value, unknown=True) if self.partial else value
 
     def block(self, statements, env):
@@ -595,16 +615,16 @@ class Analyzer:
                     if len(context["checks"]) < 40:
                         context["checks"].append(self.loc(node.test, "CONDITIONAL_CHECK"))
                 if condition.literal is not UNKNOWN:
-                    env, found, end = self.block(node.body if bool(condition.literal) else node.orelse, env)
+                    env, found, end = self.block(node.body if bool(condition.literal) else node.orelse, self.authorization.branch(node, env, bool(condition.literal)))
                     returns += found
                     if end:
                         return env, returns, True
                 else:
                     before = self.partial
-                    a, ra, ta = self.block(node.body, dict(env))
+                    a, ra, ta = self.block(node.body, self.authorization.branch(node, env, True))
                     pa = self.partial
                     self.partial = before
-                    b, rb, tb = self.block(node.orelse, dict(env))
+                    b, rb, tb = self.block(node.orelse, self.authorization.branch(node, env, False))
                     pb = self.partial
                     returns += ra + rb
                     if ta and tb:
@@ -652,7 +672,11 @@ class Analyzer:
             self.note("MUTABLE_OBJECT_WRITE_UNRESOLVED")
             # Aliases may refer to the same mutated object. Invalidate conservatively.
             for key in env:
-                env[key] = replace(env[key], unknown=True, literal=UNKNOWN, elements=None)
+                value=env[key]
+                defenses=value.defenses
+                if value.tag in {"auth-resource","auth-queryset"}:
+                    defenses=(*defenses,self.loc(node,"AUTH_VALUE_FLOW_UNRESOLVED"))
+                env[key] = replace(value, unknown=True, literal=UNKNOWN, elements=None,defenses=defenses)
 
     def construct(self, a, b, node):
         result = merge(a, b)
@@ -688,6 +712,9 @@ class Analyzer:
                             context["checks"].append(self.loc(node, "LOGIN_CONTEXT_REFERENCE"))
             if base.tag == "cursor" and not base.unknown:
                 return Value(tag="cursor-method", symbol=node.attr)
+            authorization_value = self.authorization.attribute(node, base)
+            if authorization_value is not None:
+                return authorization_value
             if base.symbol:
                 return Value(symbol=base.symbol + "." + node.attr, unknown=base.unknown,
                              tag="self-method" if base.tag == "self" else "")
@@ -802,6 +829,9 @@ class Analyzer:
         if any(isinstance(a, ast.Starred) for a in node.args) or None in keywords:
             self.note("VARIADIC_CALL_UNRESOLVED")
             return replace(merge(*(args + list(keywords.values()))), unknown=True)
+        authorization_value = self.authorization.call(node, function, base, name, args, keywords, env)
+        if authorization_value is not None:
+            return authorization_value
         handled = self.resource_call(node, function, base, name, args, keywords)
         if handled is not None:
             return handled
@@ -825,7 +855,7 @@ class Analyzer:
                 self.sql.append(dict(kind="ORM_VALUE_QUERY", location=location, trace=[],
                     defenses=[self.loc(node, "ORM_VALUE_PARAMETERS")], limitations=["CUSTOM_MANAGER_AND_RUNTIME_NOT_VERIFIED"],
                     executionObserved=False, executionLocations=[]))
-            return Value(unknown=True)
+            return self.authorization.query(node, base.symbol[:-8], name, keywords, env=env)
         if name == "format" and base and (isinstance(base.literal, str) or base.trace):
             return self.step(replace(merge(base, *args, *keywords.values()), literal=UNKNOWN, symbol="", tag=""), node, "SQL_STRING_CONSTRUCTION")
         if function.symbol == "str" and len(args) == 1:
@@ -838,8 +868,11 @@ class Analyzer:
             if isinstance(self.functions[function.symbol][1], ast.AsyncFunctionDef):
                 self.note("ASYNC_EXECUTION_UNRESOLVED")
                 return replace(merge(*args, *keywords.values()), unknown=True)
-            return self.call_function(function.symbol, args, keywords)
+            result = self.call_function(function.symbol, args, keywords)
+            self.authorization.helper_after(function.symbol, args, keywords, env)
+            return result
         value = merge(*(args + list(keywords.values()) + ([base] if base else [])))
+        self.authorization.uncertain_call(node,args+list(keywords.values())+([base] if base else []),env)
         self.note("CALL_TARGET_UNRESOLVED")
         if any(v.tag == "collection" for v in args + list(keywords.values()) + ([base] if base else [])):
             self.note("MUTABLE_OBJECT_WRITE_UNRESOLVED")

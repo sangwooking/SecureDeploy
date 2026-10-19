@@ -14,6 +14,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
     public static List<ServerFlowFinding> connect(ServerAnalysisSnapshot snapshot) {
         var findings = new ArrayList<>(connectSql(snapshot));
         findings.addAll(connectResources(snapshot));
+        findings.addAll(connectAuthorization(snapshot));
         if (snapshot.httpUses() == null) return List.copyOf(findings);
         Map<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>> groups = new LinkedHashMap<>();
         for (var candidate : snapshot.findings()) {
@@ -108,5 +109,29 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
             String key = version + "\n" + ruleId + "\n" + location.filePath() + "\n" + location.line() + ":" + location.column();
             return (ruleId.startsWith("PY_") ? "py-flow:" : "ts-flow:") + HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(key.getBytes(StandardCharsets.UTF_8)));
         } catch (java.security.NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
+    }
+
+    private static List<ServerFlowFinding> connectAuthorization(ServerAnalysisSnapshot snapshot) {
+        var groups = new LinkedHashMap<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>>();
+        for (var candidate : snapshot.findings()) {
+            if (!candidate.ruleId().equals("PY_AUTHORIZATION_INVERTED_OWNER_GUARD") || !candidate.confidence().equals("HIGH")) continue;
+            boolean observed = snapshot.authorizationContexts().stream().filter(c -> c.details() != null)
+                    .flatMap(c -> c.details().accesses().stream()).anyMatch(a -> a.location().equals(candidate.sink())
+                        && a.conclusion().equals("INVERTED_OWNER_REJECTION_CANDIDATE")
+                        && a.identifierInputs().contains(candidate.source()) && List.of("WRITE", "DELETE").contains(a.operation()));
+            if (observed) {
+                var evidence = groups.computeIfAbsent(candidate.sink(), ignored -> new ArrayList<>());
+                if (!evidence.contains(candidate)) evidence.add(candidate);
+            }
+        }
+        return groups.entrySet().stream().map(group -> new ServerFlowFinding(
+                identity(snapshot.analyzerVersion(), "PY_AUTHORIZATION_INVERTED_OWNER_GUARD", group.getKey()),
+                "PYTHON_DATA_FLOW", snapshot.analyzerVersion(), "PY_AUTHORIZATION_INVERTED_OWNER_GUARD", RiskPriority.REVIEW_REQUIRED,
+                "NOT_COMPARED", group.getKey(), List.copyOf(group.getValue()), List.of(group.getKey()),
+                "사용자를 비교한 뒤 다른 분기에서 정보를 변경하는 조건을 확인해 주세요",
+                "사용자와 리소스 소유자가 일치하면 차단하고, 다른 경로에서 요청한 객체를 변경하는 정적 흐름입니다(CWE-863 검토 후보). 의도된 업무 규칙일 수 있으며 다른 권한 계층이나 실제 우회 성공은 확인하지 않았습니다.",
+                group.getValue().get(0).recommendation(), List.of("표시한 사용자·리소스 조회·비교·변경 위치와 별도 관리자·미들웨어 보호를 확인하세요.",
+                        "로컬 테스트에서 사용자 A/B, 소유/비소유 객체, 익명/관리자 계정의 허용·거부 행렬을 검증하세요. 운영 서비스 공격은 하지 마세요.",
+                        "의도한 정책과 다르면 비교 방향과 차단 분기를 수정한 뒤 재검사하세요. 기존 점수·배포 판단·해결 건수에는 합산하지 않습니다."))).toList();
     }
 }
