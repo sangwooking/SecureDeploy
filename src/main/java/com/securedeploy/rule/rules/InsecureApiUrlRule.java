@@ -26,9 +26,9 @@ public class InsecureApiUrlRule implements VulnerabilityRule {
         for (int index = 0; index < lines.size(); index++) {
             String line = lines.get(index);
             Matcher matcher = HTTP_URL.matcher(line);
-            if (matcher.find()) {
+            while (matcher.find()) {
                 String host = matcher.group(1).toLowerCase();
-                if (host.startsWith("localhost") || host.startsWith("127.0.0.1")) {
+                if (loopback(host)) {
                     continue;
                 }
                 matches.add(new RuleMatch(
@@ -37,12 +37,20 @@ public class InsecureApiUrlRule implements VulnerabilityRule {
                         Severity.MEDIUM,
                         file.relativePath(),
                         index + 1,
-                        "프론트엔드 설정 또는 코드에서 http:// 기반 API URL이 발견되었습니다. 운영 환경에서 평문 통신 위험이 있습니다.",
+                        "코드 또는 설정에서 HTTP 주소가 발견되었습니다. 실제 요청에 사용하는 주소라면 운영 환경의 평문 통신 여부를 확인해 주세요.",
                         "운영 API URL은 HTTPS를 사용하고, 환경별 API base URL을 배포 환경에서 안전하게 주입하세요.",
                         FrontendEvidenceSanitizer.maskSecrets(line.strip())
                 ));
+                break;
             }
         }
         return matches;
+    }
+
+    private static boolean loopback(String value) {
+        try {
+            String host=java.net.URI.create("http://"+value).getHost();
+            return "localhost".equalsIgnoreCase(host)||"127.0.0.1".equals(host)||"[::1]".equals(host);
+        } catch(IllegalArgumentException ignored) { return false; }
     }
 }
