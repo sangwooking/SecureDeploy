@@ -53,3 +53,19 @@ tasks.named('processResources') {
     dependsOn javaSqlWorkerJar
     from(javaSqlWorkerJar.flatMap { it.archiveFile }) { into 'analyzers' }
 }
+
+tasks.register('benchmarkEngine', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.securedeploy.evaluation.BenchmarkEngineRunner'
+    maxHeapSize = '512m'
+    environment = System.getenv().findAll { key, value -> key in ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'JAVA_HOME', 'BENCHMARK_RELEASE_HOLDOUT'] }
+    doFirst {
+        if (!project.hasProperty('benchmarkRoot') || !project.hasProperty('benchmarkOutput')) {
+            throw new GradleException('Use -PbenchmarkRoot=OUTSIDE_GIT -PbenchmarkOutput=NEW_JSON')
+        }
+        args project.property('benchmarkRoot'), project.property('benchmarkOutput'),
+                project.findProperty('benchmarkSplit') ?: 'REGRESSION'
+        if (project.hasProperty('benchmarkCase')) args project.property('benchmarkCase')
+    }
+}

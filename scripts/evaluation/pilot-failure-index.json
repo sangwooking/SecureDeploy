@@ -1,0 +1,350 @@
+{
+  "packs": [
+    {
+      "caseId": "owasp-BenchmarkTest00018",
+      "group": "SOURCE_RECOGNITION",
+      "confirmed": true,
+      "verdict": "TP",
+      "structuralVerdict": "UNKNOWN"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00025",
+      "group": "EVALUATION_CONTEXT_INCOMPLETE",
+      "confirmed": true,
+      "verdict": "TP",
+      "structuralVerdict": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00026",
+      "group": "SINK_RECOGNITION",
+      "confirmed": true,
+      "verdict": "TP",
+      "structuralVerdict": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00052",
+      "group": "TYPE_CALL_RESOLUTION",
+      "confirmed": false,
+      "verdict": "UNKNOWN",
+      "structuralVerdict": "UNKNOWN"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00104",
+      "group": "SINK_RECOGNITION",
+      "confirmed": false,
+      "verdict": "NOT_INSPECTED",
+      "structuralVerdict": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00107",
+      "group": "EVALUATION_CONTEXT_INCOMPLETE",
+      "confirmed": true,
+      "verdict": "FP",
+      "structuralVerdict": "UNKNOWN"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00110",
+      "group": "EVALUATION_CONTEXT_INCOMPLETE",
+      "confirmed": true,
+      "verdict": "FP",
+      "structuralVerdict": "UNKNOWN"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00113",
+      "group": "OBJECT_FIELD_FLOW",
+      "confirmed": true,
+      "verdict": "FP",
+      "structuralVerdict": "UNKNOWN"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00032",
+      "group": "SOURCE_RECOGNITION",
+      "confirmed": true,
+      "verdict": "TP",
+      "structuralVerdict": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00033",
+      "group": "SINK_RECOGNITION",
+      "confirmed": false,
+      "verdict": "TP",
+      "structuralVerdict": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00034",
+      "group": "SOURCE_RECOGNITION",
+      "confirmed": true,
+      "verdict": "TP",
+      "structuralVerdict": "UNKNOWN"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00037",
+      "group": "SOURCE_RECOGNITION",
+      "confirmed": true,
+      "verdict": "TP",
+      "structuralVerdict": "UNKNOWN"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00038",
+      "group": "SINK_RECOGNITION",
+      "confirmed": false,
+      "verdict": "TP",
+      "structuralVerdict": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00039",
+      "group": "SINK_RECOGNITION",
+      "confirmed": false,
+      "verdict": "TP",
+      "structuralVerdict": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00190",
+      "group": "TYPE_CALL_RESOLUTION",
+      "confirmed": false,
+      "verdict": "UNKNOWN",
+      "structuralVerdict": "UNKNOWN"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00191",
+      "group": "TYPE_CALL_RESOLUTION",
+      "confirmed": false,
+      "verdict": "UNKNOWN",
+      "structuralVerdict": "UNKNOWN"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00197",
+      "group": "OBJECT_FIELD_FLOW",
+      "confirmed": true,
+      "verdict": "FP",
+      "structuralVerdict": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00200",
+      "group": "OBJECT_FIELD_FLOW",
+      "confirmed": true,
+      "verdict": "FP",
+      "structuralVerdict": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00201",
+      "group": "EVALUATION_CONTEXT_INCOMPLETE",
+      "confirmed": true,
+      "verdict": "FP",
+      "structuralVerdict": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "django-28346-parent",
+      "group": "RESOURCE_LIMIT",
+      "confirmed": true,
+      "verdict": "RESOURCE_LIMIT",
+      "structuralVerdict": "RESOURCE_LIMIT"
+    },
+    {
+      "caseId": "django-28346-fixed",
+      "group": "RESOURCE_LIMIT",
+      "confirmed": true,
+      "verdict": "RESOURCE_LIMIT",
+      "structuralVerdict": "RESOURCE_LIMIT"
+    },
+    {
+      "caseId": "django-28347-parent",
+      "group": "RESOURCE_LIMIT",
+      "confirmed": true,
+      "verdict": "RESOURCE_LIMIT",
+      "structuralVerdict": "RESOURCE_LIMIT"
+    },
+    {
+      "caseId": "django-28347-fixed",
+      "group": "RESOURCE_LIMIT",
+      "confirmed": true,
+      "verdict": "RESOURCE_LIMIT",
+      "structuralVerdict": "RESOURCE_LIMIT"
+    },
+    {
+      "caseId": "django-34265-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "django-34265-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "django-36359-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "django-36359-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "django-41323-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "django-41323-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "hono-url-decoding-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "hono-url-decoding-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "h3-double-decoding-parent",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "h3-double-decoding-fixed",
+      "group": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "confirmed": true,
+      "verdict": "NOT_SUPPORTED",
+      "structuralVerdict": "NOT_SUPPORTED"
+    }
+  ],
+  "groups": {
+    "SOURCE_RECOGNITION": [
+      "owasp-BenchmarkTest00018",
+      "owasp-BenchmarkTest00032",
+      "owasp-BenchmarkTest00034",
+      "owasp-BenchmarkTest00037"
+    ],
+    "EVALUATION_CONTEXT_INCOMPLETE": [
+      "owasp-BenchmarkTest00025",
+      "owasp-BenchmarkTest00107",
+      "owasp-BenchmarkTest00110",
+      "owasp-BenchmarkTest00201"
+    ],
+    "SINK_RECOGNITION": [
+      "owasp-BenchmarkTest00026",
+      "owasp-BenchmarkTest00104",
+      "owasp-BenchmarkTest00033",
+      "owasp-BenchmarkTest00038",
+      "owasp-BenchmarkTest00039"
+    ],
+    "TYPE_CALL_RESOLUTION": [
+      "owasp-BenchmarkTest00052",
+      "owasp-BenchmarkTest00190",
+      "owasp-BenchmarkTest00191"
+    ],
+    "OBJECT_FIELD_FLOW": [
+      "owasp-BenchmarkTest00113",
+      "owasp-BenchmarkTest00197",
+      "owasp-BenchmarkTest00200"
+    ],
+    "RESOURCE_LIMIT": [
+      "django-28346-parent",
+      "django-28346-fixed",
+      "django-28347-parent",
+      "django-28347-fixed"
+    ],
+    "UNSUPPORTED_LANGUAGE_FRAMEWORK": [
+      "django-34265-parent",
+      "django-34265-fixed",
+      "django-36359-parent",
+      "django-36359-fixed",
+      "django-41323-parent",
+      "django-41323-fixed",
+      "hono-url-decoding-parent",
+      "hono-url-decoding-fixed",
+      "h3-double-decoding-parent",
+      "h3-double-decoding-fixed"
+    ]
+  },
+  "groupStatistics": [
+    {
+      "category": "SOURCE_RECOGNITION",
+      "caseCount": 4,
+      "repositoryCount": 1,
+      "manuallyConfirmed": 4,
+      "finalFalsePositives": 0,
+      "finalFalseNegatives": 0,
+      "scopeGapCount": 4
+    },
+    {
+      "category": "EVALUATION_CONTEXT_INCOMPLETE",
+      "caseCount": 4,
+      "repositoryCount": 1,
+      "manuallyConfirmed": 4,
+      "finalFalsePositives": 3,
+      "finalFalseNegatives": 0,
+      "scopeGapCount": 1
+    },
+    {
+      "category": "SINK_RECOGNITION",
+      "caseCount": 5,
+      "repositoryCount": 1,
+      "manuallyConfirmed": 1,
+      "finalFalsePositives": 0,
+      "finalFalseNegatives": 0,
+      "scopeGapCount": 5
+    },
+    {
+      "category": "TYPE_CALL_RESOLUTION",
+      "caseCount": 3,
+      "repositoryCount": 1,
+      "manuallyConfirmed": 0,
+      "finalFalsePositives": 0,
+      "finalFalseNegatives": 0,
+      "scopeGapCount": 3
+    },
+    {
+      "category": "OBJECT_FIELD_FLOW",
+      "caseCount": 3,
+      "repositoryCount": 1,
+      "manuallyConfirmed": 3,
+      "finalFalsePositives": 3,
+      "finalFalseNegatives": 0,
+      "scopeGapCount": 0
+    },
+    {
+      "category": "RESOURCE_LIMIT",
+      "caseCount": 4,
+      "repositoryCount": 1,
+      "manuallyConfirmed": 4,
+      "finalFalsePositives": 0,
+      "finalFalseNegatives": 0,
+      "scopeGapCount": 4
+    },
+    {
+      "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+      "caseCount": 10,
+      "repositoryCount": 3,
+      "manuallyConfirmed": 10,
+      "finalFalsePositives": 0,
+      "finalFalseNegatives": 0,
+      "scopeGapCount": 10
+    }
+  ],
+  "priorityPolicy": "Evidence and cross-repository recurrence before raw frequency; scope gaps are not confirmed vulnerabilities; automatic groups are hypotheses, not confirmed causes."
+}

@@ -1,0 +1,2500 @@
+{
+  "schemaVersion": 1,
+  "engineBaselineCommit": "4ed70124796cdd117a10660f93ed3e093a5903cd",
+  "reviewer": "Single Codex reviewer; not independently blinded",
+  "splitPolicy": "Repository, vulnerability family, exact source hashes and paired versions are never split across groups. Observed former holdouts are regression.",
+  "cases": [
+    {
+      "caseId": "owasp-BenchmarkTest00008",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00008.java",
+          "startLine": 39,
+          "endLine": 66
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00008.java",
+          "startLine": 39,
+          "endLine": 66
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00008.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00008.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00008.java",
+          "sha256": "9bc49dbe491a39162c97b0c43b8ce5e42a4de5c0552c52117b1a51b0a541dfbe"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00018",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00018.java",
+          "startLine": 39,
+          "endLine": 66
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00018.java",
+          "startLine": 39,
+          "endLine": 66
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00018.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00018.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00018.java",
+          "sha256": "f050b4ae7057c0e3a8271eae86cdb92a0337fe7b61f05f4b9d8015ca9d707da7"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00024",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00024.java",
+          "startLine": 39,
+          "endLine": 66
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00024.java",
+          "startLine": 39,
+          "endLine": 66
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00024.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00024.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00024.java",
+          "sha256": "6886ac19a08825f801e4222341f2ba26685abf710203ac2ee85f7e2b46216fd4"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00025",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00025.java",
+          "startLine": 39,
+          "endLine": 65
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00025.java",
+          "startLine": 39,
+          "endLine": 65
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00025.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00025.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00025.java",
+          "sha256": "c136d4ea5dc4f7f5f210968d90c0803c575b7faeb5ab5e00511467ee6197812a"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00026",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00026.java",
+          "startLine": 39,
+          "endLine": 73
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00026.java",
+          "startLine": 39,
+          "endLine": 73
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00026.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00026.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00026.java",
+          "sha256": "a89db0c923b404cb60c2716f5fd5c947e4455d27d015cbfc54b9aedd85b9986d"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00027",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00027.java",
+          "startLine": 39,
+          "endLine": 59
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00027.java",
+          "startLine": 39,
+          "endLine": 59
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00027.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00027.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00027.java",
+          "sha256": "637de966e3efe93320d805f342697cd5dc1031e6da0144f63225b0c2915819ba"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00052",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00052.java",
+          "startLine": 39,
+          "endLine": 66
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00052.java",
+          "startLine": 39,
+          "endLine": 66
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00052.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00052.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00052.java",
+          "sha256": "eaebe123b57b506dc834783c2567bc85f069d4e767b1ce5a003c16675da866ed"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00104",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00104.java",
+          "startLine": 50,
+          "endLine": 88
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00104.java",
+          "startLine": 50,
+          "endLine": 88
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00104.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00104.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00104.java",
+          "sha256": "4b0677a26e4db2d942f78317bf72e8fe8f12162434c1b24a2eeeb97c3ce9d6e7"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00105",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00105.java",
+          "startLine": 50,
+          "endLine": 86
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00105.java",
+          "startLine": 50,
+          "endLine": 86
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00105.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00105.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00105.java",
+          "sha256": "beb988583d806821aa74f4a3c7676d3c25d39cd0638c3ea3e505dcbdba2758ba"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00107",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00107.java",
+          "startLine": 50,
+          "endLine": 101
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00107.java",
+          "startLine": 50,
+          "endLine": 101
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00107.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00107.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00107.java",
+          "sha256": "bbc65175b65683af4801fc29fac1d1022007212120a167ff9569ab5cbd7a1580"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00110",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00110.java",
+          "startLine": 50,
+          "endLine": 101
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00110.java",
+          "startLine": 50,
+          "endLine": 101
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00110.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00110.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00110.java",
+          "sha256": "935fff05d123be4e86888efafdfe2d31b619e807788c8755547bf4afd77808a6"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00113",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00113.java",
+          "startLine": 50,
+          "endLine": 86
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00113.java",
+          "startLine": 50,
+          "endLine": 86
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00113.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00113.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00113.java",
+          "sha256": "a050daad5b04e54eb23195d5c4bc4a3a413b568f87fb15fa6810af2bf3fb1e35"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00032",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00032.java",
+          "startLine": 39,
+          "endLine": 67
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00032.java",
+          "startLine": 39,
+          "endLine": 67
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00032.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00032.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00032.java",
+          "sha256": "383ad610219092ba458f69520c12031b80e095a90d43fecefe961b2ad73cdbac"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00033",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00033.java",
+          "startLine": 39,
+          "endLine": 77
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00033.java",
+          "startLine": 39,
+          "endLine": 77
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00033.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00033.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00033.java",
+          "sha256": "f9513ba4b715043778361587b70ad56a583865cfad62956711b144ca7c3c25c8"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00034",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00034.java",
+          "startLine": 39,
+          "endLine": 63
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00034.java",
+          "startLine": 39,
+          "endLine": 63
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00034.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00034.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00034.java",
+          "sha256": "801a90d21b52fc795a9fef1e2c133d52c4b027138d79bba5b0962200139d8bd6"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00037",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00037.java",
+          "startLine": 39,
+          "endLine": 80
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00037.java",
+          "startLine": 39,
+          "endLine": 80
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00037.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00037.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00037.java",
+          "sha256": "59f1b32206fa1271ea66c6ce850bcd9337ce0fb82ac62de1da93fb4eaad1a914"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00038",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00038.java",
+          "startLine": 39,
+          "endLine": 96
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00038.java",
+          "startLine": 39,
+          "endLine": 96
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00038.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00038.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00038.java",
+          "sha256": "cefc086af3dfc9af08f3f0aa6a5dcfeb4edafc3062930539910cfd756250c5e3"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00039",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00039.java",
+          "startLine": 39,
+          "endLine": 80
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00039.java",
+          "startLine": 39,
+          "endLine": 80
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00039.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00039.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00039.java",
+          "sha256": "71086e9de6bc200b16efd60add257a803d8019ae725b31a5df4773969d1ea783"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00114",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00114.java",
+          "startLine": 50,
+          "endLine": 85
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00114.java",
+          "startLine": 50,
+          "endLine": 85
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00114.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00114.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00114.java",
+          "sha256": "4a8444e8b517637456e0e39c9a49bb82f3be5cd36f18f966dc9bdb3dbe034e6a"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00190",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00190.java",
+          "startLine": 39,
+          "endLine": 80
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00190.java",
+          "startLine": 39,
+          "endLine": 80
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00190.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00190.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00190.java",
+          "sha256": "e9b906300fd16ae1738dd1b174e22b6baa00db262fecb4e9f43f80575f0572e0"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00191",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00191.java",
+          "startLine": 39,
+          "endLine": 89
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00191.java",
+          "startLine": 39,
+          "endLine": 89
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00191.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00191.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00191.java",
+          "sha256": "258434bdbb2c3b20f1e83824ac7a69bf430cbdcb3d85173bedb0c2a88ee403ce"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00197",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00197.java",
+          "startLine": 39,
+          "endLine": 98
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00197.java",
+          "startLine": 39,
+          "endLine": 98
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00197.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00197.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00197.java",
+          "sha256": "7f87ad19c6c0517c136ec5d76aaf790d176ea1cbab7fb4a55a9001b40155c87a"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00200",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00200.java",
+          "startLine": 39,
+          "endLine": 78
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00200.java",
+          "startLine": 39,
+          "endLine": 78
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00200.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00200.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00200.java",
+          "sha256": "66414de4dd91017b7666b0b9ac14c7160af8882cc256226ff9af02a154a55582"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00201",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+      "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+      "repositoryGroup": "owasp-benchmark-java",
+      "forkGroup": "owasp-benchmark-java",
+      "vulnerabilityFamily": "benchmark-java-generated-sqli",
+      "cve": null,
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "license": "GPL-2.0",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "UPSTREAM_LABEL_PATH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "doPost",
+      "targetSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00201.java",
+          "startLine": 39,
+          "endLine": 89
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00201.java",
+          "startLine": 39,
+          "endLine": 89
+        }
+      ],
+      "patternRules": [
+        "DANGEROUS_SQL"
+      ],
+      "flowRules": [
+        "JAVA_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/expectedresults-1.2.csv",
+        "https://github.com/OWASP-Benchmark/BenchmarkJava/blob/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00201.java"
+      ],
+      "sourceToSinkEvidence": "Upstream SQLi label and selected servlet doPost path; helper/callee dependencies outside this file remain unverified by this pilot.",
+      "mitigationEvidence": "SAFE only for the upstream-labelled SQL condition, never the entire servlet/project.",
+      "requiredConditions": "Servlet request source and configured SQL test path; no exploit or database execution performed.",
+      "evaluationSplit": "REGRESSION",
+      "files": [
+        {
+          "path": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00201.java",
+          "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00201.java",
+          "sha256": "fcca8c166d49c7d202aeaa6a2cbdffa325e90aaa1a1eac8c882814a736064b45"
+        }
+      ],
+      "unknownFacts": [
+        "Older 24 cases have already been observed. No fresh holdout claim.",
+        "Missing external helper implementations can limit path verification."
+      ],
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "django-28346-parent",
+      "pairId": "django-28346",
+      "sourceDataset": "Django official security patches",
+      "repositoryUrl": "https://github.com/django/django",
+      "repositoryCommitSha": "78e553b48a728ba68b427a8108e1247e5bb46048",
+      "vulnerableCommitSha": "78e553b48a728ba68b427a8108e1247e5bb46048",
+      "fixedCommitSha": "800828887a0509ad1162d6d407e94d8de7eafc60",
+      "repositoryGroup": "django/django",
+      "forkGroup": "django/django",
+      "vulnerabilityFamily": "django-28346",
+      "cve": "CVE-2022-28346",
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Query.add_annotation,Query.add_extra",
+      "targetSites": [
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 1080,
+          "endLine": 1089
+        },
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 2221,
+          "endLine": 2251
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 1080,
+          "endLine": 1084
+        },
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 2221,
+          "endLine": 2225
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [
+        "PY_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://www.djangoproject.com/weblog/2022/apr/11/security-releases/",
+        "https://github.com/django/django/commit/800828887a0509ad1162d6d407e94d8de7eafc60"
+      ],
+      "sourceToSinkEvidence": "Caller-controlled column aliases are retained in Query annotations/extra select and later emitted by SQL compilation.",
+      "mitigationEvidence": "The named patch mitigation is absent in this parent revision.",
+      "requiredConditions": "Applications expand untrusted dictionaries into annotate/aggregate/extra aliases; database SQL compilation is needed for impact.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "django/db/models/sql/query.py",
+          "url": "https://raw.githubusercontent.com/django/django/78e553b48a728ba68b427a8108e1247e5bb46048/django/db/models/sql/query.py",
+          "sha256": "d4e2860fb86910a9824d9d2e0f22578d7daeb124c560b3bad4c569659eb00245"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "django-28346-fixed",
+      "pairId": "django-28346",
+      "sourceDataset": "Django official security patches",
+      "repositoryUrl": "https://github.com/django/django",
+      "repositoryCommitSha": "800828887a0509ad1162d6d407e94d8de7eafc60",
+      "vulnerableCommitSha": "78e553b48a728ba68b427a8108e1247e5bb46048",
+      "fixedCommitSha": "800828887a0509ad1162d6d407e94d8de7eafc60",
+      "repositoryGroup": "django/django",
+      "forkGroup": "django/django",
+      "vulnerabilityFamily": "django-28346",
+      "cve": "CVE-2022-28346",
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Query.add_annotation,Query.add_extra",
+      "targetSites": [
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 1092,
+          "endLine": 1102
+        },
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 2234,
+          "endLine": 2265
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 1092,
+          "endLine": 1096
+        },
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 2234,
+          "endLine": 2238
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [
+        "PY_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://www.djangoproject.com/weblog/2022/apr/11/security-releases/",
+        "https://github.com/django/django/commit/800828887a0509ad1162d6d407e94d8de7eafc60"
+      ],
+      "sourceToSinkEvidence": "Caller-controlled column aliases are retained in Query annotations/extra select and later emitted by SQL compilation.",
+      "mitigationEvidence": "Query.check_alias rejects SQL delimiters/comments before add_annotation and add_extra retain aliases.",
+      "requiredConditions": "Applications expand untrusted dictionaries into annotate/aggregate/extra aliases; database SQL compilation is needed for impact.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "django/db/models/sql/query.py",
+          "url": "https://raw.githubusercontent.com/django/django/800828887a0509ad1162d6d407e94d8de7eafc60/django/db/models/sql/query.py",
+          "sha256": "a0dd652180157164cb00dfe4f77e35dac208745e260adb98781377a334b901b4"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "django-28347-parent",
+      "pairId": "django-28347",
+      "sourceDataset": "Django official security patches",
+      "repositoryUrl": "https://github.com/django/django",
+      "repositoryCommitSha": "800828887a0509ad1162d6d407e94d8de7eafc60",
+      "vulnerableCommitSha": "800828887a0509ad1162d6d407e94d8de7eafc60",
+      "fixedCommitSha": "00b0fc50e1738c7174c495464a5ef069408a4402",
+      "repositoryGroup": "django/django",
+      "forkGroup": "django/django",
+      "vulnerabilityFamily": "django-28347",
+      "cve": "CVE-2022-28347",
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Query.explain,DatabaseOperations.explain_query_prefix",
+      "targetSites": [
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 587,
+          "endLine": 591
+        },
+        {
+          "filePath": "django/db/backends/postgresql/operations.py",
+          "startLine": 290,
+          "endLine": 304
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 587,
+          "endLine": 591
+        },
+        {
+          "filePath": "django/db/backends/postgresql/operations.py",
+          "startLine": 290,
+          "endLine": 294
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [
+        "PY_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://www.djangoproject.com/weblog/2022/apr/11/security-releases/",
+        "https://github.com/django/django/commit/00b0fc50e1738c7174c495464a5ef069408a4402"
+      ],
+      "sourceToSinkEvidence": "Untrusted explain option names pass from Query.explain to PostgreSQL explain_query_prefix, where names form SQL grammar.",
+      "mitigationEvidence": "The named patch mitigation is absent in this parent revision.",
+      "requiredConditions": "PostgreSQL backend with application-provided untrusted explain option names. Other backends/paths are not labelled.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "django/db/models/sql/query.py",
+          "url": "https://raw.githubusercontent.com/django/django/800828887a0509ad1162d6d407e94d8de7eafc60/django/db/models/sql/query.py",
+          "sha256": "a0dd652180157164cb00dfe4f77e35dac208745e260adb98781377a334b901b4"
+        },
+        {
+          "path": "django/db/backends/postgresql/operations.py",
+          "url": "https://raw.githubusercontent.com/django/django/800828887a0509ad1162d6d407e94d8de7eafc60/django/db/backends/postgresql/operations.py",
+          "sha256": "5f48fa904b601bbb89511c27a3b54e63316dfbe820ab08b8441bde31b0afb988"
+        },
+        {
+          "path": "django/db/backends/postgresql/features.py",
+          "url": "https://raw.githubusercontent.com/django/django/800828887a0509ad1162d6d407e94d8de7eafc60/django/db/backends/postgresql/features.py",
+          "sha256": "1a48bc96cb8017f8ccf6746d1822bdffc8bbf1f1f6d958f40ade560b259d7a1c"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "django-28347-fixed",
+      "pairId": "django-28347",
+      "sourceDataset": "Django official security patches",
+      "repositoryUrl": "https://github.com/django/django",
+      "repositoryCommitSha": "00b0fc50e1738c7174c495464a5ef069408a4402",
+      "vulnerableCommitSha": "800828887a0509ad1162d6d407e94d8de7eafc60",
+      "fixedCommitSha": "00b0fc50e1738c7174c495464a5ef069408a4402",
+      "repositoryGroup": "django/django",
+      "forkGroup": "django/django",
+      "vulnerabilityFamily": "django-28347",
+      "cve": "CVE-2022-28347",
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Query.explain,DatabaseOperations.explain_query_prefix",
+      "targetSites": [
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 591,
+          "endLine": 601
+        },
+        {
+          "filePath": "django/db/backends/postgresql/operations.py",
+          "startLine": 302,
+          "endLine": 319
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "django/db/models/sql/query.py",
+          "startLine": 591,
+          "endLine": 595
+        },
+        {
+          "filePath": "django/db/backends/postgresql/operations.py",
+          "startLine": 302,
+          "endLine": 306
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [
+        "PY_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://www.djangoproject.com/weblog/2022/apr/11/security-releases/",
+        "https://github.com/django/django/commit/00b0fc50e1738c7174c495464a5ef069408a4402"
+      ],
+      "sourceToSinkEvidence": "Untrusted explain option names pass from Query.explain to PostgreSQL explain_query_prefix, where names form SQL grammar.",
+      "mitigationEvidence": "Query validates option names; PostgreSQL consumes supported option names and passes remaining names to base validation.",
+      "requiredConditions": "PostgreSQL backend with application-provided untrusted explain option names. Other backends/paths are not labelled.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "django/db/models/sql/query.py",
+          "url": "https://raw.githubusercontent.com/django/django/00b0fc50e1738c7174c495464a5ef069408a4402/django/db/models/sql/query.py",
+          "sha256": "41bfe2d6e856848dac451a26ffcdc2c5ac3d2437df5256a6f608c07e03b809fc"
+        },
+        {
+          "path": "django/db/backends/postgresql/operations.py",
+          "url": "https://raw.githubusercontent.com/django/django/00b0fc50e1738c7174c495464a5ef069408a4402/django/db/backends/postgresql/operations.py",
+          "sha256": "7f4ca3b6629ecd29dde38e06c6aae8fd64f8bf75257b8c144c0e46adfa8b4aa3"
+        },
+        {
+          "path": "django/db/backends/postgresql/features.py",
+          "url": "https://raw.githubusercontent.com/django/django/00b0fc50e1738c7174c495464a5ef069408a4402/django/db/backends/postgresql/features.py",
+          "sha256": "7b056e912fc8e4dd54b8fa6f788524d85c52b232ef9fc58e0ffcb0f82d1a6748"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "django-34265-parent",
+      "pairId": "django-34265",
+      "sourceDataset": "Django official security patches",
+      "repositoryUrl": "https://github.com/django/django",
+      "repositoryCommitSha": "a2b88d7be6fc9b443794518d2f75fd2f3d9e677a",
+      "vulnerableCommitSha": "a2b88d7be6fc9b443794518d2f75fd2f3d9e677a",
+      "fixedCommitSha": "0dc9c016fadb71a067e5a42be30164e3f96c0492",
+      "repositoryGroup": "django/django",
+      "forkGroup": "django/django",
+      "vulnerabilityFamily": "django-34265",
+      "cve": "CVE-2022-34265",
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Extract.as_sql,TruncBase.as_sql",
+      "targetSites": [
+        {
+          "filePath": "django/db/models/functions/datetime.py",
+          "startLine": 53,
+          "endLine": 75
+        },
+        {
+          "filePath": "django/db/models/functions/datetime.py",
+          "startLine": 237,
+          "endLine": 254
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "django/db/models/functions/datetime.py",
+          "startLine": 53,
+          "endLine": 57
+        },
+        {
+          "filePath": "django/db/models/functions/datetime.py",
+          "startLine": 237,
+          "endLine": 241
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [
+        "PY_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://www.djangoproject.com/weblog/2022/jul/04/security-releases/",
+        "https://github.com/django/django/commit/0dc9c016fadb71a067e5a42be30164e3f96c0492"
+      ],
+      "sourceToSinkEvidence": "Caller-controlled lookup_name/kind enters date SQL operation selection and generated SQL.",
+      "mitigationEvidence": "The named patch mitigation is absent in this parent revision.",
+      "requiredConditions": "Untrusted kind/lookup_name passed to Trunc/Extract without application allowlisting; database/backend behavior affects impact.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "django/db/models/functions/datetime.py",
+          "url": "https://raw.githubusercontent.com/django/django/a2b88d7be6fc9b443794518d2f75fd2f3d9e677a/django/db/models/functions/datetime.py",
+          "sha256": "f93d4dad7cb4270e282d704d1e975e7f4e8735810fd7e8de0ca7abd80fc4e1a9"
+        },
+        {
+          "path": "django/db/backends/base/operations.py",
+          "url": "https://raw.githubusercontent.com/django/django/a2b88d7be6fc9b443794518d2f75fd2f3d9e677a/django/db/backends/base/operations.py",
+          "sha256": "2dfd5164fc7af46654c9511abc38d5c14ed753bb1e19b6c0ec10940acc75e94d"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "django-34265-fixed",
+      "pairId": "django-34265",
+      "sourceDataset": "Django official security patches",
+      "repositoryUrl": "https://github.com/django/django",
+      "repositoryCommitSha": "0dc9c016fadb71a067e5a42be30164e3f96c0492",
+      "vulnerableCommitSha": "a2b88d7be6fc9b443794518d2f75fd2f3d9e677a",
+      "fixedCommitSha": "0dc9c016fadb71a067e5a42be30164e3f96c0492",
+      "repositoryGroup": "django/django",
+      "forkGroup": "django/django",
+      "vulnerabilityFamily": "django-34265",
+      "cve": "CVE-2022-34265",
+      "ghsa": null,
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "Extract.as_sql,TruncBase.as_sql",
+      "targetSites": [
+        {
+          "filePath": "django/db/models/functions/datetime.py",
+          "startLine": 53,
+          "endLine": 77
+        },
+        {
+          "filePath": "django/db/models/functions/datetime.py",
+          "startLine": 239,
+          "endLine": 258
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "django/db/models/functions/datetime.py",
+          "startLine": 53,
+          "endLine": 57
+        },
+        {
+          "filePath": "django/db/models/functions/datetime.py",
+          "startLine": 239,
+          "endLine": 243
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [
+        "PY_SQL_INPUT_FLOW"
+      ],
+      "labelEvidence": [
+        "https://www.djangoproject.com/weblog/2022/jul/04/security-releases/",
+        "https://github.com/django/django/commit/0dc9c016fadb71a067e5a42be30164e3f96c0492"
+      ],
+      "sourceToSinkEvidence": "Caller-controlled lookup_name/kind enters date SQL operation selection and generated SQL.",
+      "mitigationEvidence": "Both affected as_sql methods reject identifiers that fail the shared full-match allowlist.",
+      "requiredConditions": "Untrusted kind/lookup_name passed to Trunc/Extract without application allowlisting; database/backend behavior affects impact.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "django/db/models/functions/datetime.py",
+          "url": "https://raw.githubusercontent.com/django/django/0dc9c016fadb71a067e5a42be30164e3f96c0492/django/db/models/functions/datetime.py",
+          "sha256": "1ab514470a96e17244b0d09564de7baa3ee6135ce28e68231d1fbf47612b0df1"
+        },
+        {
+          "path": "django/db/backends/base/operations.py",
+          "url": "https://raw.githubusercontent.com/django/django/0dc9c016fadb71a067e5a42be30164e3f96c0492/django/db/backends/base/operations.py",
+          "sha256": "b20c02fde2a6c8e6bb99a8ebdae4a79ad73171fdefddd5edaa9ef54bc69e9dda"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "django-36359-parent",
+      "pairId": "django-36359",
+      "sourceDataset": "Django official security patches",
+      "repositoryUrl": "https://github.com/django/django",
+      "repositoryCommitSha": "2eb7dedd8f40f911d581d4e7619c046cefe203ce",
+      "vulnerableCommitSha": "2eb7dedd8f40f911d581d4e7619c046cefe203ce",
+      "fixedCommitSha": "b7d9529cbe0af4adabb6ea5d01ed8dcce3668fb3",
+      "repositoryGroup": "django/django",
+      "forkGroup": "django/django",
+      "vulnerabilityFamily": "django-36359",
+      "cve": "CVE-2022-36359",
+      "ghsa": null,
+      "cwe": "CWE-116",
+      "area": "SENSITIVE_EXPOSURE",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "FileResponse.set_headers",
+      "targetSites": [
+        {
+          "filePath": "django/http/response.py",
+          "startLine": 487,
+          "endLine": 530
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "django/http/response.py",
+          "startLine": 487,
+          "endLine": 491
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://www.djangoproject.com/weblog/2022/aug/03/security-releases/",
+        "https://github.com/django/django/commit/b7d9529cbe0af4adabb6ea5d01ed8dcce3668fb3"
+      ],
+      "sourceToSinkEvidence": "A caller-supplied filename is formatted into Content-Disposition; quoted filename delimiters were not escaped.",
+      "mitigationEvidence": "The named patch mitigation is absent in this parent revision.",
+      "requiredConditions": "Application uses user-derived filenames with FileResponse; reflected-file-download conditions are required.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "django/http/response.py",
+          "url": "https://raw.githubusercontent.com/django/django/2eb7dedd8f40f911d581d4e7619c046cefe203ce/django/http/response.py",
+          "sha256": "8e04c946fdd61fd7adadfb5e9991a49266482da0c943107893698217e31127e7"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "django-36359-fixed",
+      "pairId": "django-36359",
+      "sourceDataset": "Django official security patches",
+      "repositoryUrl": "https://github.com/django/django",
+      "repositoryCommitSha": "b7d9529cbe0af4adabb6ea5d01ed8dcce3668fb3",
+      "vulnerableCommitSha": "2eb7dedd8f40f911d581d4e7619c046cefe203ce",
+      "fixedCommitSha": "b7d9529cbe0af4adabb6ea5d01ed8dcce3668fb3",
+      "repositoryGroup": "django/django",
+      "forkGroup": "django/django",
+      "vulnerabilityFamily": "django-36359",
+      "cve": "CVE-2022-36359",
+      "ghsa": null,
+      "cwe": "CWE-116",
+      "area": "SENSITIVE_EXPOSURE",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "FileResponse.set_headers",
+      "targetSites": [
+        {
+          "filePath": "django/http/response.py",
+          "startLine": 487,
+          "endLine": 532
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "django/http/response.py",
+          "startLine": 487,
+          "endLine": 491
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://www.djangoproject.com/weblog/2022/aug/03/security-releases/",
+        "https://github.com/django/django/commit/b7d9529cbe0af4adabb6ea5d01ed8dcce3668fb3"
+      ],
+      "sourceToSinkEvidence": "A caller-supplied filename is formatted into Content-Disposition; quoted filename delimiters were not escaped.",
+      "mitigationEvidence": "Backslashes and quotes in the ASCII filename branch are escaped before header formatting.",
+      "requiredConditions": "Application uses user-derived filenames with FileResponse; reflected-file-download conditions are required.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "django/http/response.py",
+          "url": "https://raw.githubusercontent.com/django/django/b7d9529cbe0af4adabb6ea5d01ed8dcce3668fb3/django/http/response.py",
+          "sha256": "124e089f5a96ded37569a761aaa932ab7e0cdf24b59680f6bc29f1939ee353e1"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "django-41323-parent",
+      "pairId": "django-41323",
+      "sourceDataset": "Django official security patches",
+      "repositoryUrl": "https://github.com/django/django",
+      "repositoryCommitSha": "4a30e0db269a364cb480f48524fa48e6abcf9e94",
+      "vulnerableCommitSha": "4a30e0db269a364cb480f48524fa48e6abcf9e94",
+      "fixedCommitSha": "23f0093125ac2e553da6c1b2f9988eb6a3dd2ea1",
+      "repositoryGroup": "django/django",
+      "forkGroup": "django/django",
+      "vulnerabilityFamily": "django-41323",
+      "cve": "CVE-2022-41323",
+      "ghsa": null,
+      "cwe": "CWE-1333",
+      "area": "SERVICE_STABILITY",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "LocalePrefixPattern.regex",
+      "targetSites": [
+        {
+          "filePath": "django/urls/resolvers.py",
+          "startLine": 339,
+          "endLine": 341
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "django/urls/resolvers.py",
+          "startLine": 339,
+          "endLine": 341
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://www.djangoproject.com/weblog/2022/oct/04/security-releases/",
+        "https://github.com/django/django/commit/23f0093125ac2e553da6c1b2f9988eb6a3dd2ea1"
+      ],
+      "sourceToSinkEvidence": "Locale-derived language_prefix is compiled as a regular expression.",
+      "mitigationEvidence": "The named patch mitigation is absent in this parent revision.",
+      "requiredConditions": "Internationalized URL patterns with attacker-influenced locale; actual timing/DoS not executed.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "django/urls/resolvers.py",
+          "url": "https://raw.githubusercontent.com/django/django/4a30e0db269a364cb480f48524fa48e6abcf9e94/django/urls/resolvers.py",
+          "sha256": "329742c149061e1f7ae0f1dec20c709850b29fb6b40a8708ca0bf8e23f977fa9"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "django-41323-fixed",
+      "pairId": "django-41323",
+      "sourceDataset": "Django official security patches",
+      "repositoryUrl": "https://github.com/django/django",
+      "repositoryCommitSha": "23f0093125ac2e553da6c1b2f9988eb6a3dd2ea1",
+      "vulnerableCommitSha": "4a30e0db269a364cb480f48524fa48e6abcf9e94",
+      "fixedCommitSha": "23f0093125ac2e553da6c1b2f9988eb6a3dd2ea1",
+      "repositoryGroup": "django/django",
+      "forkGroup": "django/django",
+      "vulnerabilityFamily": "django-41323",
+      "cve": "CVE-2022-41323",
+      "ghsa": null,
+      "cwe": "CWE-1333",
+      "area": "SERVICE_STABILITY",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "license": "BSD-3-Clause",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "LocalePrefixPattern.regex",
+      "targetSites": [
+        {
+          "filePath": "django/urls/resolvers.py",
+          "startLine": 339,
+          "endLine": 341
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "django/urls/resolvers.py",
+          "startLine": 339,
+          "endLine": 341
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://www.djangoproject.com/weblog/2022/oct/04/security-releases/",
+        "https://github.com/django/django/commit/23f0093125ac2e553da6c1b2f9988eb6a3dd2ea1"
+      ],
+      "sourceToSinkEvidence": "Locale-derived language_prefix is compiled as a regular expression.",
+      "mitigationEvidence": "re.escape is applied before compiling the locale prefix.",
+      "requiredConditions": "Internationalized URL patterns with attacker-influenced locale; actual timing/DoS not executed.",
+      "evaluationSplit": "VALIDATION",
+      "files": [
+        {
+          "path": "django/urls/resolvers.py",
+          "url": "https://raw.githubusercontent.com/django/django/23f0093125ac2e553da6c1b2f9988eb6a3dd2ea1/django/urls/resolvers.py",
+          "sha256": "0ab320996456207e96efd7a3f4ac5b71bff0ea87ce6012690904a6d2f1e969dd"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "hono-url-decoding-parent",
+      "pairId": "hono-url-decoding",
+      "sourceDataset": "honojs/hono official advisory/patch",
+      "repositoryUrl": "https://github.com/honojs/hono",
+      "repositoryCommitSha": "076823220335b2ef88360a5619c9e7fee3f568d2",
+      "vulnerableCommitSha": "076823220335b2ef88360a5619c9e7fee3f568d2",
+      "fixedCommitSha": "6a0607a929d888893f0c91d92dce2fcfdb3662a3",
+      "repositoryGroup": "honojs/hono",
+      "forkGroup": "honojs/hono",
+      "vulnerabilityFamily": "hono-url-decoding",
+      "cve": "CVE-2026-29045",
+      "ghsa": "GHSA-q5qw-h33p-qvwr",
+      "cwe": "CWE-177",
+      "area": "AUTHORIZATION",
+      "language": "TYPESCRIPT",
+      "framework": "honojs library middleware",
+      "license": "MIT",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "serveStatic",
+      "targetSites": [
+        {
+          "filePath": "src/middleware/serve-static/index.ts",
+          "startLine": 60,
+          "endLine": 72
+        },
+        {
+          "filePath": "src/middleware/serve-static/index.ts",
+          "startLine": 63,
+          "endLine": 75
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/middleware/serve-static/index.ts",
+          "startLine": 60,
+          "endLine": 72
+        },
+        {
+          "filePath": "src/middleware/serve-static/index.ts",
+          "startLine": 63,
+          "endLine": 75
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://github.com/honojs/hono/security/advisories/GHSA-q5qw-h33p-qvwr",
+        "https://github.com/honojs/hono/commit/6a0607a929d888893f0c91d92dce2fcfdb3662a3"
+      ],
+      "sourceToSinkEvidence": "c.req.path is decoded into the static resource name, while route middleware uses different URL-decoding semantics.",
+      "mitigationEvidence": "The named patch mitigation is absent in this parent revision.",
+      "requiredConditions": "Route middleware protects subpaths served from the same static root. This is authorization bypass, not traversal outside the static root.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "src/middleware/serve-static/index.ts",
+          "url": "https://raw.githubusercontent.com/honojs/hono/076823220335b2ef88360a5619c9e7fee3f568d2/src/middleware/serve-static/index.ts",
+          "sha256": "cd2d04c66af9dfa0be7772a10687c2c997f136a16ef355b695bd994e213c1925"
+        },
+        {
+          "path": "src/utils/url.ts",
+          "url": "https://raw.githubusercontent.com/honojs/hono/076823220335b2ef88360a5619c9e7fee3f568d2/src/utils/url.ts",
+          "sha256": "1b6919e93671a3962840edff65f10b0acb15212b830542e6e6c2824afc52f5bd"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "hono-url-decoding-fixed",
+      "pairId": "hono-url-decoding",
+      "sourceDataset": "honojs/hono official advisory/patch",
+      "repositoryUrl": "https://github.com/honojs/hono",
+      "repositoryCommitSha": "6a0607a929d888893f0c91d92dce2fcfdb3662a3",
+      "vulnerableCommitSha": "076823220335b2ef88360a5619c9e7fee3f568d2",
+      "fixedCommitSha": "6a0607a929d888893f0c91d92dce2fcfdb3662a3",
+      "repositoryGroup": "honojs/hono",
+      "forkGroup": "honojs/hono",
+      "vulnerabilityFamily": "hono-url-decoding",
+      "cve": "CVE-2026-29045",
+      "ghsa": "GHSA-q5qw-h33p-qvwr",
+      "cwe": "CWE-177",
+      "area": "AUTHORIZATION",
+      "language": "TYPESCRIPT",
+      "framework": "honojs library middleware",
+      "license": "MIT",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "serveStatic",
+      "targetSites": [
+        {
+          "filePath": "src/middleware/serve-static/index.ts",
+          "startLine": 61,
+          "endLine": 73
+        },
+        {
+          "filePath": "src/middleware/serve-static/index.ts",
+          "startLine": 64,
+          "endLine": 76
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/middleware/serve-static/index.ts",
+          "startLine": 61,
+          "endLine": 73
+        },
+        {
+          "filePath": "src/middleware/serve-static/index.ts",
+          "startLine": 64,
+          "endLine": 76
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://github.com/honojs/hono/security/advisories/GHSA-q5qw-h33p-qvwr",
+        "https://github.com/honojs/hono/commit/6a0607a929d888893f0c91d92dce2fcfdb3662a3"
+      ],
+      "sourceToSinkEvidence": "c.req.path is decoded into the static resource name, while route middleware uses different URL-decoding semantics.",
+      "mitigationEvidence": "serveStatic switches to tryDecodeURI, matching router decoding instead of decoding encoded slashes with decodeURIComponent.",
+      "requiredConditions": "Route middleware protects subpaths served from the same static root. This is authorization bypass, not traversal outside the static root.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "src/middleware/serve-static/index.ts",
+          "url": "https://raw.githubusercontent.com/honojs/hono/6a0607a929d888893f0c91d92dce2fcfdb3662a3/src/middleware/serve-static/index.ts",
+          "sha256": "4166d26d54e9ace9b8a0ea5f7d3c2ddd5bca7fdba2761bbe97b9e32f7f0c2c80"
+        },
+        {
+          "path": "src/utils/url.ts",
+          "url": "https://raw.githubusercontent.com/honojs/hono/6a0607a929d888893f0c91d92dce2fcfdb3662a3/src/utils/url.ts",
+          "sha256": "c7a2348e8d3186de6b9c059f1544487c56da8ff5668a966f930849d4fbe739ef"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "h3-double-decoding-parent",
+      "pairId": "h3-double-decoding",
+      "sourceDataset": "h3js/h3 official advisory/patch",
+      "repositoryUrl": "https://github.com/h3js/h3",
+      "repositoryCommitSha": "e3b9c9e3e78119dc0e047c07396c98d084c28b96",
+      "vulnerableCommitSha": "e3b9c9e3e78119dc0e047c07396c98d084c28b96",
+      "fixedCommitSha": "c56683dcb134969d9c01d403d43eaa6327012007",
+      "repositoryGroup": "h3js/h3",
+      "forkGroup": "h3js/h3",
+      "vulnerabilityFamily": "h3-double-decoding",
+      "cve": null,
+      "ghsa": "GHSA-72gr-qfp7-vwhw",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "language": "TYPESCRIPT",
+      "framework": "h3js library middleware",
+      "license": "MIT",
+      "groundTruthLabel": "DANGEROUS",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "serveStatic",
+      "targetSites": [
+        {
+          "filePath": "src/utils/static.ts",
+          "startLine": 78,
+          "endLine": 90
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/utils/static.ts",
+          "startLine": 78,
+          "endLine": 90
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://github.com/h3js/h3/security/advisories/GHSA-72gr-qfp7-vwhw",
+        "https://github.com/h3js/h3/commit/c56683dcb134969d9c01d403d43eaa6327012007"
+      ],
+      "sourceToSinkEvidence": "event.path is decoded into originalId and handed to static-backend callbacks; encoded dot segments may escape a URL-backed root.",
+      "mitigationEvidence": "The named patch mitigation is absent in this parent revision.",
+      "requiredConditions": "URL-based static backend; decoding and URL normalization must align. No backend access or exploit was performed.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "src/utils/static.ts",
+          "url": "https://raw.githubusercontent.com/h3js/h3/e3b9c9e3e78119dc0e047c07396c98d084c28b96/src/utils/static.ts",
+          "sha256": "e00254df65e6142f22c6a0b64a082730ad7b27fe475653fc865ad4d5d4ebb642"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    },
+    {
+      "caseId": "h3-double-decoding-fixed",
+      "pairId": "h3-double-decoding",
+      "sourceDataset": "h3js/h3 official advisory/patch",
+      "repositoryUrl": "https://github.com/h3js/h3",
+      "repositoryCommitSha": "c56683dcb134969d9c01d403d43eaa6327012007",
+      "vulnerableCommitSha": "e3b9c9e3e78119dc0e047c07396c98d084c28b96",
+      "fixedCommitSha": "c56683dcb134969d9c01d403d43eaa6327012007",
+      "repositoryGroup": "h3js/h3",
+      "forkGroup": "h3js/h3",
+      "vulnerabilityFamily": "h3-double-decoding",
+      "cve": null,
+      "ghsa": "GHSA-72gr-qfp7-vwhw",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "language": "TYPESCRIPT",
+      "framework": "h3js library middleware",
+      "license": "MIT",
+      "groundTruthLabel": "SAFE",
+      "groundTruthConfidence": "OFFICIAL_ADVISORY_AND_PATCH_REVIEW",
+      "reviewed": true,
+      "affectedFunction": "serveStatic",
+      "targetSites": [
+        {
+          "filePath": "src/utils/static.ts",
+          "startLine": 73,
+          "endLine": 85
+        }
+      ],
+      "sourceSites": [
+        {
+          "filePath": "src/utils/static.ts",
+          "startLine": 73,
+          "endLine": 85
+        }
+      ],
+      "patternRules": [],
+      "flowRules": [],
+      "labelEvidence": [
+        "https://github.com/h3js/h3/security/advisories/GHSA-72gr-qfp7-vwhw",
+        "https://github.com/h3js/h3/commit/c56683dcb134969d9c01d403d43eaa6327012007"
+      ],
+      "sourceToSinkEvidence": "event.path is decoded into originalId and handed to static-backend callbacks; encoded dot segments may escape a URL-backed root.",
+      "mitigationEvidence": "The v1 backport removes decodePath and rejects encoded dot-segment forms before static-backend resolution. This differs from the advisory main-branch example.",
+      "requiredConditions": "URL-based static backend; decoding and URL normalization must align. No backend access or exploit was performed.",
+      "evaluationSplit": "HOLDOUT",
+      "files": [
+        {
+          "path": "src/utils/static.ts",
+          "url": "https://raw.githubusercontent.com/h3js/h3/c56683dcb134969d9c01d403d43eaa6327012007/src/utils/static.ts",
+          "sha256": "eeaa2fef2e5b4d6b16207d67d01cfb87af84f8af7fbf361a8899f63c9be7a1db"
+        }
+      ],
+      "unknownFacts": [
+        "Only affected implementation files are collected, not a complete application.",
+        "SAFE describes the named patched path under stated conditions only.",
+        "No runtime/payload/operational reproduction."
+      ],
+      "improvementProposal": "Separate library entry contracts from HTTP handlers, then model supported backend/decoder operations with positive and negative path tests. Do not trust a method name alone.",
+      "collectionTimestamp": "2026-10-19T16:10:17.681272+00:00"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "official-advisory",
+      "url": "https://www.djangoproject.com/weblog/2022/apr/11/security-releases/",
+      "sha256": "db2a7ccc8286392c74bd73d744c6ebc972bcac83af3ce7bbc90c4407925f74ef"
+    },
+    {
+      "kind": "official-advisory",
+      "url": "https://www.djangoproject.com/weblog/2022/apr/11/security-releases/",
+      "sha256": "db2a7ccc8286392c74bd73d744c6ebc972bcac83af3ce7bbc90c4407925f74ef"
+    },
+    {
+      "kind": "official-advisory",
+      "url": "https://www.djangoproject.com/weblog/2022/jul/04/security-releases/",
+      "sha256": "06b8cdf09cbee73a6a18c9901fa9142c8c23fd8cc060c9ea265cde1a779d1f3a"
+    },
+    {
+      "kind": "official-advisory",
+      "url": "https://www.djangoproject.com/weblog/2022/aug/03/security-releases/",
+      "sha256": "b2e3fee424393ad4e49bc367c3e12852459f419bbb075520aa1aa8d50b9adbaf"
+    },
+    {
+      "kind": "official-advisory",
+      "url": "https://www.djangoproject.com/weblog/2022/oct/04/security-releases/",
+      "sha256": "02032e9db1434b932a3ab5a683711d77f49dd6d74fef84081196563a5b53178d"
+    },
+    {
+      "kind": "official-advisory",
+      "url": "https://api.github.com/advisories/GHSA-q5qw-h33p-qvwr",
+      "sha256": "ea745cd5dddf19c4d3eab636f14ea3c35b68edd4a13d9b07811c464b964bef46"
+    },
+    {
+      "kind": "official-advisory",
+      "url": "https://api.github.com/advisories/GHSA-72gr-qfp7-vwhw",
+      "sha256": "1da1f898a6d8c837f3bd20dd7e1a70bc0541ff79359a5ba55fb0a2b712de8719"
+    },
+    {
+      "kind": "license",
+      "repository": "OWASP-Benchmark/BenchmarkJava",
+      "url": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/LICENSE",
+      "sha256": "c03cea027b4b40e4402fabd08557736727ec3d5bc54ad64ab6472de432198cad"
+    },
+    {
+      "kind": "license",
+      "repository": "django/django",
+      "url": "https://raw.githubusercontent.com/django/django/800828887a0509ad1162d6d407e94d8de7eafc60/LICENSE",
+      "sha256": "b846415d1b514e9c1dff14a22deb906d794bc546ca6129f950a18cd091e2a669"
+    },
+    {
+      "kind": "license",
+      "repository": "honojs/hono",
+      "url": "https://raw.githubusercontent.com/honojs/hono/6a0607a929d888893f0c91d92dce2fcfdb3662a3/LICENSE",
+      "sha256": "a6ab98e5c77b9070c443eaff2ff81034a6f8cc05a7524d5098eb0f24defa0115"
+    },
+    {
+      "kind": "license",
+      "repository": "h3js/h3",
+      "url": "https://raw.githubusercontent.com/h3js/h3/c56683dcb134969d9c01d403d43eaa6327012007/LICENSE",
+      "sha256": "46231df5a7733c3f52f11b71f3df61813007745b62b09031acfb45fb42d75082"
+    }
+  ],
+  "collection": {
+    "timestamp": "2026-10-19T16:10:17.681272+00:00",
+    "requests": 6,
+    "bytes": 35778
+  }
+}

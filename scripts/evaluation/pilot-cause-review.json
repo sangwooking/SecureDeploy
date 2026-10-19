@@ -1,0 +1,453 @@
+{
+  "schemaVersion": 1,
+  "manifestSha256": "46eccd825182a3e17d10858d83a0fcde2e4a724e0dd945bcb8ace08a85d6a76a",
+  "engineCommit": "4ed70124796cdd117a10660f93ed3e093a5903cd",
+  "runnerVersion": "2a480cd052218d6db6e438b0fd95131eae93bbe7140aa2f3ba83029b5d5e6da9",
+  "reviewer": "Codex source/output review; not an independent second reviewer",
+  "cases": {
+    "django-28346-parent": [
+      {
+        "category": "RESOURCE_LIMIT",
+        "evidence": {
+          "engine": "PythonServerAnalyzer.java: MAX_FILE_CHARS=100000",
+          "observed": [
+            {
+              "filePath": "django/db/models/sql/query.py",
+              "parseStatus": "LIMIT_EXCEEDED",
+              "limitations": [
+                "FILE_CHARACTER_LIMIT"
+              ],
+              "characters": 113005
+            }
+          ]
+        },
+        "improvementProposal": "Keep hard budgets. First establish whether library APIs are a supported target; evaluate bounded dependency-aware function selection separately, never claim omitted framework internals inspected."
+      }
+    ],
+    "django-28346-fixed": [
+      {
+        "category": "RESOURCE_LIMIT",
+        "evidence": {
+          "engine": "PythonServerAnalyzer.java: MAX_FILE_CHARS=100000",
+          "observed": [
+            {
+              "filePath": "django/db/models/sql/query.py",
+              "parseStatus": "LIMIT_EXCEEDED",
+              "limitations": [
+                "FILE_CHARACTER_LIMIT"
+              ],
+              "characters": 113589
+            }
+          ]
+        },
+        "improvementProposal": "Keep hard budgets. First establish whether library APIs are a supported target; evaluate bounded dependency-aware function selection separately, never claim omitted framework internals inspected."
+      }
+    ],
+    "django-28347-parent": [
+      {
+        "category": "RESOURCE_LIMIT",
+        "evidence": {
+          "engine": "PythonServerAnalyzer.java: MAX_FILE_CHARS=100000",
+          "observed": [
+            {
+              "filePath": "django/db/models/sql/query.py",
+              "parseStatus": "LIMIT_EXCEEDED",
+              "limitations": [
+                "FILE_CHARACTER_LIMIT"
+              ],
+              "characters": 113589
+            }
+          ]
+        },
+        "improvementProposal": "Keep hard budgets. First establish whether library APIs are a supported target; evaluate bounded dependency-aware function selection separately, never claim omitted framework internals inspected."
+      }
+    ],
+    "django-28347-fixed": [
+      {
+        "category": "RESOURCE_LIMIT",
+        "evidence": {
+          "engine": "PythonServerAnalyzer.java: MAX_FILE_CHARS=100000",
+          "observed": [
+            {
+              "filePath": "django/db/models/sql/query.py",
+              "parseStatus": "LIMIT_EXCEEDED",
+              "limitations": [
+                "FILE_CHARACTER_LIMIT"
+              ],
+              "characters": 113999
+            }
+          ]
+        },
+        "improvementProposal": "Keep hard budgets. First establish whether library APIs are a supported target; evaluate bounded dependency-aware function selection separately, never claim omitted framework internals inspected."
+      }
+    ],
+    "django-34265-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": {
+          "engine": "analyzers/python/worker.py: Django/DRF HTTP entry contracts",
+          "observed": [
+            {
+              "filePath": "django/db/backends/base/operations.py",
+              "entrypoints": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL",
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW"
+              ]
+            },
+            {
+              "filePath": "django/db/models/functions/datetime.py",
+              "entrypoints": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            }
+          ],
+          "scope": "Framework implementation is not a Django application view; no supported request entry was identified."
+        },
+        "improvementProposal": "Add application-level CVE-backed cases or explicit bounded library API contracts. Do not turn absence of an HTTP entry into SAFE, FN or a repository-specific detector."
+      }
+    ],
+    "django-34265-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": {
+          "engine": "analyzers/python/worker.py: Django/DRF HTTP entry contracts",
+          "observed": [
+            {
+              "filePath": "django/db/backends/base/operations.py",
+              "entrypoints": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL",
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW"
+              ]
+            },
+            {
+              "filePath": "django/db/models/functions/datetime.py",
+              "entrypoints": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            }
+          ],
+          "scope": "Framework implementation is not a Django application view; no supported request entry was identified."
+        },
+        "improvementProposal": "Add application-level CVE-backed cases or explicit bounded library API contracts. Do not turn absence of an HTTP entry into SAFE, FN or a repository-specific detector."
+      }
+    ],
+    "django-36359-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": {
+          "engine": "analyzers/python/worker.py: Django/DRF HTTP entry contracts",
+          "observed": [
+            {
+              "filePath": "django/http/response.py",
+              "entrypoints": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            }
+          ],
+          "scope": "Framework implementation is not a Django application view; no supported request entry was identified."
+        },
+        "improvementProposal": "Add application-level CVE-backed cases or explicit bounded library API contracts. Do not turn absence of an HTTP entry into SAFE, FN or a repository-specific detector."
+      }
+    ],
+    "django-36359-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": {
+          "engine": "analyzers/python/worker.py: Django/DRF HTTP entry contracts",
+          "observed": [
+            {
+              "filePath": "django/http/response.py",
+              "entrypoints": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            }
+          ],
+          "scope": "Framework implementation is not a Django application view; no supported request entry was identified."
+        },
+        "improvementProposal": "Add application-level CVE-backed cases or explicit bounded library API contracts. Do not turn absence of an HTTP entry into SAFE, FN or a repository-specific detector."
+      }
+    ],
+    "django-41323-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": {
+          "engine": "analyzers/python/worker.py: Django/DRF HTTP entry contracts",
+          "observed": [
+            {
+              "filePath": "django/urls/resolvers.py",
+              "entrypoints": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            }
+          ],
+          "scope": "Framework implementation is not a Django application view; no supported request entry was identified."
+        },
+        "improvementProposal": "Add application-level CVE-backed cases or explicit bounded library API contracts. Do not turn absence of an HTTP entry into SAFE, FN or a repository-specific detector."
+      }
+    ],
+    "django-41323-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": {
+          "engine": "analyzers/python/worker.py: Django/DRF HTTP entry contracts",
+          "observed": [
+            {
+              "filePath": "django/urls/resolvers.py",
+              "entrypoints": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            }
+          ],
+          "scope": "Framework implementation is not a Django application view; no supported request entry was identified."
+        },
+        "improvementProposal": "Add application-level CVE-backed cases or explicit bounded library API contracts. Do not turn absence of an HTTP entry into SAFE, FN or a repository-specific detector."
+      }
+    ],
+    "hono-url-decoding-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": {
+          "engine": "analyzers/typescript: Workers/Pages request entry support only",
+          "observed": [
+            {
+              "filePath": "src/middleware/serve-static/index.ts",
+              "entrypoints": 0,
+              "flowStatus": "NOT_SUPPORTED",
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            },
+            {
+              "filePath": "src/utils/url.ts",
+              "entrypoints": 0,
+              "flowStatus": "NOT_SUPPORTED",
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            }
+          ],
+          "scope": "Library middleware/static utility code, not a supported Workers/Pages application handler."
+        },
+        "improvementProposal": "Choose a separate bounded Hono/Node entry-contract milestone with routing/decoder positive-negative tests; no generic TypeScript support claim from parsed files."
+      }
+    ],
+    "hono-url-decoding-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": {
+          "engine": "analyzers/typescript: Workers/Pages request entry support only",
+          "observed": [
+            {
+              "filePath": "src/middleware/serve-static/index.ts",
+              "entrypoints": 0,
+              "flowStatus": "NOT_SUPPORTED",
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            },
+            {
+              "filePath": "src/utils/url.ts",
+              "entrypoints": 0,
+              "flowStatus": "NOT_SUPPORTED",
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            }
+          ],
+          "scope": "Library middleware/static utility code, not a supported Workers/Pages application handler."
+        },
+        "improvementProposal": "Choose a separate bounded Hono/Node entry-contract milestone with routing/decoder positive-negative tests; no generic TypeScript support claim from parsed files."
+      }
+    ],
+    "h3-double-decoding-parent": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": {
+          "engine": "analyzers/typescript: Workers/Pages request entry support only",
+          "observed": [
+            {
+              "filePath": "src/utils/static.ts",
+              "entrypoints": 0,
+              "flowStatus": "NOT_SUPPORTED",
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            }
+          ],
+          "scope": "Library middleware/static utility code, not a supported Workers/Pages application handler."
+        },
+        "improvementProposal": "Choose a separate bounded Hono/Node entry-contract milestone with routing/decoder positive-negative tests; no generic TypeScript support claim from parsed files."
+      }
+    ],
+    "h3-double-decoding-fixed": [
+      {
+        "category": "UNSUPPORTED_LANGUAGE_FRAMEWORK",
+        "evidence": {
+          "engine": "analyzers/typescript: Workers/Pages request entry support only",
+          "observed": [
+            {
+              "filePath": "src/utils/static.ts",
+              "entrypoints": 0,
+              "flowStatus": "NOT_SUPPORTED",
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ]
+            }
+          ],
+          "scope": "Library middleware/static utility code, not a supported Workers/Pages application handler."
+        },
+        "improvementProposal": "Choose a separate bounded Hono/Node entry-contract milestone with routing/decoder positive-negative tests; no generic TypeScript support claim from parsed files."
+      }
+    ],
+    "owasp-BenchmarkTest00018": [
+      {
+        "category": "SOURCE_RECOGNITION",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00018.java#L45",
+          "observedKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "engine": "JavaSqlWorker.invoke models getParameter/getHeader/getQueryString/getPathInfo, not these collection-returning source contracts."
+        },
+        "improvementProposal": "Model collection-returning servlet inputs with bounded element/key provenance, supported iteration and overwrite controls; test map/header/value paths without repository names."
+      }
+    ],
+    "owasp-BenchmarkTest00032": [
+      {
+        "category": "SOURCE_RECOGNITION",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00032.java#L44",
+          "observedKinds": [],
+          "engine": "JavaSqlWorker.invoke models getParameter/getHeader/getQueryString/getPathInfo, not these collection-returning source contracts."
+        },
+        "improvementProposal": "Model collection-returning servlet inputs with bounded element/key provenance, supported iteration and overwrite controls; test map/header/value paths without repository names."
+      }
+    ],
+    "owasp-BenchmarkTest00034": [
+      {
+        "category": "SOURCE_RECOGNITION",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00034.java#L44",
+          "observedKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "engine": "JavaSqlWorker.invoke models getParameter/getHeader/getQueryString/getPathInfo, not these collection-returning source contracts."
+        },
+        "improvementProposal": "Model collection-returning servlet inputs with bounded element/key provenance, supported iteration and overwrite controls; test map/header/value paths without repository names."
+      }
+    ],
+    "owasp-BenchmarkTest00037": [
+      {
+        "category": "SOURCE_RECOGNITION",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00037.java#L43",
+          "observedKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "engine": "JavaSqlWorker.invoke models getParameter/getHeader/getQueryString/getPathInfo, not these collection-returning source contracts."
+        },
+        "improvementProposal": "Model collection-returning servlet inputs with bounded element/key provenance, supported iteration and overwrite controls; test map/header/value paths without repository names."
+      }
+    ],
+    "owasp-BenchmarkTest00026": [
+      {
+        "category": "SINK_RECOGNITION",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00026.java#L49-L50",
+          "api": "JdbcTemplate.queryForRowSet",
+          "engine": "JavaSqlWorker JdbcTemplate recognized API set omits queryForRowSet.",
+          "additionalLimit": "Static helper field type/context is also missing from the acquired case."
+        },
+        "improvementProposal": "Add queryForRowSet only after a receiver-type contract test, with static/bound/dynamic SQL pairs; separately collect/resolve the static helper field declaration."
+      }
+    ],
+    "owasp-BenchmarkTest00113": [
+      {
+        "category": "OBJECT_FIELD_FLOW",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00113.java",
+          "path": "Map key overwrite/static retrieval",
+          "observed": "Upstream SAFE label; target legacy SQL warning remains; Java worker has no bounded container state model.",
+          "engine": "JavaSqlWorker: new objects/casts remain uncertain; Map/List get/put/add/remove have no state model."
+        },
+        "improvementProposal": "Implement bounded Map/List object identity and key/index state, Java evaluation order and mutation semantics; pair a static selected value with an input-selected value and unknown-key controls."
+      }
+    ],
+    "owasp-BenchmarkTest00197": [
+      {
+        "category": "OBJECT_FIELD_FLOW",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00197.java",
+          "path": "List add/remove/index selection returns a constant",
+          "observed": "Upstream SAFE label; target legacy SQL warning remains; Java worker has no bounded container state model.",
+          "engine": "JavaSqlWorker: new objects/casts remain uncertain; Map/List get/put/add/remove have no state model."
+        },
+        "improvementProposal": "Implement bounded Map/List object identity and key/index state, Java evaluation order and mutation semantics; pair a static selected value with an input-selected value and unknown-key controls."
+      }
+    ],
+    "owasp-BenchmarkTest00200": [
+      {
+        "category": "OBJECT_FIELD_FLOW",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00200.java",
+          "path": "List add/remove/index selection returns a constant",
+          "observed": "Upstream SAFE label; target legacy SQL warning remains; Java worker has no bounded container state model.",
+          "engine": "JavaSqlWorker: new objects/casts remain uncertain; Map/List get/put/add/remove have no state model."
+        },
+        "improvementProposal": "Implement bounded Map/List object identity and key/index state, Java evaluation order and mutation semantics; pair a static selected value with an input-selected value and unknown-key controls."
+      }
+    ],
+    "owasp-BenchmarkTest00107": [
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00107.java",
+          "missing": "External helper implementations/static field declarations are not present in the acquired case.",
+          "observed": "Only the servlet file is in this case; unresolved helper return/receiver type cannot be treated as safe or as a proven engine call-resolution bug."
+        },
+        "improvementProposal": "Acquire a separately pinned minimal helper context with license/hash provenance, create a NEW dataset version, then distinguish missing benchmark context from type/call-resolution limitations."
+      }
+    ],
+    "owasp-BenchmarkTest00110": [
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00110.java",
+          "missing": "External helper implementations/static field declarations are not present in the acquired case.",
+          "observed": "Only the servlet file is in this case; unresolved helper return/receiver type cannot be treated as safe or as a proven engine call-resolution bug."
+        },
+        "improvementProposal": "Acquire a separately pinned minimal helper context with license/hash provenance, create a NEW dataset version, then distinguish missing benchmark context from type/call-resolution limitations."
+      }
+    ],
+    "owasp-BenchmarkTest00201": [
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00201.java",
+          "missing": "External helper implementations/static field declarations are not present in the acquired case.",
+          "observed": "Only the servlet file is in this case; unresolved helper return/receiver type cannot be treated as safe or as a proven engine call-resolution bug."
+        },
+        "improvementProposal": "Acquire a separately pinned minimal helper context with license/hash provenance, create a NEW dataset version, then distinguish missing benchmark context from type/call-resolution limitations."
+      }
+    ],
+    "owasp-BenchmarkTest00025": [
+      {
+        "category": "EVALUATION_CONTEXT_INCOMPLETE",
+        "evidence": {
+          "sourceReference": "https://raw.githubusercontent.com/OWASP-Benchmark/BenchmarkJava/bc5ffeb09fb18ab039806d84ca1f718c2e332c54/src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00025.java",
+          "missing": "External helper implementations/static field declarations are not present in the acquired case.",
+          "observed": "Only the servlet file is in this case; unresolved helper return/receiver type cannot be treated as safe or as a proven engine call-resolution bug."
+        },
+        "improvementProposal": "Acquire a separately pinned minimal helper context with license/hash provenance, create a NEW dataset version, then distinguish missing benchmark context from type/call-resolution limitations."
+      }
+    ]
+  }
+}

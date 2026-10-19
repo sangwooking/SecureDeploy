@@ -1,0 +1,3625 @@
+{
+  "schemaVersion": 1,
+  "engineCommit": "4ed70124796cdd117a10660f93ed3e093a5903cd",
+  "manifestSha256": "46eccd825182a3e17d10858d83a0fcde2e4a724e0dd945bcb8ace08a85d6a76a",
+  "runnerVersion": "2a480cd052218d6db6e438b0fd95131eae93bbe7140aa2f3ba83029b5d5e6da9",
+  "accountingVersion": "e479d30e207051d401024fcf38ecd596e20bca5567e628c02404a27c9d554aaa",
+  "externalLookups": "NOT_RUN",
+  "warnings": [
+    "Scores are target-path alert accounting, not exploitation or whole-project safety.",
+    "NOT_SUPPORTED/UNKNOWN/NOT_INSPECTED are not TN; unsupported cases remain in effective coverage.",
+    "Related public source families and single-reviewer labels are not a blind independent benchmark.",
+    "Wilson intervals are descriptive; paired/correlated cases are not IID."
+  ],
+  "split": "ALL",
+  "results": [
+    {
+      "caseId": "owasp-BenchmarkTest00008",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "FN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "filteredRule": {
+          "verdict": "FN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "ast": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "STRUCTURAL_PATH"
+        },
+        "reviewCandidate": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "STRUCTURAL_PATH"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "STRUCTURAL_PATH"
+        }
+      },
+      "elapsedMs": [
+        193,
+        166
+      ],
+      "parentHeapUsedBytes": [
+        78844416,
+        79892992
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00018",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "reviewCandidate": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        179,
+        159
+      ],
+      "parentHeapUsedBytes": [
+        80941568,
+        80941568
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 2
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 72,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00024",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "STRUCTURAL_PATH"
+        },
+        "reviewCandidate": {
+          "verdict": "MERGED_WITH_LEGACY",
+          "matches": 0,
+          "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        174,
+        173
+      ],
+      "parentHeapUsedBytes": [
+        81990144,
+        83038720
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00025",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        156,
+        153
+      ],
+      "parentHeapUsedBytes": [
+        83038720,
+        84087296
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00026",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        154,
+        156
+      ],
+      "parentHeapUsedBytes": [
+        85135872,
+        85135872
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00027",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "STRUCTURAL_PATH"
+        },
+        "reviewCandidate": {
+          "verdict": "MERGED_WITH_LEGACY",
+          "matches": 0,
+          "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        161,
+        174
+      ],
+      "parentHeapUsedBytes": [
+        86184448,
+        87233024
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00052",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "filteredRule": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "ast": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "reviewCandidate": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "finalUser": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        }
+      },
+      "elapsedMs": [
+        174,
+        175
+      ],
+      "parentHeapUsedBytes": [
+        87233024,
+        88281600
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00104",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "FP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "ast": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        }
+      },
+      "elapsedMs": [
+        164,
+        160
+      ],
+      "parentHeapUsedBytes": [
+        56315840,
+        57364416
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00105",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "FP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "ast": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        }
+      },
+      "elapsedMs": [
+        160,
+        172
+      ],
+      "parentHeapUsedBytes": [
+        57364416,
+        58412992
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00107",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "FP",
+          "matches": 3,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "FP",
+          "matches": 3,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "reviewCandidate": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "finalUser": {
+          "verdict": "FP",
+          "matches": 3,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        172,
+        166
+      ],
+      "parentHeapUsedBytes": [
+        58412992,
+        59461568
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 3
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 58,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00110",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "FP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "FP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "reviewCandidate": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "finalUser": {
+          "verdict": "FP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        161,
+        160
+      ],
+      "parentHeapUsedBytes": [
+        59461568,
+        60510144
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 2
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 72,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00113",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "FP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "FP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "reviewCandidate": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "finalUser": {
+          "verdict": "FP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        158,
+        156
+      ],
+      "parentHeapUsedBytes": [
+        60510144,
+        61558720
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 2
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 72,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00032",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        154,
+        153
+      ],
+      "parentHeapUsedBytes": [
+        61558720,
+        62607296
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00033",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        168,
+        155
+      ],
+      "parentHeapUsedBytes": [
+        62607296,
+        62607296
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00034",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TP",
+          "matches": 3,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TP",
+          "matches": 3,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "reviewCandidate": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 3,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        158,
+        173
+      ],
+      "parentHeapUsedBytes": [
+        63655872,
+        63655872
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 3
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 58,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00037",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "reviewCandidate": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        171,
+        168
+      ],
+      "parentHeapUsedBytes": [
+        64704448,
+        64704448
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00038",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        154,
+        156
+      ],
+      "parentHeapUsedBytes": [
+        65753024,
+        65753024
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00039",
+      "truth": "DANGEROUS",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "TP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        168,
+        166
+      ],
+      "parentHeapUsedBytes": [
+        65753024,
+        66801600
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00114",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "FP",
+          "matches": 2,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "ast": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        }
+      },
+      "elapsedMs": [
+        156,
+        157
+      ],
+      "parentHeapUsedBytes": [
+        66801600,
+        67850176
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00190",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "filteredRule": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "ast": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "reviewCandidate": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "finalUser": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        }
+      },
+      "elapsedMs": [
+        175,
+        163
+      ],
+      "parentHeapUsedBytes": [
+        67850176,
+        68898752
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00191",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "filteredRule": {
+          "verdict": "TN",
+          "matches": 0,
+          "inspection": "INSPECTED"
+        },
+        "ast": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "reviewCandidate": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        },
+        "finalUser": {
+          "verdict": "UNKNOWN",
+          "matches": 0,
+          "inspection": "UNKNOWN"
+        }
+      },
+      "elapsedMs": [
+        164,
+        163
+      ],
+      "parentHeapUsedBytes": [
+        68898752,
+        69947328
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00197",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "FP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "FP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "FP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        157,
+        171
+      ],
+      "parentHeapUsedBytes": [
+        69947328,
+        69947328
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00200",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "FP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "FP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "FP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        158,
+        156
+      ],
+      "parentHeapUsedBytes": [
+        70995904,
+        70995904
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "owasp-BenchmarkTest00201",
+      "truth": "SAFE",
+      "language": "JAVA",
+      "framework": "Servlet",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "OWASP BenchmarkJava",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "FP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "filteredRule": {
+          "verdict": "FP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        },
+        "ast": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_INSPECTED",
+          "matches": 0,
+          "inspection": "NOT_INSPECTED"
+        },
+        "finalUser": {
+          "verdict": "FP",
+          "matches": 1,
+          "inspection": "TARGET_LOCATION_MATCH",
+          "evidenceKind": "PATTERN_OR_MIXED"
+        }
+      },
+      "elapsedMs": [
+        173,
+        159
+      ],
+      "parentHeapUsedBytes": [
+        72044480,
+        72044480
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {
+        "REVIEW_REQUIRED": 1
+      },
+      "targetRiskReasons": [
+        "PATTERN_REQUIRES_CONTEXT"
+      ],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 86,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "django-28346-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "Django official security patches",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "reviewCandidate": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "finalUser": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        }
+      },
+      "elapsedMs": [
+        8,
+        1
+      ],
+      "parentHeapUsedBytes": [
+        73451136,
+        74499712
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "django-28346-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "Django official security patches",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "reviewCandidate": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "finalUser": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        }
+      },
+      "elapsedMs": [
+        1,
+        0
+      ],
+      "parentHeapUsedBytes": [
+        75548288,
+        76596864
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "django-28347-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "Django official security patches",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "reviewCandidate": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "finalUser": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        }
+      },
+      "elapsedMs": [
+        84,
+        44
+      ],
+      "parentHeapUsedBytes": [
+        59494448,
+        60543024
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "django-28347-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "Django official security patches",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "reviewCandidate": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        },
+        "finalUser": {
+          "verdict": "RESOURCE_LIMIT",
+          "matches": 0,
+          "inspection": "RESOURCE_LIMIT"
+        }
+      },
+      "elapsedMs": [
+        45,
+        43
+      ],
+      "parentHeapUsedBytes": [
+        62640176,
+        63688752
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "django-34265-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "Django official security patches",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        52,
+        51
+      ],
+      "parentHeapUsedBytes": [
+        64737328,
+        65785904
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "django-34265-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "cwe": "CWE-89",
+      "area": "INPUT_INJECTION",
+      "sourceDataset": "Django official security patches",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        49,
+        49
+      ],
+      "parentHeapUsedBytes": [
+        66834480,
+        67883056
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "django-36359-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "cwe": "CWE-116",
+      "area": "SENSITIVE_EXPOSURE",
+      "sourceDataset": "Django official security patches",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        44,
+        43
+      ],
+      "parentHeapUsedBytes": [
+        67883056,
+        68931632
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "django-36359-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "cwe": "CWE-116",
+      "area": "SENSITIVE_EXPOSURE",
+      "sourceDataset": "Django official security patches",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        43,
+        42
+      ],
+      "parentHeapUsedBytes": [
+        68931632,
+        69980208
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "django-41323-parent",
+      "truth": "DANGEROUS",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "cwe": "CWE-1333",
+      "area": "SERVICE_STABILITY",
+      "sourceDataset": "Django official security patches",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        55,
+        48
+      ],
+      "parentHeapUsedBytes": [
+        71028784,
+        71028784
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "django-41323-fixed",
+      "truth": "SAFE",
+      "language": "PYTHON",
+      "framework": "Django internals",
+      "cwe": "CWE-1333",
+      "area": "SERVICE_STABILITY",
+      "sourceDataset": "Django official security patches",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        51,
+        47
+      ],
+      "parentHeapUsedBytes": [
+        72077360,
+        73125936
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "hono-url-decoding-parent",
+      "truth": "DANGEROUS",
+      "language": "TYPESCRIPT",
+      "framework": "honojs library middleware",
+      "cwe": "CWE-177",
+      "area": "AUTHORIZATION",
+      "sourceDataset": "honojs/hono official advisory/patch",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        253,
+        184
+      ],
+      "parentHeapUsedBytes": [
+        58837824,
+        57789248
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "hono-url-decoding-fixed",
+      "truth": "SAFE",
+      "language": "TYPESCRIPT",
+      "framework": "honojs library middleware",
+      "cwe": "CWE-177",
+      "area": "AUTHORIZATION",
+      "sourceDataset": "honojs/hono official advisory/patch",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        175,
+        174
+      ],
+      "parentHeapUsedBytes": [
+        58837824,
+        58837824
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "h3-double-decoding-parent",
+      "truth": "DANGEROUS",
+      "language": "TYPESCRIPT",
+      "framework": "h3js library middleware",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "h3js/h3 official advisory/patch",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        168,
+        166
+      ],
+      "parentHeapUsedBytes": [
+        59886400,
+        59886400
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    },
+    {
+      "caseId": "h3-double-decoding-fixed",
+      "truth": "SAFE",
+      "language": "TYPESCRIPT",
+      "framework": "h3js library middleware",
+      "cwe": "CWE-22",
+      "area": "FILE_DESERIALIZATION",
+      "sourceDataset": "h3js/h3 official advisory/patch",
+      "repeatConsistent": true,
+      "layers": {
+        "rule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "filteredRule": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "ast": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "reviewCandidate": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        },
+        "finalUser": {
+          "verdict": "NOT_SUPPORTED",
+          "matches": 0,
+          "inspection": "NOT_SUPPORTED"
+        }
+      },
+      "elapsedMs": [
+        166,
+        166
+      ],
+      "parentHeapUsedBytes": [
+        59886400,
+        60934976
+      ],
+      "blocking": 0,
+      "targetRiskPriorities": {},
+      "targetRiskReasons": [],
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "referenceSecurityScore": 100,
+      "riskPolicyVersion": "risk-v1.2",
+      "exactDuplicateSignals": 0
+    }
+  ],
+  "summary": {
+    "rule": {
+      "counts": {
+        "FN": 1,
+        "TP": 11,
+        "TN": 3,
+        "FP": 9,
+        "NOT_SUPPORTED": 14
+      },
+      "precision": 0.55,
+      "recallWithinScoredScope": 0.9166666666666666,
+      "falsePositiveRate": 0.75,
+      "precisionWilson95": [
+        0.3420820083075997,
+        0.7418049791429071
+      ],
+      "scoredCoverage": 0.631578947368421,
+      "sampleSize": 38,
+      "effectiveDangerousDetectionCoverage": 0.5789473684210527
+    },
+    "filteredRule": {
+      "counts": {
+        "FN": 1,
+        "TP": 11,
+        "TN": 6,
+        "FP": 6,
+        "NOT_SUPPORTED": 14
+      },
+      "precision": 0.6470588235294118,
+      "recallWithinScoredScope": 0.9166666666666666,
+      "falsePositiveRate": 0.5,
+      "precisionWilson95": [
+        0.4129996672121182,
+        0.826905138560951
+      ],
+      "scoredCoverage": 0.631578947368421,
+      "sampleSize": 38,
+      "effectiveDangerousDetectionCoverage": 0.5789473684210527
+    },
+    "ast": {
+      "counts": {
+        "TP": 3,
+        "UNKNOWN": 9,
+        "NOT_INSPECTED": 10,
+        "TN": 2,
+        "RESOURCE_LIMIT": 4,
+        "NOT_SUPPORTED": 10
+      },
+      "precision": 1,
+      "recallWithinScoredScope": 1,
+      "falsePositiveRate": 0,
+      "precisionWilson95": [
+        0.43849391955098227,
+        1
+      ],
+      "scoredCoverage": 0.13157894736842105,
+      "sampleSize": 38,
+      "effectiveDangerousDetectionCoverage": 0.15789473684210525
+    },
+    "reviewCandidate": {
+      "counts": {
+        "TP": 1,
+        "UNKNOWN": 9,
+        "MERGED_WITH_LEGACY": 2,
+        "NOT_INSPECTED": 10,
+        "TN": 2,
+        "RESOURCE_LIMIT": 4,
+        "NOT_SUPPORTED": 10
+      },
+      "precision": 1,
+      "recallWithinScoredScope": 1,
+      "falsePositiveRate": 0,
+      "precisionWilson95": [
+        0.20654329147389294,
+        1
+      ],
+      "scoredCoverage": 0.07894736842105263,
+      "sampleSize": 38,
+      "effectiveDangerousDetectionCoverage": 0.15789473684210525
+    },
+    "finalUser": {
+      "counts": {
+        "TP": 12,
+        "UNKNOWN": 3,
+        "NOT_INSPECTED": 1,
+        "TN": 2,
+        "FP": 6,
+        "RESOURCE_LIMIT": 4,
+        "NOT_SUPPORTED": 10
+      },
+      "precision": 0.6666666666666666,
+      "recallWithinScoredScope": 1,
+      "falsePositiveRate": 0.75,
+      "precisionWilson95": [
+        0.4374906934425036,
+        0.8372144563633714
+      ],
+      "scoredCoverage": 0.5263157894736842,
+      "sampleSize": 38,
+      "effectiveDangerousDetectionCoverage": 0.631578947368421
+    }
+  },
+  "groups": {
+    "language": {
+      "JAVA": {
+        "rule": {
+          "counts": {
+            "FN": 1,
+            "TP": 11,
+            "TN": 3,
+            "FP": 9
+          },
+          "precision": 0.55,
+          "recallWithinScoredScope": 0.9166666666666666,
+          "falsePositiveRate": 0.75,
+          "precisionWilson95": [
+            0.3420820083075997,
+            0.7418049791429071
+          ],
+          "scoredCoverage": 1,
+          "sampleSize": 24
+        },
+        "filteredRule": {
+          "counts": {
+            "FN": 1,
+            "TP": 11,
+            "TN": 6,
+            "FP": 6
+          },
+          "precision": 0.6470588235294118,
+          "recallWithinScoredScope": 0.9166666666666666,
+          "falsePositiveRate": 0.5,
+          "precisionWilson95": [
+            0.4129996672121182,
+            0.826905138560951
+          ],
+          "scoredCoverage": 1,
+          "sampleSize": 24
+        },
+        "ast": {
+          "counts": {
+            "TP": 3,
+            "UNKNOWN": 9,
+            "NOT_INSPECTED": 10,
+            "TN": 2
+          },
+          "precision": 1,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0,
+          "precisionWilson95": [
+            0.43849391955098227,
+            1
+          ],
+          "scoredCoverage": 0.20833333333333334,
+          "sampleSize": 24
+        },
+        "reviewCandidate": {
+          "counts": {
+            "TP": 1,
+            "UNKNOWN": 9,
+            "MERGED_WITH_LEGACY": 2,
+            "NOT_INSPECTED": 10,
+            "TN": 2
+          },
+          "precision": 1,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0,
+          "precisionWilson95": [
+            0.20654329147389294,
+            1
+          ],
+          "scoredCoverage": 0.125,
+          "sampleSize": 24
+        },
+        "finalUser": {
+          "counts": {
+            "TP": 12,
+            "UNKNOWN": 3,
+            "NOT_INSPECTED": 1,
+            "TN": 2,
+            "FP": 6
+          },
+          "precision": 0.6666666666666666,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0.75,
+          "precisionWilson95": [
+            0.4374906934425036,
+            0.8372144563633714
+          ],
+          "scoredCoverage": 0.8333333333333334,
+          "sampleSize": 24
+        }
+      },
+      "PYTHON": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 10
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 10
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "ast": {
+          "counts": {
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "reviewCandidate": {
+          "counts": {
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "finalUser": {
+          "counts": {
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        }
+      },
+      "TYPESCRIPT": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 4
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 4
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 4
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 4
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 4
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 4
+        }
+      }
+    },
+    "framework": {
+      "Django internals": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 10
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 10
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "ast": {
+          "counts": {
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "reviewCandidate": {
+          "counts": {
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "finalUser": {
+          "counts": {
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        }
+      },
+      "Servlet": {
+        "rule": {
+          "counts": {
+            "FN": 1,
+            "TP": 11,
+            "TN": 3,
+            "FP": 9
+          },
+          "precision": 0.55,
+          "recallWithinScoredScope": 0.9166666666666666,
+          "falsePositiveRate": 0.75,
+          "precisionWilson95": [
+            0.3420820083075997,
+            0.7418049791429071
+          ],
+          "scoredCoverage": 1,
+          "sampleSize": 24
+        },
+        "filteredRule": {
+          "counts": {
+            "FN": 1,
+            "TP": 11,
+            "TN": 6,
+            "FP": 6
+          },
+          "precision": 0.6470588235294118,
+          "recallWithinScoredScope": 0.9166666666666666,
+          "falsePositiveRate": 0.5,
+          "precisionWilson95": [
+            0.4129996672121182,
+            0.826905138560951
+          ],
+          "scoredCoverage": 1,
+          "sampleSize": 24
+        },
+        "ast": {
+          "counts": {
+            "TP": 3,
+            "UNKNOWN": 9,
+            "NOT_INSPECTED": 10,
+            "TN": 2
+          },
+          "precision": 1,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0,
+          "precisionWilson95": [
+            0.43849391955098227,
+            1
+          ],
+          "scoredCoverage": 0.20833333333333334,
+          "sampleSize": 24
+        },
+        "reviewCandidate": {
+          "counts": {
+            "TP": 1,
+            "UNKNOWN": 9,
+            "MERGED_WITH_LEGACY": 2,
+            "NOT_INSPECTED": 10,
+            "TN": 2
+          },
+          "precision": 1,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0,
+          "precisionWilson95": [
+            0.20654329147389294,
+            1
+          ],
+          "scoredCoverage": 0.125,
+          "sampleSize": 24
+        },
+        "finalUser": {
+          "counts": {
+            "TP": 12,
+            "UNKNOWN": 3,
+            "NOT_INSPECTED": 1,
+            "TN": 2,
+            "FP": 6
+          },
+          "precision": 0.6666666666666666,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0.75,
+          "precisionWilson95": [
+            0.4374906934425036,
+            0.8372144563633714
+          ],
+          "scoredCoverage": 0.8333333333333334,
+          "sampleSize": 24
+        }
+      },
+      "h3js library middleware": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      },
+      "honojs library middleware": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      }
+    },
+    "cwe": {
+      "CWE-116": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-1333": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-177": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-22": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      },
+      "CWE-89": {
+        "rule": {
+          "counts": {
+            "FN": 1,
+            "TP": 11,
+            "TN": 3,
+            "FP": 9,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": 0.55,
+          "recallWithinScoredScope": 0.9166666666666666,
+          "falsePositiveRate": 0.75,
+          "precisionWilson95": [
+            0.3420820083075997,
+            0.7418049791429071
+          ],
+          "scoredCoverage": 0.8,
+          "sampleSize": 30
+        },
+        "filteredRule": {
+          "counts": {
+            "FN": 1,
+            "TP": 11,
+            "TN": 6,
+            "FP": 6,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": 0.6470588235294118,
+          "recallWithinScoredScope": 0.9166666666666666,
+          "falsePositiveRate": 0.5,
+          "precisionWilson95": [
+            0.4129996672121182,
+            0.826905138560951
+          ],
+          "scoredCoverage": 0.8,
+          "sampleSize": 30
+        },
+        "ast": {
+          "counts": {
+            "TP": 3,
+            "UNKNOWN": 9,
+            "NOT_INSPECTED": 10,
+            "TN": 2,
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 2
+          },
+          "precision": 1,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0,
+          "precisionWilson95": [
+            0.43849391955098227,
+            1
+          ],
+          "scoredCoverage": 0.16666666666666666,
+          "sampleSize": 30
+        },
+        "reviewCandidate": {
+          "counts": {
+            "TP": 1,
+            "UNKNOWN": 9,
+            "MERGED_WITH_LEGACY": 2,
+            "NOT_INSPECTED": 10,
+            "TN": 2,
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 2
+          },
+          "precision": 1,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0,
+          "precisionWilson95": [
+            0.20654329147389294,
+            1
+          ],
+          "scoredCoverage": 0.1,
+          "sampleSize": 30
+        },
+        "finalUser": {
+          "counts": {
+            "TP": 12,
+            "UNKNOWN": 3,
+            "NOT_INSPECTED": 1,
+            "TN": 2,
+            "FP": 6,
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 2
+          },
+          "precision": 0.6666666666666666,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0.75,
+          "precisionWilson95": [
+            0.4374906934425036,
+            0.8372144563633714
+          ],
+          "scoredCoverage": 0.6666666666666666,
+          "sampleSize": 30
+        }
+      }
+    },
+    "area": {
+      "AUTHORIZATION": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      },
+      "FILE_DESERIALIZATION": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      },
+      "INPUT_INJECTION": {
+        "rule": {
+          "counts": {
+            "FN": 1,
+            "TP": 11,
+            "TN": 3,
+            "FP": 9,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": 0.55,
+          "recallWithinScoredScope": 0.9166666666666666,
+          "falsePositiveRate": 0.75,
+          "precisionWilson95": [
+            0.3420820083075997,
+            0.7418049791429071
+          ],
+          "scoredCoverage": 0.8,
+          "sampleSize": 30
+        },
+        "filteredRule": {
+          "counts": {
+            "FN": 1,
+            "TP": 11,
+            "TN": 6,
+            "FP": 6,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": 0.6470588235294118,
+          "recallWithinScoredScope": 0.9166666666666666,
+          "falsePositiveRate": 0.5,
+          "precisionWilson95": [
+            0.4129996672121182,
+            0.826905138560951
+          ],
+          "scoredCoverage": 0.8,
+          "sampleSize": 30
+        },
+        "ast": {
+          "counts": {
+            "TP": 3,
+            "UNKNOWN": 9,
+            "NOT_INSPECTED": 10,
+            "TN": 2,
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 2
+          },
+          "precision": 1,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0,
+          "precisionWilson95": [
+            0.43849391955098227,
+            1
+          ],
+          "scoredCoverage": 0.16666666666666666,
+          "sampleSize": 30
+        },
+        "reviewCandidate": {
+          "counts": {
+            "TP": 1,
+            "UNKNOWN": 9,
+            "MERGED_WITH_LEGACY": 2,
+            "NOT_INSPECTED": 10,
+            "TN": 2,
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 2
+          },
+          "precision": 1,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0,
+          "precisionWilson95": [
+            0.20654329147389294,
+            1
+          ],
+          "scoredCoverage": 0.1,
+          "sampleSize": 30
+        },
+        "finalUser": {
+          "counts": {
+            "TP": 12,
+            "UNKNOWN": 3,
+            "NOT_INSPECTED": 1,
+            "TN": 2,
+            "FP": 6,
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 2
+          },
+          "precision": 0.6666666666666666,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0.75,
+          "precisionWilson95": [
+            0.4374906934425036,
+            0.8372144563633714
+          ],
+          "scoredCoverage": 0.6666666666666666,
+          "sampleSize": 30
+        }
+      },
+      "SENSITIVE_EXPOSURE": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      },
+      "SERVICE_STABILITY": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      }
+    },
+    "sourceDataset": {
+      "Django official security patches": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 10
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 10
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "ast": {
+          "counts": {
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "reviewCandidate": {
+          "counts": {
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        },
+        "finalUser": {
+          "counts": {
+            "RESOURCE_LIMIT": 4,
+            "NOT_SUPPORTED": 6
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 10
+        }
+      },
+      "OWASP BenchmarkJava": {
+        "rule": {
+          "counts": {
+            "FN": 1,
+            "TP": 11,
+            "TN": 3,
+            "FP": 9
+          },
+          "precision": 0.55,
+          "recallWithinScoredScope": 0.9166666666666666,
+          "falsePositiveRate": 0.75,
+          "precisionWilson95": [
+            0.3420820083075997,
+            0.7418049791429071
+          ],
+          "scoredCoverage": 1,
+          "sampleSize": 24
+        },
+        "filteredRule": {
+          "counts": {
+            "FN": 1,
+            "TP": 11,
+            "TN": 6,
+            "FP": 6
+          },
+          "precision": 0.6470588235294118,
+          "recallWithinScoredScope": 0.9166666666666666,
+          "falsePositiveRate": 0.5,
+          "precisionWilson95": [
+            0.4129996672121182,
+            0.826905138560951
+          ],
+          "scoredCoverage": 1,
+          "sampleSize": 24
+        },
+        "ast": {
+          "counts": {
+            "TP": 3,
+            "UNKNOWN": 9,
+            "NOT_INSPECTED": 10,
+            "TN": 2
+          },
+          "precision": 1,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0,
+          "precisionWilson95": [
+            0.43849391955098227,
+            1
+          ],
+          "scoredCoverage": 0.20833333333333334,
+          "sampleSize": 24
+        },
+        "reviewCandidate": {
+          "counts": {
+            "TP": 1,
+            "UNKNOWN": 9,
+            "MERGED_WITH_LEGACY": 2,
+            "NOT_INSPECTED": 10,
+            "TN": 2
+          },
+          "precision": 1,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0,
+          "precisionWilson95": [
+            0.20654329147389294,
+            1
+          ],
+          "scoredCoverage": 0.125,
+          "sampleSize": 24
+        },
+        "finalUser": {
+          "counts": {
+            "TP": 12,
+            "UNKNOWN": 3,
+            "NOT_INSPECTED": 1,
+            "TN": 2,
+            "FP": 6
+          },
+          "precision": 0.6666666666666666,
+          "recallWithinScoredScope": 1,
+          "falsePositiveRate": 0.75,
+          "precisionWilson95": [
+            0.4374906934425036,
+            0.8372144563633714
+          ],
+          "scoredCoverage": 0.8333333333333334,
+          "sampleSize": 24
+        }
+      },
+      "h3js/h3 official advisory/patch": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      },
+      "honojs/hono official advisory/patch": {
+        "rule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "filteredRule": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "ast": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "reviewCandidate": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        },
+        "finalUser": {
+          "counts": {
+            "NOT_SUPPORTED": 2
+          },
+          "precision": null,
+          "recallWithinScoredScope": null,
+          "falsePositiveRate": null,
+          "precisionWilson95": null,
+          "scoredCoverage": 0,
+          "sampleSize": 2
+        }
+      }
+    }
+  },
+  "effectiveDangerousDetectionCoverage": 0.631578947368421,
+  "exactDuplicateRate": 0,
+  "targetRiskCaseCounts": {
+    "BLOCKING": 0,
+    "REVIEW_REQUIRED": 17,
+    "SHOULD_FIX": 0,
+    "INFORMATIONAL": 0
+  },
+  "allRepeatsConsistent": true
+}
