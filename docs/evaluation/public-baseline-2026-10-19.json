@@ -1,0 +1,819 @@
+{
+  "schemaVersion": 1,
+  "engineCommit": "66fdb7391627cb7138f9f8a801b5a86d8a2a60ed",
+  "date": "2026-10-19",
+  "internal": {
+    "unit": "named warning/candidate signal, not exploit or deployment-verdict accuracy",
+    "labelCorrections": {
+      "PY_SENSITIVE_RESPONSE_EXPOSURE": "PY_SENSITIVE_DATA_EXPOSURE"
+    },
+    "counts": {
+      "TP_SIGNAL": 11,
+      "TN_SIGNAL": 11,
+      "UNKNOWN": 12,
+      "FN_SIGNAL": 2,
+      "NOT_SUPPORTED": 1,
+      "FP_SIGNAL": 1
+    },
+    "byArea": {
+      "input": {
+        "TP_SIGNAL": 3,
+        "TN_SIGNAL": 3,
+        "UNKNOWN": 3,
+        "FN_SIGNAL": 1,
+        "NOT_SUPPORTED": 1
+      },
+      "file": {
+        "TP_SIGNAL": 2,
+        "TN_SIGNAL": 2,
+        "UNKNOWN": 2
+      },
+      "crypto": {
+        "TN_SIGNAL": 1,
+        "TP_SIGNAL": 1,
+        "UNKNOWN": 1
+      },
+      "exposure": {
+        "TP_SIGNAL": 1,
+        "TN_SIGNAL": 1,
+        "UNKNOWN": 1
+      },
+      "stability": {
+        "TP_SIGNAL": 2,
+        "TN_SIGNAL": 2,
+        "UNKNOWN": 2
+      },
+      "deployment": {
+        "TP_SIGNAL": 1,
+        "TN_SIGNAL": 1,
+        "UNKNOWN": 1
+      },
+      "authorization": {
+        "FP_SIGNAL": 1,
+        "UNKNOWN": 1,
+        "TP_SIGNAL": 1
+      },
+      "supply-chain": {
+        "FN_SIGNAL": 1,
+        "TN_SIGNAL": 1,
+        "UNKNOWN": 1
+      }
+    },
+    "cases": [
+      {
+        "id": "sql-forward",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          82,
+          42
+        ]
+      },
+      {
+        "id": "sql-bound",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          41,
+          40
+        ]
+      },
+      {
+        "id": "sql-wrapper",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          41,
+          40
+        ]
+      },
+      {
+        "id": "sql-byte-roundtrip",
+        "truth": "DANGEROUS",
+        "result": "FN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          40,
+          38
+        ]
+      },
+      {
+        "id": "file-relative",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          40,
+          38
+        ]
+      },
+      {
+        "id": "file-fixed",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          38,
+          38
+        ]
+      },
+      {
+        "id": "file-validator",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          38,
+          37
+        ]
+      },
+      {
+        "id": "object-upload",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          38,
+          38
+        ]
+      },
+      {
+        "id": "object-json",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          38,
+          38
+        ]
+      },
+      {
+        "id": "object-loader",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          39,
+          36
+        ]
+      },
+      {
+        "id": "token-display",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          38,
+          37
+        ]
+      },
+      {
+        "id": "token-permission",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          39,
+          38
+        ]
+      },
+      {
+        "id": "token-middleware",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          38,
+          39
+        ]
+      },
+      {
+        "id": "exposure-header",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          41,
+          38
+        ]
+      },
+      {
+        "id": "exposure-fixed",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          38,
+          37
+        ]
+      },
+      {
+        "id": "exposure-redactor",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          37,
+          37
+        ]
+      },
+      {
+        "id": "service-implicit",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          38,
+          37
+        ]
+      },
+      {
+        "id": "service-explicit",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          37,
+          37
+        ]
+      },
+      {
+        "id": "service-config",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          38,
+          37
+        ]
+      },
+      {
+        "id": "error-stack",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          38,
+          37
+        ]
+      },
+      {
+        "id": "error-log",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          37,
+          38
+        ]
+      },
+      {
+        "id": "error-no-handler",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          38,
+          37
+        ]
+      },
+      {
+        "id": "ssrf-body",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          169,
+          164
+        ]
+      },
+      {
+        "id": "ssrf-fixed",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          162,
+          161
+        ]
+      },
+      {
+        "id": "ssrf-opaque",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          162,
+          159
+        ]
+      },
+      {
+        "id": "ssrf-express",
+        "truth": "DANGEROUS",
+        "result": "NOT_SUPPORTED",
+        "repeatEqual": true,
+        "elapsedMs": [
+          159,
+          160
+        ]
+      },
+      {
+        "id": "docker-root",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          3,
+          0
+        ]
+      },
+      {
+        "id": "docker-nonroot",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "docker-unknown",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "java-auth-public-login",
+        "truth": "SAFE",
+        "result": "FP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "java-auth-external",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "java-auth-all-public",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "java-sql-concat",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "java-sql-bound",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "java-sql-wrapper",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "npm-old",
+        "truth": "DANGEROUS",
+        "result": "FN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          2,
+          0
+        ]
+      },
+      {
+        "id": "npm-patched",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "npm-range",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "external": {
+    "unit": "named warning/candidate signal, not exploit or deployment-verdict accuracy",
+    "labelCorrections": {
+      "PY_SENSITIVE_RESPONSE_EXPOSURE": "PY_SENSITIVE_DATA_EXPOSURE"
+    },
+    "counts": {
+      "FN_SIGNAL": 2,
+      "TP_SIGNAL": 5,
+      "TN_SIGNAL": 1,
+      "FP_SIGNAL": 5
+    },
+    "byArea": {
+      "input": {
+        "FN_SIGNAL": 2,
+        "TP_SIGNAL": 5,
+        "TN_SIGNAL": 1,
+        "FP_SIGNAL": 5
+      }
+    },
+    "cases": [
+      {
+        "id": "BenchmarkTest00008",
+        "truth": "DANGEROUS",
+        "result": "FN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          5,
+          0
+        ]
+      },
+      {
+        "id": "BenchmarkTest00018",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          1,
+          0
+        ]
+      },
+      {
+        "id": "BenchmarkTest00024",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "BenchmarkTest00025",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "BenchmarkTest00026",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "BenchmarkTest00027",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "BenchmarkTest00052",
+        "truth": "SAFE",
+        "result": "TN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "BenchmarkTest00104",
+        "truth": "SAFE",
+        "result": "FP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "BenchmarkTest00105",
+        "truth": "SAFE",
+        "result": "FP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "BenchmarkTest00107",
+        "truth": "SAFE",
+        "result": "FP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "BenchmarkTest00110",
+        "truth": "SAFE",
+        "result": "FP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "BenchmarkTest00113",
+        "truth": "SAFE",
+        "result": "FP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "pygoat-sql",
+        "truth": "DANGEROUS",
+        "result": "FN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          161,
+          118
+        ]
+      }
+    ]
+  },
+  "exploratory": {
+    "unit": "named warning/candidate signal, not exploit or deployment-verdict accuracy",
+    "labelCorrections": {
+      "PY_SENSITIVE_RESPONSE_EXPOSURE": "PY_SENSITIVE_DATA_EXPOSURE"
+    },
+    "counts": {
+      "TP_SIGNAL": 3,
+      "UNKNOWN_WITH_SIGNAL": 1,
+      "FN_SIGNAL": 1,
+      "FP_SIGNAL": 1
+    },
+    "byArea": {
+      "supply-chain": {
+        "TP_SIGNAL": 1,
+        "UNKNOWN_WITH_SIGNAL": 1
+      },
+      "input": {
+        "FN_SIGNAL": 1,
+        "FP_SIGNAL": 1,
+        "TP_SIGNAL": 2
+      }
+    },
+    "cases": [
+      {
+        "id": "npm-pretty-old",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          9,
+          0
+        ]
+      },
+      {
+        "id": "npm-pretty-range",
+        "truth": "UNKNOWN",
+        "result": "UNKNOWN_WITH_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "java-split-construction",
+        "truth": "DANGEROUS",
+        "result": "FN_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "java-fixed-statement",
+        "truth": "SAFE",
+        "result": "FP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "ssrf-renamed-nested",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          208,
+          168
+        ]
+      },
+      {
+        "id": "sql-split-helper",
+        "truth": "DANGEROUS",
+        "result": "TP_SIGNAL",
+        "repeatEqual": true,
+        "elapsedMs": [
+          48,
+          40
+        ]
+      }
+    ]
+  },
+  "benchmarkProvenance": {
+    "repository": "OWASP-Benchmark/BenchmarkJava",
+    "sha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+    "selection": "first six SQLi true and first six SQLi false in upstream expectedresults, before engine execution",
+    "cases": [
+      {
+        "id": "BenchmarkTest00008",
+        "area": "input",
+        "truth": "DANGEROUS",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00008.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "9bc49dbe491a39162c97b0c43b8ce5e42a4de5c0552c52117b1a51b0a541dfbe"
+      },
+      {
+        "id": "BenchmarkTest00018",
+        "area": "input",
+        "truth": "DANGEROUS",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00018.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "f050b4ae7057c0e3a8271eae86cdb92a0337fe7b61f05f4b9d8015ca9d707da7"
+      },
+      {
+        "id": "BenchmarkTest00024",
+        "area": "input",
+        "truth": "DANGEROUS",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00024.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "6886ac19a08825f801e4222341f2ba26685abf710203ac2ee85f7e2b46216fd4"
+      },
+      {
+        "id": "BenchmarkTest00025",
+        "area": "input",
+        "truth": "DANGEROUS",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00025.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "c136d4ea5dc4f7f5f210968d90c0803c575b7faeb5ab5e00511467ee6197812a"
+      },
+      {
+        "id": "BenchmarkTest00026",
+        "area": "input",
+        "truth": "DANGEROUS",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00026.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "a89db0c923b404cb60c2716f5fd5c947e4455d27d015cbfc54b9aedd85b9986d"
+      },
+      {
+        "id": "BenchmarkTest00027",
+        "area": "input",
+        "truth": "DANGEROUS",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00027.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "637de966e3efe93320d805f342697cd5dc1031e6da0144f63225b0c2915819ba"
+      },
+      {
+        "id": "BenchmarkTest00052",
+        "area": "input",
+        "truth": "SAFE",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00052.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "eaebe123b57b506dc834783c2567bc85f069d4e767b1ce5a003c16675da866ed"
+      },
+      {
+        "id": "BenchmarkTest00104",
+        "area": "input",
+        "truth": "SAFE",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00104.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "4b0677a26e4db2d942f78317bf72e8fe8f12162434c1b24a2eeeb97c3ce9d6e7"
+      },
+      {
+        "id": "BenchmarkTest00105",
+        "area": "input",
+        "truth": "SAFE",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00105.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "beb988583d806821aa74f4a3c7676d3c25d39cd0638c3ea3e505dcbdba2758ba"
+      },
+      {
+        "id": "BenchmarkTest00107",
+        "area": "input",
+        "truth": "SAFE",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00107.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "bbc65175b65683af4801fc29fac1d1022007212120a167ff9569ab5cbd7a1580"
+      },
+      {
+        "id": "BenchmarkTest00110",
+        "area": "input",
+        "truth": "SAFE",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00110.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "935fff05d123be4e86888efafdfe2d31b619e807788c8755547bf4afd77808a6"
+      },
+      {
+        "id": "BenchmarkTest00113",
+        "area": "input",
+        "truth": "SAFE",
+        "cwe": "89",
+        "sourcePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00113.java",
+        "inspection": "PATTERN_ONLY",
+        "sha256": "a050daad5b04e54eb23195d5c4bc4a3a413b568f87fb15fa6810af2bf3fb1e35"
+      }
+    ]
+  },
+  "pygoatProvenance": {
+    "repository": "adeyosemanputra/pygoat",
+    "sha": "19d17cc8874861142b330636d068bbde54e86b85",
+    "files": [
+      "introduction/views.py",
+      "introduction/urls.py"
+    ],
+    "labelStatus": "UNLABELLED_NOT_YET_EVALUATED"
+  },
+  "manualClassification": {
+    "pygoat-sql": "NOT_INSPECTED: general try/model raw execution unsupported; raw FN_SIGNAL remains visible",
+    "sql-byte-roundtrip": "FN_SIGNAL with MEDIUM unresolved provenance, not a clean result",
+    "npm-old": "legacy candidate miss only; exact component extracted by structural SCA; OSV not queried in fixture runner",
+    "java-auth-public-login": "review specificity false signal, not proof that engine declares an authorization exploit"
+  },
+  "limits": [
+    "not whole-OWASP score",
+    "not whole-product accuracy",
+    "not representative",
+    "same developer manual review",
+    "supplemental candidate and BLOCKING performance differ"
+  ]
+}
