@@ -14,6 +14,7 @@ export interface ServerFlowFinding {
   title: string; riskExplanation: string; recommendedAction: string; verificationSteps: string[];
 }
 export interface ServerAnalysisSnapshot {
+  javaAnalysis?: JavaSqlSnapshot | null;
   serviceUses?: {kind:string;status:string;location:AnalysisLocation;trace:AnalysisLocation[];limitations:string[]}[] | null;
   exposureUses?: { kind: string; status: string; location: AnalysisLocation; trace: AnalysisLocation[]; limitations: string[] }[] | null;
   tokenUses?: { operation: string; location: AnalysisLocation; signatureStatus: string; keySource: string;
@@ -42,4 +43,18 @@ export interface ServerAnalysisSnapshot {
   authorizationContexts: { entry: AnalysisLocation; checks: AnalysisLocation[]; defenses: AnalysisLocation[];
     resources: AnalysisLocation[]; conclusion: string; limitations: string[]; details?: AuthorizationDetails | null }[];
   limitations: string[];
+}
+
+export interface JavaSqlSnapshot {
+  analysis: { version: string; status: string; limitations: string[];
+    files: { filePath: string; parseStatus: string; entrypoints: number; functions: number;
+      sqlCallSites: number; tracedCallSites: number; limitations: string[] }[];
+    uses: { kind: string; api: string; location: AnalysisLocation; trace: AnalysisLocation[];
+      bindingCalls: number; limitations: string[] }[];
+  };
+  suppressedLegacyCount: number;
+  legacyEvidence: { filePath: string; line: number; executions: AnalysisLocation[] }[];
+  findings: { findingId: string; ruleId: string; priority: 'REVIEW_REQUIRED'; comparisonPolicy: 'NOT_COMPARED';
+    location: AnalysisLocation; trace: AnalysisLocation[]; title: string; explanation: string;
+    recommendation: string; verificationSteps: string[] }[];
 }

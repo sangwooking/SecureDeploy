@@ -5,6 +5,7 @@ import { AuthorizationContextDetails } from './AuthorizationContextDetails';
 import { TokenSecurityDetails } from './TokenSecurityDetails';
 import { ExposureDetails } from './ExposureDetails';
 import { ServiceStabilityDetails } from './ServiceStabilityDetails';
+import { JavaSqlAnalysisSection } from './JavaSqlAnalysisSection';
 
 const labels: Record<string, string> = {
   INTERNAL_ERROR_DETAIL:'내부 오류 스택 정보',ERROR_DETAIL_CONTEXT_UNKNOWN:'오류 스택 문맥 미확인',HTTP_CLIENT_CALL:'외부 HTTP 호출',
@@ -118,6 +119,7 @@ const location = (value: AnalysisLocation) => `${value.filePath}:${value.line} �
 
 export function ServerAnalysisSection({ snapshot, compact = false }: { snapshot?: ServerAnalysisSnapshot | null; compact?: boolean }) {
   return <>
+    <JavaSqlAnalysisSection snapshot={snapshot?.javaAnalysis} compact={compact} />
     <DeploymentAnalysisSection snapshot={snapshot?.deploymentAnalysis} compact={compact} />
     <LanguageAnalysisSection snapshot={snapshot} compact={compact} />
     {snapshot?.pythonAnalysis && snapshot.pythonAnalysis.status !== 'NOT_APPLICABLE' &&

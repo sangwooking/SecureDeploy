@@ -37,7 +37,8 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
   const findings = allRiskFindings(result);
   const counts = reviewCounts(result);
   const flowCount = (result.serverAnalysis?.validatedFindings?.length ?? 0)
-    + (result.serverAnalysis?.pythonAnalysis?.validatedFindings?.length ?? 0);
+    + (result.serverAnalysis?.pythonAnalysis?.validatedFindings?.length ?? 0)
+    + (result.serverAnalysis?.javaAnalysis?.findings.length ?? 0);
   const configCount = result.serverAnalysis?.deploymentAnalysis?.findings.length ?? 0;
   const navigate = (next: ResultView) => {
     onViewChange(next);

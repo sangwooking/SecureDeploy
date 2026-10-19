@@ -38,3 +38,18 @@ tasks.named('test') {
     inputs.files(fileTree('analyzers/python') { include '*.py' })
             .withPropertyName('pythonAnalyzer').withPathSensitivity(PathSensitivity.RELATIVE)
 }
+
+def javaSqlWorkerJar = tasks.register('javaSqlWorkerJar', Jar) {
+    dependsOn tasks.named('compileJava')
+    from(tasks.named('compileJava').flatMap { it.destinationDirectory }) {
+        include 'com/securedeploy/analysis/javaflow/JavaSqlWorker*.class'
+    }
+    archiveFileName = 'java-sql-worker.jar'
+    destinationDirectory = layout.buildDirectory.dir('analyzers')
+    manifest { attributes 'Main-Class': 'com.securedeploy.analysis.javaflow.JavaSqlWorker' }
+}
+
+tasks.named('processResources') {
+    dependsOn javaSqlWorkerJar
+    from(javaSqlWorkerJar.flatMap { it.archiveFile }) { into 'analyzers' }
+}

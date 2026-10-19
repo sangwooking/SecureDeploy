@@ -38,6 +38,39 @@ class ServerAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void javaSqlUsesCommonInputsAndStoresIndependentReviewCandidates() throws Exception {
+        String token=signup();
+        String prefix="import org.springframework.web.bind.annotation.*; import java.sql.Connection; @RestController class Endpoint {Connection connection; @GetMapping(\"/\") void inspect(@RequestParam String input){\n";
+        String code=prefix+"connection.prepareCall(\"{call \"+input+\"}\").execute();\n}}";
+        var zip=uploadSource(token,"Endpoint.java",code);
+        assertThat(zip.at("/serverAnalysis/javaAnalysis/findings")).hasSize(1);
+        assertThat(zip.at("/serverAnalysis/javaAnalysis/findings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(zip.path("vulnerabilityCount").asInt()).isZero();assertThat(zip.path("securityScore").asInt()).isEqualTo(100);
+        assertThat(zip.at("/riskAssessment/prioritySummary/BLOCKING").asInt()).isZero();
+        assertThat(zip.at("/coverage/analyzers").toString()).contains("JAVA_SQL_FLOW");
+        Path pub=Files.createDirectory(temp.resolve("java-public")),prv=Files.createDirectory(temp.resolve("java-private"));
+        Files.writeString(pub.resolve("Endpoint.java"),code);Files.writeString(prv.resolve("Endpoint.java"),code);
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/java",pub,pub));
+        var publicResult=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/java\",\"scanMode\":\"STANDARD\"}");
+        var metadata=new GitHubSourceSnapshot("fixture","java","https://github.com/fixture/java","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/java",prv,prv,metadata));
+        var privateResult=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        assertThat(publicResult.path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        assertThat(privateResult.path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        assertThat(pub).doesNotExist();assertThat(prv).doesNotExist();
+        var normal=uploadSource(token,"Endpoint.java",prefix+"var s=connection.createStatement(); s.executeQuery(\"SELECT 1\");\n}}");
+        assertThat(normal.at("/serverAnalysis/javaAnalysis/findings")).isEmpty();
+        assertThat(normal.at("/comparison/counts/RESOLVED").asInt()).isZero();
+        assertThat(normal.path("riskAssessment").path("prioritySummary")).isEqualTo(zip.path("riskAssessment").path("prioritySummary"));
+        long id=zip.path("reviewId").asLong();
+        assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        assertThat(jdbc.queryForObject("select server_analysis_json from reviews where id=?",String.class,id)).contains("java-sql-v1","JAVA_SQL_INPUT_FLOW").doesNotContain("{call ");
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+        var legacy=(com.fasterxml.jackson.databind.node.ObjectNode)zip.path("serverAnalysis").deepCopy();legacy.remove("javaAnalysis");
+        jdbc.update("update reviews set server_analysis_json=? where id=?",json.writeValueAsString(legacy),id);entities.clear();
+        assertThat(detail(token,id).at("/serverAnalysis/javaAnalysis").isNull()).isTrue();
+    }
+
     @Test void ssrfUsesCommonSourcesAndSnapshotWithoutChangingRiskOrComparison() throws Exception {
         String token=signup();
         String code="export default {fetch(request){return fetch(new Request(new URL(request.url).searchParams.get('target')));}}";
@@ -163,8 +196,11 @@ class ServerAnalysisIntegrationTest {
     JsonNode detail(String token, long id) throws Exception { return json.readTree(mvc.perform(get("/api/reviews/" + id).header("Authorization", "Bearer " + token))
             .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray()); }
     JsonNode upload(String token, String code) throws Exception {
+        return uploadSource(token,"worker.ts",code);
+    }
+    JsonNode uploadSource(String token,String name,String code) throws Exception {
         var bytes = new ByteArrayOutputStream();
-        try (var zip = new ZipOutputStream(bytes)) { zip.putNextEntry(new ZipEntry("fixture/worker.ts")); zip.write(code.getBytes(StandardCharsets.UTF_8)); zip.closeEntry(); }
+        try (var zip = new ZipOutputStream(bytes)) { zip.putNextEntry(new ZipEntry("fixture/"+name)); zip.write(code.getBytes(StandardCharsets.UTF_8)); zip.closeEntry(); }
         return json.readTree(mvc.perform(multipart("/api/reviews/upload").file(new MockMultipartFile("file", "fixture.zip", "application/zip", bytes.toByteArray()))
                 .header("Authorization", "Bearer " + token)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
     }

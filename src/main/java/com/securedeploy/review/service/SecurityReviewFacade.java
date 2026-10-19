@@ -61,6 +61,7 @@ public class SecurityReviewFacade {
     private final com.securedeploy.github.app.PrivateGitHubSourceService privateGitHubSources;
     private final com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer typeScriptAnalyzer;
     private final com.securedeploy.analysis.python.PythonServerAnalyzer pythonAnalyzer;
+    private final com.securedeploy.analysis.javaflow.JavaSqlAnalyzer javaAnalyzer;
 
     public SecurityReviewFacade(UploadService uploadService, ZipExtractService zipExtractService,
                                 GitHubRepositoryService gitHubRepositoryService,
@@ -78,7 +79,8 @@ public class SecurityReviewFacade {
                                 com.securedeploy.project.progress.ReviewProgressService progressService,
                                 com.securedeploy.github.app.PrivateGitHubSourceService privateGitHubSources,
                                 com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer typeScriptAnalyzer,
-                                com.securedeploy.analysis.python.PythonServerAnalyzer pythonAnalyzer) {
+                                com.securedeploy.analysis.python.PythonServerAnalyzer pythonAnalyzer,
+                                com.securedeploy.analysis.javaflow.JavaSqlAnalyzer javaAnalyzer) {
         this.uploadService = uploadService;
         this.zipExtractService = zipExtractService;
         this.gitHubRepositoryService = gitHubRepositoryService;
@@ -100,6 +102,7 @@ public class SecurityReviewFacade {
         this.privateGitHubSources = privateGitHubSources;
         this.typeScriptAnalyzer = typeScriptAnalyzer;
         this.pythonAnalyzer = pythonAnalyzer;
+        this.javaAnalyzer = javaAnalyzer;
     }
 
     public SecurityReviewResponse reviewUploadedZip(MultipartFile file) {
@@ -231,7 +234,8 @@ public class SecurityReviewFacade {
             throw new CoverageException(HttpStatus.INTERNAL_SERVER_ERROR, "코드 패턴 검사를 완료하지 못했습니다.", CoverageSummary.failure(projectStructure.coverage(), sourceExclusions, "RULE_ENGINE"));
         }
         List<RuleMatch> matches;
-        try { matches = falsePositiveAnalyzer.analyze(projectStructure, rawMatches); }
+        var javaResult = javaAnalyzer.reconcile(rawMatches, javaAnalyzer.analyze(projectStructure));
+        try { matches = falsePositiveAnalyzer.analyze(projectStructure, javaResult.matches()); }
         catch (RuntimeException failure) {
             throw new CoverageException(HttpStatus.INTERNAL_SERVER_ERROR, "탐지 신뢰도 검토를 완료하지 못했습니다.", CoverageSummary.failure(projectStructure.coverage(), sourceExclusions, "FALSE_POSITIVE"));
         }
@@ -253,11 +257,12 @@ public class SecurityReviewFacade {
         var intelligence = threatIntelligenceService.enrich(sca);
         var pythonAnalysis = pythonAnalyzer.analyze(projectStructure);
         var deployment = com.securedeploy.analysis.deployment.DeploymentAnalyzer.analyze(projectStructure, pythonAnalysis.deploymentAnalysis());
-        var serverAnalysis = typeScriptAnalyzer.analyze(projectStructure).withPythonAnalysis(pythonAnalysis.withDeploymentAnalysis(null)).withDeploymentAnalysis(deployment);
+        var serverAnalysis = typeScriptAnalyzer.analyze(projectStructure).withPythonAnalysis(pythonAnalysis.withDeploymentAnalysis(null)).withDeploymentAnalysis(deployment).withJavaAnalysis(javaResult.snapshot());
         var coverage = com.securedeploy.project.coverage.CoverageSummary.complete(projectStructure.coverage(), sourceExclusions, sca, intelligence);
         coverage = serverAnalysis.attachCoverage(coverage);
         coverage = pythonAnalysis.attachCoverage(coverage);
         coverage = deployment.attachCoverage(coverage);
+        coverage = javaResult.snapshot().attachCoverage(coverage);
         coverage = coverage.withInspectionScope(com.securedeploy.project.coverage.InspectionScope.collect(coverage, projectStructure.analysisFiles()));
         return new AnalysisOutcome(response.withSca(sca).withServerAnalysis(serverAnalysis).withCoverage(coverage), snippetGroup, intelligence, slices,
                 comparisonCollector.collect(projectStructure));

@@ -1,0 +1,259 @@
+{
+  "baselineSecureDeployCommit": "8ffa95048d7b99e9f62cc82e74788a14046a4fdd",
+  "sourceRepository": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+  "sourceCommit": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+  "sourceLicense": "GPL-2.0",
+  "sourcePath": "src/main/java/org/owasp/benchmark/testcode/{id}.java",
+  "labelsPath": "expectedresults-1.2.csv",
+  "analyzerVersion": "java-sql-v1",
+  "selection": "First six SQL cases per upstream truth label are observed regression; next six are holdout frozen before new analyzer observation.",
+  "limitations": [
+    "Same benchmark family, not distribution-independent or whole-project accuracy.",
+    "Final warning counts combine retained legacy warnings and separate REVIEW_REQUIRED candidates, not Risk counts.",
+    "No target compilation, execution, annotation processing, dependency resolution or production testing.",
+    "No source excerpts, SQL literals or credentials are retained here."
+  ],
+  "rowFields": [
+    "id",
+    "truth",
+    "rawWarnings",
+    "structuralRisks",
+    "finalWarnings",
+    "flowState",
+    "sha256"
+  ],
+  "regression": {
+    "rows": [
+      [
+        "BenchmarkTest00008",
+        "DANGEROUS",
+        0,
+        1,
+        1,
+        "CONFIRMED_INPUT",
+        "9bc49dbe491a39162c97b0c43b8ce5e42a4de5c0552c52117b1a51b0a541dfbe"
+      ],
+      [
+        "BenchmarkTest00018",
+        "DANGEROUS",
+        2,
+        0,
+        2,
+        "UNKNOWN",
+        "f050b4ae7057c0e3a8271eae86cdb92a0337fe7b61f05f4b9d8015ca9d707da7"
+      ],
+      [
+        "BenchmarkTest00024",
+        "DANGEROUS",
+        1,
+        1,
+        1,
+        "CONFIRMED_INPUT",
+        "6886ac19a08825f801e4222341f2ba26685abf710203ac2ee85f7e2b46216fd4"
+      ],
+      [
+        "BenchmarkTest00025",
+        "DANGEROUS",
+        1,
+        0,
+        1,
+        "NOT_INSPECTED_OR_SUPPORTED",
+        "c136d4ea5dc4f7f5f210968d90c0803c575b7faeb5ab5e00511467ee6197812a"
+      ],
+      [
+        "BenchmarkTest00026",
+        "DANGEROUS",
+        1,
+        0,
+        1,
+        "NOT_INSPECTED_OR_SUPPORTED",
+        "a89db0c923b404cb60c2716f5fd5c947e4455d27d015cbfc54b9aedd85b9986d"
+      ],
+      [
+        "BenchmarkTest00027",
+        "DANGEROUS",
+        2,
+        1,
+        1,
+        "CONFIRMED_INPUT",
+        "637de966e3efe93320d805f342697cd5dc1031e6da0144f63225b0c2915819ba"
+      ],
+      [
+        "BenchmarkTest00052",
+        "SAFE",
+        0,
+        0,
+        0,
+        "UNKNOWN",
+        "eaebe123b57b506dc834783c2567bc85f069d4e767b1ce5a003c16675da866ed"
+      ],
+      [
+        "BenchmarkTest00104",
+        "SAFE",
+        1,
+        0,
+        0,
+        "NOT_INSPECTED_OR_SUPPORTED",
+        "4b0677a26e4db2d942f78317bf72e8fe8f12162434c1b24a2eeeb97c3ce9d6e7"
+      ],
+      [
+        "BenchmarkTest00105",
+        "SAFE",
+        2,
+        0,
+        0,
+        "NO_INPUT_IN_TRACED_SQL",
+        "beb988583d806821aa74f4a3c7676d3c25d39cd0638c3ea3e505dcbdba2758ba"
+      ],
+      [
+        "BenchmarkTest00107",
+        "SAFE",
+        3,
+        0,
+        3,
+        "UNKNOWN",
+        "bbc65175b65683af4801fc29fac1d1022007212120a167ff9569ab5cbd7a1580"
+      ],
+      [
+        "BenchmarkTest00110",
+        "SAFE",
+        2,
+        0,
+        2,
+        "UNKNOWN",
+        "935fff05d123be4e86888efafdfe2d31b619e807788c8755547bf4afd77808a6"
+      ],
+      [
+        "BenchmarkTest00113",
+        "SAFE",
+        2,
+        0,
+        2,
+        "UNKNOWN",
+        "a050daad5b04e54eb23195d5c4bc4a3a413b568f87fb15fa6810af2bf3fb1e35"
+      ]
+    ],
+    "elapsedMs": {
+      "min": 156,
+      "median": 160.5,
+      "max": 170
+    }
+  },
+  "holdoutFirst": {
+    "rows": [
+      [
+        "BenchmarkTest00032",
+        "DANGEROUS",
+        1,
+        0,
+        1,
+        "NOT_INSPECTED_OR_SUPPORTED",
+        "383ad610219092ba458f69520c12031b80e095a90d43fecefe961b2ad73cdbac"
+      ],
+      [
+        "BenchmarkTest00033",
+        "DANGEROUS",
+        1,
+        0,
+        1,
+        "NOT_INSPECTED_OR_SUPPORTED",
+        "f9513ba4b715043778361587b70ad56a583865cfad62956711b144ca7c3c25c8"
+      ],
+      [
+        "BenchmarkTest00034",
+        "DANGEROUS",
+        3,
+        0,
+        3,
+        "UNKNOWN",
+        "801a90d21b52fc795a9fef1e2c133d52c4b027138d79bba5b0962200139d8bd6"
+      ],
+      [
+        "BenchmarkTest00037",
+        "DANGEROUS",
+        1,
+        0,
+        1,
+        "UNKNOWN",
+        "59f1b32206fa1271ea66c6ce850bcd9337ce0fb82ac62de1da93fb4eaad1a914"
+      ],
+      [
+        "BenchmarkTest00038",
+        "DANGEROUS",
+        1,
+        0,
+        1,
+        "NOT_INSPECTED_OR_SUPPORTED",
+        "cefc086af3dfc9af08f3f0aa6a5dcfeb4edafc3062930539910cfd756250c5e3"
+      ],
+      [
+        "BenchmarkTest00039",
+        "DANGEROUS",
+        1,
+        0,
+        1,
+        "NOT_INSPECTED_OR_SUPPORTED",
+        "71086e9de6bc200b16efd60add257a803d8019ae725b31a5df4773969d1ea783"
+      ],
+      [
+        "BenchmarkTest00114",
+        "SAFE",
+        2,
+        0,
+        0,
+        "NO_INPUT_IN_TRACED_SQL",
+        "4a8444e8b517637456e0e39c9a49bb82f3be5cd36f18f966dc9bdb3dbe034e6a"
+      ],
+      [
+        "BenchmarkTest00190",
+        "SAFE",
+        0,
+        0,
+        0,
+        "UNKNOWN",
+        "e9b906300fd16ae1738dd1b174e22b6baa00db262fecb4e9f43f80575f0572e0"
+      ],
+      [
+        "BenchmarkTest00191",
+        "SAFE",
+        0,
+        0,
+        0,
+        "UNKNOWN",
+        "258434bdbb2c3b20f1e83824ac7a69bf430cbdcb3d85173bedb0c2a88ee403ce"
+      ],
+      [
+        "BenchmarkTest00197",
+        "SAFE",
+        1,
+        0,
+        1,
+        "NOT_INSPECTED_OR_SUPPORTED",
+        "7f87ad19c6c0517c136ec5d76aaf790d176ea1cbab7fb4a55a9001b40155c87a"
+      ],
+      [
+        "BenchmarkTest00200",
+        "SAFE",
+        1,
+        0,
+        1,
+        "NOT_INSPECTED_OR_SUPPORTED",
+        "66414de4dd91017b7666b0b9ac14c7160af8882cc256226ff9af02a154a55582"
+      ],
+      [
+        "BenchmarkTest00201",
+        "SAFE",
+        1,
+        0,
+        1,
+        "NOT_INSPECTED_OR_SUPPORTED",
+        "fcca8c166d49c7d202aeaa6a2cbdffa325e90aaa1a1eac8c882814a736064b45"
+      ]
+    ],
+    "elapsedMs": {
+      "min": 153,
+      "median": 169,
+      "max": 204
+    }
+  }
+}

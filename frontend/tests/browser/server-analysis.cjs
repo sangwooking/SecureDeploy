@@ -10,6 +10,14 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       const page = await browser.newPage({ viewport: { width, height: 1000 } });
       const result = require('../result-fixture.cjs')(), errors = [], blocked = [];
       result.serverAnalysis = require('../server-analysis-fixture.cjs')();
+      const javaLocation={filePath:'src/Endpoint.java',line:12,column:5,functionName:'inspect',kind:'SQL_EXECUTION'};
+      const javaSource={...javaLocation,line:7,kind:'REQUEST_INPUT'};
+      result.serverAnalysis.javaAnalysis={analysis:{version:'java-sql-v1',status:'PARTIAL',
+        files:[{filePath:javaLocation.filePath,parseStatus:'PARSED',entrypoints:1,functions:1,sqlCallSites:2,tracedCallSites:1,limitations:['SQL_CALLS_OUTSIDE_TRACED_FLOW']}],
+        methods:[],uses:[{kind:'INPUT_IN_QUERY',api:'executeQuery',location:javaLocation,trace:[javaSource],bindingCalls:0,limitations:[]}],limitations:['BOUNDED_SPRING_AND_SERVLET_ONLY']},
+        suppressedLegacyCount:1,legacyEvidence:[],findings:[{findingId:'java-sql:synthetic-only',ruleId:'JAVA_SQL_INPUT_FLOW',priority:'REVIEW_REQUIRED',comparisonPolicy:'NOT_COMPARED',
+          location:javaLocation,trace:[javaSource],title:'사용자가 보낸 값이 SQL 명령문에 들어갈 수 있습니다',explanation:'요청 입력이 SQL 실행까지 전달되는 정적 경로이며 실제 공격은 미확인입니다.',
+          recommendation:'SQL 문법을 고정하고 PreparedStatement의 set 메서드로 값을 분리하세요.',verificationSteps:['로컬 Mock으로 값 바인딩을 확인하고 재검사하세요.']}]};
       result.serverAnalysis.deploymentAnalysis = require('../deployment-fixture.cjs')();
       const python = require('../server-analysis-fixture.cjs')();
       python.analyzerVersion = 'py-django-v2'; python.parserVersion = 'CPython-3.14.5';
@@ -66,6 +74,16 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       const section = page.getByRole('region', { name: '서버 코드 흐름 검사', exact: true });
       const pythonSection = page.getByRole('region', { name: 'Python 서버 코드 흐름 검사', exact: true });
       const deployment = page.getByRole('region', { name: '서버·배포 설정 검사', exact: true });
+      const java = page.getByRole('region', { name: 'Java SQL 코드 흐름 검사', exact: true });
+      await java.waitFor({state:'visible'});
+      await java.locator('article').first().waitFor({state:'visible'});
+      for(const phrase of ['별도 확인 후보 1건','실제 공격은 미확인','PreparedStatement','NOT_COMPARED']) {
+        if(phrase==='NOT_COMPARED')await java.getByText('입력 전달 경로와 기술 정보',{exact:true}).click();
+        assert.ok((await java.innerText()).includes(phrase),phrase);
+      }
+      await java.getByText('Java 검사 범위와 SQL 호출 근거',{exact:true}).click();
+      for(const phrase of ['SQL 호출 구문 2 / 추적 1','기존 정상 패턴 신호 제외 1건','전체 Java 코드가 안전하다는 뜻이 아닙니다'])
+        assert.ok((await java.innerText()).includes(phrase),phrase);
       await deployment.waitFor({state:'visible'});
       for (const phrase of ['별도 검토 항목 1건','값 미확인 1건','안전하다는 뜻은 아닙니다','compose.yaml:4','소켓 연결을 제거'])
         assert.ok((await deployment.innerText()).includes(phrase),phrase);
