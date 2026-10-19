@@ -338,7 +338,9 @@ class ScaReviewIntegrationTest {
         var result = upload(token, Map.of("package.json", manifest, "package-lock.json", lock,
                 "worker.py", "synthetic", "wrangler.jsonc", "{}", "node_modules/ignored.js", "ignored"));
         assertThat(result.at("/coverage/discoveredFiles").asInt()).isEqualTo(5);
-        assertThat(result.at("/coverage/unsupportedFiles").asInt()).isEqualTo(1);
+        assertThat(result.at("/coverage/unsupportedFiles").asInt()).isZero();
+        assertThat(result.at("/serverAnalysis/deploymentAnalysis/files/0/format").asText()).isEqualTo("WRANGLER");
+        assertThat(result.at("/serverAnalysis/deploymentAnalysis/files/0/status").asText()).isEqualTo("PARSED");
         assertThat(result.at("/serverAnalysis/pythonAnalysis/files/0/flowStatus").asText()).isEqualTo("NOT_SUPPORTED");
         assertThat(result.at("/coverage/excludedFiles").asInt()).isEqualTo(1);
         assertThat(result.at("/sca/components/1/context/environment").asText()).isEqualTo("DEVELOPMENT");

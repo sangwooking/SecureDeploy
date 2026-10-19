@@ -1,53 +1,26 @@
 package com.securedeploy.rule.rules;
 
+import com.securedeploy.analysis.deployment.ComposeInspector;
 import com.securedeploy.project.model.ProjectFile;
-import com.securedeploy.rule.model.RuleCategory;
-import com.securedeploy.rule.model.RuleMatch;
-import com.securedeploy.rule.model.Severity;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import com.securedeploy.rule.model.*;
+import java.util.*;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DockerComposeSecurityRule implements VulnerabilityRule {
-
     @Override
     public List<RuleMatch> evaluate(ProjectFile file) {
-        if (!RuleFileTypes.isDockerCompose(file)) {
-            return List.of();
-        }
-
-        List<RuleMatch> matches = new ArrayList<>();
-        List<String> lines = file.lines();
-        for (int index = 0; index < lines.size(); index++) {
-            String line = lines.get(index);
-            String lower = line.toLowerCase(Locale.ROOT);
-            if (lower.matches(".*privileged\s*:\s*true.*")) {
-                matches.add(new RuleMatch(
-                        "DOCKER_PRIVILEGED",
-                        RuleCategory.CONTAINER_SECURITY,
-                        Severity.HIGH,
-                        file.relativePath(),
-                        index + 1,
-                        "docker-compose에서 privileged: true가 설정되어 있습니다. 컨테이너 격리가 약화될 수 있습니다.",
-                        "특권 모드를 제거하고 필요한 Linux capability만 최소 권한으로 부여하세요.",
-                        line.strip()
-                ));
-            }
-            if (lower.matches(".*network_mode\s*:\s*host.*")) {
-                matches.add(new RuleMatch(
-                        "DOCKER_HOST_NETWORK",
-                        RuleCategory.CONTAINER_SECURITY,
-                        Severity.MEDIUM,
-                        file.relativePath(),
-                        index + 1,
-                        "docker-compose에서 host 네트워크 모드가 사용되었습니다. 호스트 네트워크와 격리가 약화될 수 있습니다.",
-                        "bridge 네트워크와 명시적 포트 매핑을 사용하고, host network가 꼭 필요한지 검토하세요.",
-                        line.strip()
-                ));
-            }
-        }
-        return matches;
+        if (!RuleFileTypes.isDockerCompose(file)) return List.of();
+        return ComposeInspector.inspect(file).observations().stream()
+                .filter(o -> Set.of("DOCKER_PRIVILEGED", "DOCKER_HOST_NETWORK").contains(o.ruleId()))
+                .map(o -> new RuleMatch(o.ruleId(), RuleCategory.CONTAINER_SECURITY,
+                        o.ruleId().equals("DOCKER_PRIVILEGED") ? Severity.HIGH : Severity.MEDIUM,
+                        file.relativePath(), o.line(),
+                        o.ruleId().equals("DOCKER_PRIVILEGED") ? "Compose 서비스에 privileged: true가 선언되어 컨테이너 격리가 약화될 수 있습니다."
+                                : "Compose 서비스에 host 네트워크가 선언되어 호스트 네트워크와의 격리가 약화될 수 있습니다.",
+                        "필요한 최소 권한과 격리된 네트워크를 사용하고 실제 활성 서비스·변수·override 파일을 확인하세요.",
+                        o.scope() + " " + o.setting() + "=" + o.valueSummary(), FalsePositiveRisk.LOW, DetectionConfidence.HIGH,
+                        "서비스의 정적 선언을 확인했습니다. 실제 배포 적용·환경변수·override·공격 가능성은 미검증입니다."))
+                .toList();
     }
 }

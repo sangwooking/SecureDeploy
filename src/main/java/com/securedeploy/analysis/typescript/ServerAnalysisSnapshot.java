@@ -10,7 +10,19 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
         String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
         List<AuthorizationContext> authorizationContexts, List<String> limitations,
         List<ServerFlowFinding> validatedFindings, List<HttpUse> httpUses, ServerAnalysisSnapshot pythonAnalysis,
-        SelectionCoverage selectionCoverage) {
+        SelectionCoverage selectionCoverage, com.securedeploy.analysis.deployment.DeploymentSnapshot deploymentAnalysis) {
+    public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
+            String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
+            List<AuthorizationContext> authorizationContexts, List<String> limitations,
+            List<ServerFlowFinding> validatedFindings, List<HttpUse> httpUses, ServerAnalysisSnapshot pythonAnalysis,
+            SelectionCoverage selectionCoverage) {
+        this(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses, authorizationContexts,
+                limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, null);
+    }
+    public ServerAnalysisSnapshot withDeploymentAnalysis(com.securedeploy.analysis.deployment.DeploymentSnapshot value) {
+        return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings, sqlUses,
+                authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selectionCoverage, value);
+    }
     public record SelectionCoverage(int discoveredFiles, int submittedFiles, int omittedFiles, int omittedDetails,
             int submittedCharacters, Map<String, Integer> omissionReasons) { }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
@@ -22,7 +34,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
     }
     public ServerAnalysisSnapshot withSelectionCoverage(SelectionCoverage selection) {
         return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings,
-                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selection);
+                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, pythonAnalysis, selection, deploymentAnalysis);
     }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
             String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,
@@ -33,7 +45,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
     }
     public ServerAnalysisSnapshot withPythonAnalysis(ServerAnalysisSnapshot value) {
         return new ServerAnalysisSnapshot(schemaVersion, analyzerVersion, parserVersion, status, files, findings,
-                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, value, selectionCoverage);
+                sqlUses, authorizationContexts, limitations, validatedFindings, httpUses, value, selectionCoverage, deploymentAnalysis);
     }
     public ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, String parserVersion,
             String status, List<FileCoverage> files, List<Finding> findings, List<SqlUse> sqlUses,

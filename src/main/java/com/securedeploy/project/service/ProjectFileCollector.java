@@ -24,8 +24,11 @@ public class ProjectFileCollector {
         if ("dockerfile".equals(lowerName)) {
             return Optional.of(ProjectFileType.DOCKERFILE);
         }
-        if ("docker-compose.yml".equals(lowerName) || "docker-compose.yaml".equals(lowerName)) {
+        if (java.util.Set.of("compose.yml", "compose.yaml", "docker-compose.yml", "docker-compose.yaml").contains(lowerName)) {
             return Optional.of(ProjectFileType.DOCKER_COMPOSE);
+        }
+        if (java.util.Set.of("wrangler.toml", "wrangler.json", "wrangler.jsonc").contains(lowerName)) {
+            return Optional.of(ProjectFileType.CLOUDFLARE_CONFIG);
         }
         if (isGitHubActionsWorkflow(normalizedPath, lowerName)) {
             return Optional.of(ProjectFileType.GITHUB_ACTIONS);

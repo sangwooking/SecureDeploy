@@ -299,11 +299,148 @@ class Analyzer:
                 self.note("SQL_CALLS_OUTSIDE_TRACED_FLOW", path)
             if c["functionsAnalyzed"]:
                 c["flowStatus"] = "PARTIAL" if c["limitations"] else "SUPPORTED_FLOW_ANALYZED"
+        deployment = self.deployment_settings()
         return dict(schemaVersion=1, analyzerVersion=VERSION, parserVersion="CPython-" + ".".join(map(str, sys.version_info[:3])),
                     status="PARTIAL" if any(c["limitations"] for c in self.coverage.values()) else "COMPLETE",
                     files=list(self.coverage.values()), findings=self.findings, sqlUses=self.sql, httpUses=[],
                     authorizationContexts=self.auth, limitations=["BOUNDED_DJANGO_DRF_ONLY", "MIDDLEWARE_SETTINGS_AND_OWNERSHIP_NOT_VERIFIED",
-                    "STATIC_FLOW_NOT_EXPLOIT_PROOF", "NO_OS_SANDBOX"], validatedFindings=None)
+                    "STATIC_FLOW_NOT_EXPLOIT_PROOF", "NO_OS_SANDBOX"], validatedFindings=None, deploymentAnalysis=deployment)
+
+    def deployment_settings(self):
+        keys = {"DEBUG", "SECRET_KEY", "ALLOWED_HOSTS", "SESSION_COOKIE_SECURE", "CSRF_COOKIE_SECURE",
+                "SECURE_SSL_REDIRECT", "SECURE_HSTS_SECONDS"}
+        files, references = [], set()
+        framework = any(s.startswith(("django.", "rest_framework.")) for items in self.imports.values() for s in items.values())
+        try:
+            for path, tree in self.modules.items():
+                for node in ast.walk(tree):
+                    self.tick()
+                    if isinstance(node, ast.Call) and self.symbol(node.func, path) == "os.environ.setdefault" and len(node.args) >= 2:
+                        if isinstance(node.args[0], ast.Constant) and node.args[0].value == "DJANGO_SETTINGS_MODULE" and isinstance(node.args[1], ast.Constant) and isinstance(node.args[1].value, str):
+                            references.add(node.args[1].value)
+                    if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                        for target in node.targets:
+                            if isinstance(target, ast.Subscript) and self.symbol(target.value, path) == "os.environ" and isinstance(target.slice, ast.Constant) and target.slice.value == "DJANGO_SETTINGS_MODULE":
+                                references.add(node.value.value)
+            for path, tree in self.modules.items():
+                declared = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store)}
+                referenced = self.module_name(path) in references
+                conventional = "settings" in PurePosixPath(path).parts or PurePosixPath(path).name == "settings.py"
+                structural = {"ROOT_URLCONF", "INSTALLED_APPS"}.issubset(declared)
+                if not (referenced or structural or (framework and conventional and keys & declared)):
+                    continue
+                scope = "MODULE_REFERENCE_ACTIVATION_UNKNOWN" if referenced else "DJANGO_STRUCTURE_ACTIVATION_UNKNOWN"
+                if any(p in {"dev", "development", "local", "dev.py", "development.py", "local.py"} for p in PurePosixPath(path).parts):
+                    scope = "DEVELOPMENT_NAME_HINT_NOT_RUNTIME_PROOF"
+                limits = ["DECLARATIONS_ONLY_RUNTIME_AND_OVERRIDES_UNKNOWN", "IMPORTS_AND_BASE_SETTINGS_NOT_MERGED", "MISSING_SETTINGS_DEFAULTS_NOT_INFERRED"]
+                values = self.settings_statements(tree.body, {}, keys, limits)
+                observations = []
+                for key, (value, line) in sorted(values.items()):
+                    if key not in keys:
+                        continue
+                    known, rule, summary = value is not UNKNOWN, "", "not resolved"
+                    if key == "SECRET_KEY":
+                        known = isinstance(value, str)
+                        summary = "<redacted>" if known else "not resolved"
+                        if known and value:
+                            rule = "DJANGO_SECRET_LITERAL"
+                    elif key == "ALLOWED_HOSTS":
+                        known = isinstance(value, (list, tuple)) and all(isinstance(v, str) for v in value)
+                        summary = "wildcard host declaration" if known and "*" in value else "host declarations (values omitted)"
+                        if known and "*" in value:
+                            rule = "DJANGO_ALLOWED_HOSTS"
+                    elif key == "SECURE_HSTS_SECONDS":
+                        known = type(value) is int
+                        summary = "disabled" if known and value == 0 else "static duration"
+                        if known and value == 0:
+                            rule = "DJANGO_HTTPS"
+                    else:
+                        known = type(value) is bool
+                        summary = str(value).lower() if known else "not resolved"
+                        if key == "DEBUG" and value is True:
+                            rule = "DJANGO_DEBUG"
+                        elif key in {"SESSION_COOKIE_SECURE", "CSRF_COOKIE_SECURE"} and value is False:
+                            rule = "DJANGO_SECURE_COOKIE"
+                        elif key == "SECURE_SSL_REDIRECT" and value is False:
+                            rule = "DJANGO_HTTPS"
+                    observations.append(dict(line=line, scope=scope, setting=key, valueStatus="STATIC" if known else "UNKNOWN",
+                                             valueSummary=summary if known else "not resolved", ruleId=rule if known else ""))
+                files.append(dict(filePath=path, format="DJANGO", status="PARSED", observations=observations, limitations=list(dict.fromkeys(limits))))
+        except (BudgetExceeded, RecursionError):
+            files.append(dict(filePath=self.path or next(iter(self.coverage), "unknown.py"), format="DJANGO", status="LIMIT_EXCEEDED",
+                              observations=[], limitations=["CONFIG_RESOURCE_LIMIT"]))
+        for path, c in self.coverage.items():
+            if c["parseStatus"] != "PARSED":
+                files.append(dict(filePath=path, format="PYTHON_SETTINGS_CANDIDATE", status=c["parseStatus"], observations=[],
+                                  limitations=["SETTINGS_ROLE_NOT_INSPECTED"]))
+        return dict(schemaVersion=1, analyzerVersion="deployment-v1", status="PARTIAL" if files else "NOT_APPLICABLE",
+                    files=files, findings=[], limitations=["DECLARATIONS_ONLY_RUNTIME_AND_OVERRIDES_UNKNOWN"])
+
+    def settings_statements(self, statements, incoming, keys, limits, depth=0):
+        values = dict(incoming)
+        if depth > 8:
+            raise BudgetExceeded()
+        def literal(node):
+            self.tick()
+            if isinstance(node, ast.Constant) and type(node.value) in {bool, int, str, type(None)}:
+                return node.value
+            if isinstance(node, ast.Name):
+                return values.get(node.id, (UNKNOWN, 1))[0]
+            if isinstance(node, (ast.List, ast.Tuple)) and len(node.elts) <= 100:
+                items = [literal(x) for x in node.elts]
+                return items if all(v is not UNKNOWN for v in items) else UNKNOWN
+            if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+                value = literal(node.operand)
+                return not value if type(value) is bool else UNKNOWN
+            return UNKNOWN
+        for node in statements:
+            self.tick()
+            if isinstance(node, (ast.Assign, ast.AnnAssign)):
+                if any(isinstance(n, (ast.Call, ast.NamedExpr)) for n in ast.walk(node)):
+                    values = {k: (UNKNOWN, node.lineno) for k in values.keys() | keys}
+                    limits.append("DYNAMIC_SETTINGS_WRITE_UNRESOLVED")
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                value = literal(node.value) if node.value is not None else UNKNOWN
+                for target in targets:
+                    if isinstance(target, ast.Name):
+                        values[target.id] = (value, node.lineno)
+                    else:
+                        values = {k: (UNKNOWN, node.lineno) for k in values.keys() | keys}
+                        limits.append("DYNAMIC_SETTINGS_WRITE_UNRESOLVED")
+            elif isinstance(node, ast.If):
+                if any(isinstance(n, (ast.Call, ast.NamedExpr)) for n in ast.walk(node.test)):
+                    values = {k: (UNKNOWN, node.lineno) for k in values.keys() | keys}
+                    limits.append("DYNAMIC_SETTINGS_WRITE_UNRESOLVED")
+                condition = literal(node.test)
+                if type(condition) is bool:
+                    values = self.settings_statements(node.body if condition else node.orelse, values, keys, limits, depth + 1)
+                else:
+                    left = self.settings_statements(node.body, values, keys, limits, depth + 1)
+                    right = self.settings_statements(node.orelse, values, keys, limits, depth + 1)
+                    for name in left.keys() | right.keys():
+                        a, b = left.get(name, (UNKNOWN, node.lineno)), right.get(name, (UNKNOWN, node.lineno))
+                        values[name] = (a[0] if type(a[0]) is type(b[0]) and a[0] == b[0] else UNKNOWN, max(a[1], b[1]))
+                    limits.append("CONDITIONAL_SETTINGS_UNRESOLVED")
+            elif isinstance(node, ast.ImportFrom):
+                if any(a.name == "*" for a in node.names):
+                    values = {k: (UNKNOWN, node.lineno) for k in values.keys() | keys}
+                    limits.append("BASE_SETTINGS_IMPORT_UNRESOLVED")
+                else:
+                    for alias in node.names:
+                        values[alias.asname or alias.name] = (UNKNOWN, node.lineno)
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    values[alias.asname or alias.name.split('.')[0]] = (UNKNOWN, node.lineno)
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                if isinstance(node, ast.ClassDef) or node.decorator_list or any(isinstance(n, (ast.Call, ast.NamedExpr)) for n in ast.walk(node.args)):
+                    values = {k: (UNKNOWN, node.lineno) for k in values.keys() | keys}
+                    limits.append("DYNAMIC_SETTINGS_WRITE_UNRESOLVED")
+                values[node.name] = (UNKNOWN, node.lineno)
+            elif not (isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)):
+                # Unknown module calls, mutation, loops and exception paths may replace settings.
+                values = {k: (UNKNOWN, node.lineno) for k in values.keys() | keys}
+                limits.append("DYNAMIC_SETTINGS_WRITE_UNRESOLVED")
+        return values
 
     def call_function(self, key, args, keywords):
         if len(self.stack) >= MAX_DEPTH or key in self.stack:

@@ -89,9 +89,18 @@ public class PythonServerAnalyzer {
             limitations.add("LEXICAL_SELECTION_HINTS_NOT_VERIFIED_ENTRIES");
             if (candidates.stream().anyMatch(c -> c.reason().equals("SELECTION_HINT_LIMIT"))) limitations.add("SELECTION_HINT_LIMIT");
             if (candidates.size() > sources.size() + omitted.size()) limitations.add("OMITTED_FILE_DETAILS_TRUNCATED");
+            var deployment = parsed.deploymentAnalysis();
+            if (deployment != null && !omitted.isEmpty()) {
+                var configFiles = new ArrayList<>(deployment.files());
+                omitted.forEach(f -> configFiles.add(new com.securedeploy.analysis.deployment.DeploymentSnapshot.FileResult(
+                        f.filePath(), "PYTHON_SETTINGS_CANDIDATE", "LIMIT_EXCEEDED", List.of(), List.of("SETTINGS_ROLE_NOT_INSPECTED"))));
+                deployment = new com.securedeploy.analysis.deployment.DeploymentSnapshot(1, "deployment-v1", "PARTIAL", configFiles,
+                        List.of(), List.of("SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED"));
+            }
             return new ServerAnalysisSnapshot(parsed.schemaVersion(), parsed.analyzerVersion(), parsed.parserVersion(),
                     omitted.isEmpty() ? parsed.status() : "PARTIAL", List.copyOf(files), parsed.findings(), parsed.sqlUses(),
-                    parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses()).withSelectionCoverage(selection);
+                    parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses())
+                    .withSelectionCoverage(selection).withDeploymentAnalysis(deployment);
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
             return unavailable("UNAVAILABLE", unavailableFiles, "ANALYSIS_INTERRUPTED").withSelectionCoverage(selection);
@@ -123,6 +132,16 @@ public class PythonServerAnalyzer {
         if (!result.files().stream().map(FileCoverage::filePath).collect(java.util.stream.Collectors.toSet()).equals(files.keySet()))
             throw new IllegalArgumentException("INVALID_ANALYZER_FILES");
         var locations = new ArrayList<ServerAnalysisSnapshot.Location>();
+        if (result.deploymentAnalysis() != null) {
+            var config = result.deploymentAnalysis();
+            if (config.schemaVersion() != 1 || !"deployment-v1".equals(config.analyzerVersion()) || config.files().size() > files.size() + 1
+                    || !config.findings().isEmpty()) throw new IllegalArgumentException("INVALID_SETTINGS_RESPONSE");
+            for (var file : config.files()) {
+                if (!files.containsKey(file.filePath()) || file.observations().size() > 7) throw new IllegalArgumentException("INVALID_SETTINGS_FILE");
+                for (var observation : file.observations()) if (observation.line() < 1 || observation.line() > files.get(file.filePath()))
+                    throw new IllegalArgumentException("INVALID_SETTINGS_LOCATION");
+            }
+        }
         result.findings().forEach(f -> { locations.add(f.source()); locations.add(f.sink()); locations.addAll(f.flow()); locations.addAll(f.defenses()); });
         result.sqlUses().forEach(s -> { locations.add(s.location()); locations.addAll(s.trace()); locations.addAll(s.defenses());
             if (s.executionLocations() != null) locations.addAll(s.executionLocations()); });

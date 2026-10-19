@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { AnalysisLocation, ServerAnalysisSnapshot } from '../types/serverAnalysis';
+import { DeploymentAnalysisSection } from './DeploymentAnalysisSection';
 
 const labels: Record<string, string> = {
   COMPLETE: '제한된 범위 확인 완료', PARTIAL: '일부만 확인', NOT_APPLICABLE: '대상 파일 없음',
@@ -66,6 +67,7 @@ const labels: Record<string, string> = {
   TOTAL_CHARACTER_LIMIT: '전체 소스 문자 수 상한으로 선택하지 못함',
   DJANGO_ROUTING_HINT: 'Django 경로 설정 후보를 우선 선택',
   DJANGO_ENTRY_HINT: 'Django/DRF 요청 처리 선언 후보를 우선 선택',
+  DJANGO_SETTINGS_REFERENCE_HINT: 'Django 설정 모듈 참조 후보를 우선 선택',
   RELATED_IMPORT_HINT: '요청 경로 후보와 연결된 정적 import 참조',
   DETERMINISTIC_FALLBACK: '연결 근거 밖의 나머지 파일을 경로순 선택',
   SELECTION_HINT_LIMIT: '파일 선택용 사전 조사 상한으로 연결 관계를 일부 확인하지 못함',
@@ -80,6 +82,7 @@ const location = (value: AnalysisLocation) => `${value.filePath}:${value.line} �
 
 export function ServerAnalysisSection({ snapshot, compact = false }: { snapshot?: ServerAnalysisSnapshot | null; compact?: boolean }) {
   return <>
+    <DeploymentAnalysisSection snapshot={snapshot?.deploymentAnalysis} compact={compact} />
     <LanguageAnalysisSection snapshot={snapshot} compact={compact} />
     {snapshot?.pythonAnalysis && snapshot.pythonAnalysis.status !== 'NOT_APPLICABLE' &&
       <LanguageAnalysisSection snapshot={snapshot.pythonAnalysis} compact={compact} python />}

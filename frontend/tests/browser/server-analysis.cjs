@@ -10,6 +10,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       const page = await browser.newPage({ viewport: { width, height: 1000 } });
       const result = require('../result-fixture.cjs')(), errors = [], blocked = [];
       result.serverAnalysis = require('../server-analysis-fixture.cjs')();
+      result.serverAnalysis.deploymentAnalysis = require('../deployment-fixture.cjs')();
       const python = require('../server-analysis-fixture.cjs')();
       python.analyzerVersion = 'py-django-v2'; python.parserVersion = 'CPython-3.14.5';
       python.selectionCoverage={discoveredFiles:3,submittedFiles:2,omittedFiles:1,omittedDetails:0,submittedCharacters:100,omissionReasons:{FILE_COUNT_LIMIT:1}};
@@ -53,6 +54,18 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       await nav.getByRole('button', { name: '배포 전 직접 확인할 부분', exact: true }).click();
       const section = page.getByRole('region', { name: '서버 코드 흐름 검사', exact: true });
       const pythonSection = page.getByRole('region', { name: 'Python 서버 코드 흐름 검사', exact: true });
+      const deployment = page.getByRole('region', { name: '서버·배포 설정 검사', exact: true });
+      await deployment.waitFor({state:'visible'});
+      for (const phrase of ['별도 검토 항목 1건','값 미확인 1건','안전하다는 뜻은 아닙니다','compose.yaml:4','소켓 연결을 제거'])
+        assert.ok((await deployment.innerText()).includes(phrase),phrase);
+      await deployment.getByText('설정 근거와 한계',{exact:true}).click();
+      await deployment.getByText('설정 파일별 검사 범위 (1)',{exact:true}).click();
+      await deployment.locator('.coverage-details .technical-details summary').click();
+      assert.ok((await deployment.innerText()).includes('값 확인 불가'));
+      if(process.env.SCREENSHOT_DIR) {
+        await deployment.scrollIntoViewIfNeeded();
+        await page.screenshot({path:require('node:path').join(process.env.SCREENSHOT_DIR,`deployment-${width}.png`)});
+      }
       await pythonSection.waitFor({ state: 'visible' });
       assert.equal(await pythonSection.locator('article').count(), 1);
       assert.ok((await pythonSection.innerText()).includes('execute(sql, params)'));

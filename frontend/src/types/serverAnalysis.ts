@@ -6,6 +6,7 @@ export interface ServerFlowFinding {
   title: string; riskExplanation: string; recommendedAction: string; verificationSteps: string[];
 }
 export interface ServerAnalysisSnapshot {
+  deploymentAnalysis?: import('./deploymentAnalysis').DeploymentAnalysis | null;
   pythonAnalysis?: ServerAnalysisSnapshot | null;
   selectionCoverage?: { discoveredFiles: number; submittedFiles: number; omittedFiles: number; omittedDetails: number;
     submittedCharacters: number; omissionReasons: Record<string, number> } | null;

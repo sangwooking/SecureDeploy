@@ -11,6 +11,7 @@ final class PythonSourceSelector {
     private static final Pattern IMPORT = Pattern.compile("(?m)^\\s*import\\s+([^\\n#]+)");
     private static final Pattern URLCONF = Pattern.compile("(?m)^\\s*ROOT_URLCONF\\s*=\\s*['\"]([\\w.]+)['\"]");
     private static final Pattern INCLUDE = Pattern.compile("\\binclude\\(\\s*['\"]([\\w.]+)['\"]");
+    private static final Pattern SETTINGS_MODULE = Pattern.compile("['\"]DJANGO_SETTINGS_MODULE['\"]\\s*(?:,|\\]\\s*=)\\s*['\"]([\\w.]+)['\"]");
     record Candidate(ProjectFile file, String reason, int priority) { }
 
     static List<Candidate> order(List<ProjectFile> files) {
@@ -62,7 +63,7 @@ final class PythonSourceSelector {
                 entry |= imported.startsWith("django.views") || imported.startsWith("rest_framework.views") || imported.startsWith("rest_framework.viewsets");
                 framework |= imported.startsWith("django.") || imported.startsWith("rest_framework.");
             }
-            for (var pattern : List.of(URLCONF, INCLUDE)) {
+            for (var pattern : List.of(URLCONF, INCLUDE, SETTINGS_MODULE)) {
                 var matcher = pattern.matcher(source);
                 while (matcher.find()) add(references, modules, matcher.group(1));
             }
@@ -70,6 +71,8 @@ final class PythonSourceSelector {
                 priorities.put(path, 0); reasons.put(path, "DJANGO_ROUTING_HINT");
             } else if (entry && framework) {
                 priorities.put(path, 1); reasons.put(path, "DJANGO_ENTRY_HINT");
+            } else if (SETTINGS_MODULE.matcher(source).find()) {
+                priorities.put(path, 1); reasons.put(path, "DJANGO_SETTINGS_REFERENCE_HINT");
             }
         }
         // Bounded breadth-first import expansion; path order breaks ties reproducibly.
