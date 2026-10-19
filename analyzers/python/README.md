@@ -1,6 +1,18 @@
 # Bounded Python server flow analysis
 
-Trusted CPython standard-library AST worker, version `py-django-v6`.
+Trusted CPython standard-library AST worker, version `py-django-v7`.
+
+Version 7 adds response-return traceback evidence and direct Requests/HTTPX timeout observations.
+format_stack is a known stack source; format_exc requires the supported active exception context.
+Only a single literal built-in Exception/ValueError/RuntimeError raise with one matching handler and
+no finally/else is modeled precisely. General try remains unsupported; no exception execution is claimed.
+Diagnostic logs and unused response objects do not become HTTP error exposure findings.
+Requests 2.x-compatible module calls without timeout or explicit None are review candidates; HTTPX
+module calls retain their default inactivity timeout observation unless explicitly disabled. Positive
+timeouts are not whole-request deadlines. Client/Session wrappers, async clients, adapters, installed
+versions, platform/proxy limits and actual service failures are unverified. Ship service_security.py.
+References: [Requests timeouts](https://requests.readthedocs.io/en/stable/user/advanced/#timeouts),
+[HTTPX timeouts](https://www.python-httpx.org/advanced/timeouts/).
 
 Version 6 adds bounded response-return and standard logging/print provenance. Sources are selected
 credential-shaped literals, Django settings.SECRET_KEY, explicit authentication/cookie headers, and

@@ -4,8 +4,11 @@ import { DeploymentAnalysisSection } from './DeploymentAnalysisSection';
 import { AuthorizationContextDetails } from './AuthorizationContextDetails';
 import { TokenSecurityDetails } from './TokenSecurityDetails';
 import { ExposureDetails } from './ExposureDetails';
+import { ServiceStabilityDetails } from './ServiceStabilityDetails';
 
 const labels: Record<string, string> = {
+  INTERNAL_ERROR_DETAIL:'내부 오류 스택 정보',ERROR_DETAIL_CONTEXT_UNKNOWN:'오류 스택 문맥 미확인',HTTP_CLIENT_CALL:'외부 HTTP 호출',
+  HTTP_LIBRARY_VERSION_AND_PATCHES_UNVERIFIED:'HTTP 라이브러리·버전·변경 여부 미확인',PROXY_PLATFORM_AND_TOTAL_DEADLINE_UNKNOWN:'프록시·플랫폼 제한·전체 요청 기한 미확인',STATIC_CALL_NOT_SERVICE_FAILURE_PROOF:'정적 호출 근거이며 운영 장애를 확인한 것은 아님',
   CREDENTIAL_SHAPED_LITERAL:'자격증명 형식의 고정 값 · 원문은 저장하지 않음', FRAMEWORK_SECRET_SETTING:'Django 서버 비밀 설정 참조',
   AUTHENTICATION_HEADER:'인증·쿠키 헤더', ENVIRONMENT_VALUE_UNVERIFIED:'환경 설정 참조 · 실제 민감성 미확인', HTTP_RESPONSE:'응답 생성 위치',
   HTTP_RESPONSE_RETURN:'서버 응답 반환', LOG_ARGUMENT:'로그 인자 전달', STATIC_EXPOSURE_NOT_RUNTIME_LEAK_PROOF:'정적 전달 근거이며 실제 유출은 미검증',
@@ -166,7 +169,9 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
         : finding.ruleId === 'PY_AUTHORIZATION_INVERTED_OWNER_GUARD' ? '사용자 비교와 차단 분기의 의도를 확인해 주세요'
         : finding.ruleId === 'PY_JWT_UNVERIFIED_ACCESS_DECISION' ? '토큰을 신뢰하기 전 서명 검증을 확인해 주세요'
         : finding.ruleId === 'PY_JWT_FIXED_SIGNING_KEY' ? '토큰 서명 키의 관리 방식을 확인해 주세요'
-        : finding.ruleId.endsWith('_SENSITIVE_DATA_EXPOSURE') ? '보호할 정보가 응답·로그에 전달되는지 확인해 주세요' : '요청 값이 데이터베이스 쿼리에 들어갑니다'}</h4><p>{finding.message}</p>
+        : finding.ruleId.endsWith('_SENSITIVE_DATA_EXPOSURE') ? '보호할 정보가 응답·로그에 전달되는지 확인해 주세요'
+        : finding.ruleId.endsWith('_ERROR_DETAIL_EXPOSURE') ? '내부 오류 정보가 응답에 포함되는지 확인해 주세요'
+        : finding.ruleId==='PY_HTTP_TIMEOUT_REVIEW' ? '외부 요청의 대기 제한을 확인해 주세요' : '요청 값이 데이터베이스 쿼리에 들어갑니다'}</h4><p>{finding.message}</p>
       <p>{snapshot.validatedFindings == null ? '이 이력은 실행 경로 Finding 연결 이전의 기록입니다. 과거 결과를 새 기준으로 추측하여 승격하지 않습니다.'
         : '중간 처리 또는 실행 호출을 충분히 확인하지 못해 검증된 흐름 Finding으로 연결하지 않았습니다.'}</p>
       <p>{finding.recommendation}</p>
@@ -175,6 +180,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
       </details>
     </article>)}</div>
     <details className="coverage-details"><summary>응답·로그 정보 전달 근거 ({snapshot.exposureUses?.length ?? '미기록'})</summary><ExposureDetails uses={snapshot.exposureUses}/></details>
+    {python&&<details className="coverage-details"><summary>외부 요청 대기 제한 근거 ({snapshot.serviceUses?.length??'미기록'})</summary><ServiceStabilityDetails uses={snapshot.serviceUses}/></details>}
     {python && <details className="coverage-details"><summary>토큰 서명·사용 근거 ({snapshot.tokenUses?.length ?? '미기록'})</summary>
       <TokenSecurityDetails uses={snapshot.tokenUses} />
     </details>}

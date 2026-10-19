@@ -160,6 +160,26 @@ class PythonAnalysisIntegrationTest {
         assertThat(zip.at("/semanticReview/semanticReviewStatus").asText()).isEqualTo("NOT_REQUESTED");
         mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
     }
+    @Test void serviceAndErrorUseCommonSourcesWithoutChangingRiskOrHistory() throws Exception {
+        String code=ServiceSecurityFindingTest.SOURCE,token=signup();
+        var zip=upload(token,code);var normal=upload(token,code.replace("timeout=None","timeout=3").replace("traceback.format_stack()","'generic error'"));
+        var evidence=zip.at("/serverAnalysis/pythonAnalysis");assertThat(evidence.path("validatedFindings")).hasSize(2);
+        assertThat(normal.at("/serverAnalysis/pythonAnalysis/validatedFindings")).isEmpty();
+        for(String key:List.of("securityScore","vulnerabilityCount","deploymentStatus"))assertThat(zip.path(key)).isEqualTo(normal.path(key));
+        for(String key:List.of("prioritySummary","prioritizedDeploymentAssessment"))assertThat(zip.path("riskAssessment").path(key)).isEqualTo(normal.path("riskAssessment").path(key));
+        Path pub=source("service-public",code),prv=source("service-private",code);
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/service",pub,pub));
+        var publicResult=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/service\",\"scanMode\":\"STANDARD\"}");
+        var metadata=new GitHubSourceSnapshot("fixture","service","https://github.com/fixture/service","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/service",prv,prv,metadata));
+        var privateResult=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        assertThat(publicResult.at("/serverAnalysis/pythonAnalysis")).isEqualTo(evidence);assertThat(privateResult.at("/serverAnalysis/pythonAnalysis")).isEqualTo(evidence);
+        assertThat(pub).doesNotExist();assertThat(prv).doesNotExist();long id=zip.path("reviewId").asLong();
+        assertThat(detail(token,id).at("/serverAnalysis/pythonAnalysis")).isEqualTo(evidence);
+        assertThat(zip.at("/coverage/analyzers").toString()).contains("PYTHON_SERVICE_STABILITY");
+        assertThat(zip.at("/semanticReview/semanticReviewStatus").asText()).isEqualTo("NOT_REQUESTED");
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+    }
     Path source(String dir, String code) throws Exception {
         Path root=Files.createDirectory(temp.resolve(dir)); Files.writeString(root.resolve("views.py"),code);return root;
     }

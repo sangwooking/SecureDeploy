@@ -40,7 +40,9 @@ class ExposureEvidence:
             return
         sources = list(value.exposures)[:20]
         strong = [s for s in sources if s['kind'] in {'CREDENTIAL_SHAPED_LITERAL','FRAMEWORK_SECRET_SETTING','AUTHENTICATION_HEADER'}]
-        status = 'FLOW_UNRESOLVED' if value.unknown or self.a.partial or self.uncertain else 'SENSITIVE_FLOW_CANDIDATE' if strong else 'SENSITIVITY_UNVERIFIED'
+        error = [s for s in sources if s['kind']=='INTERNAL_ERROR_DETAIL'] if kind=='HTTP_RESPONSE_RETURN' else []
+        status = 'FLOW_UNRESOLVED' if value.unknown or self.a.partial or self.uncertain else 'SENSITIVE_FLOW_CANDIDATE' if strong or error else 'SENSITIVITY_UNVERIFIED'
+        if kind=='LOG_ARGUMENT' and any(s['kind'] in {'INTERNAL_ERROR_DETAIL','ERROR_DETAIL_CONTEXT_UNKNOWN'} for s in sources) and not strong:status='INTERNAL_DIAGNOSTIC_LOG_ONLY'
         limits = ['STATIC_EXPOSURE_NOT_RUNTIME_LEAK_PROOF','MASKING_LOG_ACCESS_AND_DEPLOYMENT_UNKNOWN']
         trace = [*sources,*value.exposure_trail][:20]
         record = dict(kind=kind,status=status,location=location,trace=trace,limitations=limits)
@@ -48,9 +50,10 @@ class ExposureEvidence:
             self.uses.append(record)
         if status != 'SENSITIVE_FLOW_CANDIDATE' or len(self.a.findings) >= 200:
             return
-        finding = dict(ruleId='PY_SENSITIVE_DATA_EXPOSURE',kind='CWE-200',confidence='HIGH',disposition='REVIEW_REQUIRED',
-                       source=strong[0],sink=location,flow=[*trace,location],defenses=[],limitations=limits,
-                       message='보호해야 할 정보 후보가 서버 응답 또는 로그에 전달되는 경로를 확인해 주세요.',
+        finding = dict(ruleId='PY_ERROR_DETAIL_EXPOSURE' if error else 'PY_SENSITIVE_DATA_EXPOSURE',kind='CWE-209' if error else 'CWE-200',confidence='HIGH',disposition='REVIEW_REQUIRED',
+                       source=(error or strong)[0],sink=location,flow=[*trace,location],defenses=[],limitations=limits,
+                       message='서버 내부 오류 정보가 사용자에게 전달될 가능성이 있습니다.' if error else '보호해야 할 정보 후보가 서버 응답 또는 로그에 전달되는 경로를 확인해 주세요.',
                        recommendation='응답·로그에서 해당 값을 제거하거나 목적에 맞게 마스킹하세요. 실제 노출이 확인됐다면 자격증명 교체를 검토하고 로컬 테스트와 재검사로 확인하세요. 클라이언트 공개 환경변수로 옮기는 것은 해결이 아닙니다.')
+        if error: finding['recommendation']='사용자 응답에는 일반 오류 메시지와 추적 ID만 반환하고 상세 스택은 접근이 제한된 내부 로그로 분리하세요. 디버그·렌더러 설정과 로컬 오류 응답 테스트를 확인한 뒤 재검사하세요.'
         if finding not in self.a.findings:
             self.a.findings.append(finding)

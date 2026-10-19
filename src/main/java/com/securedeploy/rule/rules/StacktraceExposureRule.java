@@ -25,8 +25,8 @@ public class StacktraceExposureRule implements VulnerabilityRule {
                         Severity.MEDIUM,
                         file.relativePath(),
                         entry.line(),
-                        "오류 응답에 stacktrace가 항상 포함되도록 설정되어 있습니다.",
-                        "운영 환경에서는 stacktrace 노출을 비활성화하거나 on_param 등 제한적인 설정을 사용해야 합니다.",
+                        "오류 응답에 stacktrace를 항상 포함하는 설정 선언이 있습니다. 실제 운영 적용 여부를 확인하세요.",
+                        "운영 설정은 server.error.include-stacktrace=never로 지정하고 일반 오류 메시지와 추적 ID만 반환하세요. 상세 정보는 접근이 제한된 내부 로그로 분리한 뒤 로컬 오류 응답 테스트와 재검사를 수행하세요.",
                         entry.evidence()
                 ))
                 .toList();

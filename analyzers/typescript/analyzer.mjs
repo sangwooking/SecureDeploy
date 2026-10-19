@@ -3,7 +3,7 @@ import path from 'node:path';
 import { destinationOf, joinDestinations, concatenatedDestination, constructedUrl, unresolvedDestination } from './destination.mjs';
 import { credentialShape, sources as exposureSources, uncertain as exposureUncertain, trails as exposureTrails } from './exposure.mjs';
 
-export const VERSION = 'ts-server-v5';
+export const VERSION = 'ts-server-v6';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -106,15 +106,17 @@ export function analyze(input, overrides = {}) {
     const location = kind === 'HTTP_RESPONSE_RETURN' && v.responseLocations?.length ? v.responseLocations[0] : loc(node, state.mod, kind, state.fn);
     const unresolved = exposureUncertain(v) || state.uncertain || state.exposureUncertain;
     const supported = origins.filter(o => ['CREDENTIAL_SHAPED_LITERAL', 'AUTHENTICATION_HEADER'].includes(o.kind));
-    const status = unresolved ? 'FLOW_UNRESOLVED' : supported.length ? 'SENSITIVE_FLOW_CANDIDATE' : 'SENSITIVITY_UNVERIFIED';
+    const errors = kind === 'HTTP_RESPONSE_RETURN' ? origins.filter(o=>o.kind==='INTERNAL_ERROR_DETAIL') : [];
+    let status = unresolved ? 'FLOW_UNRESOLVED' : supported.length || errors.length ? 'SENSITIVE_FLOW_CANDIDATE' : 'SENSITIVITY_UNVERIFIED';
+    if(kind==='LOG_ARGUMENT' && !supported.length && origins.some(o=>['INTERNAL_ERROR_DETAIL','ERROR_DETAIL_CONTEXT_UNKNOWN'].includes(o.kind)))status='INTERNAL_DIAGNOSTIC_LOG_ONLY';
     const limitations = ['STATIC_EXPOSURE_NOT_RUNTIME_LEAK_PROOF', 'MASKING_LOG_ACCESS_AND_DEPLOYMENT_UNKNOWN'];
     const trace = [...origins,...exposureTrails(v)].slice(0,20);
     append(result.exposureUses, { kind, status, location, trace, limitations }, state.mod);
     if (status !== 'SENSITIVE_FLOW_CANDIDATE') return;
-    append(result.findings, { ruleId: 'TS_SENSITIVE_DATA_EXPOSURE', kind: 'CWE-200', confidence: 'HIGH', disposition: 'REVIEW_REQUIRED',
-      source: supported[0], sink: location, flow: [...trace, location], defenses: [], limitations,
-      message: '보호해야 할 정보 후보가 서버 응답 또는 로그에 전달되는 경로를 확인해 주세요.',
-      recommendation: '응답·로그에서 해당 값을 제거하거나 목적에 맞게 마스킹하세요. 실제 노출이 확인됐다면 자격증명 교체를 검토하고 로컬 테스트와 재검사로 확인하세요. 클라이언트 공개 환경변수로 옮기는 것은 해결이 아닙니다.' }, state.mod);
+    append(result.findings, { ruleId: errors.length ? 'TS_ERROR_DETAIL_EXPOSURE' : 'TS_SENSITIVE_DATA_EXPOSURE', kind: errors.length ? 'CWE-209' : 'CWE-200', confidence: 'HIGH', disposition: 'REVIEW_REQUIRED',
+      source: (errors.length ? errors : supported)[0], sink: location, flow: [...trace, location], defenses: [], limitations,
+      message: errors.length ? '서버 내부 오류 정보가 사용자에게 전달될 가능성이 있습니다.' : '보호해야 할 정보 후보가 서버 응답 또는 로그에 전달되는 경로를 확인해 주세요.',
+      recommendation: errors.length ? '사용자 응답에는 일반 오류 메시지와 추적 ID만 반환하고 상세 스택은 접근이 제한된 내부 로그로 분리하세요. 로컬 오류 응답 테스트 후 재검사하세요.' : '응답·로그에서 해당 값을 제거하거나 목적에 맞게 마스킹하세요. 실제 노출이 확인됐다면 자격증명 교체를 검토하고 로컬 테스트와 재검사로 확인하세요. 클라이언트 공개 환경변수로 옮기는 것은 해결이 아닙니다.' }, state.mod);
   }
   for (const file of input.files ?? []) {
     if (result.files.length >= limits.maxFiles) { result.limitations.push('FILE_COUNT_LIMIT_EXCEEDED'); break; }
@@ -205,6 +207,10 @@ export function analyze(input, overrides = {}) {
   }
   function property(base, key, node, state) {
     const { mod, fn } = state;
+    if(['error-object','caught-error'].includes(base.tag) && key==='stack'){
+      const unresolved=base.unknown||base.ref?.unknown;
+      return value('error-detail',[],{unknown:unresolved,exposures:[...exposureSources(base),loc(node,mod,unresolved?'ERROR_DETAIL_CONTEXT_UNKNOWN':'INTERNAL_ERROR_DETAIL',fn)],exposureTrail:exposureTrails(base)});
+    }
     if (base.ref?.http && base.tag === 'url') {
       const uncertain = base.unknown || base.ref.unknown;
       if (key === 'searchParams') return value('query', base.trace, { unknown: uncertain, ref: base.ref });
@@ -458,6 +464,7 @@ export function analyze(input, overrides = {}) {
           return invoke(target, passed, state.depth + 1, state.context, state.stack, state.uncertain, state.exposureUncertain);
         }
         if (global) {
+          if(callee.text==='Error' && ts.isNewExpression(node))return value('error-object',[],{exposures:exposureSources(args[0]),exposureTrail:exposureTrails(args[0]),unknown:exposureUncertain(args[0]??constant('')),ref:{properties:new Map(),unknown:false,trace:[]}});
           if (callee.text === 'URL' && ts.isNewExpression(node)) {
             const input = args[0] ?? unknown(), base = args[1];
             const combined = base ? union(input, base) : input;
@@ -757,8 +764,19 @@ export function analyze(input, overrides = {}) {
       if (node.incrementor) expr(node.incrementor, branch);
       mergeVars(state, [state, branch]); return { ...r, stops: false };
     } else if (ts.isTryStatement(node)) {
+      const thrown=node.tryBlock.statements.length===1 && ts.isThrowStatement(node.tryBlock.statements[0]) ? unwrap(node.tryBlock.statements[0].expression) : undefined;
+      const known=thrown && ts.isNewExpression(thrown) && ts.isIdentifier(thrown.expression) && thrown.expression.text==='Error'
+        && !state.vars.has('Error') && !mod.imports.has('Error') && !mod.declared.has('Error')
+        && (thrown.arguments??[]).every(a=>ts.isStringLiteral(a)) && !node.finallyBlock;
+      if(known && node.catchClause && node.catchClause.block.statements.length && ts.isReturnStatement(node.catchClause.block.statements.at(-1))){
+        const branch=fork(state);const name=node.catchClause.variableDeclaration?.name;const error=expr(thrown,branch);
+        if(name && ts.isIdentifier(name))branch.vars.set(name.text,error);
+        const handled=statement(node.catchClause.block,branch);mergeVars(state,[branch]);return handled;
+      }
       note(mod, 'EXCEPTION_FLOW_PARTIAL');
       const a = { ...fork(state), uncertain: true }, b = { ...fork(state), uncertain: true }, ar = statement(node.tryBlock, a);
+      const catchName=node.catchClause?.variableDeclaration?.name;
+      if(catchName && ts.isIdentifier(catchName))b.vars.set(catchName.text,value('caught-error',[],{unknown:true}));
       const br = node.catchClause ? statement(node.catchClause.block, b) : { values: [], stops: false };
       mergeVars(state, [a, b]); if (node.finallyBlock) statement(node.finallyBlock, state);
       return { values: [...ar.values, ...br.values], stops: false };

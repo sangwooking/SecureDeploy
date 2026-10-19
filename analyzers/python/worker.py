@@ -27,7 +27,12 @@ _exposure_spec.loader.exec_module(_exposure_module)
 ExposureEvidence = _exposure_module.ExposureEvidence
 credential_shape = _exposure_module.credential_shape
 
-VERSION = "py-django-v6"
+_service_spec = importlib.util.spec_from_file_location("securedeploy_service_security", Path(__file__).with_name("service_security.py"))
+_service_module = importlib.util.module_from_spec(_service_spec)
+_service_spec.loader.exec_module(_service_module)
+ServiceEvidence = _service_module.ServiceEvidence
+
+VERSION = "py-django-v7"
 MAX_NODES = 60000
 MAX_STEPS = 30000
 MAX_DEPTH = 5
@@ -94,6 +99,7 @@ class Analyzer:
         self.authorization = AuthorizationEvidence(self, Value)
         self.token_security = TokenEvidence(self, Value)
         self.exposure = ExposureEvidence(self, Value)
+        self.service = ServiceEvidence(self, Value)
         self.visited, self.traced = set(), set()
         self.path, self.function, self.stack = "", "<module>", []
         self.partial = False
@@ -382,7 +388,7 @@ class Analyzer:
                     authorizationContexts=self.auth, limitations=["BOUNDED_DJANGO_DRF_ONLY", "MIDDLEWARE_SETTINGS_AND_OWNERSHIP_NOT_VERIFIED",
                     "STATIC_FLOW_NOT_EXPLOIT_PROOF", "NO_OS_SANDBOX", "BOUNDED_PYTHON_FILE_AND_DESERIALIZATION_ONLY",
                     "SYMLINKS_PERMISSIONS_AND_RUNTIME_NOT_VERIFIED"], validatedFindings=None, deploymentAnalysis=deployment,
-                    resourceUses=self.resources, tokenUses=self.token_security.uses, exposureUses=self.exposure.uses)
+                    resourceUses=self.resources, tokenUses=self.token_security.uses, exposureUses=self.exposure.uses, serviceUses=self.service.uses)
 
     def deployment_settings(self):
         keys = {"DEBUG", "SECRET_KEY", "ALLOWED_HOSTS", "SESSION_COOKIE_SECURE", "CSRF_COOKIE_SECURE",
@@ -688,6 +694,17 @@ class Analyzer:
                     return env, returns, True
             elif isinstance(node, ast.Pass):
                 pass
+            elif isinstance(node, ast.Try) and (handler := self.service.known_exception_handler(node,env)) is not None:
+                prior = self.service.active_exception
+                self.service.active_exception = True
+                branch = dict(env)
+                if handler.name: branch[handler.name] = Value(unknown=True)
+                try:
+                    env, found, end = self.block(handler.body,branch)
+                    returns += found
+                    if end:return env,returns,True
+                finally:
+                    self.service.active_exception = prior
             else:
                 # Unsupported control flow invalidates state; no invented safe transform or sink execution.
                 self.note("UNSUPPORTED_STATEMENT_" + type(node).__name__.upper())
@@ -891,6 +908,9 @@ class Analyzer:
         exposure_value = self.exposure.call(node, function, base, name, args, keywords)
         if exposure_value is not None:
             return exposure_value
+        service_value = self.service.call(node,function,args,keywords)
+        if service_value is not None:
+            return service_value
         authorization_value = self.authorization.call(node, function, base, name, args, keywords, env)
         if authorization_value is not None:
             return authorization_value

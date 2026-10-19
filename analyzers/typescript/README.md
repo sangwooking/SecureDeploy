@@ -1,6 +1,10 @@
 # Bounded server analysis runtime
 
-Version ts-server-v5 adds bounded Workers/Pages response-return and console log provenance. Sources
+Version ts-server-v6 additionally tracks known new Error().stack to returned responses. Only a direct
+literal new Error throw and its catch without finally are precisely modeled; general catch values and
+masking remain uncertain. Logging alone is not HTTP error exposure. Missing fetch AbortSignal does
+not establish missing platform limits or generate a service-failure finding. Version v5 added
+bounded Workers/Pages response-return and console log provenance. Sources
 are selected credential-shaped literals, explicit authentication/cookie request headers and environment
 references (sensitivity unknown). Names and VITE_/NEXT_PUBLIC_ prefixes alone are not secrets.
 Response construction must reach the supported entry return; JSON.stringify retains provenance but

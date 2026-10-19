@@ -17,6 +17,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         findings.addAll(connectAuthorization(snapshot));
         findings.addAll(connectTokens(snapshot));
         findings.addAll(connectExposure(snapshot));
+        findings.addAll(connectService(snapshot));
         if (snapshot.httpUses() == null) return List.copyOf(findings);
         Map<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>> groups = new LinkedHashMap<>();
         for (var candidate : snapshot.findings()) {
@@ -117,7 +118,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         if (snapshot.exposureUses() == null) return List.of();
         var groups = new LinkedHashMap<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>>();
         for (var candidate : snapshot.findings()) {
-            if (!List.of("TS_SENSITIVE_DATA_EXPOSURE", "PY_SENSITIVE_DATA_EXPOSURE").contains(candidate.ruleId()) || !"HIGH".equals(candidate.confidence())) continue;
+            if (!List.of("TS_SENSITIVE_DATA_EXPOSURE", "PY_SENSITIVE_DATA_EXPOSURE", "TS_ERROR_DETAIL_EXPOSURE", "PY_ERROR_DETAIL_EXPOSURE").contains(candidate.ruleId()) || !"HIGH".equals(candidate.confidence())) continue;
             boolean observed = snapshot.exposureUses().stream().anyMatch(u -> u.location().equals(candidate.sink()) && u.trace().contains(candidate.source()) && "SENSITIVE_FLOW_CANDIDATE".equals(u.status()));
             if (observed) {
                 var evidence = groups.computeIfAbsent(candidate.sink(), ignored -> new ArrayList<>());
@@ -128,9 +129,18 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
             var f=g.getValue().get(0);
             return new ServerFlowFinding(identity(snapshot.analyzerVersion(),f.ruleId(),g.getKey()),f.ruleId().startsWith("PY_") ? "PYTHON_DATA_FLOW" : "TYPESCRIPT_DATA_FLOW",
                     snapshot.analyzerVersion(),f.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",g.getKey(),List.copyOf(g.getValue()),List.of(g.getKey()),f.message(),
-                    "자격증명 형식·인증 헤더·서버 비밀 설정에서 응답 또는 로그로의 정적 전달 근거입니다. 실제 비밀값의 유효성·운영 노출·접근 권한은 확인하지 않았으며 기존 위험 건수와 점수에는 합산하지 않습니다.",
-                    f.recommendation(),List.of("표시된 출처와 전달·노출 위치에서 실제로 필요한 공개 정보인지 확인하세요.","원문 대신 필요한 필드만 반환하고 로컬 로그·응답 테스트에서 비밀값이 제외되는지 확인하세요.","실제 유출이 확인됐다면 해당 자격증명 교체·접근 기록 검토 후 재검사하세요."));
+                    f.ruleId().contains("ERROR_DETAIL") ? "내부 스택 정보가 반환 응답에 전달되는 정적 흐름입니다. 실제 오류 발생·외부 노출·운영 렌더러 보호는 미검증이며 기존 점수에 합산하지 않습니다." : "자격증명 형식·인증 헤더·서버 비밀 설정에서 응답 또는 로그로의 정적 전달 근거입니다. 실제 비밀값의 유효성·운영 노출·접근 권한은 확인하지 않았으며 기존 위험 건수와 점수에는 합산하지 않습니다.",
+                    f.recommendation(),f.ruleId().contains("ERROR_DETAIL") ? List.of("응답 생성·반환 위치와 디버그·미들웨어 설정을 확인하세요.","로컬 오류 테스트에서 경로·스택 대신 일반 메시지와 추적 ID만 반환하는지 확인하세요.","상세 오류는 접근 제한된 내부 로그로 분리하고 재검사하세요.") : List.of("표시된 출처와 전달·노출 위치에서 실제로 필요한 공개 정보인지 확인하세요.","원문 대신 필요한 필드만 반환하고 로컬 로그·응답 테스트에서 비밀값이 제외되는지 확인하세요.","실제 유출이 확인됐다면 해당 자격증명 교체·접근 기록 검토 후 재검사하세요."));
         }).toList();
+    }
+
+    private static List<ServerFlowFinding> connectService(ServerAnalysisSnapshot snapshot) {
+        if(snapshot.serviceUses()==null)return List.of();
+        return snapshot.findings().stream().filter(f->f.ruleId().equals("PY_HTTP_TIMEOUT_REVIEW") && f.confidence().equals("HIGH"))
+                .filter(f->snapshot.serviceUses().stream().anyMatch(u->u.location().equals(f.sink()) && List.of("REQUESTS_DEFAULT_WITHOUT_TIMEOUT","EXPLICIT_TIMEOUT_DISABLED").contains(u.status())))
+                .collect(java.util.stream.Collectors.toMap(ServerAnalysisSnapshot.Finding::sink,f->f,(a,b)->a,LinkedHashMap::new)).values().stream()
+                .map(f->new ServerFlowFinding(identity(snapshot.analyzerVersion(),f.ruleId(),f.sink()),"PYTHON_DATA_FLOW",snapshot.analyzerVersion(),f.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",f.sink(),List.of(f),List.of(f.sink()),f.message(),
+                        "지원 HTTP API의 타임아웃 누락·해제 형태를 확인했습니다. 실제 라이브러리·프록시·플랫폼의 제한과 운영 장애는 미확인이며 기존 배포 판단을 변경하지 않습니다.",f.recommendation(),List.of("호출 위치에서 설치 라이브러리와 연결·읽기·전체 요청 기한을 확인하세요.","실제 외부 서비스 대신 지연 Mock으로 취소·오류·자원 반환을 로컬 테스트하고 재검사하세요."))).toList();
     }
 
     private static List<ServerFlowFinding> connectTokens(ServerAnalysisSnapshot snapshot) {
