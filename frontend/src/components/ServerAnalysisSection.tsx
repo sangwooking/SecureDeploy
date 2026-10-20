@@ -8,6 +8,13 @@ import { ServiceStabilityDetails } from './ServiceStabilityDetails';
 import { JavaSqlAnalysisSection } from './JavaSqlAnalysisSection';
 
 const labels: Record<string, string> = {
+  EXPRESS_QUERY:'요청 검색값',EXPRESS_BODY:'요청 본문',EXPRESS_PARAMS:'요청 경로값',EXPRESS_REGISTRATION:'정적 Express 요청 연결',
+  PRINCIPAL_CONTEXT_UNVERIFIED:'요청 사용자·세션 참조 · 인증·권한 검증의 증명은 아님',EVAL_CALL:'서버 코드 실행 호출',
+  FUNCTION_RETURN:'함수 반환으로 전달',NODE_FLOW_UNRESOLVED:'Node.js 값 전달 또는 제어 흐름 미확인',
+  MONGODB_RECEIVER_OR_OBJECT_FLOW_UNRESOLVED:'MongoDB 객체 출처 또는 객체 전달을 확인하지 못함',
+  STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF:'정적 경로이며 실제 공격 성공은 미검증',
+  MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED:'미들웨어의 입력 검증과 실제 실행 환경은 미확인',
+  OBJECT_OWNERSHIP_AND_MIDDLEWARE_NOT_VERIFIED:'객체 소유권과 미들웨어 보호는 미확인',
   INTERNAL_ERROR_DETAIL:'내부 오류 스택 정보',ERROR_DETAIL_CONTEXT_UNKNOWN:'오류 스택 문맥 미확인',HTTP_CLIENT_CALL:'외부 HTTP 호출',
   HTTP_LIBRARY_VERSION_AND_PATCHES_UNVERIFIED:'HTTP 라이브러리·버전·변경 여부 미확인',PROXY_PLATFORM_AND_TOTAL_DEADLINE_UNKNOWN:'프록시·플랫폼 제한·전체 요청 기한 미확인',STATIC_CALL_NOT_SERVICE_FAILURE_PROOF:'정적 호출 근거이며 운영 장애를 확인한 것은 아님',
   CREDENTIAL_SHAPED_LITERAL:'자격증명 형식의 고정 값 · 원문은 저장하지 않음', FRAMEWORK_SECRET_SETTING:'Django 서버 비밀 설정 참조',
@@ -166,6 +173,8 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
     <div className="vulnerability-list">{candidates.map((finding, i) => <article className="vulnerability-item action-finding" key={i}>
       <span className="risk-badge risk-review_required">코드 흐름 · 추가 확인 필요</span>
       <h4>{finding.ruleId === 'TS_SSRF_INPUT_FLOW' ? '서버 요청 주소의 처리 과정을 확인해 주세요'
+        : finding.ruleId === 'JS_EVAL_INPUT_FLOW' ? '입력값을 코드로 실행하는지 확인해 주세요'
+        : finding.ruleId === 'JS_MONGO_WHERE_INPUT_FLOW' ? '입력값이 데이터베이스 실행 문자열에 들어가는지 확인해 주세요'
         : finding.ruleId === 'PY_FILE_PATH_INPUT_FLOW' ? '입력된 파일 경로의 제한을 확인해 주세요'
         : finding.ruleId === 'PY_UNSAFE_DESERIALIZATION_INPUT_FLOW' ? '외부 데이터의 복원 방식을 확인해 주세요'
         : finding.ruleId === 'PY_AUTHORIZATION_INVERTED_OWNER_GUARD' ? '사용자 비교와 차단 분기의 의도를 확인해 주세요'
@@ -181,6 +190,16 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
         <FlowEvidence finding={finding} />
       </details>
     </article>)}</div>
+    {!python&&snapshot.nodeUses!=null&&<details className="coverage-details"><summary>Express 코드 실행·데이터 접근 근거 ({snapshot.nodeUses.length})</summary>
+      <p>정적으로 연결된 요청·함수 호출만 확인합니다. 데이터 조회 근거는 소유권 검증의 증명이 아니며, 미확인 호출은 안전이나 취약점 확정으로 처리하지 않습니다.</p>
+      <ul className="coverage-file-list">{snapshot.nodeUses.map((use,i)=><li key={i}>
+        <code className="finding-location">{location(use.location)}</code>
+        <span>{use.kind==='INPUT_TO_EXECUTION'?'요청 입력이 실행 문자열로 전달됨':use.kind==='STATIC_OR_DATA_ONLY'?'고정 문자열 또는 일반 데이터 처리':use.kind==='DATA_QUERY_NOT_AUTHORIZATION_PROOF'?'데이터 조회 확인 · 접근권한은 미확인':'객체 출처 또는 값 전달을 확인하지 못함'}</span>
+        <p>{use.operation} · {use.ruleId}</p>
+        <ul>{use.trace.map((entry,j)=><li key={j}>{text(entry.kind)} · <code>{location(entry)}</code></li>)}</ul>
+        {use.limitations.map((limit,j)=><p key={j}>{text(limit)}</p>)}
+      </li>)}</ul>
+    </details>}
     <details className="coverage-details"><summary>응답·로그 정보 전달 근거 ({snapshot.exposureUses?.length ?? '미기록'})</summary><ExposureDetails uses={snapshot.exposureUses}/></details>
     {python&&<details className="coverage-details"><summary>외부 요청 대기 제한 근거 ({snapshot.serviceUses?.length??'미기록'})</summary><ServiceStabilityDetails uses={snapshot.serviceUses}/></details>}
     {python && <details className="coverage-details"><summary>토큰 서명·사용 근거 ({snapshot.tokenUses?.length ?? '미기록'})</summary>

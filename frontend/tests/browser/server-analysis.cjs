@@ -52,6 +52,12 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
         title:'사용자가 입력한 주소로 서버가 요청을 보낼 수 있습니다',riskExplanation:'의도하지 않은 서비스로 요청할 가능성이 있으나 실제 내부망 접근은 검증하지 않았습니다.',
         recommendedAction:ssrf.recommendation,verificationSteps:['허용되지 않은 목적지가 차단되는지 로컬 Mock으로 확인하세요.','수정 후 재검사하세요.']});
       result.serverAnalysis.httpUses=[{kind:'INPUT_IN_DESTINATION',controlledPart:'WHOLE_URL',location:ssrfSink,trace:[ssrfSource],defenses:[],limitations:ssrf.limitations}];
+      const nodeSource={filePath:'routes/task.cjs',line:3,column:1,functionName:'handle',kind:'EXPRESS_BODY'};
+      const nodeSink={...nodeSource,line:5,kind:'EVAL_CALL'};
+      const nodeEvidence={ruleId:'JS_EVAL_INPUT_FLOW',kind:'CWE-95',confidence:'HIGH',disposition:'REVIEW_REQUIRED',source:nodeSource,sink:nodeSink,flow:[nodeSource],defenses:[],limitations:['STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF'],message:'요청 입력이 코드 실행 호출로 전달됩니다.',recommendation:'eval 대신 입력 타입 검증과 숫자 변환을 사용하세요.'};
+      result.serverAnalysis.findings.push(nodeEvidence);
+      result.serverAnalysis.validatedFindings.push({findingId:'ts-flow:synthetic-express',sourceType:'TYPESCRIPT_DATA_FLOW',analyzerVersion:'ts-server-v7',ruleId:nodeEvidence.ruleId,priority:'REVIEW_REQUIRED',comparisonPolicy:'NOT_COMPARED',location:nodeSink,evidence:[nodeEvidence],executionLocations:[nodeSink],title:'사용자가 보낸 값이 서버에서 코드로 실행될 수 있습니다',riskExplanation:'정적 전달 근거이며 실제 공격은 미검증입니다.',recommendedAction:nodeEvidence.recommendation,verificationSteps:['로컬 Mock으로 검증 후 재검사하세요.']});
+      result.serverAnalysis.nodeUses=[{ruleId:nodeEvidence.ruleId,kind:'INPUT_TO_EXECUTION',operation:'EVAL_CALL',location:nodeSink,trace:[nodeSource],limitations:['STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF']},{ruleId:'JS_MONGO_WHERE_INPUT_FLOW',kind:'RECEIVER_NOT_VERIFIED',operation:'find',location:nodeSink,trace:[],limitations:['MONGODB_RECEIVER_OR_OBJECT_FLOW_UNRESOLVED']}];
       page.on('pageerror', e => errors.push(e.message));
       await page.addInitScript(() => {
         localStorage.setItem('securedeploy.accessToken', 'synthetic-server-analysis-not-authentication');
@@ -122,7 +128,9 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       await pythonSection.getByText('파일별 구문 검사·추적 범위 (3)',{exact:true}).click();
       assert.ok((await pythonSection.innerText()).includes('파일 수 상한'));
       assert.ok((await section.innerText()).includes('functions/api/items.ts:3'));
-      assert.equal(await section.locator('article').count(), 2);
+      assert.equal(await section.locator('article').count(), 3);
+      await section.getByText('Express 코드 실행·데이터 접근 근거 (2)',{exact:true}).click();
+      for(const phrase of ['서버에서 코드로 실행될 수 있습니다','요청 본문','객체 출처 또는 값 전달을 확인하지 못함','소유권 검증의 증명이 아니며'])assert.ok((await section.innerText()).includes(phrase),phrase);
       for (const title of ['Finding 기술 근거와 한계', '쿼리 값 처리와 방어 근거 (1)', '서버 HTTP 요청 목적지 (1)', '인증·권한 관련 문맥 (1)', '파일별 구문 검사·추적 범위 (1)'])
         for(const element of await section.getByText(title, { exact: true }).all()) await element.click();
       assert.ok((await section.innerText()).includes('접근 권한 취약점으로 판단하지 않습니다'));

@@ -19,7 +19,7 @@ public class TypeScriptServerAnalyzer {
     public TypeScriptServerAnalyzer(TypeScriptAnalysisProperties properties) { this.properties = properties; }
 
     public ServerAnalysisSnapshot analyze(ProjectStructure project) {
-        var candidates = project.analysisFiles().stream().filter(f -> f.relativePath().matches(".*\\.[jt]sx?$"))
+        var candidates = project.analysisFiles().stream().filter(f -> f.relativePath().matches(".*(?:\\.[jt]sx?|\\.[cm]js)$"))
                 .sorted(Comparator.comparing(f -> f.relativePath())).toList();
         if (candidates.isEmpty()) return ServerAnalysisSnapshot.unavailable("NOT_APPLICABLE", List.of(), "NO_JAVASCRIPT_OR_TYPESCRIPT_FILES");
         List<Map<String, String>> sources = new ArrayList<>();
@@ -50,7 +50,21 @@ public class TypeScriptServerAnalyzer {
             if (!Files.isRegularFile(directory.resolve("worker.mjs"))
                     || !Files.isRegularFile(directory.resolve("node_modules/typescript/lib/typescript.js")))
                 return ServerAnalysisSnapshot.unavailable("UNAVAILABLE", unavailableFiles, "TRUSTED_PARSER_NOT_INSTALLED");
-            byte[] input = mapper.writeValueAsBytes(Map.of("files", sources));
+            var manifests=new ArrayList<Map<String,String>>();
+            for(var file:project.analysisFiles())if(file.relativePath().endsWith("package.json")&&manifests.size()<100
+                    &&file.lines().stream().mapToLong(String::length).sum()<100_000) {
+                try {
+                    var document=mapper.readTree(String.join("\n",file.lines()));var manifest=new HashMap<String,String>();
+                    String path=CoverageRecorder.safePath(file.relativePath());if(path.equals("[redacted-path]"))continue;
+                    manifest.put("filePath",path);
+                    for(String name:List.of("express","mongodb")) {
+                        String version=document.path("dependencies").path(name).asText("");
+                        if(version.length()<=80&&version.matches("[~^]?[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?"))manifest.put(name,version);
+                    }
+                    manifests.add(manifest);
+                }catch(Exception ignored){/* A malformed manifest cannot establish a driver API contract. */}
+            }
+            byte[] input = mapper.writeValueAsBytes(Map.of("files", sources,"nodeManifests",manifests));
             var builder = new ProcessBuilder(properties.getNodeExecutable(), "--permission", "--no-addons",
                     "--max-old-space-size=192", "--allow-fs-read=" + directory,
                     directory.resolve("worker.mjs").toString());
@@ -77,7 +91,7 @@ public class TypeScriptServerAnalyzer {
             if (candidates.size() > sources.size() + omitted.size()) limitations.add("OMITTED_FILE_DETAILS_TRUNCATED");
             return new ServerAnalysisSnapshot(parsed.schemaVersion(), parsed.analyzerVersion(), parsed.parserVersion(),
                     omitted.isEmpty() ? parsed.status() : "PARTIAL", List.copyOf(files), parsed.findings(), parsed.sqlUses(),
-                    parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses()).withExposureUses(parsed.exposureUses());
+                    parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses()).withExposureUses(parsed.exposureUses()).withNodeUses(parsed.nodeUses());
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
             return ServerAnalysisSnapshot.unavailable("UNAVAILABLE", unavailableFiles, "ANALYSIS_INTERRUPTED");
@@ -98,10 +112,11 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v6".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v7".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200
+                || result.nodeUses() == null || result.nodeUses().size() > 200
                 || result.authorizationContexts().size() > 200) throw new IllegalArgumentException("INVALID_ANALYZER_RESPONSE");
         if (!result.files().stream().map(FileCoverage::filePath).collect(java.util.stream.Collectors.toSet()).equals(files.keySet()))
             throw new IllegalArgumentException("INVALID_ANALYZER_FILES");
@@ -113,6 +128,10 @@ public class TypeScriptServerAnalyzer {
         result.exposureUses().forEach(s -> {
             if (s.trace().size() > 20 || s.limitations().size() > 20) throw new IllegalArgumentException("INVALID_EXPOSURE_LIMIT");
             locations.add(s.location()); locations.addAll(s.trace());
+        });
+        result.nodeUses().forEach(s->{
+            if(s.trace().size()>20||s.limitations().size()>20||!Set.of("JS_EVAL_INPUT_FLOW","JS_MONGO_WHERE_INPUT_FLOW","JS_MONGO_RESOURCE_ACCESS").contains(s.ruleId()))throw new IllegalArgumentException("INVALID_NODE_USE");
+            locations.add(s.location());locations.addAll(s.trace());
         });
         result.authorizationContexts().forEach(c -> { locations.add(c.entry()); locations.addAll(c.checks()); locations.addAll(c.defenses()); locations.addAll(c.resources()); });
         for (var location : locations) if (location == null || !files.containsKey(location.filePath()) || location.line() < 1

@@ -2,8 +2,9 @@ import ts from 'typescript';
 import path from 'node:path';
 import { destinationOf, joinDestinations, concatenatedDestination, constructedUrl, unresolvedDestination } from './destination.mjs';
 import { credentialShape, sources as exposureSources, uncertain as exposureUncertain, trails as exposureTrails } from './exposure.mjs';
+import { nodeServer } from './node-server.mjs';
 
-export const VERSION = 'ts-server-v6';
+export const VERSION = 'ts-server-v7';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -72,8 +73,10 @@ export function analyze(input, overrides = {}) {
     k in DEFAULTS && Number.isInteger(v) && v > 0).map(([k, v]) => [k, Math.min(v, DEFAULTS[k])])) };
   const deadline = Date.now() + limits.timeoutMs;
   const result = { schemaVersion: 1, analyzerVersion: VERSION, parserVersion: ts.version,
-    status: 'COMPLETE', files: [], findings: [], sqlUses: [], httpUses: [], exposureUses: [], authorizationContexts: [], limitations: [LIMITATION] };
+    status: 'COMPLETE', files: [], findings: [], sqlUses: [], httpUses: [], exposureUses: [], nodeUses: [], authorizationContexts: [], limitations: [LIMITATION] };
   const modules = new Map();
+  let nodeSupport;
+  const functionNodes=new WeakSet();
   let chars = 0, steps = 0, totalFunctions = 0;
   const safeName = text => /^[A-Za-z_$][\w$]{0,79}$/.test(text ?? '') && !/^(?:sk_|gh[pousr]_|AKIA)/.test(text) ? text : '[identifier]';
   const loc = (node, mod, kind, fn) => ({ filePath: mod.filePath,
@@ -86,6 +89,7 @@ export function analyze(input, overrides = {}) {
     }
   }
   function note(mod, reason) { mod.record.limitations.add(reason); }
+  function claimFunction(node,mod){if(functionNodes.has(node))return true;if(++totalFunctions>limits.maxFunctions){note(mod,'FUNCTION_INDEX_LIMIT_EXCEEDED');return false;}functionNodes.add(node);return true;}
   function step(v, location, mod) {
     if (exposureSources(v).length) v = { ...v, exposureTrail: [...exposureTrails(v), location].slice(-10) };
     if (!v.trace.length) return v;
@@ -101,6 +105,7 @@ export function analyze(input, overrides = {}) {
     return { ...constant(text), exposures: credentialShape(text) ? [loc(node, mod, 'CREDENTIAL_SHAPED_LITERAL', fn)] : [] };
   }
   function observeExposure(v, node, state, kind) {
+    if(state.context?.setup)return;
     const origins = exposureSources(v);
     if (!origins.length) return;
     const location = kind === 'HTTP_RESPONSE_RETURN' && v.responseLocations?.length ? v.responseLocations[0] : loc(node, state.mod, kind, state.fn);
@@ -132,7 +137,7 @@ export function analyze(input, overrides = {}) {
     chars += file.content.length;
     try {
       const ast = ts.createSourceFile(filePath, file.content, ts.ScriptTarget.Latest, true,
-        /\.[jt]sx$/.test(filePath) ? ts.ScriptKind.TSX : /\.js$/.test(filePath) ? ts.ScriptKind.JS : ts.ScriptKind.TS);
+        /\.[jt]sx$/.test(filePath) ? ts.ScriptKind.TSX : /\.[cm]?js$/.test(filePath) ? ts.ScriptKind.JS : ts.ScriptKind.TS);
       if (ast.parseDiagnostics.length) { record.parseStatus = 'PARSE_FAILED'; record.limitations.add('INVALID_SYNTAX'); continue; }
       const mod = { filePath, ast, record, functions: new Map(), exports: new Map(), imports: new Map(),
         constants: new Map(), declared: new Set(), entries: [], visited: new Set() };
@@ -147,7 +152,7 @@ export function analyze(input, overrides = {}) {
         ts.forEachChild(n, child => { stack.push(child); });
       }
       const register = (name, node, exported = false, lexical = true) => {
-        if (++totalFunctions > limits.maxFunctions) { note(mod, 'FUNCTION_INDEX_LIMIT_EXCEEDED'); return; }
+        if (!claimFunction(node,mod)) return;
         const fn = { name, node, mod };
         mod.functions.set(lexical ? name : Symbol(name), fn); if (exported) mod.exports.set(name, fn); return fn;
       };
@@ -207,6 +212,7 @@ export function analyze(input, overrides = {}) {
   }
   function property(base, key, node, state) {
     const { mod, fn } = state;
+    if(state.nodeMode){const supported=nodeSupport.property(base,key,node,state);if(supported)return supported;}
     if(['error-object','caught-error'].includes(base.tag) && key==='stack'){
       const unresolved=base.unknown||base.ref?.unknown;
       return value('error-detail',[],{unknown:unresolved,exposures:[...exposureSources(base),loc(node,mod,unresolved?'ERROR_DETAIL_CONTEXT_UNKNOWN':'INTERNAL_ERROR_DETAIL',fn)],exposureTrail:exposureTrails(base)});
@@ -275,6 +281,7 @@ export function analyze(input, overrides = {}) {
       return {
         read: () => hasConstant(key) ? property(receiver, String(key.constant), node, state) : { ...union(receiver, key), unknown: true },
         write: (v, target) => {
+          if(nodeSupport?.write(receiver,key,v,target))return;
           if (receiver.ref?.http && receiver.tag === 'url') {
             note(mod, 'URL_PROPERTY_WRITE');
             const ref = target.forkRefs?.get(receiver.ref) ?? receiver.ref;
@@ -347,6 +354,7 @@ export function analyze(input, overrides = {}) {
     }
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return literal(node.text, node, mod, fn);
     if (ts.isNumericLiteral(node)) return constant(Number(node.text));
+    if(node.kind===ts.SyntaxKind.ThisKeyword&&state.nodeMode)return state.thisValue??unknown();
     if (ts.isIdentifier(node)) {
       const found = state.vars.get(node.text) ?? mod.constants.get(node.text);
       if (found?.uninitialized) { note(mod, 'LEXICAL_READ_BEFORE_INITIALIZATION'); return unknown(); }
@@ -404,6 +412,9 @@ export function analyze(input, overrides = {}) {
         return union(left, right);
       }
       const right = expr(node.right, state);
+      if(state.nodeMode&&[ts.SyntaxKind.EqualsEqualsEqualsToken,ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(op)&&hasConstant(left)&&hasConstant(right))
+        return constant((op===ts.SyntaxKind.EqualsEqualsEqualsToken)===Object.is(left.constant,right.constant));
+      if(state.nodeMode&&op===ts.SyntaxKind.InstanceOfKeyword&&state.constructing&&!right?.unknown&&left?.ref===state.thisValue?.ref&&right?.target===state.thisValue?.constructorTarget)return constant(true);
       if (op === ts.SyntaxKind.EqualsToken) { reference.write(right, state); return right; }
       if (op === ts.SyntaxKind.CommaToken) return right;
       if (op === ts.SyntaxKind.PlusEqualsToken) {
@@ -451,6 +462,18 @@ export function analyze(input, overrides = {}) {
       const args = (node.arguments ?? []).map(a => expr(a, state));
       const globalObject = name => ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) && callee.expression.text === name
         && !state.vars.has(name) && !mod.imports.has(name) && !mod.declared.has(name);
+      if(state.nodeMode) {
+        const member=ts.isPropertyAccessExpression(callee)?property(receiverInput,callee.name.text,callee,state):callable;
+        const supported=nodeSupport.call(node,callee,receiverInput,args,state,global,member);
+        if(supported)return supported.value;
+        if(member?.target&&!member.unknown) {
+          if(ts.isNewExpression(node))return nodeSupport.construct(member.target,args,state);
+          const passed=args.map(a=>step(a,loc(node,mod,'FUNCTION_ARGUMENT',fn),mod));
+          const returned=invoke(member.target,passed,state.depth+1,state.context,state.stack,state.uncertain,state.exposureUncertain,receiverInput);
+          if(member.effects?.length)invalidateWrites(member.effects,state,union(...args));
+          return step(returned,loc(node,mod,'FUNCTION_RETURN',fn),mod);
+        }
+      }
       if (globalObject('console') && ['log','info','warn','error','debug'].includes(callee.name.text)) {
         observeExposure(union(...args), node, state, 'LOG_ARGUMENT'); return constant(undefined);
       }
@@ -581,7 +604,7 @@ export function analyze(input, overrides = {}) {
     if (node.kind === ts.SyntaxKind.TrueKeyword) return constant(true);
     if (node.kind === ts.SyntaxKind.FalseKeyword) return constant(false);
     if (node.kind === ts.SyntaxKind.NullKeyword) return constant(null);
-    if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) return unsupportedClosure(node, state);
+    if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) return state.nodeMode?nodeSupport.functionValue(node,state,node.parent?.name?.text??'handler'):unsupportedClosure(node, state);
     note(mod, 'EXPRESSION_UNSUPPORTED'); invalidateWrites(writtenNames(node, state), state); state.uncertain = true; return unknown();
   }
   // Scalars are immutable snapshots. A branch gets a separate heap, preserving aliases inside it.
@@ -618,6 +641,7 @@ export function analyze(input, overrides = {}) {
   function guardBranches(node, condition, yes, no) {
     yes.exposureUncertain = no.exposureUncertain = true;
     const predicate = condition.predicateInput ?? condition;
+    if(yes.nodeMode&&predicate.unknown&&predicate.trace.length)yes.uncertain=no.uncertain=true;
     if (predicate.unknown && predicate.trace.length) for (const branch of [yes, no]) {
       for (const [name, v] of branch.vars) if (v.trace.some(t => predicate.trace.some(c => JSON.stringify(c) === JSON.stringify(t))))
         branch.vars.set(name, { ...v, unknown: true });
@@ -724,7 +748,7 @@ export function analyze(input, overrides = {}) {
         else note(mod, 'VAR_HOISTING_PARTIAL');
       } else if ((ts.isFunctionDeclaration(s) || ts.isClassDeclaration(s)) && s.name) locals.add(s.name.text);
       for (const name of locals) state.vars.set(name, { ...unknown(), uninitialized: true });
-      for (const s of node.statements) if (ts.isFunctionDeclaration(s) && s.name) state.vars.set(s.name.text, unsupportedClosure(s, state));
+      for (const s of node.statements) if (ts.isFunctionDeclaration(s) && s.name) state.vars.set(s.name.text, state.nodeMode?nodeSupport.functionValue(s,state,s.name.text):unsupportedClosure(s, state));
       const restore = () => { for (const name of locals) { if (prior.has(name)) state.vars.set(name, prior.get(name)); else state.vars.delete(name); } };
       const returns = [];
       for (const s of node.statements) { const r = statement(s, state); returns.push(...r.values); if (r.stops) { restore(); return { values: returns, stops: true }; } }
@@ -737,7 +761,7 @@ export function analyze(input, overrides = {}) {
       bind(d.name, step(v, loc(d, mod, 'VARIABLE', fn), mod), state);
     }
     else if (ts.isExpressionStatement(node)) expr(node.expression, state);
-    else if (ts.isReturnStatement(node)) return { values: [expr(node.expression, state)], stops: true };
+    else if (ts.isReturnStatement(node)) {const returned=expr(node.expression,state);return {values:[state.nodeMode&&state.uncertain?{...returned,unknown:true}:returned],stops:true};}
     else if (ts.isThrowStatement(node)) { expr(node.expression, state); return { values: [], stops: true }; }
     else if (ts.isIfStatement(node)) {
       const condition = expr(node.expression, state);
@@ -745,6 +769,8 @@ export function analyze(input, overrides = {}) {
       if (truth(condition) === false) return node.elseStatement ? statement(node.elseStatement, state) : { values: [], stops: false };
       state.context.checks.push(loc(node.expression, mod, 'CONDITIONAL_CHECK', fn));
       const a = fork(state), b = fork(state);
+      if(state.nodeMode&&state.context.setup)a.uncertain=b.uncertain=true;
+      if(state.nodeMode&&state.context.setup)a.uncertain=b.uncertain=true;
       // A validator we cannot model may restrict this input; do not promote it as an unguarded path.
       guardBranches(node.expression, condition, a, b);
       const ar = statement(node.thenStatement, a);
@@ -793,13 +819,14 @@ export function analyze(input, overrides = {}) {
     }
     return { values: [], stops: false };
   }
-  function invoke(fn, args, depth, context, stack, uncertain = false, exposureUncertain = false) {
+  function invoke(fn, args, depth, context, stack, uncertain = false, exposureUncertain = false,thisValue,constructing=false) {
     const { mod, node } = fn;
     if (depth > limits.maxDepth || stack.has(fn)) {
       note(mod, 'CALL_DEPTH_EXCEEDED'); return { ...union(...args), unknown: true };
     }
     tick(mod); mod.visited.add(fn); mod.record.functionsAnalyzed = mod.visited.size;
-    const state = { mod, fn, vars: new Map(), depth, context, uncertain, exposureUncertain, stack: new Set([...stack, fn]) };
+    const state = { mod, fn, vars: new Map(fn.closure??[]), depth, context, uncertain, exposureUncertain,
+      nodeMode:!!fn.nodeMode,thisValue:fn.lexicalThis??thisValue,constructing,stack: new Set([...stack, fn]) };
     const names = (binding, callback) => {
       if (ts.isIdentifier(binding)) callback(binding.text);
       else if (ts.isObjectBindingPattern(binding) || ts.isArrayBindingPattern(binding))
@@ -831,12 +858,18 @@ export function analyze(input, overrides = {}) {
         note(mod, 'CALLER_HEAP_EFFECTS_PARTIAL');
       }
     }
-    return union(...r.values, ...(!r.stops ? [constant(undefined)] : []));
+    const returns=[...r.values,...(!r.stops?[constant(undefined)]:[])];
+    const combined=union(...returns);
+    return state.nodeMode&&returns.length>1&&returns.length<=4?{...combined,nodeAlternatives:returns}:combined;
   }
+  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction});
+  nodeSupport.discover();
   for (const mod of modules.values()) for (const entry of mod.entries) {
     const context = { entry: loc(entry.fn.node, mod, entry.kind, entry.fn), checks: [], defenses: [], resources: [] };
     try {
-      const returned = invoke(entry.fn, entry.kind === 'WORKER_FETCH' ? [value('request'), value('env')] : [value('context')], 0, context, new Set());
+      if(entry.registration){context.checks.push(entry.registration);note(mod,'EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED');}
+      const returned = invoke(entry.fn, entry.kind === 'WORKER_FETCH' ? [value('request'), value('env')] : entry.kind==='EXPRESS_HANDLER'
+        ?[value('express-request'),value('express-response'),unknown()]:[value('context')], 0, context, new Set(),!!entry.uncertain);
       if (returned.responseLocations?.length) observeExposure(returned, entry.fn.node, { mod, fn: entry.fn, uncertain: false }, 'HTTP_RESPONSE_RETURN');
     } catch { note(mod, 'ANALYSIS_BUDGET_EXCEEDED'); }
     for (const field of ['checks', 'defenses', 'resources']) {

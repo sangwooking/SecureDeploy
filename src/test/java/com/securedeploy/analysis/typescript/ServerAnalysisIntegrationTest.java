@@ -133,6 +133,35 @@ class ServerAnalysisIntegrationTest {
         mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
     }
 
+    @Test void expressCommonInputsStoreReviewOnlyCandidatesAndPreserveHistoricalRisk() throws Exception {
+        String token=signup();String code="const express=require('express');const app=express();app.post('/run',(req,res)=>{eval(req.body.code);});";
+        var zip=uploadSource(token,"server.cjs",code);
+        assertThat(zip.at("/serverAnalysis/validatedFindings/0/ruleId").asText()).isEqualTo("JS_EVAL_INPUT_FLOW");
+        assertThat(zip.at("/serverAnalysis/validatedFindings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(zip.at("/serverAnalysis/nodeUses/0/kind").asText()).isEqualTo("INPUT_TO_EXECUTION");
+        assertThat(zip.path("securityScore").asInt()).isEqualTo(100);
+        assertThat(zip.at("/riskAssessment/prioritySummary/BLOCKING").asInt()).isZero();
+        Path pub=Files.createDirectory(temp.resolve("express-public")),prv=Files.createDirectory(temp.resolve("express-private"));
+        Files.writeString(pub.resolve("server.cjs"),code);Files.writeString(prv.resolve("server.cjs"),code);
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/express",pub,pub));
+        var publicResult=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/express\",\"scanMode\":\"STANDARD\"}");
+        var meta=new GitHubSourceSnapshot("fixture","express","https://github.com/fixture/express","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/express",prv,prv,meta));
+        var privateResult=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        for(var value:List.of(publicResult,privateResult))assertThat(value.path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        assertThat(pub).doesNotExist();assertThat(prv).doesNotExist();
+        var fixed=uploadSource(token,"server.cjs",code.replace("eval(req.body.code)","Number(req.body.code)"));
+        assertThat(fixed.at("/serverAnalysis/validatedFindings")).isEmpty();
+        assertThat(fixed.at("/comparison/counts/RESOLVED").asInt()).isZero();
+        assertThat(fixed.path("riskAssessment").path("prioritySummary")).isEqualTo(zip.path("riskAssessment").path("prioritySummary"));
+        long id=zip.path("reviewId").asLong();assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+        var stored=(com.fasterxml.jackson.databind.node.ObjectNode)zip.path("serverAnalysis").deepCopy();stored.remove("nodeUses");
+        stored.put("analyzerVersion","ts-server-v6");jdbc.update("update reviews set server_analysis_json=? where id=?",json.writeValueAsString(stored),id);entities.clear();
+        assertThat(detail(token,id).at("/serverAnalysis/nodeUses").isNull()).isTrue();
+        assertThat(detail(token,id).at("/serverAnalysis/analyzerVersion").asText()).isEqualTo("ts-server-v6");
+    }
+
     @Test void ssrfUsesCommonSourcesAndSnapshotWithoutChangingRiskOrComparison() throws Exception {
         String token=signup();
         String code="export default {fetch(request){return fetch(new Request(new URL(request.url).searchParams.get('target')));}}";

@@ -72,7 +72,7 @@ public class ProjectFileCollector {
         if (lowerName.endsWith(".ts")) {
             return Optional.of(ProjectFileType.TYPESCRIPT);
         }
-        if (lowerName.endsWith(".js")) {
+        if (lowerName.endsWith(".js") || lowerName.endsWith(".mjs") || lowerName.endsWith(".cjs")) {
             return Optional.of(ProjectFileType.JAVASCRIPT);
         }
 

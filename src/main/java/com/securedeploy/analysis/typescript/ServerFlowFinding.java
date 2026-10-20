@@ -18,6 +18,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         findings.addAll(connectTokens(snapshot));
         findings.addAll(connectExposure(snapshot));
         findings.addAll(connectService(snapshot));
+        findings.addAll(connectNode(snapshot));
         if (snapshot.httpUses() == null) return List.copyOf(findings);
         Map<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>> groups = new LinkedHashMap<>();
         for (var candidate : snapshot.findings()) {
@@ -42,6 +43,27 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
                         "로컬 Mock HTTP 테스트로 허용되지 않은 호스트·프로토콜·리다이렉트가 거부되는지 검증하세요. 운영 서버에 SSRF 요청을 보내지 마세요.",
                         "같은 프로젝트를 재검사하여 흐름 근거를 확인하세요. 이 항목은 기존 점수·배포 판정·해결 건수에 자동 합산되지 않습니다."))));
         return List.copyOf(findings);
+    }
+
+    private static List<ServerFlowFinding> connectNode(ServerAnalysisSnapshot snapshot) {
+        if(snapshot.nodeUses()==null)return List.of();
+        var groups=new LinkedHashMap<ServerAnalysisSnapshot.Location,List<ServerAnalysisSnapshot.Finding>>();
+        for(var finding:snapshot.findings()) {
+            if(!Set.of("JS_EVAL_INPUT_FLOW","JS_MONGO_WHERE_INPUT_FLOW").contains(finding.ruleId())||!finding.confidence().equals("HIGH")
+                    ||finding.limitations().contains("NODE_FLOW_UNRESOLVED")||finding.limitations().contains("TRACE_DETAILS_TRUNCATED"))continue;
+            if(snapshot.nodeUses().stream().anyMatch(use->use.ruleId().equals(finding.ruleId())&&use.kind().equals("INPUT_TO_EXECUTION")
+                    &&use.location().equals(finding.sink())&&use.trace().equals(finding.flow())))groups.computeIfAbsent(finding.sink(),ignored->new ArrayList<>()).add(finding);
+        }
+        return groups.entrySet().stream().map(group->{
+            var first=group.getValue().get(0);boolean eval=first.ruleId().equals("JS_EVAL_INPUT_FLOW");
+            return new ServerFlowFinding(identity(snapshot.analyzerVersion(),first.ruleId(),group.getKey()),"TYPESCRIPT_DATA_FLOW",snapshot.analyzerVersion(),
+                    first.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",group.getKey(),List.copyOf(group.getValue()),List.of(group.getKey()),
+                    eval?"사용자가 보낸 값이 서버에서 코드로 실행될 수 있습니다":"사용자가 보낸 값이 데이터베이스의 실행 문자열에 들어갈 수 있습니다",
+                    "정적으로 연결된 Express 요청 입력과 "+(eval?"eval 호출(CWE-95)":"MongoDB $where 쿼리 호출(CWE-943)")+" 사이의 전달 근거입니다. 미들웨어 검증·실제 라이브러리 설치·운영 실행·공격 성공은 확인하지 않았습니다.",
+                    first.recommendation(),List.of("입력 위치부터 전달·실행 위치까지 확인하고 앞단의 검증·인증 미들웨어를 함께 검토하세요.",
+                            eval?"eval 대신 필요한 숫자 변환과 스키마 검증을 사용하고 로컬 Mock으로 코드 실행 호출이 사라졌는지 확인하세요.":"$where 문자열 결합을 일반 값 비교 쿼리로 바꾸고 타입 검증·드라이버 및 서버 버전·JavaScript 실행 설정을 로컬에서 확인하세요.",
+                            "수정 후 같은 프로젝트를 재검사하세요. 운영 서버 공격은 하지 마세요. 이 항목은 기존 점수·배포 판단·해결 건수와 별도입니다."));
+        }).toList();
     }
 
     private static List<ServerFlowFinding> connectSql(ServerAnalysisSnapshot snapshot) {

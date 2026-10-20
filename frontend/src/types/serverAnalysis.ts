@@ -14,6 +14,7 @@ export interface ServerFlowFinding {
   title: string; riskExplanation: string; recommendedAction: string; verificationSteps: string[];
 }
 export interface ServerAnalysisSnapshot {
+  nodeUses?: { ruleId:string; kind:string; operation:string; location:AnalysisLocation; trace:AnalysisLocation[]; limitations:string[] }[] | null;
   javaAnalysis?: JavaSqlSnapshot | null;
   serviceUses?: {kind:string;status:string;location:AnalysisLocation;trace:AnalysisLocation[];limitations:string[]}[] | null;
   exposureUses?: { kind: string; status: string; location: AnalysisLocation; trace: AnalysisLocation[]; limitations: string[] }[] | null;

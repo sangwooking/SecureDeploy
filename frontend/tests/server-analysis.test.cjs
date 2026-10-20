@@ -72,3 +72,11 @@ test('SSRF shows human actions and incomplete destination coverage without certi
   assert.equal((html.match(/<article /g)||[]).length,1);
   assert.ok(render(fixture()).includes('HTTP 목적지 추적 기록이 없습니다'));
 });
+test('Express evidence keeps unknown database receivers and resource authorization separate',()=>{
+  const data=fixture();data.validatedFindings=[];data.findings[0].ruleId='JS_EVAL_INPUT_FLOW';
+  data.findings[0].source.kind='EXPRESS_BODY';data.findings[0].message='코드 실행 검토';
+  data.nodeUses=[{ruleId:'JS_MONGO_WHERE_INPUT_FLOW',kind:'RECEIVER_NOT_VERIFIED',operation:'find',location:data.findings[0].sink,trace:[],limitations:['MONGODB_RECEIVER_OR_OBJECT_FLOW_UNRESOLVED']}];
+  const html=render(data);
+  for(const text of ['입력값을 코드로 실행하는지','요청 본문','Express 코드 실행·데이터 접근 근거 (1)','객체 출처 또는 값 전달을 확인하지 못함','소유권 검증의 증명이 아니며'])assert.ok(html.includes(text),text);
+  assert.ok(!html.includes('요청 값이 데이터베이스 쿼리에 들어갑니다'));
+});
