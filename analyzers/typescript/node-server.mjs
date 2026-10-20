@@ -1,4 +1,5 @@
 import path from 'node:path';
+import {constructorSummaries} from './constructor-summary.mjs';
 
 // Library contracts over AST values only. Never require/import/eval target modules.
 export function nodeServer(api) {
@@ -8,6 +9,12 @@ export function nodeServer(api) {
   const literal=v=>v?.tag==='constant'&&!v.unknown;
   const context=()=>({setup:true,checks:[],defenses:[],resources:[]});
   const native=(name,mod,ref)=>({...object('node-native'),native:name,nativeMod:mod,...(ref?{ref}:{})});
+  const validMongo=v=>{
+    if(!v||v.unknown||!v.ref)return false;
+    const seen=new Set();let ref=v.ref;
+    while(ref){if(ref.unknown||seen.has(ref))return false;seen.add(ref);ref=ref.originParent;}
+    return true;
+  };
   function localsOnlyWrites(node,name,mod) {
     let safe=true;
     const scan=n=>{tick(mod);if(ts.isBinaryExpression(n)&&n.operatorToken.kind>=ts.SyntaxKind.FirstAssignment&&n.operatorToken.kind<=ts.SyntaxKind.LastAssignment){
@@ -30,6 +37,7 @@ export function nodeServer(api) {
     if(self&&!writtenNames(state.fn.node,state).includes(self))closure.set(self,result);
     return result;
   };
+  const summaries=constructorSummaries({...api,functionValue,object,validMongo});
   function findModule(mod,spec) {
     if(!spec.startsWith('.')||spec.includes('\\')||spec.includes('\0'))return;
     const base=path.posix.normalize(path.posix.join(path.posix.dirname(mod.filePath),spec));
@@ -79,6 +87,7 @@ export function nodeServer(api) {
   }
   function property(base,key,node,state) {
     if(base.unknown||base.ref?.unknown)return;
+    if(base.tag==='function')return unknown();
     if(base.native==='mongodb'&&key==='MongoClient')return native('mongo-client',base.nativeMod,base.ref);
     if(base.native==='express'&&key==='Router')return native('router',base.nativeMod,base.ref);
     if(base.tag==='express-router'&&key==='locals'){
@@ -116,6 +125,20 @@ export function nodeServer(api) {
       message:ruleId==='JS_EVAL_INPUT_FLOW'?'사용자가 보낸 값이 서버의 코드 실행에 전달될 수 있습니다.':'사용자가 보낸 값이 데이터베이스의 실행 문자열에 들어갈 수 있습니다.',
       recommendation:ruleId==='JS_EVAL_INPUT_FLOW'?'입력값을 코드로 실행하지 말고 필요한 숫자 변환이나 스키마 검증을 사용하세요.':'$where 문자열 결합을 피하고 일반적인 값 비교 쿼리와 입력 타입 검증을 사용하세요.'},state.mod);
   }
+  function queryExecution(queries,origin,node,state,operation,createdAt) {
+    for(const query of queries){
+      const where=query.ref?.properties.get('$where');
+      if(!where&&!query.unknown&&!query.ref?.unknown){
+        const location=loc(node,state.mod,'MONGO_RESOURCE_ACCESS',state.fn);
+        if(!state.context.setup){append(result.nodeUses,{ruleId:'JS_MONGO_RESOURCE_ACCESS',kind:'DATA_QUERY_NOT_AUTHORIZATION_PROOF',operation,location,
+          trace:query.ref?.trace??query.trace,limitations:['OBJECT_OWNERSHIP_AND_MIDDLEWARE_NOT_VERIFIED']},state.mod);state.context.resources.push(location);}
+        continue;
+      }
+      const trace=where?.trace.length?[...where.trace,...(createdAt?[createdAt]:[]),...(origin??[])]:[];
+      observe(where?{...where,trace:trace.slice(0,20),unknown:where.unknown||query.unknown||query.ref.unknown||trace.length>20}
+        :query.unknown?query:constant(null),node,state,'JS_MONGO_WHERE_INPUT_FLOW','CWE-943',operation);
+    }
+  }
   function call(node,callee,receiver,args,state,global,callable) {
     if(!state.nodeMode)return;
     const method=ts.isPropertyAccessExpression(callee)?callee.name.text:undefined;
@@ -147,7 +170,7 @@ export function nodeServer(api) {
       const callback=args.at(-1), manifests=(api.input.nodeManifests??[]).filter(m=>state.mod.filePath.startsWith(path.posix.dirname(m.filePath)==='.'?'':path.posix.dirname(m.filePath)+'/'))
         .sort((a,b)=>b.filePath.length-a.filePath.length);
       const major=/^(?:\^|~)?2\./.test(manifests[0]?.mongodb??'');
-      if(callback?.target&&major){const db=object('mongo-db');db.ref.origin=[loc(node,state.mod,'MONGODB_DECLARED_V2_CONNECTION',state.fn)];invoke(callback.target,[constant(null),db],0,state.context,new Set(),state.uncertain);}
+      if(callback?.target&&major){const db=object('mongo-db');db.ref.driverMajor=2;db.ref.origin=[loc(node,state.mod,'MONGODB_DECLARED_V2_CONNECTION',state.fn)];invoke(callback.target,[constant(null),db],0,state.context,new Set(),state.uncertain);}
       else note(state.mod,'MONGODB_CONNECTION_API_VERSION_UNKNOWN');
       return {value:unknown()};
     }
@@ -155,26 +178,37 @@ export function nodeServer(api) {
     if(receiver?.tag==='node-http-server'&&method==='listen')return {value:receiver};
     if(callable?.native==='mongo-client'&&!callable.unknown&&!callable.ref?.unknown&&ts.isNewExpression(node)){
       const declarations=(api.input.nodeManifests??[]).filter(m=>state.mod.filePath.startsWith(path.posix.dirname(m.filePath)==='.'?'':path.posix.dirname(m.filePath)+'/')).sort((a,b)=>b.filePath.length-a.filePath.length);
-      if(/^(?:\^|~)?[3-6]\./.test(declarations[0]?.mongodb??''))return {value:object('mongo-client-instance')};
+      const major=/^(?:\^|~)?([3-6])\./.exec(declarations[0]?.mongodb??'');
+      if(major){const client=object('mongo-client-instance');client.ref.driverMajor=Number(major[1]);return {value:client};}
       note(state.mod,'MONGODB_CONNECTION_API_VERSION_UNKNOWN');return {value:unknown()};
     }
-    if(receiver?.tag==='mongo-client-instance'&&!receiver.unknown&&!receiver.ref.unknown&&method==='db')return {value:object('mongo-db')};
-    if(receiver?.tag==='mongo-db'&&!receiver.unknown&&!receiver.ref.unknown&&method==='collection'&&literal(args[0])){
-      const collection=object('mongo-collection');collection.ref.origin=[...(receiver.ref.origin??[]),loc(node,state.mod,'MONGODB_COLLECTION_ORIGIN',state.fn)].slice(-4);return {value:collection};
+    if(receiver?.tag==='mongo-client-instance'&&!receiver.unknown&&!receiver.ref.unknown&&method==='db'){
+      const db=object('mongo-db');db.ref.originParent=receiver.ref;db.ref.driverMajor=receiver.ref.driverMajor;return {value:db};
     }
-    if(receiver?.tag==='mongo-collection'&&!receiver.unknown&&!receiver.ref.unknown&&['find','findOne','countDocuments'].includes(method)) {
-      for(const query of (args[0]?.nodeAlternatives??[args[0]??unknown()]).slice(0,4)) {
-      const where=query.ref?.properties.get('$where');
-      if(!where&&!query.unknown&&!query.ref?.unknown){
-        const location=loc(node,state.mod,'MONGO_RESOURCE_ACCESS',state.fn);
-        if(!state.context.setup){append(result.nodeUses,{ruleId:'JS_MONGO_RESOURCE_ACCESS',kind:'DATA_QUERY_NOT_AUTHORIZATION_PROOF',operation:method,location,trace:query.ref?.trace??query.trace,limitations:['OBJECT_OWNERSHIP_AND_MIDDLEWARE_NOT_VERIFIED']},state.mod);state.context.resources.push(location);}
-        continue;
-      }
-      observe(where?{...where,trace:where.trace.length?[...where.trace,...(receiver.ref.origin??[])].slice(0,20):[],unknown:where.unknown||query.unknown||query.ref.unknown}:query.unknown?query:constant(null),node,state,'JS_MONGO_WHERE_INPUT_FLOW','CWE-943','MONGODB_'+method.toUpperCase());
-      }
-      return {value:object('mongo-cursor')};
+    if(receiver?.tag==='mongo-db'&&validMongo(receiver)&&method==='collection'&&literal(args[0])){
+      const collection=object('mongo-collection');collection.ref.originParent=receiver.ref;collection.ref.driverMajor=receiver.ref.driverMajor;collection.ref.origin=[...(receiver.ref.origin??[]),loc(node,state.mod,'MONGODB_COLLECTION_ORIGIN',state.fn)].slice(-4);return {value:collection};
     }
-    if(receiver?.tag==='mongo-cursor'&&['toArray','limit','sort'].includes(method))return {value:receiver};
+    if(receiver?.tag==='mongo-collection'&&validMongo(receiver)&&['find','findOne','countDocuments'].includes(method)) {
+      const queries=(args[0]?.nodeAlternatives??[args[0]??unknown()]).slice(0,4);
+      if(method==='countDocuments'&&receiver.ref.driverMajor<3){note(state.mod,'MONGODB_METHOD_VERSION_UNKNOWN');return {value:unknown()};}
+      if(method==='find'){
+        const cursor=object('mongo-cursor');cursor.ref.originParent=receiver.ref;cursor.ref.origin=receiver.ref.origin;
+        cursor.ref.createdAt=loc(node,state.mod,'MONGODB_CURSOR_CREATION',state.fn);
+        queries.forEach((q,i)=>cursor.ref.properties.set(String(i),q));
+        if(!state.context.setup)append(result.nodeUses,{ruleId:'JS_MONGO_WHERE_INPUT_FLOW',kind:'CURSOR_CREATED_EXECUTION_NOT_OBSERVED',operation:method,
+          location:cursor.ref.createdAt,trace:union(...queries.map(q=>q.ref?.properties.get('$where')??q)).trace,
+          limitations:['CURSOR_CONSUMPTION_REQUIRED','NOT_EXECUTION_PROOF']},state.mod);
+        return {value:cursor};
+      }
+      queryExecution(queries,receiver.ref.origin,node,state,'MONGODB_'+method.toUpperCase());return {value:unknown()};
+    }
+    if(receiver?.tag==='mongo-cursor'&&validMongo(receiver)){
+      if(['limit','sort'].includes(method))return {value:args.some(a=>a.unknown||a.ref?.unknown)?{...receiver,unknown:true}:receiver};
+      if(['toArray','next'].includes(method)){
+        queryExecution([...receiver.ref.properties.values()],receiver.ref.origin,node,state,'MONGODB_CURSOR_'+method.toUpperCase(),receiver.ref.createdAt);
+        return {value:unknown()};
+      }
+    }
     if(global&&ts.isIdentifier(callee)&&callee.text==='eval'&&ts.isCallExpression(node)) {
       observe(args[0]??unknown(),node,state,'JS_EVAL_INPUT_FLOW','CWE-95','EVAL_CALL');
       note(state.mod,'EVAL_SCOPE_EFFECTS_UNKNOWN');
@@ -189,8 +223,27 @@ export function nodeServer(api) {
     }
   }
   function construct(target,args,state) {
+    if(ts.isArrowFunction(target.node)||target.node.asteriskToken||target.node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword)){
+      note(target.mod,'NON_CONSTRUCTIBLE_FUNCTION_UNKNOWN');return unknown();
+    }
+    if(state.depth+1>limits.maxDepth&&!state.stack.has(target)){
+      const summarized=summaries.apply(target,args,state);
+      if(summarized){
+        append(result.nodeUses,{ruleId:'JS_CONSTRUCTOR_EFFECT',kind:'CONSTRUCTOR_SUMMARY_MUST',operation:'READ_ONLY_ARGUMENTS_FRESH_INSTANCE',
+          location:loc(target.node,target.mod,'CONSTRUCTOR_SUMMARY_MUST',target),trace:summarized.evidence,
+          limitations:['WHITELISTED_CONSTRUCTOR_ONLY','SYNTAX_PLAN_CACHE_NO_SHARED_ARGUMENT_STATE','NOT_WHOLE_FUNCTION_FLOW',...(summarized.truncated?['SUMMARY_EVIDENCE_TRUNCATED']:[])]},target.mod);
+        note(target.mod,'CONSTRUCTOR_SUMMARY_APPLIED_NOT_FULL_CALL_TRACE');return summarized.instance;
+      }
+      note(target.mod,'CONSTRUCTOR_SUMMARY_UNKNOWN');
+      append(result.nodeUses,{ruleId:'JS_CONSTRUCTOR_EFFECT',kind:'CONSTRUCTOR_SUMMARY_UNKNOWN',operation:'UNSUPPORTED_OR_UNRESOLVED',
+        location:loc(target.node,target.mod,'CONSTRUCTOR_SUMMARY_UNKNOWN',target),trace:[],
+        limitations:['NO_READ_ONLY_EFFECT_PROOF','EXISTING_DEPTH_LIMIT_RETAINED']},target.mod);
+    }
     const instance=object('node-instance');instance.constructorTarget=target;
-    invoke(target,args,state.depth+1,state.context,state.stack,state.uncertain,false,instance,true);
+    const returned=invoke(target,args,state.depth+1,state.context,state.stack,state.uncertain,false,instance,true);
+    if(returned.tag==='function'&&!returned.unknown)return returned;
+    if(returned.ref&&!returned.unknown)return returned;
+    if(returned.unknown){instance.unknown=true;instance.ref.unknown=true;}
     return instance;
   }
   function discover() {

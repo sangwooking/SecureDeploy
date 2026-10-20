@@ -167,7 +167,8 @@ class ServerAnalysisIntegrationTest {
         String code="const express=require('express');const {MongoClient}=require('mongodb');const app=express();"
                 +"MongoClient.connect('unused',(err,db)=>{const unused={};unused.note=1;function pass(v){return v;}"
                 +"function Store(value){this.db=value;this.get=()=>this.db.collection('items');}"
-                +"const store=new Store(pass(db));const c=store.get();app.get('/',(req,res)=>c.find({$where:req.query.code}));});";
+                +"function build(v){return new Store(v);}function middle(v){return build(v);}function outer(v){return middle(v);}"
+                +"const store=outer(pass(db));const c=store.get();app.get('/',(req,res)=>c.find({$where:req.query.code}).toArray());});";
         String manifest="{\"dependencies\":{\"mongodb\":\"2.2.36\",\"express\":\"4.18.0\"}}";
         var sources=Map.of("server.cjs",code,"package.json",manifest);
         var zip=uploadSources(token,sources);
@@ -175,6 +176,7 @@ class ServerAnalysisIntegrationTest {
         assertThat(zip.at("/serverAnalysis/validatedFindings/0/ruleId").asText()).isEqualTo("JS_MONGO_WHERE_INPUT_FLOW");
         assertThat(zip.at("/serverAnalysis/validatedFindings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
         assertThat(zip.path("serverAnalysis").toString()).contains("MONGODB_COLLECTION_ORIGIN");
+        assertThat(zip.path("serverAnalysis").toString()).contains("CONSTRUCTOR_SUMMARY_MUST");
         Path pub=Files.createDirectory(temp.resolve("mongo-public")),prv=Files.createDirectory(temp.resolve("mongo-private"));
         for(var root:List.of(pub,prv))for(var entry:sources.entrySet())Files.writeString(root.resolve(entry.getKey()),entry.getValue());
         when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/mongo",pub,pub));

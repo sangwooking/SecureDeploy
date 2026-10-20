@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.*;
 class ExpressFlowTest {
     final TypeScriptServerAnalyzer analyzer=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties());
     ServerAnalysisSnapshot analyze(String query,String manifest) {
-        var sources=Map.of("server.cjs","const express=require('express');const {MongoClient}=require('mongodb');const app=express();MongoClient.connect('unused',(err,db)=>{const c=db.collection('items');app.get('/',(req,res)=>c.find("+query+"));});",
+        var sources=Map.of("server.cjs","const express=require('express');const {MongoClient}=require('mongodb');const app=express();MongoClient.connect('unused',(err,db)=>{const c=db.collection('items');app.get('/',(req,res)=>c.find("+query+").toArray());});",
                 "package.json",manifest);
         var files=sources.entrySet().stream().map(e->new ProjectFile(Path.of(e.getKey()),e.getKey(),e.getKey().endsWith(".json")?ProjectFileType.PACKAGE_JSON:ProjectFileType.JAVASCRIPT,e.getValue().lines().toList())).toList();
         var result=analyzer.analyze(new ProjectStructure(Path.of("."),files));assertThat(result.status()).isEqualTo("PARTIAL");return result;

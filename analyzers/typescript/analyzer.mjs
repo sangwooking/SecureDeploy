@@ -4,7 +4,7 @@ import { destinationOf, joinDestinations, concatenatedDestination, constructedUr
 import { credentialShape, sources as exposureSources, uncertain as exposureUncertain, trails as exposureTrails } from './exposure.mjs';
 import { nodeServer } from './node-server.mjs';
 
-export const VERSION = 'ts-server-v8';
+export const VERSION = 'ts-server-v9';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -250,6 +250,7 @@ export function analyze(input, overrides = {}) {
     if(!ref||seen.has(ref))return;
     tick(state.mod);seen.add(ref);
     if(ref.nodeIdentity)state.nodeMutations?.add(ref.nodeIdentity);
+    if(ref.originParent)invalidateNodeReference(ref.originParent,state,incoming,seen);
     for(const child of ref.properties.values())invalidateNodeReference(child.ref,state,incoming,seen);
     ref.unknown=true;ref.trace=union({trace:ref.trace??[]},incoming).trace;ref.properties.clear();
   }
@@ -624,6 +625,7 @@ export function analyze(input, overrides = {}) {
       if (!v.ref) return v;
       if (!refs.has(v.ref)) {
         const copy = { ...v.ref, properties: new Map() }; refs.set(v.ref, copy);
+        if(v.ref.originParent)copy.originParent=clone({ref:v.ref.originParent}).ref;
         for (const [key, property] of v.ref.properties) { tick(state.mod); copy.properties.set(key, clone(property)); }
       }
       return { ...v, ref: refs.get(v.ref) };

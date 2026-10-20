@@ -436,3 +436,25 @@ so its immediate parent is not labeled vulnerable. Mongoose populate's patch
 and added tests establish a narrower change, not full application safety;
 its library API and oversized test file remain outside supported flow scope.
 Original sources and failed candidate-pair evidence remain outside Git.
+
+## Hardening #6: strict constructor effects and cursor execution
+
+Worker v9 caches AST-only constructor plans, never argument heaps or results.
+At the existing depth boundary, only fresh fields, const aliases, deferred
+method declarations and verified collection factories can be applied as MUST.
+Unknown calls/branches/computed writes remain UNKNOWN; MAY is not promoted.
+Returning a different object/function and non-constructible functions cannot
+leave a phantom instance. Summary evidence is bounded and explicitly not a
+whole-function trace. File, call/import depth, work and memory caps are unchanged.
+
+MongoDB find creates a cursor; toArray/next provide separate consumption
+evidence. Creation alone is neither an execution Finding nor a true negative.
+Origin uncertainty propagates through client/db/collection/cursor references.
+See the [official cursor documentation](https://www.mongodb.com/docs/drivers/node/current/crud/query/cursor/).
+
+`constructor_effects.py` replays frozen Grade B manifests from outside Git.
+Validation and explicitly released implementation-held-out variants are
+separate, not independently authored or blind. Original five-module failures
+are retained alongside added local-helper variants; do not silently replace
+or relabel them. No new supported Grade A CVE pair was established. Original
+official examples remain Grade C scope observations, not safe projects.

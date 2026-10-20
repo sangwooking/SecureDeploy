@@ -194,7 +194,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
       <p>정적으로 연결된 요청·함수 호출만 확인합니다. 데이터 조회 근거는 소유권 검증의 증명이 아니며, 미확인 호출은 안전이나 취약점 확정으로 처리하지 않습니다.</p>
       <ul className="coverage-file-list">{snapshot.nodeUses.map((use,i)=><li key={i}>
         <code className="finding-location">{location(use.location)}</code>
-        <span>{use.kind==='INPUT_TO_EXECUTION'?'요청 입력이 실행 문자열로 전달됨':use.kind==='STATIC_OR_DATA_ONLY'?'고정 문자열 또는 일반 데이터 처리':use.kind==='DATA_QUERY_NOT_AUTHORIZATION_PROOF'?'데이터 조회 확인 · 접근권한은 미확인':'객체 출처 또는 값 전달을 확인하지 못함'}</span>
+        <span>{use.kind==='INPUT_TO_EXECUTION'?'요청 입력이 실행 문자열로 전달됨':use.kind==='STATIC_OR_DATA_ONLY'?'고정 문자열 또는 일반 데이터 처리':use.kind==='DATA_QUERY_NOT_AUTHORIZATION_PROOF'?'데이터 조회 확인 · 접근권한은 미확인':use.kind==='CONSTRUCTOR_SUMMARY_MUST'?'제한된 생성자의 필드 전달·읽기 효과 확인':use.kind==='CONSTRUCTOR_SUMMARY_UNKNOWN'?'생성자 효과를 확인하지 못함':use.kind==='CURSOR_CREATED_EXECUTION_NOT_OBSERVED'?'커서 구성 단계 · 이 근거만으로 실행은 미확인':'객체 출처 또는 값 전달을 확인하지 못함'}</span>
         <p>{use.operation} · {use.ruleId}</p>
         <ul>{use.trace.map((entry,j)=><li key={j}>{text(entry.kind)} · <code>{location(entry)}</code></li>)}</ul>
         {use.limitations.map((limit,j)=><p key={j}>{text(limit)}</p>)}

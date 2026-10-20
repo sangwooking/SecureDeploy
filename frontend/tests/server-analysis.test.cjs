@@ -80,3 +80,9 @@ test('Express evidence keeps unknown database receivers and resource authorizati
   for(const text of ['입력값을 코드로 실행하는지','요청 본문','Express 코드 실행·데이터 접근 근거 (1)','객체 출처 또는 값 전달을 확인하지 못함','소유권 검증의 증명이 아니며'])assert.ok(html.includes(text),text);
   assert.ok(!html.includes('요청 값이 데이터베이스 쿼리에 들어갑니다'));
 });
+test('constructor effect proof and cursor creation are not execution or whole-function safety',()=>{
+  const data=fixture();data.validatedFindings=[];
+  data.nodeUses=['CONSTRUCTOR_SUMMARY_MUST','CONSTRUCTOR_SUMMARY_UNKNOWN','CURSOR_CREATED_EXECUTION_NOT_OBSERVED'].map(kind=>({ruleId:'JS_CONSTRUCTOR_EFFECT',kind,operation:'STATIC_ONLY',location:data.findings[0].sink,trace:[],limitations:[]}));
+  const html=render(data);
+  for(const phrase of ['제한된 생성자의 필드 전달·읽기 효과 확인','생성자 효과를 확인하지 못함','커서 구성 단계 · 이 근거만으로 실행은 미확인'])assert.ok(html.includes(phrase),phrase);
+});

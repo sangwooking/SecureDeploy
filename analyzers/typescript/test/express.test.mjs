@@ -31,14 +31,14 @@ test('CommonJS registration, constructor member and DAO closure connect only sta
   const r=run(express(`const routes=require('./routes');const MongoClient=require('mongodb').MongoClient;MongoClient.connect('unused',(err,db)=>{routes(app,db)});`),[
     {filePath:'routes.cjs',content:`const Handler=require('./handler');module.exports=(app,db)=>{const h=new Handler(db);app.get('/items/:id',h.show);};`},
     {filePath:'handler.cjs',content:`const Store=require('./store').Store;function Handler(db){const store=new Store(db);this.show=(req,res)=>store.find(req.query.limit)}module.exports=Handler;`},
-    {filePath:'store.cjs',content:`function Store(db){const collection=db.collection('items');this.find=(value)=>{const query=()=>({$where:'this.amount > '+value});return collection.find(query());};}module.exports.Store=Store;`},
+    {filePath:'store.cjs',content:`function Store(db){const collection=db.collection('items');this.find=(value)=>{const query=()=>({$where:'this.amount > '+value});return collection.find(query()).toArray();};}module.exports.Store=Store;`},
   ]);
   assert.equal(strong(r).length,1);assert.equal(strong(r)[0].ruleId,'JS_MONGO_WHERE_INPUT_FLOW');
   assert.equal(strong(r)[0].kind,'CWE-943');assert.ok(strong(r)[0].flow.some(l=>l.kind==='FUNCTION_ARGUMENT'));
 });
 test('Mongo query execution, not a property name, is required', () => {
   for(const [query,expected]of [[`{$where:'this.a > '+req.query.value}`,1],[`{$where:'this.a > 3'}`,0],[`{value:req.query.value}`,0],[`{$where:'this.a > '+parseInt(req.query.value,10)}`,0]]) {
-    const r=run(express(`const {MongoClient}=require('mongodb');MongoClient.connect('unused',(err,db)=>{const c=db.collection('items');app.get('/',(req,res)=>c.find(${query}));});`));
+    const r=run(express(`const {MongoClient}=require('mongodb');MongoClient.connect('unused',(err,db)=>{const c=db.collection('items');app.get('/',(req,res)=>c.find(${query}).toArray());});`));
     assert.equal(strong(r).length,expected,query);
   }
   assert.equal(strong(run(express(`app.get('/',(req,res)=>{const query={$where:req.query.code};return fake.find(query)});`))).length,0);
@@ -53,6 +53,6 @@ test('documented Express locals and HTTP server adapter do not replace the route
   assert.equal(strong(r).length,1);
 });
 test('conditional query factory and function-expression constructor retain distinct query alternatives',()=>{
-  const r=run(express(`const {MongoClient}=require('mongodb');const Store=function(db){if(false===(this instanceof Store))return new Store(db);const c=db.collection('items');this.find=(input)=>{const build=()=>{if(input)return {$where:'this.x > '+input};return {x:1};};return c.find(build());};};MongoClient.connect('unused',(err,db)=>{const store=new Store(db);app.get('/',(req,res)=>store.find(req.query.value));});`));
+  const r=run(express(`const {MongoClient}=require('mongodb');const Store=function(db){if(false===(this instanceof Store))return new Store(db);const c=db.collection('items');this.find=(input)=>{const build=()=>{if(input)return {$where:'this.x > '+input};return {x:1};};return c.find(build()).toArray();};};MongoClient.connect('unused',(err,db)=>{const store=new Store(db);app.get('/',(req,res)=>store.find(req.query.value));});`));
   assert.equal(strong(r).filter(f=>f.ruleId==='JS_MONGO_WHERE_INPUT_FLOW').length,1,JSON.stringify(r.files));
 });
