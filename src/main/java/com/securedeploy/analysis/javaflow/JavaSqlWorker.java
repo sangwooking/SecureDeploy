@@ -7,10 +7,11 @@ import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import javax.xml.stream.*;
 
 /** Trusted JDK-only worker. Target text is parsed, never attributed, compiled or loaded. */
 public final class JavaSqlWorker {
-    public static final String VERSION = "java-sql-v2";
+    public static final String VERSION = "java-sql-v3";
     public record Source(String path, String content) { }
     public record Location(String filePath, int line, int column, String functionName, String kind) { }
     public record FileResult(String filePath, String parseStatus, int entrypoints, int functions,
@@ -18,8 +19,15 @@ public final class JavaSqlWorker {
     public record MethodResult(String filePath, int startLine, int endLine, boolean safeForLegacy) { }
     public record Use(String kind, String api, Location location, List<Location> trace,
                       int bindingCalls, List<String> limitations) { }
+    public record DataAccess(String framework, String status, String operation, Location location,
+                             Location declaration, List<Location> trace, List<String> limitations) { }
     public record Result(String version, String status, List<FileResult> files, List<MethodResult> methods,
-                         List<Use> uses, List<String> limitations) { }
+                         List<Use> uses, List<String> limitations, List<DataAccess> dataAccess) {
+        public Result { dataAccess=dataAccess==null?List.of():List.copyOf(dataAccess); }
+        public Result(String version,String status,List<FileResult> files,List<MethodResult> methods,List<Use> uses,List<String> limitations) {
+            this(version,status,files,methods,uses,limitations,List.of());
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         try (var input = new DataInputStream(System.in); var output = new DataOutputStream(System.out)) {
@@ -35,7 +43,17 @@ public final class JavaSqlWorker {
                 if (content.length() > 100_000 || chars > 1_000_000) throw new IOException("INPUT_LIMIT");
                 sources.add(new Source(path, content));
             }
-            write(output, new Engine(sources).run());
+            var xml=new ArrayList<Source>();
+            int first=input.read();
+            int xmlCount=first<0?0:bounded((first<<24)|(input.readUnsignedByte()<<16)|(input.readUnsignedByte()<<8)|input.readUnsignedByte(),100-count);
+            for(int i=0;i<xmlCount;i++) {
+                String path=input.readUTF();int size=bounded(input.readInt(),400_000);byte[] bytes=input.readNBytes(size);
+                if(bytes.length!=size||path.length()>1024)throw new IOException("INVALID_INPUT");
+                String content=new String(bytes,StandardCharsets.UTF_8);chars+=content.length();
+                if(content.length()>100_000||chars>1_000_000)throw new IOException("INPUT_LIMIT");
+                xml.add(new Source(path,content));
+            }
+            write(output, new Engine(sources,xml).run());
         }
     }
 
@@ -54,6 +72,12 @@ public final class JavaSqlWorker {
             out.writeInt(u.bindingCalls()); strings(out, u.limitations());
         }
         strings(out, r.limitations());
+        out.writeInt(r.dataAccess().size());
+        for(var a:r.dataAccess()) {
+            out.writeUTF(a.framework());out.writeUTF(a.status());out.writeUTF(a.operation());location(out,a.location());
+            out.writeBoolean(a.declaration()!=null);if(a.declaration()!=null)location(out,a.declaration());
+            out.writeInt(a.trace().size());for(var l:a.trace())location(out,l);strings(out,a.limitations());
+        }
     }
     public static Result read(DataInputStream in) throws IOException {
         String version = in.readUTF(), status = in.readUTF();
@@ -71,7 +95,13 @@ public final class JavaSqlWorker {
             for (int j = 0, k = bounded(in.readInt(), 20); j < k; j++) trace.add(location(in));
             uses.add(new Use(kind, api, l, trace, bounded(in.readInt(), 10000), strings(in)));
         }
-        return new Result(version, status, files, methods, uses, strings(in));
+        var notes=strings(in);var accesses=new ArrayList<DataAccess>();
+        for(int i=0,n=bounded(in.readInt(),200);i<n;i++) {
+            String framework=in.readUTF(),state=in.readUTF(),operation=in.readUTF();Location call=location(in),decl=in.readBoolean()?location(in):null;
+            var trace=new ArrayList<Location>();for(int j=0,k=bounded(in.readInt(),20);j<k;j++)trace.add(location(in));
+            accesses.add(new DataAccess(framework,state,operation,call,decl,List.copyOf(trace),strings(in)));
+        }
+        return new Result(version, status, files, methods, uses, notes,List.copyOf(accesses));
     }
     private static void location(DataOutputStream out, Location l) throws IOException {
         out.writeUTF(l.filePath()); out.writeInt(l.line()); out.writeInt(l.column()); out.writeUTF(l.functionName()); out.writeUTF(l.kind());
@@ -88,6 +118,9 @@ public final class JavaSqlWorker {
     private record Unit(Source source, CompilationUnitTree tree, SourcePositions positions,
                         Map<String,String> imports, Set<String> localTypes) { }
     private record Method(Unit unit, ClassTree owner, MethodTree tree, Map<String,String> fields) { }
+    private record TypeInfo(Unit unit,ClassTree tree,Map<String,String> fields) { }
+    private record Declaration(TypeInfo owner,MethodTree tree) { }
+    private record MapperSql(String namespace,String id,String sql,boolean dynamic,Location location) { }
     private record Val(String type, Object constant, boolean input, boolean unknown, List<Location> trace, Val sql) {
         static Val literal(Object value) { return new Val("VALUE", value, false, false, List.of(), null); }
         static Val unknownValue() { return new Val("VALUE", null, false, true, List.of(), null); }
@@ -112,6 +145,13 @@ public final class JavaSqlWorker {
 
     private static final class Engine {
         final List<Source> sources;
+        final List<Source> xmlSources;
+        final Map<String,TypeInfo> types=new LinkedHashMap<>();
+        final Set<String> ambiguousTypes=new HashSet<>();
+        final List<Declaration> declarations=new ArrayList<>();
+        final Map<String,List<MapperSql>> mapperSql=new HashMap<>();
+        final LinkedHashMap<String,DataAccess> dataAccess=new LinkedHashMap<>();
+        final Map<TypeInfo,Map<String,Boolean>> injectionCache=new HashMap<>();
         final List<FileResult> files = new ArrayList<>();
         final List<Method> methods = new ArrayList<>();
         final Map<Method, List<Use>> executions = new LinkedHashMap<>();
@@ -121,16 +161,18 @@ public final class JavaSqlWorker {
         final Map<MethodResult,Boolean> safeStatements = new LinkedHashMap<>();
         int nodes, steps, entrypoints;
         long deadline = System.nanoTime() + 5_000_000_000L;
-        Engine(List<Source> sources) { this.sources = sources; }
+        Engine(List<Source> sources,List<Source> xmlSources) { this.sources = sources;this.xmlSources=xmlSources; }
         void tick() { if (++steps > 30000 || System.nanoTime() > deadline) throw new Budget(); }
         Result run() {
             var compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null) return new Result(VERSION,"UNAVAILABLE",List.of(),List.of(),List.of(),List.of("JDK_PARSER_UNAVAILABLE"));
             parse(compiler);
+            parseMappers();
             for (var m : methods) if (isEntry(m)) {
                 entrypoints++;
                 var env = new Env();
-                m.fields().forEach((name,type)->{env.types.put(name,type);env.values.put(name,typed(m,type,Val.unknownValue()));});
+                try {
+                initialize(m,env);
                 for (var p : m.tree().getParameters()) {
                     String type = resolve(m.unit(),p.getType().toString());
                     Val v = typed(m,type,Val.unknownValue());
@@ -143,7 +185,7 @@ public final class JavaSqlWorker {
                     }
                     env.values.put(p.getName().toString(),v);env.types.put(p.getName().toString(),type);
                 }
-                try { call(m,env,0); }
+                call(m,env,0); }
                 catch (Budget exhausted) { limits.add("FLOW_STEP_OR_TIME_LIMIT"); complete.put(m,false); break; }
             }
             var summaries = new ArrayList<MethodResult>();
@@ -172,7 +214,7 @@ public final class JavaSqlWorker {
             var notes=new ArrayList<>(limits);
             notes.add("BOUNDED_SPRING_AND_SERVLET_ONLY");notes.add("API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF");
             notes.add("NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING");
-            return new Result(VERSION, sources.isEmpty()?"NOT_APPLICABLE":"PARTIAL",coverage,summaries,List.copyOf(uses.values()),notes);
+            return new Result(VERSION, sources.isEmpty()?"NOT_APPLICABLE":"PARTIAL",coverage,summaries,List.copyOf(uses.values()),notes,List.copyOf(dataAccess.values()));
         }
         void parse(JavaCompiler compiler) {
             var diagnostics=new DiagnosticCollector<JavaFileObject>();
@@ -233,22 +275,247 @@ public final class JavaSqlWorker {
                 for(var source:sources)if(!seen.contains(source.path()))
                     files.add(new FileResult(source.path(),"PARSE_FAILED",0,0,0,0,List.of("JAVA_UNIT_NOT_RETURNED")));
             }catch(IOException|RuntimeException|StackOverflowError failure) {
-                methods.clear();files.clear();limits.add("JAVA_PARSER_BATCH_FAILED");
+                methods.clear();types.clear();declarations.clear();files.clear();limits.add("JAVA_PARSER_BATCH_FAILED");
                 for(var source:sources)files.add(new FileResult(source.path(),failure instanceof StackOverflowError?"LIMIT_EXCEEDED":"PARSE_FAILED",0,0,0,0,List.of("JAVA_PARSER_BATCH_FAILED")));
             }
         }
         void index(Unit unit, ClassTree owner) {
             var fields=new HashMap<String,String>();
             for (var member : owner.getMembers()) if (member instanceof VariableTree v) fields.put(v.getName().toString(),resolve(unit,v.getType().toString()));
+            var info=new TypeInfo(unit,owner,fields);String fqn=typeName(info);
+            if(types.putIfAbsent(fqn,info)!=null){limits.add("AMBIGUOUS_TYPE_IDENTITY");ambiguousTypes.add(fqn);}
+            for(var member:owner.getMembers())if(member instanceof MethodTree method) {
+                if(declarations.size()>=1000){limits.add("METHOD_INDEX_LIMIT");break;}
+                declarations.add(new Declaration(info,method));
+            }
             for (var member : owner.getMembers()) if (member instanceof MethodTree method && method.getBody()!=null) {
+                if(declarations.stream().noneMatch(d->d.owner()==info&&d.tree()==method))continue;
                 if (methods.size()>=1000) { limits.add("METHOD_INDEX_LIMIT"); return; }
                 methods.add(new Method(unit,owner,method,fields));
+            }
+        }
+        String typeName(TypeInfo info) {
+            return (info.unit().tree().getPackageName()==null?"":info.unit().tree().getPackageName()+".")+info.tree().getSimpleName();
+        }
+        TypeInfo type(Unit unit,String name) {
+            String resolved=resolve(unit,name);
+            String local=(unit.tree().getPackageName()==null?"":unit.tree().getPackageName()+".")+resolved;
+            String key=types.containsKey(resolved)?resolved:local;
+            return ambiguousTypes.contains(key)?null:types.get(key);
+        }
+        boolean ann(Unit unit,AnnotationTree annotation,String fqn) {
+            String name=resolve(unit,annotation.getAnnotationType().toString());
+            if(name.equals(fqn))return true;
+            return !name.contains(".")&&name.equals(fqn.substring(fqn.lastIndexOf('.')+1))
+                    &&unit.imports().values().stream().filter(v->v.endsWith(".*")).count()==1
+                    &&unit.imports().containsKey(fqn.substring(0,fqn.lastIndexOf('.')+1)+"*");
+        }
+        boolean component(TypeInfo info) {
+            return info.tree().getModifiers().getAnnotations().stream().anyMatch(a->Set.of("Service","Repository","Component","Controller").stream()
+                    .anyMatch(n->ann(info.unit(),a,"org.springframework.stereotype."+n)));
+        }
+        boolean conditional(TypeInfo info) {
+            return info.tree().getModifiers().getAnnotations().stream().anyMatch(a->{String n=a.getAnnotationType().toString();return n.endsWith("Profile")||n.contains("Conditional")||n.endsWith("Qualifier");});
+        }
+        boolean base(TypeInfo info,Set<String> wanted,Set<String> seen,int depth) {
+            if(info==null||depth>3||!seen.add(typeName(info)))return false;
+            var parents=new ArrayList<Tree>(info.tree().getImplementsClause());
+            if(info.tree().getExtendsClause()!=null)parents.add(info.tree().getExtendsClause());
+            for(var parent:parents) {
+                String name=resolve(info.unit(),parent.toString());if(wanted.contains(name))return true;
+                TypeInfo resolved=type(info.unit(),name);
+                if(resolved!=null&&wanted.contains(typeName(resolved)))return true;
+                if(base(resolved,wanted,seen,depth+1))return true;
+            }
+            return false;
+        }
+        String framework(TypeInfo info) {
+            if(info==null)return "UNKNOWN";
+            if(base(info,Set.of("org.springframework.data.jpa.repository.JpaRepository","org.springframework.data.repository.Repository","org.springframework.data.repository.CrudRepository","org.springframework.data.repository.ListCrudRepository","org.springframework.data.repository.PagingAndSortingRepository"),new HashSet<>(),0))return "SPRING_DATA_JPA";
+            if(base(info,Set.of("com.baomidou.mybatisplus.extension.service.impl.ServiceImpl","com.baomidou.mybatisplus.extension.service.IService","com.baomidou.mybatisplus.core.mapper.BaseMapper"),new HashSet<>(),0))return "MYBATIS_PLUS";
+            if(mapperSql.containsKey(typeName(info))||info.tree().getModifiers().getAnnotations().stream().anyMatch(a->ann(info.unit(),a,"org.apache.ibatis.annotations.Mapper")))return "MYBATIS";
+            return "APPLICATION";
+        }
+        TypeInfo implementation(TypeInfo declared) {
+            if(declared==null||conditional(declared))return null;
+            if(declared.tree().getKind()!=Tree.Kind.INTERFACE&&!declared.tree().getModifiers().getFlags().contains(javax.lang.model.element.Modifier.ABSTRACT))return declared;
+            var candidates=types.values().stream().filter(t->!ambiguousTypes.contains(typeName(t))&&component(t)
+                    &&t.tree().getKind()!=Tree.Kind.INTERFACE&&!t.tree().getModifiers().getFlags().contains(javax.lang.model.element.Modifier.ABSTRACT)
+                    &&base(t,Set.of(typeName(declared)),new HashSet<>(),0)).toList();
+            if(candidates.size()==1&&!conditional(candidates.get(0)))return candidates.get(0);
+            if(candidates.isEmpty()&&!framework(declared).equals("APPLICATION"))return declared;
+            return null;
+        }
+        boolean injected(TypeInfo info,String field) {
+            var cache=injectionCache.computeIfAbsent(info,k->new HashMap<>());
+            if(cache.containsKey(field))return cache.get(field);
+            boolean result=computeInjected(info,field);cache.put(field,result);return result;
+        }
+        boolean computeInjected(TypeInfo info,String field) {
+            var variable=info.tree().getMembers().stream().filter(t->t instanceof VariableTree v&&v.getName().contentEquals(field)).map(t->(VariableTree)t).findFirst();
+            if(variable.isEmpty())return false;
+            var annotations=variable.get().getModifiers().getAnnotations();
+            if(annotations.stream().anyMatch(a->a.getAnnotationType().toString().endsWith("Qualifier")))return false;
+            boolean[] mutated={false};
+            for(var member:info.tree().getMembers())if(member instanceof MethodTree method&&method.getReturnType()!=null) {
+                new TreeScanner<Void,Void>() {
+                    @Override public Void scan(Tree tree,Void unused){if(tree!=null)tick();return super.scan(tree,unused);}
+                    boolean target(Tree tree){return tree.toString().equals(field)||tree.toString().equals("this."+field);}
+                    @Override public Void visitAssignment(AssignmentTree tree,Void unused){if(target(tree.getVariable()))mutated[0]=true;return super.visitAssignment(tree,unused);}
+                    @Override public Void visitCompoundAssignment(CompoundAssignmentTree tree,Void unused){if(target(tree.getVariable()))mutated[0]=true;return super.visitCompoundAssignment(tree,unused);}
+                }.scan(method.getBody(),null);
+            }
+            if(mutated[0])return false;
+            if(annotations.stream().anyMatch(a->a.getArguments().isEmpty()&&(ann(info.unit(),a,"org.springframework.beans.factory.annotation.Autowired")||ann(info.unit(),a,"jakarta.inject.Inject")||ann(info.unit(),a,"javax.inject.Inject"))))return true;
+            var constructors=declarations.stream().filter(d->d.owner()==info&&d.tree().getReturnType()==null).toList();
+            if(constructors.size()!=1||constructors.get(0).tree().getBody()==null)return false;
+            var constructor=constructors.get(0).tree();
+            if(constructor.getModifiers().getAnnotations().stream().anyMatch(a->a.getAnnotationType().toString().endsWith("Qualifier")))return false;
+            if(constructor.getBody().getStatements().stream().anyMatch(s->!(s instanceof ExpressionStatementTree e
+                    &&e.getExpression() instanceof AssignmentTree a&&a.getVariable() instanceof MemberSelectTree member
+                    &&member.getExpression().toString().equals("this")&&a.getExpression() instanceof IdentifierTree)))return false;
+            if(constructor.getBody().getStatements().stream().filter(s->s instanceof ExpressionStatementTree e
+                    &&e.getExpression() instanceof AssignmentTree a&&a.getVariable().toString().equals("this."+field)).count()!=1)return false;
+            return constructor.getBody().getStatements().stream().anyMatch(s->s instanceof ExpressionStatementTree e&&e.getExpression() instanceof AssignmentTree a
+                    &&a.getVariable() instanceof MemberSelectTree member&&member.getExpression().toString().equals("this")&&member.getIdentifier().contentEquals(field)
+                    &&a.getExpression() instanceof IdentifierTree parameter&&constructor.getParameters().stream().anyMatch(p->p.getName().contentEquals(parameter.getName())
+                    &&p.getModifiers().getAnnotations().stream().noneMatch(annotation->annotation.getAnnotationType().toString().endsWith("Qualifier"))
+                    &&resolve(info.unit(),p.getType().toString()).equals(info.fields().get(field))));
+        }
+        void initialize(Method method,Env env) {
+            TypeInfo info=types.get(qualified(method));
+            method.fields().forEach((name,t)->{
+                env.types.put(name,t);Val value=typed(method,t,Val.unknownValue());
+                if(info!=null&&injected(info,name)) {
+                    TypeInfo target=implementation(type(info.unit(),t));
+                    if(target!=null)value=new Val("BEAN:"+typeName(target),null,false,false,List.of(),null);
+                }
+                env.values.put(name,value);
+            });
+            if(info!=null&&info.tree().getExtendsClause() instanceof ParameterizedTypeTree parent
+                    &&resolve(info.unit(),parent.getType().toString()).equals("com.baomidou.mybatisplus.extension.service.impl.ServiceImpl")
+                    &&!parent.getTypeArguments().isEmpty()&&!info.fields().containsKey("baseMapper")) {
+                TypeInfo mapper=type(info.unit(),parent.getTypeArguments().get(0).toString());
+                if(mapper!=null){env.values.put("baseMapper",new Val("BEAN:"+typeName(mapper),null,false,false,List.of(),null));env.types.put("baseMapper",typeName(mapper));}
+            }
+        }
+        String annotationSql(Declaration declaration,String fqn) {
+            for(var annotation:declaration.tree().getModifiers().getAnnotations())if(ann(declaration.owner().unit(),annotation,fqn)) {
+                for(var argument:annotation.getArguments()) {
+                    Tree value=argument instanceof AssignmentTree assignment&&assignment.getVariable().toString().equals("value")?assignment.getExpression():argument;
+                    if(value instanceof LiteralTree literal&&literal.getValue() instanceof String sql)return sql;
+                }
+                return null;
+            }
+            return null;
+        }
+        boolean declaredAccess(Method method,MethodInvocationTree node,TypeInfo receiver,List<Val> args,Env env) {
+            String operation=name(node),family=framework(receiver);
+            var candidates=declarations.stream().filter(d->d.owner()==receiver&&d.tree().getName().contentEquals(operation)&&d.tree().getParameters().size()==args.size()).toList();
+            var trace=new ArrayList<Location>();for(var value:args)for(var loc:value.trace())if(!trace.contains(loc)&&trace.size()<20)trace.add(loc);
+            Location call=loc(method,node,"DATA_ACCESS_CALL");
+            if(family.equals("SPRING_DATA_JPA")) {
+                if(candidates.size()>1){access(family,"UNKNOWN",operation,call,null,trace,List.of("AMBIGUOUS_METHOD_DECLARATION"));return true;}
+                String sql=candidates.isEmpty()?null:annotationSql(candidates.get(0),"org.springframework.data.jpa.repository.Query");
+                String status=sql==null?"DERIVED_OPERATION_CONTRACT":sql.contains("#{")||sql.contains("${")?"UNKNOWN":"DECLARED_QUERY_CONTRACT";
+                boolean namedQuery=candidates.stream().anyMatch(d->d.tree().getModifiers().getAnnotations().stream().anyMatch(a->ann(receiver.unit(),a,"org.springframework.data.jpa.repository.Query")));
+                if(sql==null&&namedQuery)status="UNKNOWN";
+                if(!namedQuery&&!operation.matches("(?:find|read|get|query|search|stream|count|exists|delete|remove|save|flush).*"))status="UNKNOWN";
+                access(family,status,operation,call,null,trace,List.of("ORM_SQL_AND_PROXY_RUNTIME_NOT_VERIFIED","CUSTOM_REPOSITORY_IMPLEMENTATION_NOT_VERIFIED"));return true;
+            }
+            var statements=mapperSql.getOrDefault(typeName(receiver),List.of()).stream().filter(s->s.id().equals(operation)).toList();
+            Declaration declaration=candidates.size()==1?candidates.get(0):null;
+            String sql=null;Location source=null;boolean dynamic=false;
+            if(statements.size()==1){var s=statements.get(0);sql=s.sql();source=s.location();dynamic=s.dynamic();}
+            else if(statements.isEmpty()&&declaration!=null)for(String annotation:List.of("Select","Insert","Update","Delete")) {
+                sql=annotationSql(declaration,"org.apache.ibatis.annotations."+annotation);
+                if(sql!=null){source=new Location(receiver.unit().source().path(),(int)receiver.unit().tree().getLineMap().getLineNumber(receiver.unit().positions().getStartPosition(receiver.unit().tree(),declaration.tree())),1,operation,"SQL_DECLARATION");break;}
+            }
+            if(sql!=null||family.equals("MYBATIS")||family.equals("MYBATIS_PLUS")) {
+                if(sql==null||dynamic||declaration==null||statements.size()>1||declaration.tree().getBody()!=null) {
+                    access(family.equals("APPLICATION")?"MYBATIS":family,"UNKNOWN",operation,call,source,trace,List.of("DYNAMIC_INHERITED_OR_AMBIGUOUS_DATA_ACCESS_NOT_MODELED"));return true;
+                }
+                if(sql.isBlank()||sql.contains("<script")||sql.contains("#{#")||sql.contains("${@")) {
+                    access("MYBATIS","UNKNOWN",operation,call,source,trace,List.of("DYNAMIC_SQL_DECLARATION_NOT_MODELED"));return true;
+                }
+                var parameters=new HashMap<String,Val>();
+                for(int i=0;i<declaration.tree().getParameters().size();i++) {
+                    var parameter=declaration.tree().getParameters().get(i);
+                    for(var annotation:parameter.getModifiers().getAnnotations())if(ann(receiver.unit(),annotation,"org.apache.ibatis.annotations.Param"))
+                        for(var argument:annotation.getArguments())if(argument instanceof LiteralTree literal&&literal.getValue() instanceof String key)parameters.merge(key,args.get(i),(first,second)->Val.unknownValue());
+                }
+                Val query=Val.literal(sql);int bindings=0;
+                var matcher=java.util.regex.Pattern.compile("([#$])\\{([^}]{1,256})}").matcher(sql);
+                while(matcher.find()) {
+                    tick();String key=matcher.group(2).split(",",2)[0].strip();
+                    if(matcher.group(1).equals("#")){bindings++;continue;}
+                    Val value=parameters.getOrDefault(key,Val.unknownValue());
+                    query=plus(query,value);
+                }
+                if(source!=null)query=query.step(source);
+                access("MYBATIS",query.unknown()?"UNKNOWN":query.input()?"INPUT_SUBSTITUTION":"DECLARED_VALUE_BINDING",operation,call,source,trace,List.of("FRAMEWORK_PROXY_RUNTIME_NOT_VERIFIED"));
+                record(method,node,query,"MyBatis."+operation,env,bindings);return true;
+            }
+            return false;
+        }
+        void access(String framework,String status,String operation,Location location,Location declaration,List<Location> trace,List<String> notes) {
+            if(dataAccess.size()>=200){limits.add("DATA_ACCESS_RESULT_LIMIT");return;}
+            String key=location.filePath()+":"+location.line()+":"+location.column()+":"+framework+":"+operation;
+            var value=new DataAccess(framework,status,operation.length()>100?"operation":operation,location,declaration,trace.stream().distinct().limit(20).toList(),notes);
+            var prior=dataAccess.get(key);
+            if(prior!=null&&!prior.equals(value))value=new DataAccess(framework,"UNKNOWN",value.operation(),location,declaration,List.of(),List.of("MULTIPLE_CALL_CONTEXTS"));
+            dataAccess.put(key,value);
+        }
+        void parseMappers() {
+            for(var source:xmlSources) {
+                var location=new Location(source.path(),1,1,"mapper","MAPPER_DOCUMENT");
+                try {
+                    tick();var factory=XMLInputFactory.newFactory();
+                    factory.setProperty(XMLInputFactory.SUPPORT_DTD,false);factory.setProperty("javax.xml.stream.isSupportingExternalEntities",false);
+                    factory.setXMLResolver((publicId,systemId,base,namespace)->{throw new XMLStreamException("EXTERNAL_LOADING_DISABLED");});
+                    var reader=factory.createXMLStreamReader(new StringReader(source.content()));
+                    String namespace=null,id=null;int depth=0,statementDepth=-1;boolean dynamic=false;
+                    Location declaration=null;var sql=new StringBuilder();
+                    try {
+                        while(reader.hasNext()) {
+                            tick();int event=reader.next();
+                            if(event==XMLStreamConstants.DTD&&reader.getText().contains("["))throw new XMLStreamException("INTERNAL_DTD_DISABLED");
+                            if(event==XMLStreamConstants.START_ELEMENT) {
+                                depth++;
+                                if(depth>128)throw new XMLStreamException("XML_DEPTH_LIMIT");
+                                String tag=reader.getLocalName();
+                                if(depth==1&&tag.equals("mapper")&&(reader.getNamespaceURI()==null||reader.getNamespaceURI().isEmpty())) {
+                                    namespace=reader.getAttributeValue(null,"namespace");
+                                    if(namespace==null||!namespace.matches("[A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)+"))throw new XMLStreamException("MAPPER_IDENTITY");
+                                } else if(namespace!=null&&depth==2&&Set.of("select","update","insert","delete").contains(tag)) {
+                                    id=reader.getAttributeValue(null,"id");statementDepth=depth;dynamic=reader.getNamespaceURI()!=null&&!reader.getNamespaceURI().isEmpty();sql.setLength(0);
+                                    declaration=new Location(source.path(),reader.getLocation().getLineNumber(),Math.max(1,reader.getLocation().getColumnNumber()),"mapper","SQL_DECLARATION");
+                                } else if(statementDepth>0)dynamic=true;
+                            }else if((event==XMLStreamConstants.CHARACTERS||event==XMLStreamConstants.CDATA)&&statementDepth>0)sql.append(reader.getText());
+                            else if(event==XMLStreamConstants.END_ELEMENT) {
+                                if(depth==statementDepth) {
+                                    if(id==null||!id.matches("[A-Za-z_$][\\w$]*"))throw new XMLStreamException("STATEMENT_IDENTITY");
+                                    var statement=new MapperSql(namespace,id,sql.toString(),dynamic,declaration);
+                                    mapperSql.computeIfAbsent(namespace,k->new ArrayList<>()).add(statement);
+                                    if(mapperSql.values().stream().mapToInt(List::size).sum()>1000)throw new Budget();
+                                    statementDepth=-1;id=null;
+                                }
+                                depth--;
+                            }
+                        }
+                    }finally{reader.close();}
+                    access("MYBATIS",namespace==null?"NOT_APPLICABLE":"PARSED_DECLARATIONS","mapper",location,null,List.of(),List.of("NO_EXTERNAL_DTD_ENTITY_OR_XINCLUDE_LOADING"));
+                }catch(Exception failure) {
+                    if(failure instanceof Budget)limits.add("MAPPER_STEP_OR_TIME_LIMIT");
+                    mapperSql.values().forEach(list->list.removeIf(s->s.location().filePath().equals(source.path())));
+                    access("MYBATIS","NOT_INSPECTED","mapper",location,null,List.of(),List.of("XML_PARSE_OR_BUDGET_FAILURE"));
+                }
             }
         }
         String resolve(Unit u, String type) {
             String clean=type.replaceAll("<.*>","");
             if (clean.contains(".")) return clean;
-            if (u.localTypes().contains(clean)) return "LOCAL:"+clean;
+            if (u.localTypes().contains(clean)) return (u.tree().getPackageName()==null?"":u.tree().getPackageName()+".")+clean;
             if(u.imports().containsKey(clean))return u.imports().get(clean);
             var known=Set.of("Connection","Statement","PreparedStatement","CallableStatement","HttpServlet","HttpServletRequest","Cookie",
                     "RestController","RequestMapping","GetMapping","PostMapping","PutMapping","DeleteMapping","PatchMapping","RequestParam","RequestBody","PathVariable");
@@ -536,20 +803,27 @@ public final class JavaSqlWorker {
                     &&!m.unit().localTypes().contains(owner)&&!env.values.containsKey(receiverText))return new Val("VALUE",null,false,false,List.of(),null);
             if(method.equals("equals")&&args.size()==1 && receiver.constant()!=null&&args.get(0).constant()!=null)return Val.literal(Objects.equals(receiver.constant(),args.get(0).constant()));
             boolean localReceiver=receiverText.isEmpty()||receiverText.equals("this");
-            List<Method> targets=methods.stream().filter(t->t.tree().getName().contentEquals(method)&&t.tree().getParameters().size()==args.size()
+            TypeInfo bean=receiver.type().startsWith("BEAN:")?types.get(receiver.type().substring(5)):null;
+            List<Method> targets=methods.stream().filter(t->!ambiguousTypes.contains(qualified(t))&&t.tree().getName().contentEquals(method)&&t.tree().getParameters().size()==args.size()
                     && (localReceiver&&t.owner()==m.owner()
+                    || bean!=null&&t.owner()==bean.tree()&&!t.tree().getModifiers().getFlags().contains(javax.lang.model.element.Modifier.STATIC)
                     || t.tree().getModifiers().getFlags().contains(javax.lang.model.element.Modifier.STATIC)
                        && (qualified(t).equals(owner)||qualified(t).equals((m.unit().tree().getPackageName()==null?"":m.unit().tree().getPackageName()+".")+owner)))).toList();
+            TypeInfo accessType=bean!=null?bean:localReceiver?types.get(qualified(m)):null;
+            if(targets.isEmpty()&&accessType!=null&&declaredAccess(m,node,accessType,args,env)){env.partial=true;return Val.unknownValue();}
             if(targets.size()==1&&depth<3) {
                 Method target=targets.get(0);var child=new Env();
-                target.fields().forEach((k,t)->{child.types.put(k,t);child.values.put(k,typed(target,t,Val.unknownValue()));});
+                initialize(target,child);
                 for(int i=0;i<args.size();i++) {
                     var parameter=target.tree().getParameters().get(i);String parameterName=parameter.getName().toString();
                     child.types.put(parameterName,resolve(target.unit(),parameter.getType().toString()));
                     child.values.put(parameterName,args.get(i).step(loc(m,node,"FUNCTION_ARGUMENT")));
                 }
-                Flow result=call(target,child,depth+1);env.partial|=child.partial;return result.stopped()?result.value():Val.unknownValue();
+                if(target.owner()!=m.owner())access("APPLICATION","RESOLVED_CALL",method,loc(m,node,"APPLICATION_CALL"),loc(target,target.tree(),"METHOD_DECLARATION"),args.stream().flatMap(v->v.trace().stream()).distinct().limit(20).toList(),List.of("BOUNDED_SOURCE_TYPE_RESOLUTION"));
+                Flow result=call(target,child,depth+1);env.partial|=child.partial;return result.stopped()?result.value().step(loc(m,node,"METHOD_RETURN")):Val.unknownValue();
             }
+            if(args.stream().anyMatch(Val::input)&&!receiverText.equals("System.out")&&!receiverText.equals("System.err"))
+                access("APPLICATION","UNKNOWN",method,loc(m,node,"APPLICATION_CALL"),null,args.stream().flatMap(v->v.trace().stream()).distinct().limit(20).toList(),List.of(targets.size()>1?"AMBIGUOUS_OVERLOAD_OR_TARGET":depth>=3?"CALL_DEPTH_LIMIT":"RECEIVER_OR_IMPLEMENTATION_NOT_VERIFIED"));
             if(args.stream().anyMatch(v->v.input()||Set.of("PREPARED","STATEMENT","CONNECTION").contains(v.type()))
                     &&!receiverText.equals("System.out")&&!receiverText.equals("System.err"))env.partial=true;
             Val unknown=receiver;for(var a:args)unknown=join(unknown,a);

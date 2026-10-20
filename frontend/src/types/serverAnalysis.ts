@@ -51,6 +51,8 @@ export interface JavaSqlSnapshot {
       sqlCallSites: number; tracedCallSites: number; limitations: string[] }[];
     uses: { kind: string; api: string; location: AnalysisLocation; trace: AnalysisLocation[];
       bindingCalls: number; limitations: string[] }[];
+    dataAccess?: { framework: string; status: string; operation: string; location: AnalysisLocation;
+      declaration?: AnalysisLocation | null; trace: AnalysisLocation[]; limitations: string[] }[];
   };
   suppressedLegacyCount: number;
   legacyEvidence: { filePath: string; line: number; executions: AnalysisLocation[] }[];

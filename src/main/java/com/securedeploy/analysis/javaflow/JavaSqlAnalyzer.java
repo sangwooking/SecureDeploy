@@ -34,6 +34,12 @@ public class JavaSqlAnalyzer {
         }
         var notRun=new ArrayList<>(omitted);sources.forEach(s->notRun.add(new JavaSqlWorker.FileResult(s.path(),"NOT_RUN",0,0,0,0,List.of())));
         if(sources.isEmpty())return unavailable("UNAVAILABLE",notRun,"NO_JAVA_SOURCE_WITHIN_LIMITS");
+        var xmlSources=new ArrayList<JavaSqlWorker.Source>();var declarationLines=new HashMap<String,Integer>();boolean xmlLimited=false;
+        for(var file:project.analysisFiles().stream().filter(f->f.type()==ProjectFileType.XML&&f.lines().stream().anyMatch(l->l.contains("<mapper"))).sorted(Comparator.comparing(f->f.relativePath())).toList()) {
+            String path=CoverageRecorder.safePath(file.relativePath());long size=file.lines().stream().mapToLong(l->l.length()+1L).sum();
+            if(sources.size()+xmlSources.size()>=100||size>100_000||total+size>1_000_000||path.equals("[redacted-path]")||path.length()>1024){xmlLimited=true;continue;}
+            xmlSources.add(new JavaSqlWorker.Source(path,String.join("\n",file.lines())));declarationLines.put(path,file.lines().size());total+=(int)size;
+        }
         if(!capacity.tryAcquire())return unavailable("UNAVAILABLE",notRun,"ANALYZER_CAPACITY_LIMIT");
         Path directory=null;Process process=null;
         var io=Executors.newFixedThreadPool(2,r->{var t=new Thread(r,"java-sql-io");t.setDaemon(true);return t;});
@@ -48,6 +54,8 @@ public class JavaSqlAnalyzer {
             try(var input=new DataOutputStream(bytes)) {
                 input.writeInt(sources.size());
                 for(var source:sources){byte[] text=source.content().getBytes(StandardCharsets.UTF_8);input.writeUTF(source.path());input.writeInt(text.length);input.write(text);}
+                input.writeInt(xmlSources.size());
+                for(var source:xmlSources){byte[] text=source.content().getBytes(StandardCharsets.UTF_8);input.writeUTF(source.path());input.writeInt(text.length);input.write(text);}
             }
             var builder=new ProcessBuilder(Path.of(System.getProperty("java.home"),"bin","java").toString(),
                     "-Xmx192m","-Xss1m","-XX:MaxMetaspaceSize=96m","-XX:ActiveProcessorCount=1","-jar",jar.toString());
@@ -60,11 +68,12 @@ public class JavaSqlAnalyzer {
             if(process.exitValue()!=0||output.length>2_000_000)return unavailable("UNAVAILABLE",notRun,"JAVA_WORKER_FAILED");
             JavaSqlWorker.Result result;
             try(var input=new DataInputStream(new ByteArrayInputStream(output))){result=JavaSqlWorker.read(input);if(input.read()!=-1)throw new IOException("TRAILING_OUTPUT");}
-            validate(result,lineCounts);
+            validate(result,lineCounts,declarationLines);
             var coverage=new ArrayList<>(result.files());coverage.addAll(omitted);var notes=new ArrayList<>(result.limitations());
             if(files.size()>sources.size())notes.add("SOURCE_SELECTION_LIMIT");
             if(files.size()>sources.size()+omitted.size())notes.add("OMITTED_FILE_DETAILS_TRUNCATED");
-            return new JavaSqlWorker.Result(result.version(),result.status(),coverage,result.methods(),result.uses(),notes);
+            if(xmlLimited)notes.add("MAPPER_SOURCE_SELECTION_LIMIT");
+            return new JavaSqlWorker.Result(result.version(),result.status(),coverage,result.methods(),result.uses(),notes,result.dataAccess());
         } catch(InterruptedException interrupted){Thread.currentThread().interrupt();return unavailable("UNAVAILABLE",notRun,"ANALYSIS_INTERRUPTED");}
         catch(Exception failed){return unavailable("UNAVAILABLE",notRun,"JAVA_WORKER_OR_PROTOCOL_FAILED");}
         finally {
@@ -99,7 +108,7 @@ public class JavaSqlAnalyzer {
             candidates.add(new JavaSqlSnapshot.Candidate(identity(l),"JAVA_SQL_INPUT_FLOW","REVIEW_REQUIRED","NOT_COMPARED",l,use.trace(),
                     "사용자가 보낸 값이 SQL 명령문에 들어갈 수 있습니다",
                     "요청 입력이 SQL 구성과 실행 호출까지 전달되는 정적 경로를 확인했습니다. 실제 공격 성공·DB 연결·외부 검증은 확인하지 않았습니다.",
-                    "SQL 문법을 고정하고 값은 PreparedStatement의 set 메서드 또는 JdbcTemplate 매개변수로 분리하세요. 테이블·열 이름은 서버의 고정된 선택지로 제한하세요.",
+                    "SQL 문법을 고정하고 값은 PreparedStatement의 set 메서드, JdbcTemplate 매개변수 또는 MyBatis의 #{이름} 값 바인딩으로 분리하세요. 테이블·열 이름은 서버의 고정된 선택지로 제한하세요.",
                     List.of("입력·SQL 구성·실행 위치와 외부 검증 계층을 확인하세요.","로컬 테스트에서 정상 값과 따옴표·SQL 문법 입력이 값으로만 처리되는지 확인하세요.","수정 후 같은 프로젝트를 재검사하세요. 이 새 후보는 기존 점수·Risk·해결 수에 합산되지 않습니다.")));
         }
         return new Outcome(List.copyOf(remaining),new JavaSqlSnapshot(result,List.copyOf(candidates),suppressed,List.copyOf(refs)));
@@ -113,14 +122,20 @@ public class JavaSqlAnalyzer {
         catch(Exception impossible){throw new IllegalStateException("IDENTITY_UNAVAILABLE");}
     }
     private JavaSqlWorker.Result unavailable(String status,List<JavaSqlWorker.FileResult> files,String reason){return new JavaSqlWorker.Result(JavaSqlWorker.VERSION,status,files,List.of(),List.of(),List.of(reason));}
-    private void validate(JavaSqlWorker.Result r,Map<String,Integer> files) throws IOException {
+    private void validate(JavaSqlWorker.Result r,Map<String,Integer> files,Map<String,Integer> declarations) throws IOException {
         if(!r.version().equals(JavaSqlWorker.VERSION)||!Set.of("PARTIAL","NOT_APPLICABLE").contains(r.status())
                 ||r.files().size()!=files.size()||!r.files().stream().map(JavaSqlWorker.FileResult::filePath).collect(java.util.stream.Collectors.toSet()).equals(files.keySet()))throw new IOException("INVALID_WORKER_RESULT");
         for(var m:r.methods())if(!files.containsKey(m.filePath())||m.startLine()<1||m.endLine()<m.startLine()||m.endLine()>files.get(m.filePath()))throw new IOException("INVALID_METHOD");
+        var locationsAllowed=new HashMap<>(files);locationsAllowed.putAll(declarations);
         for(var u:r.uses()) {
             if(!Set.of("INPUT_IN_QUERY","STATIC_QUERY","PARAMETERIZED_QUERY","UNRESOLVED_QUERY").contains(u.kind()))throw new IOException("INVALID_USE");
             var locations=new ArrayList<>(u.trace());locations.add(u.location());
-            for(var l:locations)if(!files.containsKey(l.filePath())||l.line()<1||l.line()>files.get(l.filePath())||l.column()<1||l.column()>100_001||l.functionName().length()>100)throw new IOException("INVALID_LOCATION");
+            for(var l:locations)if(!locationsAllowed.containsKey(l.filePath())||l.line()<1||l.line()>locationsAllowed.get(l.filePath())||l.column()<1||l.column()>100_001||l.functionName().length()>100)throw new IOException("INVALID_LOCATION");
+        }
+        for(var a:r.dataAccess()) {
+            if(a.framework().length()>50||a.status().length()>80||a.operation().length()>100)throw new IOException("INVALID_DATA_ACCESS");
+            var locations=new ArrayList<>(a.trace());locations.add(a.location());if(a.declaration()!=null)locations.add(a.declaration());
+            for(var l:locations)if(!locationsAllowed.containsKey(l.filePath())||l.line()<1||l.line()>locationsAllowed.get(l.filePath())||l.column()<1||l.column()>100_001||l.functionName().length()>100)throw new IOException("INVALID_DATA_ACCESS_LOCATION");
         }
     }
 }

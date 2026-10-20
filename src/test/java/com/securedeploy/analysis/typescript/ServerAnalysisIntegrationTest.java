@@ -107,6 +107,32 @@ class ServerAnalysisIntegrationTest {
         assertThat(detail(token,id).at("/serverAnalysis/javaAnalysis").isNull()).isTrue();
     }
 
+    @Test void mapperDeclarationsUseCommonInputsAndPersistWithoutSqlSource() throws Exception {
+        String token=signup();var sources=new LinkedHashMap<String,String>();
+        sources.put("Endpoint.java","package sample; import org.springframework.web.bind.annotation.*; @RestController class Endpoint {@org.springframework.beans.factory.annotation.Autowired Mapper mapper; @GetMapping(\"/\") void inspect(@RequestParam String input){mapper.lookup(input);}}");
+        sources.put("Mapper.java","package sample; interface Mapper {String lookup(@org.apache.ibatis.annotations.Param(\"value\") String value);}");
+        sources.put("queries.xml","<mapper namespace=\"sample.Mapper\"><select id=\"lookup\">SELECT * FROM test_items WHERE name=${value}</select></mapper>");
+        var zip=uploadSources(token,sources);
+        assertThat(zip.at("/serverAnalysis/javaAnalysis/analysis/dataAccess").toString()).contains("INPUT_SUBSTITUTION","queries.xml");
+        assertThat(zip.at("/serverAnalysis/javaAnalysis/findings")).hasSize(1);
+        var roots=new ArrayList<Path>();
+        for(String name:List.of("mapper-public","mapper-private")) {
+            Path root=Files.createDirectory(temp.resolve(name));roots.add(root);
+            for(var entry:sources.entrySet())Files.writeString(root.resolve(entry.getKey()),entry.getValue());
+        }
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/mapper",roots.get(0),roots.get(0)));
+        var pub=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/mapper\",\"scanMode\":\"STANDARD\"}");
+        var meta=new GitHubSourceSnapshot("fixture","mapper","https://github.com/fixture/mapper","main","a".repeat(40),"aaaaaaa",null,null,null,null,3,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/mapper",roots.get(1),roots.get(1),meta));
+        var prv=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        for(var value:List.of(pub,prv))assertThat(value.path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        for(var root:roots)assertThat(root).doesNotExist();
+        long id=zip.path("reviewId").asLong();
+        assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        assertThat(jdbc.queryForObject("select server_analysis_json from reviews where id=?",String.class,id)).contains("dataAccess","INPUT_SUBSTITUTION").doesNotContain("SELECT * FROM test_items");
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+    }
+
     @Test void ssrfUsesCommonSourcesAndSnapshotWithoutChangingRiskOrComparison() throws Exception {
         String token=signup();
         String code="export default {fetch(request){return fetch(new Request(new URL(request.url).searchParams.get('target')));}}";

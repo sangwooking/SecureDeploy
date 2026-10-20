@@ -51,7 +51,7 @@ public class ProjectFileCollector {
         if (isEnvFile(lowerName)) {
             return Optional.of(".env".equals(lowerName) ? ProjectFileType.ENV : ProjectFileType.ENV_FILE);
         }
-        if ("pom.xml".equals(lowerName)) {
+        if (lowerName.endsWith(".xml")) {
             return Optional.of(ProjectFileType.XML);
         }
         if ("build.gradle".equals(lowerName) || "build.gradle.kts".equals(lowerName)) {
