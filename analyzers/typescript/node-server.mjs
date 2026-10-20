@@ -143,7 +143,8 @@ export function nodeServer(api) {
     if(!state.nodeMode)return;
     const method=ts.isPropertyAccessExpression(callee)?callee.name.text:undefined;
     if(global&&ts.isIdentifier(callee)&&callee.text==='require'&&ts.isCallExpression(node))
-      return {value:args.length===1&&literal(args[0])&&typeof args[0].constant==='string'?dependency(state.mod,args[0].constant):unknown()};
+      return {value:args.length===1&&literal(args[0])&&typeof args[0].constant==='string'
+        ? (state.context.isolate??(v=>v))(dependency(state.mod,args[0].constant)):unknown()};
     if(!callable?.unknown&&!callable?.ref?.unknown&&(callable?.native==='express'||callable?.native==='router')) {
       if(apps.length>=limits.maxResults){note(state.mod,'EXPRESS_APP_LIMIT');return {value:unknown()};}
       const app=object('express-router');app.app=callable.native==='express';app.routes=[];app.mounts=[];if(app.app)apps.push(app);return {value:app};

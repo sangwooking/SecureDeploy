@@ -14,6 +14,7 @@ const labels: Record<string, string> = {
   MONGODB_RECEIVER_OR_OBJECT_FLOW_UNRESOLVED:'MongoDB 객체 출처 또는 객체 전달을 확인하지 못함',
   STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF:'정적 경로이며 실제 공격 성공은 미검증',
   MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED:'미들웨어의 입력 검증과 실제 실행 환경은 미확인',
+  MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED:'각 요청은 초기화 상태에서 따로 검사합니다. 여러 요청 사이의 전역 상태 변화는 미검증입니다.',
   OBJECT_OWNERSHIP_AND_MIDDLEWARE_NOT_VERIFIED:'객체 소유권과 미들웨어 보호는 미확인',
   INTERNAL_ERROR_DETAIL:'내부 오류 스택 정보',ERROR_DETAIL_CONTEXT_UNKNOWN:'오류 스택 문맥 미확인',HTTP_CLIENT_CALL:'외부 HTTP 호출',
   HTTP_LIBRARY_VERSION_AND_PATCHES_UNVERIFIED:'HTTP 라이브러리·버전·변경 여부 미확인',PROXY_PLATFORM_AND_TOTAL_DEADLINE_UNKNOWN:'프록시·플랫폼 제한·전체 요청 기한 미확인',STATIC_CALL_NOT_SERVICE_FAILURE_PROOF:'정적 호출 근거이며 운영 장애를 확인한 것은 아님',

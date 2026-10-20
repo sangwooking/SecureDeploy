@@ -3,8 +3,9 @@ import path from 'node:path';
 import { destinationOf, joinDestinations, concatenatedDestination, constructedUrl, unresolvedDestination } from './destination.mjs';
 import { credentialShape, sources as exposureSources, uncertain as exposureUncertain, trails as exposureTrails } from './exposure.mjs';
 import { nodeServer } from './node-server.mjs';
+import { entryState } from './entry-state.mjs';
 
-export const VERSION = 'ts-server-v9';
+export const VERSION = 'ts-server-v10';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -832,6 +833,7 @@ export function analyze(input, overrides = {}) {
     }
     return { values: [], stops: false };
   }
+  const canonicalFunctions = new WeakMap();
   function invoke(fn, args, depth, context, stack, uncertain = false, exposureUncertain = false,thisValue,constructing=false) {
     const { mod, node } = fn;
     if (depth > limits.maxDepth || stack.has(fn)) {
@@ -841,7 +843,7 @@ export function analyze(input, overrides = {}) {
       }
       note(mod, 'CALL_DEPTH_EXCEEDED'); return { ...union(...args), unknown: true };
     }
-    tick(mod); mod.visited.add(fn); mod.record.functionsAnalyzed = mod.visited.size;
+    tick(mod); mod.visited.add(canonicalFunctions.get(fn) ?? fn); mod.record.functionsAnalyzed = mod.visited.size;
     const state = { mod, fn, vars: new Map(fn.closure??[]), depth, context, uncertain, exposureUncertain,
       nodeMode:!!fn.nodeMode,nodeMutations:new Set(),thisValue:fn.lexicalThis??thisValue,constructing,stack: new Set([...stack, fn]) };
     const names = (binding, callback) => {
@@ -894,8 +896,13 @@ export function analyze(input, overrides = {}) {
   for (const mod of modules.values()) for (const entry of mod.entries) {
     const context = { entry: loc(entry.fn.node, mod, entry.kind, entry.fn), checks: [], defenses: [], resources: [] };
     try {
+      // Runtime require() must use this same graph as captured module values.
+      const isolate = entryState(() => tick(mod), canonicalFunctions);
+      Object.defineProperty(context, 'isolate', {value: isolate});
+      const entryFn = entry.fn.nodeMode ? isolate(entry.fn) : entry.fn;
+      if(entry.fn.nodeMode)note(mod,'MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED');
       if(entry.registration){context.checks.push(entry.registration);note(mod,'EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED');}
-      const returned = invoke(entry.fn, entry.kind === 'WORKER_FETCH' ? [value('request'), value('env')] : entry.kind==='EXPRESS_HANDLER'
+      const returned = invoke(entryFn, entry.kind === 'WORKER_FETCH' ? [value('request'), value('env')] : entry.kind==='EXPRESS_HANDLER'
         ?[value('express-request'),value('express-response'),unknown()]:[value('context')], 0, context, new Set(),!!entry.uncertain);
       if (returned.responseLocations?.length) observeExposure(returned, entry.fn.node, { mod, fn: entry.fn, uncertain: false }, 'HTTP_RESPONSE_RETURN');
     } catch { note(mod, 'ANALYSIS_BUDGET_EXCEEDED'); }
