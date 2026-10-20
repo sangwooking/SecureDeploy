@@ -1,4 +1,6 @@
 import unittest
+import json
+from pathlib import Path
 from hardening3 import summary
 
 class DataAccessMetadataTest(unittest.TestCase):
@@ -13,5 +15,27 @@ class DataAccessMetadataTest(unittest.TestCase):
         self.assertEqual(result['java']['dataAccess']['MYBATIS_PLUS:UNKNOWN'],1)
         del row['java']['analysis']['dataAccess']
         self.assertEqual(summary(row)['java']['dataAccess'],{})
+
+    def test_frozen_evidence_preserves_risk_and_scope_cautions(self):
+        report=json.loads(Path(__file__).with_name('hardening3-results.json').read_text())
+        self.assertEqual(len(report['failureCaseHistory']),2)
+        self.assertFalse(report['riskPolicyChanged'])
+        self.assertFalse(report['userDatabaseUsed'])
+        self.assertEqual(report['benchmarkRegression']['owaspJavaBefore'],report['benchmarkRegression']['owaspJavaAfter'])
+        for project in report['projects']:
+            if 'before'not in project:continue
+            for key in ['rules','securityScore','deploymentAssessment','prioritySummary']:
+                self.assertEqual(project['before'][key],project['after'][key])
+        mall=next(p for p in report['projects']if p['projectId']=='macrozheng--mall-tiny')
+        self.assertIn('DATA_ACCESS_RESULT_LIMIT',mall['after']['java']['limitations'])
+        self.assertEqual(mall['after']['java']['independentCandidates'],0)
+        self.assertEqual(report['runtime']['workerVersion'],'java-sql-v3')
+        def no_source(value):
+            if isinstance(value,dict):
+                self.assertFalse({'content','snippet','sql','sourceCode','prompt','responseBody'}&value.keys())
+                for child in value.values():no_source(child)
+            elif isinstance(value,list):
+                for child in value:no_source(child)
+        no_source(report)
 
 if __name__=='__main__':unittest.main()

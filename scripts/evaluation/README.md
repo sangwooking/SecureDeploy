@@ -338,3 +338,35 @@ Replay the memory probe on macOS with our trusted baseline/current worker JAR:
 `python3 -B scripts/evaluation/java_worker_probe.py DATA_ROOT TRUSTED_WORKER_JAR NEW_EXTERNAL_JSON`.
 It verifies the original failed selection's file hashes and sends text through
 the worker protocol; it never runs an upstream build or saves raw stderr/source.
+
+## Hardening #3: bounded Java data-access contracts
+
+Engine `0209ed3fba4d69021eb58c3573d6566b2afa6a01` adds typed source DI,
+unique implementation calls, static MyBatis declarations and separate JPA
+contract observations. `hardening3-results.json` preserves the actual repeated
+v2-corpus evaluation and two follow-up failure packs. Use `hardening3.py` with
+the external corpus, a NEW output and a NEW pack directory to replay the core
+same-source comparison; its baseline is the production-equivalent #2 engine.
+External raw outputs are `hardening3-*` in the existing application/Pilot/CVE
+roots. Original sources and the Bakery omission are unchanged.
+
+PetClinic has nine JPA operation contracts, not proven SQL execution. Mall has
+87 traced functions and six static Mapper calls with value binding. These are
+different sites from the six earlier SQL-name candidates. MyBatis-Plus inherited
+implementations, dynamic XML, ambiguous targets and object transformations stay
+unknown. Mall reaches the 200-observation cap: evidence is incomplete. No new
+SQL candidate, legacy warning, score or Risk change occurs in these app runs.
+
+The actual 12-case Java and 24-case Pilot regression results are unchanged;
+known false alerts and unknowns remain. Sixteen real-world CVE regression cases
+remain 14 unsupported / two resource-limited, not safe. The other observed
+validation/holdout splits were not rerun. The newly acquired official Spring
+guide is pinned and licensed outside Git: two parsed Java files but no supported
+HTTP entry (CommandLineRunner), not an independent vulnerable/fixed evaluation.
+Synthetic variations are development tests, not external accuracy estimates.
+
+MyBatis parameter semantics follow its [official Mapper XML documentation](https://mybatis.org/mybatis-3/sqlmap-xml.html).
+JPA contract scope follows [Spring Data query methods](https://docs.spring.io/spring-data/jpa/reference/jpa/query-methods.html).
+No target compilation, dependency installation, external XML loading or paid AI.
+Real loopback HTTP/H2 tests and shared ZIP/mocked-GitHub integration tests cover
+persistence and access isolation; no new live private GitHub analysis was run.
