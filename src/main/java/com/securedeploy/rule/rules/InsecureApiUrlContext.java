@@ -10,29 +10,36 @@ import java.util.*;
 import java.util.concurrent.*;
 import org.springframework.stereotype.Component;
 
-/** Bounded syntax-only reconciliation; missing/invalid evidence never removes a warning. */
+/** Shared bounded string-context reconciliation; missing evidence never removes a warning. */
 @Component
 public final class InsecureApiUrlContext {
-    private static final String VERSION = "insecure-url-context-v1";
+    private static final String VERSION = "string-context-v2";
     private final TypeScriptAnalysisProperties properties;
     private final Semaphore capacity = new Semaphore(2);
     private final ObjectMapper mapper = new ObjectMapper();
     public InsecureApiUrlContext(TypeScriptAnalysisProperties properties) { this.properties=properties; }
 
     public List<RuleMatch> reconcile(ProjectStructure project, List<RuleMatch> matches) {
-        var paths=matches.stream().filter(m->m.ruleId().equals("INSECURE_API_URL"))
+        var paths=matches.stream().filter(m->Set.of("INSECURE_API_URL","HARDCODED_FRONTEND_SECRET").contains(m.ruleId()))
                 .map(RuleMatch::filePath).collect(java.util.stream.Collectors.toSet());
         if(paths.isEmpty())return matches;
-        List<Map<String,String>> files=new ArrayList<>();
+        List<Map<String,Object>> files=new ArrayList<>();
         Map<String,Integer> lineCounts=new HashMap<>();int total=0;
         for(var f:project.analysisFiles().stream().sorted(Comparator.comparing(x->x.relativePath())).toList()) {
-            if(!paths.contains(f.relativePath())||!RuleFileTypes.isFrontendSource(f))continue;
+            if(!paths.contains(f.relativePath())||!(RuleFileTypes.isFrontendSource(f)||f.type()==com.securedeploy.project.model.ProjectFileType.FRONTEND_CONFIG))continue;
             long length=f.lines().stream().mapToLong(s->s.length()+1L).sum();
-            if(length>100_000||total+length>1_000_000||files.size()>=100)continue;
-            files.add(Map.of("filePath",f.relativePath(),"content",String.join("\n",f.lines())));
-            lineCounts.put(f.relativePath(),f.lines().size());total+=(int)length;
+            int bounded=(int)Math.min(length,100_000);
+            if(total+bounded>1_000_000||files.size()>=100)continue;
+            var text=new StringBuilder(bounded);
+            for(String line:f.lines()) {
+                int available=100_000-text.length();if(available<=0)break;
+                if(!text.isEmpty()){text.append('\n');available--;}
+                text.append(line,0,Math.min(line.length(),available));
+            }
+            files.add(Map.of("filePath",f.relativePath(),"content",text.toString(),"prefixOnly",length>100_000));
+            lineCounts.put(f.relativePath(),f.lines().size());total+=bounded;
         }
-        Map<String,Set<Integer>> excluded=new HashMap<>(),requests=new HashMap<>();
+        Map<String,Set<Integer>> excluded=new HashMap<>(),requests=new HashMap<>(),secrets=new HashMap<>();
         if(properties.isEnabled()&&!files.isEmpty()&&capacity.tryAcquire()) {
             Process process=null;
             var io=Executors.newFixedThreadPool(2,r->{var t=new Thread(r,"url-context-io");t.setDaemon(true);return t;});
@@ -56,15 +63,16 @@ public final class InsecureApiUrlContext {
                 for(var row:result.path("files")) {
                     String path=row.path("filePath").asText();
                     if(!lineCounts.containsKey(path)||!seen.add(path))throw new IllegalStateException();
-                    if(!row.path("status").asText().equals("PARSED"))continue;
+                    if(!Set.of("PARSED","LEADING_COMMENTS_ONLY").contains(row.path("status").asText()))continue;
                     excluded.put(path,lines(row.path("excludedLines"),lineCounts.get(path)));
+                    secrets.put(path,lines(row.path("excludedSecretLines"),lineCounts.get(path)));
                     requests.put(path,lines(row.path("requestLines"),lineCounts.get(path)));
                     if(!Collections.disjoint(excluded.get(path),requests.get(path)))throw new IllegalStateException();
                 }
             } catch(InterruptedException failure) {
-                Thread.currentThread().interrupt();excluded.clear();requests.clear();
+                Thread.currentThread().interrupt();excluded.clear();requests.clear();secrets.clear();
             } catch(Exception failure) {
-                excluded.clear();requests.clear();
+                excluded.clear();requests.clear();secrets.clear();
             } finally {
                 if(process!=null&&process.isAlive()) {
                     process.destroyForcibly();
@@ -75,6 +83,7 @@ public final class InsecureApiUrlContext {
         }
         List<RuleMatch> result=new ArrayList<>();
         for(var match:matches) {
+            if(match.ruleId().equals("HARDCODED_FRONTEND_SECRET")&&secrets.getOrDefault(match.filePath(),Set.of()).contains(match.line()))continue;
             if(!match.ruleId().equals("INSECURE_API_URL")){result.add(match);continue;}
             if(excluded.getOrDefault(match.filePath(),Set.of()).contains(match.line()))continue;
             boolean request=requests.getOrDefault(match.filePath(),Set.of()).contains(match.line());

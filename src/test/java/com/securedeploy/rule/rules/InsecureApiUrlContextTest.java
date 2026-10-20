@@ -49,4 +49,17 @@ class InsecureApiUrlContextTest {
             assertThat(analyze("function f(input) { const p = new URL(input,'http://remote.example'); "+usage+"; }")).hasSize(1);
         }
     }
+    @Test void largeDeclarationOnlySuppressesProvenLeadingCommentNotLaterCode() {
+        assertThat(analyze("/** License http://license.example */\n"+"declare const value: string;\n".repeat(5000))).isEmpty();
+        assertThat(analyze("/** License http://license.example */ fetch('http://remote.example');\n"+"declare const value: string;\n".repeat(5000))).hasSize(1);
+    }
+    @Test void uiTextCannotBecomeCredentialButActualAssignmentsRemain() {
+        var file=new ProjectFile(Path.of("controls.ts"),"controls.ts",ProjectFileType.TYPESCRIPT,List.of(
+                "button.innerText = hidden ? 'Show Secret' : 'Hide Secret';",
+                "const secret = 'synthetic-secret-for-regression';"));
+        var project=new ProjectStructure(Path.of("."),List.of(file));
+        assertThat(new HardcodedFrontendSecretRule().evaluate(file)).hasSize(2);
+        var matches=new VulnerabilityRuleEngine(List.of(new HardcodedFrontendSecretRule())).execute(new RuleExecutionContext(project));
+        assertThat(matches).hasSize(1);assertThat(matches.get(0).line()).isEqualTo(2);
+    }
 }

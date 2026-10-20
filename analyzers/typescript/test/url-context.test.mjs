@@ -34,3 +34,31 @@ test('parse errors, JSX, size and caller uncertainty never suppress', () => {
   assert.deepEqual(row('const x = <div>http://remote.example</div>;', 'App.tsx').excludedLines,[]);
   assert.deepEqual(row('const address = "http://remote.example"; wrapper(address);').excludedLines,[]);
 });
+test('intrinsic SVG namespace is an identifier, but custom props and network uses remain unknown', () => {
+  assert.deepEqual(row('const icon = <svg xmlns="http://www.w3.org/2000/svg"/>;', 'Icon.tsx').excludedLines,[1]);
+  assert.deepEqual(row('const icon = <svg xmlns:xlink="http://www.w3.org/1999/xlink"/>;', 'Icon.tsx').excludedLines,[1]);
+  for (const code of ['const icon = <Widget xmlns="http://www.w3.org/2000/svg"/>;',
+    'const icon = <svg data-url="http://remote.example"/>;',
+    'const icon = <svg xmlns="http://www.w3.org/2000/svg"/>; fetch("http://remote.example");'])
+    assert.deepEqual(row(code,'Icon.tsx').excludedLines,[]);
+  assert.deepEqual(row('fetch("http://www.w3.org/2000/svg");').excludedLines,[]);
+});
+test('bounded leading comments in oversized source do not classify code or incomplete comments as safe', () => {
+  const file=(content)=>classify([{filePath:'generated.d.ts',content,prefixOnly:true}]).files[0];
+  assert.deepEqual(file('/** License http://license.example */\ndeclare const x: string;').excludedLines,[1]);
+  assert.deepEqual(file('/** License http://license.example */ fetch("http://remote.example");').excludedLines,[]);
+  assert.deepEqual(file('/* http://license.example').excludedLines,[]);
+  assert.deepEqual(file('declare const text: "http://remote.example";').excludedLines,[]);
+});
+test('secret-like text inside display strings or comments is not a declaration', () => {
+  assert.deepEqual(row("button.innerText = hidden ? 'Show Secret' : 'Hide Secret';").excludedSecretLines,[1]);
+  assert.deepEqual(row('// secret = "something-long"').excludedSecretLines,[1]);
+  for (const code of ['const secret="something-long";', 'const config={"secret":"something-long"};',
+    "const title='Show Secret'; const secret='something-long';",'unknown.secret="something-long";',
+    'config["secret"]="something-long";', 'class Config { "secret"="something-long"; }',
+    'const config={["secret"]:"something-long"};'])
+    assert.deepEqual(row(code).excludedSecretLines,[]);
+  const fake='sk-'+'Q9zT4pL7mN2vX6aB8cD3eF5gH1jK0rS9';
+  assert.deepEqual(row('// secret = "'+fake+'"').excludedSecretLines,[]);
+  assert.deepEqual(row('const payload = `secret="embedded-short-secret"`;').excludedSecretLines,[]);
+});
