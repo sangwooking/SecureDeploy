@@ -51,6 +51,7 @@ class InsecureApiUrlContextTest {
     }
     @Test void largeDeclarationOnlySuppressesProvenLeadingCommentNotLaterCode() {
         assertThat(analyze("/** License http://license.example */\n"+"declare const value: string;\n".repeat(5000))).isEmpty();
+        assertThat(analyze("interface Env { binding: string; }\n/** License http://license.example */\n"+"declare const value: string;\n".repeat(5000))).isEmpty();
         assertThat(analyze("/** License http://license.example */ fetch('http://remote.example');\n"+"declare const value: string;\n".repeat(5000))).hasSize(1);
     }
     @Test void uiTextCannotBecomeCredentialButActualAssignmentsRemain() {

@@ -49,6 +49,9 @@ test('bounded leading comments in oversized source do not classify code or incom
   assert.deepEqual(file('/** License http://license.example */ fetch("http://remote.example");').excludedLines,[]);
   assert.deepEqual(file('/* http://license.example').excludedLines,[]);
   assert.deepEqual(file('declare const text: "http://remote.example";').excludedLines,[]);
+  assert.deepEqual(file('interface Env { binding: string; }\n/** License http://license.example */\ndeclare const x: string;').excludedLines,[2]);
+  assert.deepEqual(file('declare const pattern: "/* http://not-comment.example */";\n').excludedLines,[]);
+  assert.deepEqual(file('const invalid=;\n/* http://after-error.example */\n').excludedLines,[]);
 });
 test('secret-like text inside display strings or comments is not a declaration', () => {
   assert.deepEqual(row("button.innerText = hidden ? 'Show Secret' : 'Hide Secret';").excludedSecretLines,[1]);

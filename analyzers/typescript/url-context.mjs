@@ -1,6 +1,6 @@
 import ts from 'typescript';
 
-export const VERSION = 'string-context-v2';
+export const VERSION = 'string-context-v3';
 const secretPattern = () => /(api[_-]?key|secret|token|accessToken|refreshToken)["']?\s*[:=]\s*["']([^"']{8,})["']/gi;
 function credentialShaped(value) {
   if (/^(?:sk-(?:proj-)?[A-Za-z0-9_-]{24,}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{24,}|AKIA[A-Z0-9]{16}|AIza[A-Za-z0-9_-]{35}|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)$/.test(value)) return true;
@@ -19,11 +19,20 @@ export function classify(files) {
     output.files.push(row);
     if (typeof file.content !== 'string' || file.content.length > 100000 || (total += file.content.length) > 1000000) continue;
     if (file.prefixOnly) {
-      // Only completed leading comments and complete physical lines are proven.
-      // No AST/flow claims are made for a truncated declaration file.
-      const comments = (ts.getLeadingCommentRanges(file.content,0) ?? []).filter(c =>
-        c.kind === ts.SyntaxKind.MultiLineCommentTrivia ? file.content.slice(c.end-2,c.end) === '*/'
-          : /[\r\n]/.test(file.content[c.end] ?? ''));
+      // Parse only the bounded prefix. Trust completed comments before the first
+      // syntax error, never code/flow or the unparsed remainder of the file.
+      const prefix=ts.createSourceFile(file.filePath,file.content,ts.ScriptTarget.Latest,true);
+      const boundary=Math.min(file.content.length,...prefix.parseDiagnostics.map(d=>d.start??0));
+      const comments=[];let nodes=0,limited=false;
+      function collect(node) {
+        if (++nodes>200000 || Date.now()>deadline) {limited=true;return;}
+        for (const pos of [node.pos,node.end]) for (const c of [...(ts.getLeadingCommentRanges(file.content,pos)??[]),...(ts.getTrailingCommentRanges(file.content,pos)??[])]) {
+          if (c.end<=boundary && (c.kind===ts.SyntaxKind.MultiLineCommentTrivia
+            ?file.content.slice(c.end-2,c.end)==='*/':/[\r\n]/.test(file.content[c.end]??''))) comments.push(c);
+        }
+        ts.forEachChild(node,collect);
+      }
+      collect(prefix);if(limited)continue;
       let offset = 0, line = 1;
       for (const text of file.content.split('\n')) {
         if (offset + text.length >= file.content.length) break;
@@ -36,7 +45,7 @@ export function classify(files) {
         if (proven(secretPattern())) row.excludedSecretLines.push(line);
         offset += text.length+1; line++;
       }
-      row.status = 'LEADING_COMMENTS_ONLY'; continue;
+      row.status = 'PREFIX_COMMENTS_ONLY'; continue;
     }
     const ast = ts.createSourceFile(file.filePath, file.content, ts.ScriptTarget.Latest, true);
     if (ast.parseDiagnostics.length) continue;

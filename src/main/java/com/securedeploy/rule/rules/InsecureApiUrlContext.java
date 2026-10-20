@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 /** Shared bounded string-context reconciliation; missing evidence never removes a warning. */
 @Component
 public final class InsecureApiUrlContext {
-    private static final String VERSION = "string-context-v2";
+    private static final String VERSION = "string-context-v3";
     private final TypeScriptAnalysisProperties properties;
     private final Semaphore capacity = new Semaphore(2);
     private final ObjectMapper mapper = new ObjectMapper();
@@ -63,7 +63,7 @@ public final class InsecureApiUrlContext {
                 for(var row:result.path("files")) {
                     String path=row.path("filePath").asText();
                     if(!lineCounts.containsKey(path)||!seen.add(path))throw new IllegalStateException();
-                    if(!Set.of("PARSED","LEADING_COMMENTS_ONLY").contains(row.path("status").asText()))continue;
+                    if(!Set.of("PARSED","PREFIX_COMMENTS_ONLY").contains(row.path("status").asText()))continue;
                     excluded.put(path,lines(row.path("excludedLines"),lineCounts.get(path)));
                     secrets.put(path,lines(row.path("excludedSecretLines"),lineCounts.get(path)));
                     requests.put(path,lines(row.path("requestLines"),lineCounts.get(path)));
