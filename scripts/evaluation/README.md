@@ -411,3 +411,24 @@ Real ZIP/H2 persistence/detail/access tests and mocked public/private GitHub
 acquisition exercise the common pipeline; live private GitHub E2E was not
 repeated. No target execution, dependency installation, paid AI, external
 vulnerability lookup, user database evaluation writes or migration occurred.
+
+## Hardening #5: receiver provenance and external source pairs
+
+`receiver_provenance.py APPLICATION_ROOT EXTERNAL_ROOT OFFICIAL_ROOT NEW_OUTPUT`
+replays hash-verified source subsets through trusted v7/current workers. No
+target module is imported or executed. File-wide coverage notes no longer
+invalidate unrelated Node calls; per-call object identities preserve bounded
+fields/aliases and propagate unknown mutations, including expression-bodied
+closures and depth-limited calls. Cached module lookup precedes the import
+depth check. Worker protocol is v8; resource limits and Risk are unchanged.
+
+NodeGoat's remaining nested DAO constructor exceeds the existing call-depth
+boundary: `$where` remains unverified, not fixed or safe. Official Express
+examples lack their self-package implementation in the acquired subset;
+registration is unproven, not a true negative. External CVE source pairs are
+observed, not blind. A reported fix/release commit alone is not ground truth:
+mongo-express's linked release commit only bumps package version and history,
+so its immediate parent is not labeled vulnerable. Mongoose populate's patch
+and added tests establish a narrower change, not full application safety;
+its library API and oversized test file remain outside supported flow scope.
+Original sources and failed candidate-pair evidence remain outside Git.

@@ -4,7 +4,7 @@ import { destinationOf, joinDestinations, concatenatedDestination, constructedUr
 import { credentialShape, sources as exposureSources, uncertain as exposureUncertain, trails as exposureTrails } from './exposure.mjs';
 import { nodeServer } from './node-server.mjs';
 
-export const VERSION = 'ts-server-v7';
+export const VERSION = 'ts-server-v8';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -246,6 +246,13 @@ export function analyze(input, overrides = {}) {
     if (key === 'length' && !base.unknown && ['STRING', 'ARRAY'].includes(base.inputShape)) return value('numeric');
     return { ...base, constant: undefined };
   }
+  function invalidateNodeReference(ref,state,incoming,seen=new Set()) {
+    if(!ref||seen.has(ref))return;
+    tick(state.mod);seen.add(ref);
+    if(ref.nodeIdentity)state.nodeMutations?.add(ref.nodeIdentity);
+    for(const child of ref.properties.values())invalidateNodeReference(child.ref,state,incoming,seen);
+    ref.unknown=true;ref.trace=union({trace:ref.trace??[]},incoming).trace;ref.properties.clear();
+  }
   function bind(name, v, state) {
     if (ts.isIdentifier(name)) state.vars.set(name.text, v);
     else if (ts.isObjectBindingPattern(name)) for (const e of name.elements) {
@@ -295,6 +302,7 @@ export function analyze(input, overrides = {}) {
           }
           note(mod, 'PROPERTY_WRITE_UNRESOLVED');
           const ref = target.forkRefs?.get(receiver.ref) ?? receiver.ref;
+          if(target.nodeMode&&ref){invalidateNodeReference(ref,target,v);return;}
           if (ref) { ref.unknown = true; ref.trace = union({ trace: ref.trace }, v).trace; ref.properties.clear(); }
           else target.uncertain = true;
         }
@@ -333,6 +341,7 @@ export function analyze(input, overrides = {}) {
       const old = state.vars.get(name);
       if (!old) continue;
       state.vars.set(name, { ...union(old, incoming), unknown: true, constant: undefined, urlPrefix: undefined, destination: unresolvedDestination() });
+      if(state.nodeMode&&old.ref){invalidateNodeReference(old.ref,state,incoming);continue;}
       if (old.ref) { old.ref.unknown = true; old.ref.trace = union({ trace: old.ref.trace }, incoming).trace; old.ref.properties.clear(); }
     }
   }
@@ -451,7 +460,7 @@ export function analyze(input, overrides = {}) {
         }
       }
       return value('object', spread.trace, { unknown: incomplete, ref: { properties, unknown: incomplete,
-        trace: union(spread, ...properties.values()).trace } });
+        trace: union(spread, ...properties.values()).trace,...(state.nodeMode?{nodeIdentity:{}}:{}) } });
     }
     if (ts.isArrayLiteralExpression(node)) return union(...node.elements.map(e => expr(e, state)));
     if (ts.isNewExpression(node) || ts.isCallExpression(node)) {
@@ -581,6 +590,7 @@ export function analyze(input, overrides = {}) {
         invalidateWrites(callback.effects, state, incoming); note(mod, 'CLOSURE_SIDE_EFFECTS_UNRESOLVED');
       }
       for (const argument of [...args, ...(receiverInput ? [receiverInput] : [])]) if (argument.ref) {
+        if(state.nodeMode){invalidateNodeReference(argument.ref,state,incoming);continue;}
         argument.ref.unknown = true; argument.ref.trace = union(argument, incoming).trace;
         argument.ref.properties.clear();
       }
@@ -618,7 +628,8 @@ export function analyze(input, overrides = {}) {
       }
       return { ...v, ref: refs.get(v.ref) };
     };
-    return { ...state, vars: new Map([...state.vars].map(([name, v]) => [name, clone(v)])), forkRefs: refs };
+    return { ...state, vars: new Map([...state.vars].map(([name, v]) => [name, clone(v)])),
+      thisValue:state.nodeMode&&state.thisValue?clone(state.thisValue):state.thisValue,forkRefs: refs };
   }
   function mergeVars(state, branches) {
     const merged = new Map(), urlRefs = new Map();
@@ -822,11 +833,15 @@ export function analyze(input, overrides = {}) {
   function invoke(fn, args, depth, context, stack, uncertain = false, exposureUncertain = false,thisValue,constructing=false) {
     const { mod, node } = fn;
     if (depth > limits.maxDepth || stack.has(fn)) {
+      if(fn.nodeMode){
+        const effectState={mod,nodeMode:true};
+        for(const arg of [...args,thisValue])if(arg?.ref)invalidateNodeReference(arg.ref,effectState,unknown());
+      }
       note(mod, 'CALL_DEPTH_EXCEEDED'); return { ...union(...args), unknown: true };
     }
     tick(mod); mod.visited.add(fn); mod.record.functionsAnalyzed = mod.visited.size;
     const state = { mod, fn, vars: new Map(fn.closure??[]), depth, context, uncertain, exposureUncertain,
-      nodeMode:!!fn.nodeMode,thisValue:fn.lexicalThis??thisValue,constructing,stack: new Set([...stack, fn]) };
+      nodeMode:!!fn.nodeMode,nodeMutations:new Set(),thisValue:fn.lexicalThis??thisValue,constructing,stack: new Set([...stack, fn]) };
     const names = (binding, callback) => {
       if (ts.isIdentifier(binding)) callback(binding.text);
       else if (ts.isObjectBindingPattern(binding) || ts.isArrayBindingPattern(binding))
@@ -848,10 +863,20 @@ export function analyze(input, overrides = {}) {
         : defaultValue(args[i] ?? constant(undefined), p.initializer, state), state);
     });
     if (!node.body) return unknown();
-    if (!ts.isBlock(node.body)) return expr(node.body, state);
-    const r = statement(node.body, state);
+    if (!ts.isBlock(node.body)&&!state.nodeMode) return expr(node.body, state);
+    const r = ts.isBlock(node.body)?statement(node.body,state):{values:[expr(node.body,state)],stops:true};
     // Branch-local heap copies cannot prove a mutation-free return to the caller.
-    if (['PROPERTY_WRITE_UNRESOLVED', 'CLOSURE_SIDE_EFFECTS_UNRESOLVED', 'URL_PROPERTY_WRITE', 'URL_QUERY_WRITE']
+    if(state.nodeMode){
+      // Only effects on this call's reachable identities invalidate caller aliases.
+      // File-wide coverage notes must not act as mutable heap state.
+      const seen=new Set();
+      const apply=v=>{
+        if(!v?.ref||seen.has(v.ref))return;tick(mod);seen.add(v.ref);
+        if(v.ref.nodeIdentity&&state.nodeMutations.has(v.ref.nodeIdentity))invalidateNodeReference(v.ref,state,unknown());
+        else for(const child of v.ref.properties.values())apply(child);
+      };
+      for(const arg of [...args,thisValue])apply(arg);
+    }else if (['PROPERTY_WRITE_UNRESOLVED', 'CLOSURE_SIDE_EFFECTS_UNRESOLVED', 'URL_PROPERTY_WRITE', 'URL_QUERY_WRITE']
         .some(reason => mod.record.limitations.has(reason))) {
       for (const arg of args) if (arg.ref) {
         arg.ref.unknown = true; arg.ref.trace = union({ trace: arg.ref.trace }, ...args).trace; arg.ref.properties.clear();

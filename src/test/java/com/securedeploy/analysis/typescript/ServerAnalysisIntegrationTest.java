@@ -162,6 +162,37 @@ class ServerAnalysisIntegrationTest {
         assertThat(detail(token,id).at("/serverAnalysis/analyzerVersion").asText()).isEqualTo("ts-server-v6");
     }
 
+    @Test void mongoProvenanceSharesAllSourcesAndPersistsOriginWithoutPromotingRisk() throws Exception {
+        String token=signup();
+        String code="const express=require('express');const {MongoClient}=require('mongodb');const app=express();"
+                +"MongoClient.connect('unused',(err,db)=>{const unused={};unused.note=1;function pass(v){return v;}"
+                +"function Store(value){this.db=value;this.get=()=>this.db.collection('items');}"
+                +"const store=new Store(pass(db));const c=store.get();app.get('/',(req,res)=>c.find({$where:req.query.code}));});";
+        String manifest="{\"dependencies\":{\"mongodb\":\"2.2.36\",\"express\":\"4.18.0\"}}";
+        var sources=Map.of("server.cjs",code,"package.json",manifest);
+        var zip=uploadSources(token,sources);
+        assertThat(zip.at("/serverAnalysis/validatedFindings")).hasSize(1);
+        assertThat(zip.at("/serverAnalysis/validatedFindings/0/ruleId").asText()).isEqualTo("JS_MONGO_WHERE_INPUT_FLOW");
+        assertThat(zip.at("/serverAnalysis/validatedFindings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(zip.path("serverAnalysis").toString()).contains("MONGODB_COLLECTION_ORIGIN");
+        Path pub=Files.createDirectory(temp.resolve("mongo-public")),prv=Files.createDirectory(temp.resolve("mongo-private"));
+        for(var root:List.of(pub,prv))for(var entry:sources.entrySet())Files.writeString(root.resolve(entry.getKey()),entry.getValue());
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/mongo",pub,pub));
+        var publicResult=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/mongo\",\"scanMode\":\"STANDARD\"}");
+        var metadata=new GitHubSourceSnapshot("fixture","mongo","https://github.com/fixture/mongo","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/mongo",prv,prv,metadata));
+        var privateResult=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        for(var value:List.of(publicResult,privateResult))assertThat(value.path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        assertThat(pub).doesNotExist();assertThat(prv).doesNotExist();
+        var fixed=uploadSources(token,Map.of("server.cjs",code.replace("{$where:req.query.code}","{code:req.query.code}"),"package.json",manifest));
+        assertThat(fixed.at("/serverAnalysis/validatedFindings")).isEmpty();
+        for(String key:List.of("securityScore","vulnerabilityCount","deploymentStatus"))assertThat(fixed.path(key)).isEqualTo(zip.path(key));
+        for(String key:List.of("prioritySummary","prioritizedDeploymentAssessment"))assertThat(fixed.path("riskAssessment").path(key)).isEqualTo(zip.path("riskAssessment").path(key));
+        assertThat(fixed.at("/comparison/counts/RESOLVED").asInt()).isZero();
+        long id=zip.path("reviewId").asLong();assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+    }
+
     @Test void ssrfUsesCommonSourcesAndSnapshotWithoutChangingRiskOrComparison() throws Exception {
         String token=signup();
         String code="export default {fetch(request){return fetch(new Request(new URL(request.url).searchParams.get('target')));}}";

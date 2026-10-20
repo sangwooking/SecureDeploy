@@ -4,7 +4,7 @@ import path from 'node:path';
 export function nodeServer(api) {
   const {ts,modules,limits,result,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames}=api;
   const loaded=new Map(), loading=new Set(), apps=[], routes=[];
-  const object=tag=>value(tag,[],{ref:{properties:new Map(),trace:[],unknown:false}});
+  const object=tag=>value(tag,[],{ref:{properties:new Map(),trace:[],unknown:false,nodeIdentity:{}}});
   const literal=v=>v?.tag==='constant'&&!v.unknown;
   const context=()=>({setup:true,checks:[],defenses:[],resources:[]});
   const native=(name,mod,ref)=>({...object('node-native'),native:name,nativeMod:mod,...(ref?{ref}:{})});
@@ -47,8 +47,8 @@ export function nodeServer(api) {
     return load(target);
   }
   function load(mod) {
-    if(loading.has(mod)||loading.size>limits.maxDepth){note(mod,'NODE_MODULE_CYCLE_OR_DEPTH_LIMIT');return unknown();}
     if(loaded.has(mod))return loaded.get(mod);
+    if(loading.has(mod)||loading.size>limits.maxDepth){note(mod,'NODE_MODULE_CYCLE_OR_DEPTH_LIMIT');return unknown();}
     loading.add(mod);
     const exports=object('node-exports'), module=object('node-module');module.ref.properties.set('exports',exports);
     const state={mod,fn:{name:'module',node:mod.ast},vars:new Map([['module',module],['exports',exports]]),nodeMode:true,context:context(),depth:0,stack:new Set(),uncertain:false};
@@ -97,8 +97,10 @@ export function nodeServer(api) {
   function write(receiver,key,v,state) {
     if(!state.nodeMode||!literal(key)||!receiver.ref)return false;
     if(receiver.native){receiver.ref.unknown=true;note(state.mod,'NODE_LIBRARY_MUTATION_UNKNOWN');return true;}
-    if(['node-module','node-exports','express-locals'].includes(receiver.tag)||state.constructing&&receiver.ref===state.thisValue?.ref) {
-      receiver.ref.properties.set(String(key.constant),v);return true;
+    if(['node-module','node-exports','express-locals','node-instance','object'].includes(receiver.tag)&&!receiver.unknown&&!receiver.ref.unknown) {
+      const ref=state.forkRefs?.get(receiver.ref)??receiver.ref;
+      if(state.forkRefs&&ref.nodeIdentity)state.nodeMutations?.add(ref.nodeIdentity);
+      ref.properties.set(String(key.constant),v);return true;
     }
     return false;
   }
@@ -145,7 +147,7 @@ export function nodeServer(api) {
       const callback=args.at(-1), manifests=(api.input.nodeManifests??[]).filter(m=>state.mod.filePath.startsWith(path.posix.dirname(m.filePath)==='.'?'':path.posix.dirname(m.filePath)+'/'))
         .sort((a,b)=>b.filePath.length-a.filePath.length);
       const major=/^(?:\^|~)?2\./.test(manifests[0]?.mongodb??'');
-      if(callback?.target&&major)invoke(callback.target,[constant(null),object('mongo-db')],0,state.context,new Set(),state.uncertain);
+      if(callback?.target&&major){const db=object('mongo-db');db.ref.origin=[loc(node,state.mod,'MONGODB_DECLARED_V2_CONNECTION',state.fn)];invoke(callback.target,[constant(null),db],0,state.context,new Set(),state.uncertain);}
       else note(state.mod,'MONGODB_CONNECTION_API_VERSION_UNKNOWN');
       return {value:unknown()};
     }
@@ -157,7 +159,9 @@ export function nodeServer(api) {
       note(state.mod,'MONGODB_CONNECTION_API_VERSION_UNKNOWN');return {value:unknown()};
     }
     if(receiver?.tag==='mongo-client-instance'&&!receiver.unknown&&!receiver.ref.unknown&&method==='db')return {value:object('mongo-db')};
-    if(receiver?.tag==='mongo-db'&&!receiver.unknown&&!receiver.ref.unknown&&method==='collection'&&literal(args[0]))return {value:object('mongo-collection')};
+    if(receiver?.tag==='mongo-db'&&!receiver.unknown&&!receiver.ref.unknown&&method==='collection'&&literal(args[0])){
+      const collection=object('mongo-collection');collection.ref.origin=[...(receiver.ref.origin??[]),loc(node,state.mod,'MONGODB_COLLECTION_ORIGIN',state.fn)].slice(-4);return {value:collection};
+    }
     if(receiver?.tag==='mongo-collection'&&!receiver.unknown&&!receiver.ref.unknown&&['find','findOne','countDocuments'].includes(method)) {
       for(const query of (args[0]?.nodeAlternatives??[args[0]??unknown()]).slice(0,4)) {
       const where=query.ref?.properties.get('$where');
@@ -166,7 +170,7 @@ export function nodeServer(api) {
         if(!state.context.setup){append(result.nodeUses,{ruleId:'JS_MONGO_RESOURCE_ACCESS',kind:'DATA_QUERY_NOT_AUTHORIZATION_PROOF',operation:method,location,trace:query.ref?.trace??query.trace,limitations:['OBJECT_OWNERSHIP_AND_MIDDLEWARE_NOT_VERIFIED']},state.mod);state.context.resources.push(location);}
         continue;
       }
-      observe(where?{...where,unknown:where.unknown||query.unknown||query.ref.unknown}:query.unknown?query:constant(null),node,state,'JS_MONGO_WHERE_INPUT_FLOW','CWE-943','MONGODB_'+method.toUpperCase());
+      observe(where?{...where,trace:where.trace.length?[...where.trace,...(receiver.ref.origin??[])].slice(0,20):[],unknown:where.unknown||query.unknown||query.ref.unknown}:query.unknown?query:constant(null),node,state,'JS_MONGO_WHERE_INPUT_FLOW','CWE-943','MONGODB_'+method.toUpperCase());
       }
       return {value:object('mongo-cursor')};
     }
