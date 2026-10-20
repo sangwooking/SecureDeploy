@@ -1,0 +1,1801 @@
+{
+  "schemaVersion": 1,
+  "stage": "FINAL_AFTER_ENTRY_ISOLATION",
+  "engineCommit": "dd2e6216cb583d07b861b4b5bec2e443039e8536",
+  "preIsolationEngineCommit": "a82a3d4e49ab99fa1b66b26252c2979438a8fdc6",
+  "baselineEngineCommit": "07a2bf649f03f04fff569ab3bee6f3330ed0f0be",
+  "sourcePlanSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+  "projects": [
+    {
+      "projectId": "spring-projects--spring-petclinic",
+      "sourceCommit": "500158f732419217507c7656904b8e6aa1bcc0d6",
+      "before": {
+        "ruleCount": 3,
+        "rules": {
+          "K8S_SECRET_PLAIN_TEXT": 1,
+          "K8S_NODEPORT_EXPOSURE": 1,
+          "EXPOSED_ACTUATOR": 1
+        },
+        "securityScore": 65,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 50
+          },
+          "entrypoints": 17,
+          "functions": 23,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "dataAccess": {
+            "SPRING_DATA_JPA:DERIVED_OPERATION_CONTRACT": 9
+          },
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v8",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {}
+        }
+      },
+      "preIsolation": {
+        "ruleCount": 3,
+        "rules": {
+          "K8S_SECRET_PLAIN_TEXT": 1,
+          "K8S_NODEPORT_EXPOSURE": 1,
+          "EXPOSED_ACTUATOR": 1
+        },
+        "securityScore": 65,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 50
+          },
+          "entrypoints": 17,
+          "functions": 23,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "dataAccess": {
+            "SPRING_DATA_JPA:DERIVED_OPERATION_CONTRACT": 9
+          },
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v9",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {}
+        }
+      },
+      "after": {
+        "ruleCount": 3,
+        "rules": {
+          "K8S_SECRET_PLAIN_TEXT": 1,
+          "K8S_NODEPORT_EXPOSURE": 1,
+          "EXPOSED_ACTUATOR": 1
+        },
+        "securityScore": 65,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 50
+          },
+          "entrypoints": 17,
+          "functions": 23,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "dataAccess": {
+            "SPRING_DATA_JPA:DERIVED_OPERATION_CONTRACT": 9
+          },
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v10",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {}
+        }
+      },
+      "repeatConsistent": true,
+      "elapsedMs": [
+        345,
+        295
+      ],
+      "fingerprintChanged": true
+    },
+    {
+      "projectId": "macrozheng--mall-tiny",
+      "sourceCommit": "a81ec4740a0c7c99a06ebffb43a14168beadffc3",
+      "before": {
+        "ruleCount": 4,
+        "rules": {
+          "HARDCODED_SECRET": 1,
+          "WEAK_JWT_SECRET": 1,
+          "PERMIT_ALL_USAGE": 2
+        },
+        "securityScore": 58,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 1,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 80
+          },
+          "entrypoints": 40,
+          "functions": 87,
+          "sqlSyntaxCandidates": 6,
+          "tracedSqlCalls": 6,
+          "limitations": [
+            "DATA_ACCESS_RESULT_LIMIT",
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "dataAccess": {
+            "MYBATIS:PARSED_DECLARATIONS": 9,
+            "APPLICATION:RESOLVED_CALL": 94,
+            "APPLICATION:UNKNOWN": 55,
+            "MYBATIS_PLUS:UNKNOWN": 38,
+            "MYBATIS:DECLARED_VALUE_BINDING": 2,
+            "MYBATIS:UNKNOWN": 2
+          },
+          "sqlUseKinds": {
+            "PARAMETERIZED_QUERY": 6
+          },
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v8",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {}
+        }
+      },
+      "preIsolation": {
+        "ruleCount": 4,
+        "rules": {
+          "HARDCODED_SECRET": 1,
+          "WEAK_JWT_SECRET": 1,
+          "PERMIT_ALL_USAGE": 2
+        },
+        "securityScore": 58,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 1,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 80
+          },
+          "entrypoints": 40,
+          "functions": 87,
+          "sqlSyntaxCandidates": 6,
+          "tracedSqlCalls": 6,
+          "limitations": [
+            "DATA_ACCESS_RESULT_LIMIT",
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "dataAccess": {
+            "MYBATIS:PARSED_DECLARATIONS": 9,
+            "APPLICATION:RESOLVED_CALL": 94,
+            "APPLICATION:UNKNOWN": 55,
+            "MYBATIS_PLUS:UNKNOWN": 38,
+            "MYBATIS:DECLARED_VALUE_BINDING": 2,
+            "MYBATIS:UNKNOWN": 2
+          },
+          "sqlUseKinds": {
+            "PARAMETERIZED_QUERY": 6
+          },
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v9",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {}
+        }
+      },
+      "after": {
+        "ruleCount": 4,
+        "rules": {
+          "HARDCODED_SECRET": 1,
+          "WEAK_JWT_SECRET": 1,
+          "PERMIT_ALL_USAGE": 2
+        },
+        "securityScore": 58,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 1,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 80
+          },
+          "entrypoints": 40,
+          "functions": 87,
+          "sqlSyntaxCandidates": 6,
+          "tracedSqlCalls": 6,
+          "limitations": [
+            "DATA_ACCESS_RESULT_LIMIT",
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "dataAccess": {
+            "MYBATIS:PARSED_DECLARATIONS": 9,
+            "APPLICATION:RESOLVED_CALL": 94,
+            "APPLICATION:UNKNOWN": 55,
+            "MYBATIS_PLUS:UNKNOWN": 38,
+            "MYBATIS:DECLARED_VALUE_BINDING": 2,
+            "MYBATIS:UNKNOWN": 2
+          },
+          "sqlUseKinds": {
+            "PARAMETERIZED_QUERY": 6
+          },
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v10",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {}
+        }
+      },
+      "repeatConsistent": true,
+      "elapsedMs": [
+        434,
+        418
+      ],
+      "fingerprintChanged": true
+    },
+    {
+      "projectId": "wagtail--bakerydemo",
+      "sourceCommit": "c9b38d7a7170dba8bb84254beb7e5dc5a955e024",
+      "before": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 1,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v8",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 4
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 1,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 4,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 1
+          }
+        }
+      },
+      "preIsolation": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 1,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v9",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 4
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 1,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 4,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 1
+          }
+        }
+      },
+      "after": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 1,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 4
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 1,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 4,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 1
+          }
+        }
+      },
+      "repeatConsistent": true,
+      "elapsedMs": [
+        443,
+        357
+      ],
+      "fingerprintChanged": true
+    },
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "sourceCommit": "fe026711c19ac3ee4589c86a738f59b84e611559",
+      "before": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v8",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 33
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 33,
+            "REACT_UI_NOT_SERVER_AUTHORIZATION": 23,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 10
+          }
+        }
+      },
+      "preIsolation": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v9",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 33
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 33,
+            "REACT_UI_NOT_SERVER_AUTHORIZATION": 23,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 10
+          }
+        }
+      },
+      "after": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 33
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 33,
+            "REACT_UI_NOT_SERVER_AUTHORIZATION": 23,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 10
+          }
+        }
+      },
+      "repeatConsistent": true,
+      "elapsedMs": [
+        369,
+        368
+      ],
+      "fingerprintChanged": true
+    },
+    {
+      "projectId": "cloudflare--d1-northwind",
+      "sourceCommit": "766fd0d8b454b6eadd3323f9188a5ac1f8dfab64",
+      "before": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v8",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 42,
+            "LIMIT_EXCEEDED": 1
+          },
+          "entrypoints": 1,
+          "functions": 1,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 41,
+            "REACT_UI_NOT_SERVER_AUTHORIZATION": 21,
+            "PREPARE_CALLS_OUTSIDE_TRACED_FLOW": 1,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 14,
+            "CALL_TARGET_UNRESOLVED": 1,
+            "SOURCE_LIMIT_EXCEEDED": 1
+          }
+        }
+      },
+      "preIsolation": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v9",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 42,
+            "LIMIT_EXCEEDED": 1
+          },
+          "entrypoints": 1,
+          "functions": 1,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 41,
+            "REACT_UI_NOT_SERVER_AUTHORIZATION": 21,
+            "PREPARE_CALLS_OUTSIDE_TRACED_FLOW": 1,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 14,
+            "CALL_TARGET_UNRESOLVED": 1,
+            "SOURCE_LIMIT_EXCEEDED": 1
+          }
+        }
+      },
+      "after": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 42,
+            "LIMIT_EXCEEDED": 1
+          },
+          "entrypoints": 1,
+          "functions": 1,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 41,
+            "REACT_UI_NOT_SERVER_AUTHORIZATION": 21,
+            "PREPARE_CALLS_OUTSIDE_TRACED_FLOW": 1,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 14,
+            "CALL_TARGET_UNRESOLVED": 1,
+            "SOURCE_LIMIT_EXCEEDED": 1
+          }
+        }
+      },
+      "repeatConsistent": true,
+      "elapsedMs": [
+        441,
+        437
+      ],
+      "fingerprintChanged": true
+    },
+    {
+      "projectId": "OWASP--NodeGoat",
+      "sourceCommit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "before": {
+        "ruleCount": 7,
+        "rules": {
+          "INSECURE_API_URL": 1,
+          "HARDCODED_FRONTEND_SECRET": 3,
+          "VULNERABLE_NPM_DEPENDENCY": 3
+        },
+        "securityScore": 16,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 3,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 5,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 4,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v8",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 44
+          },
+          "entrypoints": 19,
+          "functions": 48,
+          "findings": {
+            "JS_EVAL_INPUT_FLOW:HIGH": 3
+          },
+          "nodeUses": {
+            "JS_MONGO_WHERE_INPUT_FLOW:RECEIVER_NOT_VERIFIED": 1,
+            "JS_EVAL_INPUT_FLOW:INPUT_TO_EXECUTION": 3,
+            "JS_MONGO_RESOURCE_ACCESS:DATA_QUERY_NOT_AUTHORIZATION_PROOF": 3
+          },
+          "validatedFindings": {
+            "JS_EVAL_INPUT_FLOW": 3
+          },
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 27,
+            "CALL_TARGET_UNRESOLVED": 11,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 2,
+            "NUMERIC_COERCION_PARTIAL": 4,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 3,
+            "PROPERTY_WRITE_UNRESOLVED": 2,
+            "CALL_DEPTH_EXCEEDED": 1,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 5,
+            "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 9,
+            "EVAL_SCOPE_EFFECTS_UNKNOWN": 1,
+            "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 2,
+            "EXPRESSION_UNSUPPORTED": 2,
+            "OBJECT_MEMBER_UNRESOLVED": 2,
+            "NODE_INITIALIZATION_STRUCTURE_UNKNOWN": 1
+          }
+        }
+      },
+      "preIsolation": {
+        "ruleCount": 7,
+        "rules": {
+          "INSECURE_API_URL": 1,
+          "HARDCODED_FRONTEND_SECRET": 3,
+          "VULNERABLE_NPM_DEPENDENCY": 3
+        },
+        "securityScore": 16,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 3,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 5,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 5,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v9",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 44
+          },
+          "entrypoints": 19,
+          "functions": 48,
+          "findings": {
+            "JS_MONGO_WHERE_INPUT_FLOW:HIGH": 1,
+            "JS_EVAL_INPUT_FLOW:HIGH": 3
+          },
+          "nodeUses": {
+            "JS_CONSTRUCTOR_EFFECT:CONSTRUCTOR_SUMMARY_MUST": 1,
+            "JS_MONGO_WHERE_INPUT_FLOW:CURSOR_CREATED_EXECUTION_NOT_OBSERVED": 2,
+            "JS_MONGO_WHERE_INPUT_FLOW:INPUT_TO_EXECUTION": 1,
+            "JS_MONGO_RESOURCE_ACCESS:DATA_QUERY_NOT_AUTHORIZATION_PROOF": 2,
+            "JS_EVAL_INPUT_FLOW:INPUT_TO_EXECUTION": 3
+          },
+          "validatedFindings": {
+            "JS_MONGO_WHERE_INPUT_FLOW": 1,
+            "JS_EVAL_INPUT_FLOW": 3
+          },
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 27,
+            "CALL_TARGET_UNRESOLVED": 11,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 2,
+            "NUMERIC_COERCION_PARTIAL": 4,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 3,
+            "PROPERTY_WRITE_UNRESOLVED": 2,
+            "CONSTRUCTOR_SUMMARY_APPLIED_NOT_FULL_CALL_TRACE": 1,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 5,
+            "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 9,
+            "EVAL_SCOPE_EFFECTS_UNKNOWN": 1,
+            "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 2,
+            "EXPRESSION_UNSUPPORTED": 2,
+            "OBJECT_MEMBER_UNRESOLVED": 2,
+            "NODE_INITIALIZATION_STRUCTURE_UNKNOWN": 1
+          }
+        }
+      },
+      "after": {
+        "ruleCount": 7,
+        "rules": {
+          "INSECURE_API_URL": 1,
+          "HARDCODED_FRONTEND_SECRET": 3,
+          "VULNERABLE_NPM_DEPENDENCY": 3
+        },
+        "securityScore": 16,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 3,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 5,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 5,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 44
+          },
+          "entrypoints": 19,
+          "functions": 48,
+          "findings": {
+            "JS_MONGO_WHERE_INPUT_FLOW:HIGH": 1,
+            "JS_EVAL_INPUT_FLOW:HIGH": 3
+          },
+          "nodeUses": {
+            "JS_CONSTRUCTOR_EFFECT:CONSTRUCTOR_SUMMARY_MUST": 1,
+            "JS_MONGO_WHERE_INPUT_FLOW:CURSOR_CREATED_EXECUTION_NOT_OBSERVED": 3,
+            "JS_MONGO_WHERE_INPUT_FLOW:INPUT_TO_EXECUTION": 1,
+            "JS_MONGO_RESOURCE_ACCESS:DATA_QUERY_NOT_AUTHORIZATION_PROOF": 8,
+            "JS_EVAL_INPUT_FLOW:INPUT_TO_EXECUTION": 3
+          },
+          "validatedFindings": {
+            "JS_MONGO_WHERE_INPUT_FLOW": 1,
+            "JS_EVAL_INPUT_FLOW": 3
+          },
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 27,
+            "CALL_TARGET_UNRESOLVED": 10,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 1,
+            "NUMERIC_COERCION_PARTIAL": 4,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 3,
+            "PROPERTY_WRITE_UNRESOLVED": 2,
+            "CONSTRUCTOR_SUMMARY_APPLIED_NOT_FULL_CALL_TRACE": 1,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 5,
+            "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 9,
+            "MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED": 9,
+            "EVAL_SCOPE_EFFECTS_UNKNOWN": 1,
+            "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 2,
+            "EXPRESSION_UNSUPPORTED": 2,
+            "OBJECT_MEMBER_UNRESOLVED": 2,
+            "NODE_INITIALIZATION_STRUCTURE_UNKNOWN": 1
+          }
+        }
+      },
+      "repeatConsistent": true,
+      "elapsedMs": [
+        509,
+        491
+      ],
+      "fingerprintChanged": true
+    },
+    {
+      "projectId": "netbox-community--netbox",
+      "sourceCommit": "9f8b55c196501a82ea800f8f3d720165db9173a6",
+      "before": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v8",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 54
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 54,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 1,
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 3
+          }
+        }
+      },
+      "preIsolation": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v9",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 54
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 54,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 1,
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 3
+          }
+        }
+      },
+      "after": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 54
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 54,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 1,
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 3
+          }
+        }
+      },
+      "repeatConsistent": true,
+      "elapsedMs": [
+        777,
+        721
+      ],
+      "fingerprintChanged": true
+    },
+    {
+      "projectId": "sahat--hackathon-starter",
+      "sourceCommit": "d320edb22ea0c42d7cb17f3a7837f1ce5163e234",
+      "status": "COLLECTION_FAILED_NOT_ANALYZED"
+    }
+  ],
+  "gradeBTopologyResults": {
+    "Local helper in repository module; added after observing original validation module-depth failures. Not an independent dataset.": {
+      "cases": 7,
+      "labels": {
+        "RISK": 2,
+        "NORMAL": 3,
+        "UNKNOWN": 2
+      },
+      "before": {
+        "UNKNOWN": 4,
+        "NOT_INSPECTED": 3
+      },
+      "after": {
+        "TP": 2,
+        "TN": 3,
+        "UNKNOWN": 2
+      }
+    },
+    "Separate helper module; original frozen set, module-depth failure retained.": {
+      "cases": 10,
+      "labels": {
+        "RISK": 2,
+        "NORMAL": 5,
+        "UNKNOWN": 3
+      },
+      "before": {
+        "UNKNOWN": 6,
+        "NOT_INSPECTED": 4
+      },
+      "after": {
+        "UNKNOWN": 6,
+        "NOT_INSPECTED": 4
+      }
+    }
+  },
+  "gradeB": {
+    "split": "REGRESSION",
+    "cases": 17,
+    "previousHoldoutObserved": true,
+    "independentOrBlind": false,
+    "manifestSha256": "911d60995ae26207c540d7b6905c3e2be67a81a044c0b5073deea4927b15d1d8",
+    "casesSummary": [
+      {
+        "caseId": "validation-string",
+        "label": "RISK",
+        "topology": "Separate helper module; original frozen set, module-depth failure retained.",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "inputSha256": "a689e1a7859c35db1cc38fbdf25808ae8478ed2eb7e9128dae247da0e0aa6488"
+      },
+      {
+        "caseId": "validation-static",
+        "label": "NORMAL",
+        "topology": "Separate helper module; original frozen set, module-depth failure retained.",
+        "before": "NOT_INSPECTED",
+        "after": "NOT_INSPECTED",
+        "inputSha256": "fb17c908bad3a572047702e7c301910192df84d1ed6e9de7e45314631e077e35"
+      },
+      {
+        "caseId": "validation-number",
+        "label": "NORMAL",
+        "topology": "Separate helper module; original frozen set, module-depth failure retained.",
+        "before": "NOT_INSPECTED",
+        "after": "NOT_INSPECTED",
+        "inputSha256": "186f849e04ea1dee6545914c8da0180139b859d0fcd44c656d4e5101e0c0ebab"
+      },
+      {
+        "caseId": "validation-unknown-db",
+        "label": "UNKNOWN",
+        "topology": "Separate helper module; original frozen set, module-depth failure retained.",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "inputSha256": "126656117591df8bb1ea3a2c064f954856b260fe86567f8835e3206ea75b7870"
+      },
+      {
+        "caseId": "validation-missing-consumption",
+        "label": "NORMAL",
+        "topology": "Separate helper module; original frozen set, module-depth failure retained.",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "inputSha256": "eca9691e009142b0f74977f6dd91a15f98835e3d14870f5a6deca70b25ea8bc8"
+      },
+      {
+        "caseId": "validation-transform",
+        "label": "UNKNOWN",
+        "topology": "Separate helper module; original frozen set, module-depth failure retained.",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "inputSha256": "66a5a06289d6ec450e5a16332c7eb0d34df43f96b86a43eb83860a0371ce9c4d"
+      },
+      {
+        "caseId": "holdout-template",
+        "label": "RISK",
+        "topology": "Separate helper module; original frozen set, module-depth failure retained.",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "inputSha256": "5910f944b2a560f4ae09c8709b5d5af19355af046b27fd684495c9c86efd6677"
+      },
+      {
+        "caseId": "holdout-number",
+        "label": "NORMAL",
+        "topology": "Separate helper module; original frozen set, module-depth failure retained.",
+        "before": "NOT_INSPECTED",
+        "after": "NOT_INSPECTED",
+        "inputSha256": "2d1a6e5d5f2e901979fef1f06d7f463296685b25f513507b76e0b66175ef2a43"
+      },
+      {
+        "caseId": "holdout-static",
+        "label": "NORMAL",
+        "topology": "Separate helper module; original frozen set, module-depth failure retained.",
+        "before": "NOT_INSPECTED",
+        "after": "NOT_INSPECTED",
+        "inputSha256": "7019bef26a53450acba432db336bed3fc91b0e1540b6853ba2d5bbcd3320ff30"
+      },
+      {
+        "caseId": "holdout-unknown",
+        "label": "UNKNOWN",
+        "topology": "Separate helper module; original frozen set, module-depth failure retained.",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "inputSha256": "1d1ca10e1c61c526463b08e1f92fb09995bcddc86dc75f3eec19dd094988d0b3"
+      },
+      {
+        "caseId": "local-validation-risk",
+        "label": "RISK",
+        "topology": "Local helper in repository module; added after observing original validation module-depth failures. Not an independent dataset.",
+        "before": "UNKNOWN",
+        "after": "TP",
+        "inputSha256": "c780347c9325a1389de2cabd39d5ee0ac2685fa0998adb7169feff23a061de86"
+      },
+      {
+        "caseId": "local-validation-normal",
+        "label": "NORMAL",
+        "topology": "Local helper in repository module; added after observing original validation module-depth failures. Not an independent dataset.",
+        "before": "NOT_INSPECTED",
+        "after": "TN",
+        "inputSha256": "8bfb8dfacb82db24f294a52b5e87fb24d685ee7279de7e249223532625cca9b3"
+      },
+      {
+        "caseId": "local-validation-unknown",
+        "label": "UNKNOWN",
+        "topology": "Local helper in repository module; added after observing original validation module-depth failures. Not an independent dataset.",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "inputSha256": "cdb7c87fb2122b7f56944b7a9f688a4477612b200f3f3afad201189bc7f69dd9"
+      },
+      {
+        "caseId": "local-holdout-risk",
+        "label": "RISK",
+        "topology": "Local helper in repository module; added after observing original validation module-depth failures. Not an independent dataset.",
+        "before": "UNKNOWN",
+        "after": "TP",
+        "inputSha256": "db0ba6a6a3d1d9f3d38aa532d7bc32dfe8b52475c95adab5ad3ce450510105e9"
+      },
+      {
+        "caseId": "local-holdout-number",
+        "label": "NORMAL",
+        "topology": "Local helper in repository module; added after observing original validation module-depth failures. Not an independent dataset.",
+        "before": "NOT_INSPECTED",
+        "after": "TN",
+        "inputSha256": "a91850f156414da42437672dec7438b38db13f13a3b917d016a06d01c72099bf"
+      },
+      {
+        "caseId": "local-holdout-static",
+        "label": "NORMAL",
+        "topology": "Local helper in repository module; added after observing original validation module-depth failures. Not an independent dataset.",
+        "before": "NOT_INSPECTED",
+        "after": "TN",
+        "inputSha256": "9cea89213efd8ec7c5977e48623a7cb514cba70a67c3c146a2dac35aee3e9060"
+      },
+      {
+        "caseId": "local-holdout-unknown",
+        "label": "UNKNOWN",
+        "topology": "Local helper in repository module; added after observing original validation module-depth failures. Not an independent dataset.",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "inputSha256": "af20a3448684d872c516cc93199b89c2bd6a4330e6c0c4dee079e89b47809522"
+      }
+    ]
+  },
+  "gradeA": {
+    "newSupportedPatchPairs": 0
+  },
+  "gradeC": {
+    "scored": false,
+    "sourceCommit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8"
+  },
+  "failureCaseFollowup": {
+    "caseId": "nodegoat-nosql-query-construction",
+    "engineCommit": "dd2e6216cb583d07b861b4b5bec2e443039e8536",
+    "sourceCommit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+    "status": "STATIC_INPUT_TO_WHERE_AND_CURSOR_CONSUMPTION_CONFIRMED",
+    "constructorEvidence": [
+      {
+        "ruleId": "JS_CONSTRUCTOR_EFFECT",
+        "kind": "CONSTRUCTOR_SUMMARY_MUST",
+        "operation": "READ_ONLY_ARGUMENTS_FRESH_INSTANCE",
+        "location": {
+          "filePath": "app/data/user-dao.js",
+          "line": 4,
+          "column": 1,
+          "functionName": "UserDAO",
+          "kind": "CONSTRUCTOR_SUMMARY_MUST"
+        },
+        "trace": [
+          {
+            "filePath": "app/data/user-dao.js",
+            "line": 4,
+            "column": 18,
+            "functionName": "UserDAO",
+            "kind": "SUMMARY_PARAMETER_0"
+          },
+          {
+            "filePath": "app/data/user-dao.js",
+            "line": 15,
+            "column": 11,
+            "functionName": "UserDAO",
+            "kind": "SUMMARY_LOCAL_BINDING"
+          },
+          {
+            "filePath": "app/data/user-dao.js",
+            "line": 17,
+            "column": 5,
+            "functionName": "UserDAO",
+            "kind": "SUMMARY_FRESH_FIELD_WRITE"
+          },
+          {
+            "filePath": "app/data/user-dao.js",
+            "line": 49,
+            "column": 5,
+            "functionName": "UserDAO",
+            "kind": "SUMMARY_FRESH_FIELD_WRITE"
+          },
+          {
+            "filePath": "app/data/user-dao.js",
+            "line": 57,
+            "column": 5,
+            "functionName": "UserDAO",
+            "kind": "SUMMARY_FRESH_FIELD_WRITE"
+          },
+          {
+            "filePath": "app/data/user-dao.js",
+            "line": 97,
+            "column": 5,
+            "functionName": "UserDAO",
+            "kind": "SUMMARY_FRESH_FIELD_WRITE"
+          },
+          {
+            "filePath": "app/data/user-dao.js",
+            "line": 103,
+            "column": 5,
+            "functionName": "UserDAO",
+            "kind": "SUMMARY_FRESH_FIELD_WRITE"
+          },
+          {
+            "filePath": "app/data/user-dao.js",
+            "line": 109,
+            "column": 5,
+            "functionName": "UserDAO",
+            "kind": "SUMMARY_FRESH_FIELD_WRITE"
+          }
+        ],
+        "limitations": [
+          "WHITELISTED_CONSTRUCTOR_ONLY",
+          "SYNTAX_PLAN_CACHE_NO_SHARED_ARGUMENT_STATE",
+          "NOT_WHOLE_FUNCTION_FLOW"
+        ]
+      }
+    ],
+    "mongoEvidence": [
+      {
+        "ruleId": "JS_MONGO_WHERE_INPUT_FLOW",
+        "kind": "CWE-943",
+        "confidence": "HIGH",
+        "disposition": "REVIEW_REQUIRED",
+        "source": {
+          "filePath": "app/routes/allocations.js",
+          "line": 21,
+          "column": 13,
+          "functionName": "displayAllocations",
+          "kind": "EXPRESS_QUERY"
+        },
+        "sink": {
+          "filePath": "app/data/allocations-dao.js",
+          "line": 86,
+          "column": 9,
+          "functionName": "getByUserIdAndThreshold",
+          "kind": "MONGODB_CURSOR_TOARRAY"
+        },
+        "flow": [
+          {
+            "filePath": "app/routes/allocations.js",
+            "line": 21,
+            "column": 13,
+            "functionName": "displayAllocations",
+            "kind": "EXPRESS_QUERY"
+          },
+          {
+            "filePath": "app/routes/allocations.js",
+            "line": 19,
+            "column": 15,
+            "functionName": "displayAllocations",
+            "kind": "VARIABLE"
+          },
+          {
+            "filePath": "app/routes/allocations.js",
+            "line": 23,
+            "column": 9,
+            "functionName": "displayAllocations",
+            "kind": "FUNCTION_ARGUMENT"
+          },
+          {
+            "filePath": "app/data/allocations-dao.js",
+            "line": 78,
+            "column": 29,
+            "functionName": "searchCriteria",
+            "kind": "SQL_STRING_CONSTRUCTION"
+          },
+          {
+            "filePath": "app/data/allocations-dao.js",
+            "line": 86,
+            "column": 9,
+            "functionName": "getByUserIdAndThreshold",
+            "kind": "MONGODB_CURSOR_CREATION"
+          },
+          {
+            "filePath": "server.js",
+            "line": 30,
+            "column": 1,
+            "functionName": "module",
+            "kind": "MONGODB_DECLARED_V2_CONNECTION"
+          },
+          {
+            "filePath": "app/data/allocations-dao.js",
+            "line": 15,
+            "column": 28,
+            "functionName": "AllocationsDAO",
+            "kind": "MONGODB_COLLECTION_ORIGIN"
+          }
+        ],
+        "defenses": [
+          {
+            "filePath": "app/data/allocations-dao.js",
+            "line": 58,
+            "column": 30,
+            "functionName": "getByUserIdAndThreshold",
+            "kind": "NUMERIC_CONVERSION"
+          },
+          {
+            "filePath": "app/data/allocations-dao.js",
+            "line": 62,
+            "column": 13,
+            "functionName": "searchCriteria",
+            "kind": "EARLY_EXIT_BRANCH_PRESENT"
+          }
+        ],
+        "limitations": [
+          "STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF",
+          "MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED"
+        ],
+        "message": "사용자가 보낸 값이 데이터베이스의 실행 문자열에 들어갈 수 있습니다.",
+        "recommendation": "$where 문자열 결합을 피하고 일반적인 값 비교 쿼리와 입력 타입 검증을 사용하세요."
+      }
+    ],
+    "runtime": "Installed driver, Mongo server settings, middleware, and exploit success remain unverified.",
+    "entryIsolation": "Fresh initialized symbolic graph for each request; aliases, closures, lexical this and runtime relative require share one entry graph.",
+    "remaining": "Actual multi-request global lifecycle and the separate fifth-module import-depth gap remain unverified."
+  },
+  "nodeUseKinds": {
+    "CONSTRUCTOR_SUMMARY_MUST": 1,
+    "CURSOR_CREATED_EXECUTION_NOT_OBSERVED": 3,
+    "INPUT_TO_EXECUTION": 4,
+    "DATA_QUERY_NOT_AUTHORIZATION_PROOF": 8
+  },
+  "benchmarks": {
+    "pilot": {
+      "rule": {
+        "counts": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 3,
+          "FP": 9
+        },
+        "precision": 0.55,
+        "recallWithinScoredScope": 0.9166666666666666,
+        "falsePositiveRate": 0.75,
+        "precisionWilson95": [
+          0.3420820083075997,
+          0.7418049791429071
+        ],
+        "scoredCoverage": 1.0,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.9166666666666666
+      },
+      "filteredRule": {
+        "counts": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 6,
+          "FP": 6
+        },
+        "precision": 0.6470588235294118,
+        "recallWithinScoredScope": 0.9166666666666666,
+        "falsePositiveRate": 0.5,
+        "precisionWilson95": [
+          0.4129996672121182,
+          0.826905138560951
+        ],
+        "scoredCoverage": 1.0,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.9166666666666666
+      },
+      "ast": {
+        "counts": {
+          "TP": 3,
+          "UNKNOWN": 9,
+          "NOT_INSPECTED": 10,
+          "TN": 2
+        },
+        "precision": 1.0,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.0,
+        "precisionWilson95": [
+          0.43849391955098227,
+          1
+        ],
+        "scoredCoverage": 0.20833333333333334,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.25
+      },
+      "reviewCandidate": {
+        "counts": {
+          "TP": 1,
+          "UNKNOWN": 9,
+          "MERGED_WITH_LEGACY": 2,
+          "NOT_INSPECTED": 10,
+          "TN": 2
+        },
+        "precision": 1.0,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.0,
+        "precisionWilson95": [
+          0.20654329147389294,
+          1
+        ],
+        "scoredCoverage": 0.125,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.25
+      },
+      "finalUser": {
+        "counts": {
+          "TP": 12,
+          "UNKNOWN": 3,
+          "NOT_INSPECTED": 1,
+          "TN": 2,
+          "FP": 6
+        },
+        "precision": 0.6666666666666666,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.75,
+        "precisionWilson95": [
+          0.4374906934425036,
+          0.8372144563633714
+        ],
+        "scoredCoverage": 0.8333333333333334,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 1.0
+      }
+    },
+    "realworld": {
+      "rule": {
+        "counts": {
+          "NOT_SUPPORTED": 16
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "filteredRule": {
+        "counts": {
+          "NOT_SUPPORTED": 16
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "ast": {
+        "counts": {
+          "NOT_SUPPORTED": 14,
+          "RESOURCE_LIMIT": 2
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "reviewCandidate": {
+        "counts": {
+          "NOT_SUPPORTED": 14,
+          "RESOURCE_LIMIT": 2
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "finalUser": {
+        "counts": {
+          "NOT_SUPPORTED": 14,
+          "RESOURCE_LIMIT": 2
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      }
+    }
+  },
+  "performanceObservation": {
+    "before": {
+      "wallMs": 209,
+      "maximumRssBytes": 150814720
+    },
+    "after": {
+      "wallMs": 226,
+      "maximumRssBytes": 153550848
+    }
+  },
+  "limitsChanged": false,
+  "riskChanged": false,
+  "scoreChanged": false,
+  "databaseMigration": false,
+  "historicalSnapshotsRecomputed": false,
+  "protocol": "ts-server-v10",
+  "comparison": "Analyzer version/fingerprint differ; structural candidates remain REVIEW_REQUIRED and NOT_COMPARED.",
+  "validation": {
+    "backendTests": 513,
+    "backendPassed": 506,
+    "backendSkipped": 7,
+    "typescriptTests": 164,
+    "frontendTests": 105,
+    "pythonTests": 110,
+    "evaluationTools": 95,
+    "frontendBuild": "PASS",
+    "browserWidths": [
+      1440,
+      390,
+      320
+    ],
+    "commonInputs": "Real ZIP/H2 snapshot/detail/access isolation; public/private GitHub acquisition mocked.",
+    "livePrivateGithub": "NOT_RUN",
+    "backendRestart": "v10; protected environment preserved; schema validate"
+  },
+  "limitations": [
+    "State isolation removes analysis-order contamination, not actual cross-request global-state vulnerabilities.",
+    "Single timing/RSS samples are observations, not guarantees; copy work consumes unchanged step/time/heap limits.",
+    "Only five of 17 controlled cases yield TP/TN; UNKNOWN and NOT_INSPECTED are not safety or zero missed vulnerabilities.",
+    "Previously observed held-out cases are now regression. No newly independent external holdout or Grade A supported pair.",
+    "Strict constructor summaries are immediate-effect proof only; arbitrary DI/factories/prototypes/asynchrony remain unsupported.",
+    "Pilot six false alerts and CVE fourteen unsupported/two resource-limited cases remain."
+  ],
+  "safety": {
+    "targetExecution": false,
+    "targetInstall": false,
+    "targetMutation": false,
+    "userDatabaseEvaluationWrites": false,
+    "paidAiCalls": 0,
+    "externalVulnerabilityLookups": 0,
+    "originalSourcesInGit": false,
+    "permissionDenials": 0
+  }
+}

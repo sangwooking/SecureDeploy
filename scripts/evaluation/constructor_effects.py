@@ -53,23 +53,23 @@ def evaluate(root,application_root,output,split,release_holdout=False,official_r
             (base/name).write_bytes(subprocess.check_output(['git','show',BASELINE+':analyzers/typescript/'+name],cwd=REPO))
         (base/'node_modules').symlink_to(REPO/'analyzers/typescript/node_modules',target_is_directory=True)
         for case in manifest['cases']:
-            if case['split']!=split:continue
+            if split!='REGRESSION'and case['split']!=split:continue
             data=control_packet(root,case)
             before=execute(base/'analyzer.mjs',data);after=execute(REPO/'analyzers/typescript/analyzer.mjs',data)
             rows.append(dict(caseId=case['caseId'],grade='B',label=case['label'],topology=case.get('topology','UNRECORDED'),before=before,after=after,
                 beforeOutcome=classify(before,case['label']),afterOutcome=classify(after,case['label'])))
         node=None
-        if split=='VALIDATION':
+        if split in {'VALIDATION','REGRESSION'}:
             sha,data=packet(outside(application_root))
             node=dict(sourceCommit=sha,before=execute(base/'analyzer.mjs',data),after=execute(REPO/'analyzers/typescript/analyzer.mjs',data))
         scope=None
-        if official_root and split=='VALIDATION':
+        if official_root and split in {'VALIDATION','REGRESSION'}:
             sha,data=public_packet(outside(official_root))
             scope=dict(grade='C',sourceCommit=sha,before=execute(base/'analyzer.mjs',data),after=execute(REPO/'analyzers/typescript/analyzer.mjs',data),scored=False)
     result=dict(schemaVersion=1,baseline=BASELINE,engineCommit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip(),
         workingTreeDiffSha256=digest(subprocess.check_output(['git','diff','HEAD','--','src/main','analyzers'],cwd=REPO)),
         manifestSha256=digest((root/'manifest.json').read_bytes()),baseRepository=manifest['baseRepository'],baseCommit=manifest['baseCommit'],
-        grade='B',split=split,cases=rows,nodegoatRegression=node,gradeCScope=scope,
+        grade='B',split=split,previousHoldoutObserved=(root/'holdout-observed.json').exists(),cases=rows,nodegoatRegression=node,gradeCScope=scope,
         beforeCounts=dict(Counter(c['beforeOutcome']for c in rows)),afterCounts=dict(Counter(c['afterOutcome']for c in rows)),
         interpretation=manifest['independence'],gradeANewSupportedPairs=0,sourceExecution=False,userDatabaseUsed=False,
         note='TN applies only to the labeled controlled execution path, not the original Express example or whole application.')
@@ -78,6 +78,6 @@ def evaluate(root,application_root,output,split,release_holdout=False,official_r
 if __name__=='__main__':
     p=argparse.ArgumentParser()
     for name in ['root','application_root','output']:p.add_argument(name)
-    p.add_argument('--split',choices=['VALIDATION','HOLDOUT'],default='VALIDATION');p.add_argument('--release-holdout',action='store_true')
+    p.add_argument('--split',choices=['VALIDATION','HOLDOUT','REGRESSION'],default='VALIDATION');p.add_argument('--release-holdout',action='store_true')
     p.add_argument('--official-root')
     evaluate(**vars(p.parse_args()))

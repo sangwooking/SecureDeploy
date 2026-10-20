@@ -439,7 +439,7 @@ Original sources and failed candidate-pair evidence remain outside Git.
 
 ## Hardening #6: strict constructor effects and cursor execution
 
-Worker v9 caches AST-only constructor plans, never argument heaps or results.
+Worker v9 introduced AST-only constructor plans, never argument heaps or results.
 At the existing depth boundary, only fresh fields, const aliases, deferred
 method declarations and verified collection factories can be applied as MUST.
 Unknown calls/branches/computed writes remain UNKNOWN; MAY is not promoted.
@@ -458,3 +458,25 @@ separate, not independently authored or blind. Original five-module failures
 are retained alongside added local-helper variants; do not silently replace
 or relabel them. No new supported Grade A CVE pair was established. Original
 official examples remain Grade C scope observations, not safe projects.
+
+`hardening6.py` builds `hardening6-results.json` and the external NodeGoat
+follow-up pack from frozen application/validation/holdout results. Both import
+topologies and every unknown/uninspected case remain visible. The controlled
+17-case corpus has only five TP/TN-classified outcomes; do not describe zero
+scored FP/FN as whole-corpus or real-world accuracy. Intake and source receipts
+are retained with the external corpus; no external source is copied into Git.
+
+Before push, a pre-existing v8/v9 shared-heap defect reproduced registration-order
+dependent results. Approved worker v10 isolates each request's initial symbolic
+graph, preserving internal aliases/closures/this/DB origins and runtime relative
+requires. It does not model global state changes across real requests. Clone
+work consumes existing budgets. `entry-state.test.mjs` covers order invariance,
+same-entry mutation, closure cycles, module aliasing and budget exhaustion.
+
+`hardening6-results.json` is explicitly pre-isolation historical evidence.
+`hardening6_isolation.py` builds the final `hardening6-isolation-results.json`
+from newly replayed applications and already-observed controls. Use
+`constructor_effects.py --split REGRESSION` to replay consumed held-out cases;
+the original holdout receipt is preserved and cannot be released again. This
+replay is not a new independent evaluation. Final public metadata contains only
+hashes/locations/summaries, never external source text or runtime credentials.
