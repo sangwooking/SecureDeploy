@@ -154,4 +154,30 @@ class JavaSqlAnalyzerTest {
             assertThat(analyzer.reconcile(raw,analyzer.analyze(p)).matches()).isEqualTo(raw);
         }
     }
+    @Test void manyRetainedMethodsShareParserContextWithoutDroppingCrossFileFlow() {
+        var sources=new LinkedHashMap<String,String>();
+        for(int i=0;i<78;i++)sources.put("models/Record"+i+".java","package fixture; class Record"+i+" {String copy(String value){return value;}}");
+        sources.put("Endpoint.java",controller("Repository.lookup(connection,input); return null;"));
+        sources.put("Repository.java","package fixture; import java.sql.Connection; class Repository {static void lookup(Connection c,String value){c.prepareStatement(\"SELECT \"+value).execute();}}");
+        for(int repeat=0;repeat<2;repeat++) {
+            var result=analyzer.analyze(project(sources));
+            assertThat(result.status()).as(result.limitations().toString()).isEqualTo("PARTIAL");
+            assertThat(result.files()).hasSize(80).allMatch(f->f.parseStatus().equals("PARSED"));
+            assertThat(result.uses()).anyMatch(u->u.kind().equals("INPUT_IN_QUERY")&&u.location().filePath().equals("Repository.java"));
+        }
+    }
+    @Test void brokenUnitDoesNotPoisonValidUnitAndGlobalBudgetNeverCertifiesSafety() {
+        var mixed=analyzer.analyze(project(Map.of("Broken.java","class Broken { void broken( {", "Endpoint.java",controller("connection.prepareStatement(\"SELECT \"+input).execute();"))));
+        assertThat(mixed.files()).anyMatch(f->f.parseStatus().equals("PARSE_FAILED"));
+        assertThat(mixed.uses()).anyMatch(u->u.kind().equals("INPUT_IN_QUERY"));
+        var sources=new LinkedHashMap<String,String>();
+        for(int i=0;i<20;i++) {
+            var text=new StringBuilder("class Many"+i+" {void inspect(){");
+            for(int j=0;j<800;j++)text.append("int value").append(j).append("=0;");
+            sources.put("Many"+i+".java",text.append("}}").toString());
+        }
+        var limited=analyzer.analyze(project(sources));
+        assertThat(limited.files()).hasSize(20).anyMatch(f->f.parseStatus().equals("LIMIT_EXCEEDED"));
+        assertThat(limited.methods()).noneMatch(JavaSqlWorker.MethodResult::safeForLegacy);
+    }
 }

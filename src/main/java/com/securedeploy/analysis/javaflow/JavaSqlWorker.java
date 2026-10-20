@@ -10,7 +10,7 @@ import java.util.*;
 
 /** Trusted JDK-only worker. Target text is parsed, never attributed, compiled or loaded. */
 public final class JavaSqlWorker {
-    public static final String VERSION = "java-sql-v1";
+    public static final String VERSION = "java-sql-v2";
     public record Source(String path, String content) { }
     public record Location(String filePath, int line, int column, String functionName, String kind) { }
     public record FileResult(String filePath, String parseStatus, int entrypoints, int functions,
@@ -126,45 +126,7 @@ public final class JavaSqlWorker {
         Result run() {
             var compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null) return new Result(VERSION,"UNAVAILABLE",List.of(),List.of(),List.of(),List.of("JDK_PARSER_UNAVAILABLE"));
-            for (var source : sources) {
-                try {
-                    tick();
-                    var diagnostics = new DiagnosticCollector<JavaFileObject>();
-                    var text = new SimpleJavaFileObject(URI.create("string:///Input.java"), JavaFileObject.Kind.SOURCE) {
-                        @Override public CharSequence getCharContent(boolean ignored) { return source.content(); }
-                    };
-                    try (var manager = compiler.getStandardFileManager(diagnostics, Locale.ROOT, StandardCharsets.UTF_8)) {
-                        var task = (JavacTask) compiler.getTask(new StringWriter(), manager, diagnostics,
-                                List.of("-proc:none", "--release", "17", "-classpath", "", "-sourcepath", ""), null, List.of(text));
-                        var tree = task.parse().iterator().next();
-                        if (diagnostics.getDiagnostics().stream().anyMatch(d -> d.getKind() == Diagnostic.Kind.ERROR)) {
-                            files.add(new FileResult(source.path(),"PARSE_FAILED",0,0,0,0,List.of("JAVA_SYNTAX_NOT_PARSED"))); continue;
-                        }
-                        new TreeScanner<Void,Integer>() {
-                            @Override public Void scan(Tree node, Integer depth) {
-                                if (node == null) return null;
-                                if (++nodes > 60000 || depth > 128 || System.nanoTime() > deadline) throw new Budget();
-                                return super.scan(node, depth+1);
-                            }
-                        }.scan(tree,0);
-                        var imports = new HashMap<String,String>();
-                        tree.getImports().stream().filter(i -> !i.isStatic()).forEach(i -> {
-                            String name=i.getQualifiedIdentifier().toString(); imports.put(name.endsWith(".*")?name:name.substring(name.lastIndexOf('.')+1),name);
-                        });
-                        var localTypes = new HashSet<String>();
-                        new TreeScanner<Void,Void>() {
-                            @Override public Void visitClass(ClassTree c,Void ignored){localTypes.add(c.getSimpleName().toString());return super.visitClass(c,ignored);}
-                        }.scan(tree,null);
-                        var unit = new Unit(source,tree,Trees.instance(task).getSourcePositions(),imports,localTypes);
-                        for (var t : tree.getTypeDecls()) if (t instanceof ClassTree c) index(unit,c);
-                        files.add(new FileResult(source.path(),"PARSED",0,0,0,0,List.of()));
-                    }
-                } catch (Budget | StackOverflowError exhausted) {
-                    files.add(new FileResult(source.path(),"LIMIT_EXCEEDED",0,0,0,0,List.of("AST_OR_TIME_LIMIT"))); limits.add("AST_OR_TIME_LIMIT");
-                } catch (IOException | RuntimeException unavailable) {
-                    files.add(new FileResult(source.path(),"PARSE_FAILED",0,0,0,0,List.of("JAVA_PARSER_FAILED")));
-                }
-            }
+            parse(compiler);
             for (var m : methods) if (isEntry(m)) {
                 entrypoints++;
                 var env = new Env();
@@ -211,6 +173,69 @@ public final class JavaSqlWorker {
             notes.add("BOUNDED_SPRING_AND_SERVLET_ONLY");notes.add("API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF");
             notes.add("NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING");
             return new Result(VERSION, sources.isEmpty()?"NOT_APPLICABLE":"PARTIAL",coverage,summaries,List.copyOf(uses.values()),notes);
+        }
+        void parse(JavaCompiler compiler) {
+            var diagnostics=new DiagnosticCollector<JavaFileObject>();
+            var inputs=new ArrayList<JavaFileObject>();
+            var originals=new LinkedHashMap<URI,Source>();
+            for(var source:sources) {
+                URI uri=URI.create("string:///Input"+inputs.size()+".java");
+                inputs.add(new SimpleJavaFileObject(uri,JavaFileObject.Kind.SOURCE) {
+                    @Override public CharSequence getCharContent(boolean ignored){return source.content();}
+                });
+                originals.put(uri,source);
+            }
+            // SourcePositions retains JavacTrees and its compiler context. One task
+            // per file kept a whole context per indexed method's Unit alive.
+            // A single bounded parse-only task preserves cross-file ASTs without
+            // attribution, compilation, source lookup or annotation processing.
+            try(var manager=compiler.getStandardFileManager(diagnostics,Locale.ROOT,StandardCharsets.UTF_8)) {
+                var task=(JavacTask)compiler.getTask(new StringWriter(),manager,diagnostics,
+                        List.of("-proc:none","--release","17","-classpath","","-sourcepath",""),null,inputs);
+                var parsed=task.parse();
+                var positions=Trees.instance(task).getSourcePositions();
+                var failed=new HashSet<URI>();boolean globalError=false;
+                for(var diagnostic:diagnostics.getDiagnostics())if(diagnostic.getKind()==Diagnostic.Kind.ERROR) {
+                    if(diagnostic.getSource()==null)globalError=true;
+                    else failed.add(diagnostic.getSource().toUri());
+                }
+                for(var tree:parsed) {
+                    var source=originals.get(tree.getSourceFile().toUri());
+                    if(source==null)throw new IOException("SOURCE_IDENTITY");
+                    if(globalError||failed.contains(tree.getSourceFile().toUri())) {
+                        files.add(new FileResult(source.path(),"PARSE_FAILED",0,0,0,0,List.of("JAVA_SYNTAX_NOT_PARSED")));continue;
+                    }
+                    try {
+                        tick();
+                        new TreeScanner<Void,Integer>() {
+                            @Override public Void scan(Tree node,Integer depth) {
+                                if(node==null)return null;
+                                if(++nodes>60000||depth>128||System.nanoTime()>deadline)throw new Budget();
+                                return super.scan(node,depth+1);
+                            }
+                        }.scan(tree,0);
+                        var imports=new HashMap<String,String>();
+                        tree.getImports().stream().filter(i->!i.isStatic()).forEach(i->{
+                            String name=i.getQualifiedIdentifier().toString();imports.put(name.endsWith(".*")?name:name.substring(name.lastIndexOf('.')+1),name);
+                        });
+                        var localTypes=new HashSet<String>();
+                        new TreeScanner<Void,Void>() {
+                            @Override public Void visitClass(ClassTree c,Void ignored){localTypes.add(c.getSimpleName().toString());return super.visitClass(c,ignored);}
+                        }.scan(tree,null);
+                        var unit=new Unit(source,tree,positions,imports,localTypes);
+                        for(var t:tree.getTypeDecls())if(t instanceof ClassTree c)index(unit,c);
+                        files.add(new FileResult(source.path(),"PARSED",0,0,0,0,List.of()));
+                    }catch(Budget|StackOverflowError exhausted) {
+                        files.add(new FileResult(source.path(),"LIMIT_EXCEEDED",0,0,0,0,List.of("AST_OR_TIME_LIMIT")));limits.add("AST_OR_TIME_LIMIT");
+                    }
+                }
+                var seen=new HashSet<String>();files.forEach(f->seen.add(f.filePath()));
+                for(var source:sources)if(!seen.contains(source.path()))
+                    files.add(new FileResult(source.path(),"PARSE_FAILED",0,0,0,0,List.of("JAVA_UNIT_NOT_RETURNED")));
+            }catch(IOException|RuntimeException|StackOverflowError failure) {
+                methods.clear();files.clear();limits.add("JAVA_PARSER_BATCH_FAILED");
+                for(var source:sources)files.add(new FileResult(source.path(),failure instanceof StackOverflowError?"LIMIT_EXCEEDED":"PARSE_FAILED",0,0,0,0,List.of("JAVA_PARSER_BATCH_FAILED")));
+            }
         }
         void index(Unit unit, ClassTree owner) {
             var fields=new HashMap<String,String>();

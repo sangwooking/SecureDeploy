@@ -38,6 +38,42 @@ class ServerAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void semanticStringReconciliationPersistsAndPublicGithubMatchesZip() throws Exception {
+        String token=signup();
+        String code="const icon=<svg xmlns=\"http://www.w3.org/2000/svg\"/>;\n"
+                +"button.innerText=hidden?'Show Secret':'Hide Secret';\n"
+                +"fetch('http://service.example.invalid');";
+        var zip=uploadSource(token,"Controls.tsx",code);
+        assertThat(zip.path("vulnerabilities")).hasSize(1);
+        assertThat(zip.at("/vulnerabilities/0/ruleId").asText()).isEqualTo("INSECURE_API_URL");
+        assertThat(zip.at("/vulnerabilities/0/confidence").asText()).isEqualTo("HIGH");
+        Path root=Files.createDirectory(temp.resolve("string-public"));Files.writeString(root.resolve("Controls.tsx"),code);
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/strings",root,root));
+        var pub=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/strings\",\"scanMode\":\"STANDARD\"}");
+        assertThat(pub.path("vulnerabilityCount")).isEqualTo(zip.path("vulnerabilityCount"));
+        assertThat(pub.path("securityScore")).isEqualTo(zip.path("securityScore"));
+        assertThat(pub.at("/riskAssessment/prioritySummary")).isEqualTo(zip.at("/riskAssessment/prioritySummary"));
+        assertThat(detail(token,zip.path("reviewId").asLong()).path("vulnerabilities")).isEqualTo(zip.path("vulnerabilities"));
+        assertThat(root).doesNotExist();
+    }
+
+    @Test void eightyJavaUnitsAndSourceLimitHavePersistedDistinctCoverage() throws Exception {
+        String token=signup();var sources=new LinkedHashMap<String,String>();
+        sources.put("Endpoint.java","import org.springframework.web.bind.annotation.*; import java.sql.Connection; @RestController class Endpoint { Connection c; @GetMapping(\"/\") void inspect(@RequestParam String input){c.prepareCall(\"{call \"+input+\"}\").execute();}}");
+        for(int i=0;i<79;i++)sources.put("types/Record"+i+".java","class Record"+i+" {String copy(String value){return value;}}");
+        var zip=uploadSources(token,sources);
+        assertThat(zip.at("/serverAnalysis/javaAnalysis/analysis/files")).hasSize(80);
+        for(var file:zip.at("/serverAnalysis/javaAnalysis/analysis/files"))assertThat(file.path("parseStatus").asText()).isEqualTo("PARSED");
+        assertThat(zip.at("/serverAnalysis/javaAnalysis/findings")).hasSize(1);
+        assertThat(zip.at("/serverAnalysis/javaAnalysis/findings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(detail(token,zip.path("reviewId").asLong()).path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        var limited=uploadSource(token,"Huge.java","x".repeat(100_001));
+        assertThat(limited.at("/serverAnalysis/javaAnalysis/analysis/status").asText()).isEqualTo("UNAVAILABLE");
+        assertThat(limited.at("/serverAnalysis/javaAnalysis/analysis/files/0/parseStatus").asText()).isEqualTo("LIMIT_EXCEEDED");
+        assertThat(detail(token,limited.path("reviewId").asLong()).path("coverage")).isEqualTo(limited.path("coverage"));
+        assertThat(limited.path("coverage").toString()).contains("SOURCE_SELECTION_LIMIT");
+    }
+
     @Test void javaSqlUsesCommonInputsAndStoresIndependentReviewCandidates() throws Exception {
         String token=signup();
         String prefix="import org.springframework.web.bind.annotation.*; import java.sql.Connection; @RestController class Endpoint {Connection connection; @GetMapping(\"/\") void inspect(@RequestParam String input){\n";
@@ -64,7 +100,7 @@ class ServerAnalysisIntegrationTest {
         assertThat(normal.path("riskAssessment").path("prioritySummary")).isEqualTo(zip.path("riskAssessment").path("prioritySummary"));
         long id=zip.path("reviewId").asLong();
         assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
-        assertThat(jdbc.queryForObject("select server_analysis_json from reviews where id=?",String.class,id)).contains("java-sql-v1","JAVA_SQL_INPUT_FLOW").doesNotContain("{call ");
+        assertThat(jdbc.queryForObject("select server_analysis_json from reviews where id=?",String.class,id)).contains(com.securedeploy.analysis.javaflow.JavaSqlWorker.VERSION,"JAVA_SQL_INPUT_FLOW").doesNotContain("{call ");
         mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
         var legacy=(com.fasterxml.jackson.databind.node.ObjectNode)zip.path("serverAnalysis").deepCopy();legacy.remove("javaAnalysis");
         jdbc.update("update reviews set server_analysis_json=? where id=?",json.writeValueAsString(legacy),id);entities.clear();
@@ -199,8 +235,13 @@ class ServerAnalysisIntegrationTest {
         return uploadSource(token,"worker.ts",code);
     }
     JsonNode uploadSource(String token,String name,String code) throws Exception {
+        return uploadSources(token,Map.of(name,code));
+    }
+    JsonNode uploadSources(String token,Map<String,String> sources) throws Exception {
         var bytes = new ByteArrayOutputStream();
-        try (var zip = new ZipOutputStream(bytes)) { zip.putNextEntry(new ZipEntry("fixture/"+name)); zip.write(code.getBytes(StandardCharsets.UTF_8)); zip.closeEntry(); }
+        try (var zip = new ZipOutputStream(bytes)) {
+            for(var entry:sources.entrySet()) {zip.putNextEntry(new ZipEntry("fixture/"+entry.getKey()));zip.write(entry.getValue().getBytes(StandardCharsets.UTF_8));zip.closeEntry();}
+        }
         return json.readTree(mvc.perform(multipart("/api/reviews/upload").file(new MockMultipartFile("file", "fixture.zip", "application/zip", bytes.toByteArray()))
                 .header("Authorization", "Bearer " + token)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
     }
