@@ -293,3 +293,48 @@ the 19 complete packs remain outside Git and can be regenerated from the
 version-bound manual review and unchanged corpus. Java failure diagnosis is
 the earlier trusted v1 worker replay on byte-identical retained Java input;
 the v2 full run independently repeats JAVA_WORKER_FAILED.
+
+## Hardening #2: semantic strings and Java parser lifecycle
+
+`hardening2-results.json` links the unchanged v2 source plan and baseline to
+committed A/B engine runs. Seven warning observations are removed (five SVG
+namespaces, one declaration-file license comment, one cross-literal UI match),
+not seven independent vulnerabilities. Five follow-up packs reference the
+original case IDs without rewriting the earlier failure evidence. Full packs
+and raw outputs remain in the external v2 corpus under `hardening2-*`.
+
+String-context v3 preserves actual calls, unknown consumers and credential-like
+values, including quoted/computed property keys and embedded configuration text.
+Only literal intrinsic SVG namespace attributes are excluded, not custom props
+or URLs sent to fetch. Oversized source is NOT fully parsed: a maximum 100k-char
+prefix can prove completed comments before the first syntax diagnostic; later
+code and the remainder remain unknown. Existing time/node/process limits apply.
+
+Java SQL v2 shares one parse-only JavacTask across the bounded selected input.
+Per-file SourcePositions previously retained JavacTrees/task/compiler services
+for every indexed Unit. Heap exhaustion was reproduced, not inferred from a
+generic worker failure. Source text, cross-file method index and error locations
+are preserved. No attribution, target compilation or annotation processing is
+performed. File syntax errors remain per-file; a batch-level parser/stack failure
+is explicit and does not certify earlier methods as safe. Fatal worker failure
+still retains legacy warnings. Limits stay at 192 MiB heap / 96 MiB metaspace,
+100 files / 1M chars / 60k AST nodes / 30k flow steps / 5s internal / 8s parent.
+
+Both Spring apps now parse all selected 50/80 files. Entry/function tracing is
+17/23 and 40/45, but traced supported SQL executions are still zero; this is not
+whole-app Java/JPA/MyBatis analysis. NetBox changes 86/BLOCKED to
+100/REVIEW_REQUIRED solely by removing its false signal; SCA stays UNKNOWN.
+Risk/score policies, user DB and historical Reviews are unchanged. Version and
+comparison fingerprint changes prevent treating analyzer changes as fixed code.
+
+The separate worker probe reports macOS maximum RSS separately from GC
+high-water and exit-heap samples. Two post-change observations are retained;
+these few measurements are not a universal performance guarantee. Existing
+40-CVE regression still has 38 NOT_SUPPORTED / 2 RESOURCE_LIMIT. The 14 new
+synthetic string-context variations are same-curator tests, not an external
+blind evaluation. No new source acquisition or external vulnerability/AI query.
+
+Replay the memory probe on macOS with our trusted baseline/current worker JAR:
+`python3 -B scripts/evaluation/java_worker_probe.py DATA_ROOT TRUSTED_WORKER_JAR NEW_EXTERNAL_JSON`.
+It verifies the original failed selection's file hashes and sends text through
+the worker protocol; it never runs an upstream build or saves raw stderr/source.

@@ -12,7 +12,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       result.serverAnalysis = require('../server-analysis-fixture.cjs')();
       const javaLocation={filePath:'src/Endpoint.java',line:12,column:5,functionName:'inspect',kind:'SQL_EXECUTION'};
       const javaSource={...javaLocation,line:7,kind:'REQUEST_INPUT'};
-      result.serverAnalysis.javaAnalysis={analysis:{version:'java-sql-v1',status:'PARTIAL',
+      result.serverAnalysis.javaAnalysis={analysis:{version:process.env.JAVA_ANALYZER_VERSION||'java-sql-v1',status:'PARTIAL',
         files:[{filePath:javaLocation.filePath,parseStatus:'PARSED',entrypoints:1,functions:1,sqlCallSites:2,tracedCallSites:1,limitations:['SQL_CALLS_OUTSIDE_TRACED_FLOW']}],
         methods:[],uses:[{kind:'INPUT_IN_QUERY',api:'executeQuery',location:javaLocation,trace:[javaSource],bindingCalls:0,limitations:[]}],limitations:['BOUNDED_SPRING_AND_SERVLET_ONLY']},
         suppressedLegacyCount:1,legacyEvidence:[],findings:[{findingId:'java-sql:synthetic-only',ruleId:'JAVA_SQL_INPUT_FLOW',priority:'REVIEW_REQUIRED',comparisonPolicy:'NOT_COMPARED',

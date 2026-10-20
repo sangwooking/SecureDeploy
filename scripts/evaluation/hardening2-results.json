@@ -1,0 +1,1461 @@
+{
+  "schemaVersion": 1,
+  "baselineMilestone": "80ef248d79b55ad0212ec09beadc8b37af64742d",
+  "sourcePlanSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+  "engineCommits": {
+    "baseline": "bd12409888f28bd1316b34c70f92052706d6f952",
+    "afterA": "b521ef8c947aca205a91360ca807c520554690c0",
+    "afterB": "41517e1ed2fe5e4478a23e595d9602464a9020eb"
+  },
+  "sourcePrivacy": "Original v2 omissions retained; no excluded source downloaded again.",
+  "projects": [
+    {
+      "projectId": "spring-projects--spring-petclinic",
+      "repositoryUrl": "https://github.com/spring-projects/spring-petclinic",
+      "commitSha": "500158f732419217507c7656904b8e6aa1bcc0d6",
+      "stages": {
+        "baseline": {
+          "ruleCount": 3,
+          "rules": {
+            "K8S_SECRET_PLAIN_TEXT": 1,
+            "K8S_NODEPORT_EXPOSURE": 1,
+            "EXPOSED_ACTUATOR": 1
+          },
+          "securityScore": 65,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 1,
+            "REVIEW_REQUIRED": 3,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 2,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "UNAVAILABLE",
+            "files": {
+              "NOT_RUN": 50
+            },
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "JAVA_WORKER_FAILED"
+            ]
+          }
+        },
+        "afterA": {
+          "ruleCount": 3,
+          "rules": {
+            "K8S_SECRET_PLAIN_TEXT": 1,
+            "K8S_NODEPORT_EXPOSURE": 1,
+            "EXPOSED_ACTUATOR": 1
+          },
+          "securityScore": 65,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 1,
+            "REVIEW_REQUIRED": 3,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 2,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "UNAVAILABLE",
+            "files": {
+              "NOT_RUN": 50
+            },
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "JAVA_WORKER_FAILED"
+            ]
+          }
+        },
+        "afterB": {
+          "ruleCount": 3,
+          "rules": {
+            "K8S_SECRET_PLAIN_TEXT": 1,
+            "K8S_NODEPORT_EXPOSURE": 1,
+            "EXPOSED_ACTUATOR": 1
+          },
+          "securityScore": 65,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 1,
+            "REVIEW_REQUIRED": 3,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 2,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v2",
+            "status": "PARTIAL",
+            "files": {
+              "PARSED": 50
+            },
+            "entrypoints": 17,
+            "functions": 23,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ]
+          }
+        }
+      },
+      "elapsedMs": {
+        "baseline": [
+          929,
+          890
+        ],
+        "afterA": [
+          952,
+          890
+        ],
+        "afterB": [
+          295,
+          249
+        ]
+      },
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "macrozheng--mall-tiny",
+      "repositoryUrl": "https://github.com/macrozheng/mall-tiny",
+      "commitSha": "a81ec4740a0c7c99a06ebffb43a14168beadffc3",
+      "stages": {
+        "baseline": {
+          "ruleCount": 4,
+          "rules": {
+            "HARDCODED_SECRET": 1,
+            "WEAK_JWT_SECRET": 1,
+            "PERMIT_ALL_USAGE": 2
+          },
+          "securityScore": 58,
+          "deploymentAssessment": "BLOCKED",
+          "prioritySummary": {
+            "BLOCKING": 1,
+            "SHOULD_FIX": 1,
+            "REVIEW_REQUIRED": 3,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 2,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "UNAVAILABLE",
+            "files": {
+              "NOT_RUN": 80
+            },
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "JAVA_WORKER_FAILED"
+            ]
+          }
+        },
+        "afterA": {
+          "ruleCount": 4,
+          "rules": {
+            "HARDCODED_SECRET": 1,
+            "WEAK_JWT_SECRET": 1,
+            "PERMIT_ALL_USAGE": 2
+          },
+          "securityScore": 58,
+          "deploymentAssessment": "BLOCKED",
+          "prioritySummary": {
+            "BLOCKING": 1,
+            "SHOULD_FIX": 1,
+            "REVIEW_REQUIRED": 3,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 2,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "UNAVAILABLE",
+            "files": {
+              "NOT_RUN": 80
+            },
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "JAVA_WORKER_FAILED"
+            ]
+          }
+        },
+        "afterB": {
+          "ruleCount": 4,
+          "rules": {
+            "HARDCODED_SECRET": 1,
+            "WEAK_JWT_SECRET": 1,
+            "PERMIT_ALL_USAGE": 2
+          },
+          "securityScore": 58,
+          "deploymentAssessment": "BLOCKED",
+          "prioritySummary": {
+            "BLOCKING": 1,
+            "SHOULD_FIX": 1,
+            "REVIEW_REQUIRED": 3,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 2,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v2",
+            "status": "PARTIAL",
+            "files": {
+              "PARSED": 80
+            },
+            "entrypoints": 40,
+            "functions": 45,
+            "sqlSyntaxCandidates": 6,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ]
+          }
+        }
+      },
+      "elapsedMs": {
+        "baseline": [
+          1441,
+          1422
+        ],
+        "afterA": [
+          1513,
+          1472
+        ],
+        "afterB": [
+          278,
+          248
+        ]
+      },
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "wagtail--bakerydemo",
+      "repositoryUrl": "https://github.com/wagtail/bakerydemo",
+      "commitSha": "c9b38d7a7170dba8bb84254beb7e5dc5a955e024",
+      "stages": {
+        "baseline": {
+          "ruleCount": 0,
+          "rules": {},
+          "securityScore": 100,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 1,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        },
+        "afterA": {
+          "ruleCount": 0,
+          "rules": {},
+          "securityScore": 100,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 1,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        },
+        "afterB": {
+          "ruleCount": 0,
+          "rules": {},
+          "securityScore": 100,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 1,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v2",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        }
+      },
+      "elapsedMs": {
+        "baseline": [
+          438,
+          341
+        ],
+        "afterA": [
+          435,
+          347
+        ],
+        "afterB": [
+          451,
+          352
+        ]
+      },
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "repositoryUrl": "https://github.com/vercel/nextjs-postgres-nextauth-tailwindcss-template",
+      "commitSha": "fe026711c19ac3ee4589c86a738f59b84e611559",
+      "stages": {
+        "baseline": {
+          "ruleCount": 5,
+          "rules": {
+            "INSECURE_API_URL": 5
+          },
+          "securityScore": 65,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 6,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 0,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        },
+        "afterA": {
+          "ruleCount": 0,
+          "rules": {},
+          "securityScore": 100,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 0,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        },
+        "afterB": {
+          "ruleCount": 0,
+          "rules": {},
+          "securityScore": 100,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 0,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v2",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        }
+      },
+      "elapsedMs": {
+        "baseline": [
+          357,
+          346
+        ],
+        "afterA": [
+          361,
+          382
+        ],
+        "afterB": [
+          361,
+          357
+        ]
+      },
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "cloudflare--d1-northwind",
+      "repositoryUrl": "https://github.com/cloudflare/d1-northwind",
+      "commitSha": "766fd0d8b454b6eadd3323f9188a5ac1f8dfab64",
+      "stages": {
+        "baseline": {
+          "ruleCount": 1,
+          "rules": {
+            "INSECURE_API_URL": 1
+          },
+          "securityScore": 93,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 0,
+          "coverageStatus": "FAILED",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        },
+        "afterA": {
+          "ruleCount": 0,
+          "rules": {},
+          "securityScore": 100,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 0,
+          "coverageStatus": "FAILED",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        },
+        "afterB": {
+          "ruleCount": 0,
+          "rules": {},
+          "securityScore": 100,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 0,
+          "coverageStatus": "FAILED",
+          "java": {
+            "version": "java-sql-v2",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        }
+      },
+      "elapsedMs": {
+        "baseline": [
+          238,
+          236
+        ],
+        "afterA": [
+          443,
+          436
+        ],
+        "afterB": [
+          432,
+          431
+        ]
+      },
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "OWASP--NodeGoat",
+      "repositoryUrl": "https://github.com/OWASP/NodeGoat",
+      "commitSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "stages": {
+        "baseline": {
+          "ruleCount": 7,
+          "rules": {
+            "INSECURE_API_URL": 1,
+            "HARDCODED_FRONTEND_SECRET": 3,
+            "VULNERABLE_NPM_DEPENDENCY": 3
+          },
+          "securityScore": 16,
+          "deploymentAssessment": "BLOCKED",
+          "prioritySummary": {
+            "BLOCKING": 3,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 5,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 1,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        },
+        "afterA": {
+          "ruleCount": 7,
+          "rules": {
+            "INSECURE_API_URL": 1,
+            "HARDCODED_FRONTEND_SECRET": 3,
+            "VULNERABLE_NPM_DEPENDENCY": 3
+          },
+          "securityScore": 16,
+          "deploymentAssessment": "BLOCKED",
+          "prioritySummary": {
+            "BLOCKING": 3,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 5,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 1,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        },
+        "afterB": {
+          "ruleCount": 7,
+          "rules": {
+            "INSECURE_API_URL": 1,
+            "HARDCODED_FRONTEND_SECRET": 3,
+            "VULNERABLE_NPM_DEPENDENCY": 3
+          },
+          "securityScore": 16,
+          "deploymentAssessment": "BLOCKED",
+          "prioritySummary": {
+            "BLOCKING": 3,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 5,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 1,
+          "coverageStatus": "PARTIAL",
+          "java": {
+            "version": "java-sql-v2",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        }
+      },
+      "elapsedMs": {
+        "baseline": [
+          465,
+          442
+        ],
+        "afterA": [
+          488,
+          469
+        ],
+        "afterB": [
+          476,
+          463
+        ]
+      },
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "netbox-community--netbox",
+      "repositoryUrl": "https://github.com/netbox-community/netbox",
+      "commitSha": "9f8b55c196501a82ea800f8f3d720165db9173a6",
+      "stages": {
+        "baseline": {
+          "ruleCount": 1,
+          "rules": {
+            "HARDCODED_FRONTEND_SECRET": 1
+          },
+          "securityScore": 86,
+          "deploymentAssessment": "BLOCKED",
+          "prioritySummary": {
+            "BLOCKING": 1,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 0,
+          "coverageStatus": "FAILED",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        },
+        "afterA": {
+          "ruleCount": 0,
+          "rules": {},
+          "securityScore": 100,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 0,
+          "coverageStatus": "FAILED",
+          "java": {
+            "version": "java-sql-v1",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        },
+        "afterB": {
+          "ruleCount": 0,
+          "rules": {},
+          "securityScore": 100,
+          "deploymentAssessment": "REVIEW_REQUIRED",
+          "prioritySummary": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "riskPolicyVersion": "risk-v1.2",
+          "supplementalCandidates": 0,
+          "coverageStatus": "FAILED",
+          "java": {
+            "version": "java-sql-v2",
+            "status": "NOT_APPLICABLE",
+            "files": {},
+            "entrypoints": 0,
+            "functions": 0,
+            "sqlSyntaxCandidates": 0,
+            "tracedSqlCalls": 0,
+            "limitations": [
+              "NO_JAVA_FILES"
+            ]
+          }
+        }
+      },
+      "elapsedMs": {
+        "baseline": [
+          546,
+          525
+        ],
+        "afterA": [
+          756,
+          716
+        ],
+        "afterB": [
+          750,
+          710
+        ]
+      },
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "sahat--hackathon-starter",
+      "repositoryUrl": "https://github.com/sahat/hackathon-starter",
+      "commitSha": "d320edb22ea0c42d7cb17f3a7837f1ce5163e234",
+      "status": "COLLECTION_FAILED_NOT_ANALYZED"
+    }
+  ],
+  "removedWarningObservations": [
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "ruleId": "INSECURE_API_URL",
+      "filePath": "components/icons.tsx",
+      "line": 5
+    },
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "ruleId": "INSECURE_API_URL",
+      "filePath": "components/icons.tsx",
+      "line": 27
+    },
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "ruleId": "INSECURE_API_URL",
+      "filePath": "components/icons.tsx",
+      "line": 47
+    },
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "ruleId": "INSECURE_API_URL",
+      "filePath": "components/icons.tsx",
+      "line": 68
+    },
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "ruleId": "INSECURE_API_URL",
+      "filePath": "components/icons.tsx",
+      "line": 98
+    },
+    {
+      "projectId": "cloudflare--d1-northwind",
+      "ruleId": "INSECURE_API_URL",
+      "filePath": "worker-configuration.d.ts",
+      "line": 22
+    },
+    {
+      "projectId": "netbox-community--netbox",
+      "ruleId": "HARDCODED_FRONTEND_SECRET",
+      "filePath": "netbox/project-static/src/buttons/secretToggle.ts",
+      "line": 16
+    }
+  ],
+  "newWarningObservations": [],
+  "memory": {
+    "before": {
+      "workerJarSha256": "f3d1e0f467947a39a68e87add3e8ef3b6e61b1306be0d4ac2fe8847c3165f9c1",
+      "heapLimitMiB": 192,
+      "metaspaceLimitMiB": 96,
+      "results": [
+        {
+          "projectId": "spring-projects--spring-petclinic",
+          "inputFiles": 50,
+          "inputCharacters": 141165,
+          "inputSha256": "6b03bc7390ff7c1789c136aa9de1e87cfe657b0ac6a3b1f6e4b345d2c6cefd2e",
+          "exitCode": 1,
+          "wallMs": 862,
+          "workerMaximumRssBytes": 283983872,
+          "observedGcHeapHighWaterMiB": 185,
+          "observedGcMetaspaceKiB": 8875,
+          "oomCategories": [
+            "Java heap space"
+          ],
+          "workerFrames": [
+            "com.securedeploy.analysis.javaflow.JavaSqlWorker$Engine.run(JavaSqlWorker.java:137)",
+            "com.securedeploy.analysis.javaflow.JavaSqlWorker.main(JavaSqlWorker.java:38)"
+          ],
+          "protocolBytes": 0,
+          "targetExecuted": false,
+          "measurementLimits": "GC high-water samples are not an exact heap peak; macOS time maximum RSS includes JVM native memory. GC logging enabled equally before/after."
+        },
+        {
+          "projectId": "macrozheng--mall-tiny",
+          "inputFiles": 80,
+          "inputCharacters": 138324,
+          "inputSha256": "77cd2df229148d04ef82f7cdc2538701f9449e37902c5e06280ad224d470f485",
+          "exitCode": 1,
+          "wallMs": 1399,
+          "workerMaximumRssBytes": 293535744,
+          "observedGcHeapHighWaterMiB": 185,
+          "observedGcMetaspaceKiB": 9034,
+          "oomCategories": [
+            "Java heap space"
+          ],
+          "workerFrames": [
+            "com.securedeploy.analysis.javaflow.JavaSqlWorker$Engine.run(JavaSqlWorker.java:137)",
+            "com.securedeploy.analysis.javaflow.JavaSqlWorker.main(JavaSqlWorker.java:38)"
+          ],
+          "protocolBytes": 0,
+          "targetExecuted": false,
+          "measurementLimits": "GC high-water samples are not an exact heap peak; macOS time maximum RSS includes JVM native memory. GC logging enabled equally before/after."
+        }
+      ]
+    },
+    "after": {
+      "workerJarSha256": "3c2c69f1c6ab6c0546da62bfb8ac9e06a02e4aab5826c68e7bcdda2e8e97ebeb",
+      "heapLimitMiB": 192,
+      "metaspaceLimitMiB": 96,
+      "results": [
+        {
+          "projectId": "spring-projects--spring-petclinic",
+          "inputFiles": 50,
+          "inputCharacters": 141165,
+          "inputSha256": "6b03bc7390ff7c1789c136aa9de1e87cfe657b0ac6a3b1f6e4b345d2c6cefd2e",
+          "exitCode": 0,
+          "wallMs": 212,
+          "workerMaximumRssBytes": 106790912,
+          "observedGcHeapHighWaterMiB": null,
+          "exitHeapUsedKiB": 34641,
+          "observedGcMetaspaceKiB": null,
+          "oomCategories": [],
+          "workerFrames": [],
+          "protocolBytes": 8856,
+          "targetExecuted": false,
+          "measurementLimits": "GC high-water samples are not an exact heap peak; exit heap is an end-of-run sample, not peak. macOS time maximum RSS includes JVM native memory. GC logging enabled equally before/after."
+        },
+        {
+          "projectId": "macrozheng--mall-tiny",
+          "inputFiles": 80,
+          "inputCharacters": 138324,
+          "inputSha256": "77cd2df229148d04ef82f7cdc2538701f9449e37902c5e06280ad224d470f485",
+          "exitCode": 0,
+          "wallMs": 254,
+          "workerMaximumRssBytes": 120733696,
+          "observedGcHeapHighWaterMiB": null,
+          "exitHeapUsedKiB": 44208,
+          "observedGcMetaspaceKiB": null,
+          "oomCategories": [],
+          "workerFrames": [],
+          "protocolBytes": 15030,
+          "targetExecuted": false,
+          "measurementLimits": "GC high-water samples are not an exact heap peak; exit heap is an end-of-run sample, not peak. macOS time maximum RSS includes JVM native memory. GC logging enabled equally before/after."
+        }
+      ]
+    },
+    "earlierAfterObservation": {
+      "workerJarSha256": "3c2c69f1c6ab6c0546da62bfb8ac9e06a02e4aab5826c68e7bcdda2e8e97ebeb",
+      "heapLimitMiB": 192,
+      "metaspaceLimitMiB": 96,
+      "results": [
+        {
+          "projectId": "spring-projects--spring-petclinic",
+          "inputFiles": 50,
+          "inputCharacters": 141165,
+          "inputSha256": "6b03bc7390ff7c1789c136aa9de1e87cfe657b0ac6a3b1f6e4b345d2c6cefd2e",
+          "exitCode": 0,
+          "wallMs": 229,
+          "workerMaximumRssBytes": 106348544,
+          "observedGcHeapHighWaterMiB": null,
+          "observedGcMetaspaceKiB": null,
+          "oomCategories": [],
+          "workerFrames": [],
+          "protocolBytes": 8856,
+          "targetExecuted": false,
+          "measurementLimits": "GC high-water samples are not an exact heap peak; macOS time maximum RSS includes JVM native memory. GC logging enabled equally before/after."
+        },
+        {
+          "projectId": "macrozheng--mall-tiny",
+          "inputFiles": 80,
+          "inputCharacters": 138324,
+          "inputSha256": "77cd2df229148d04ef82f7cdc2538701f9449e37902c5e06280ad224d470f485",
+          "exitCode": 0,
+          "wallMs": 233,
+          "workerMaximumRssBytes": 119488512,
+          "observedGcHeapHighWaterMiB": null,
+          "observedGcMetaspaceKiB": null,
+          "oomCategories": [],
+          "workerFrames": [],
+          "protocolBytes": 15030,
+          "targetExecuted": false,
+          "measurementLimits": "GC high-water samples are not an exact heap peak; macOS time maximum RSS includes JVM native memory. GC logging enabled equally before/after."
+        }
+      ]
+    },
+    "explanation": "Per-file SourcePositions retained separate JavacTrees/tasks and compiler services. JDK metadata confirms the reference chain; one shared parse-only context removes that multiplicity. No heap dump or exact per-context retained-byte attribution."
+  },
+  "cveRegression": {
+    "cases": 40,
+    "beforeCounts": {
+      "NOT_SUPPORTED": 38,
+      "RESOURCE_LIMIT": 2
+    },
+    "afterCounts": {
+      "NOT_SUPPORTED": 38,
+      "RESOURCE_LIMIT": 2
+    },
+    "allRepeatsConsistent": true
+  },
+  "riskPolicyChanged": false,
+  "scoreFormulaChanged": false,
+  "userDatabaseUsed": false,
+  "oldReviewsRecomputed": false,
+  "externalLookups": "NOT_RUN",
+  "targetCodeExecuted": false,
+  "evaluationLimits": [
+    "Same observed corpus is regression, not a blind generalization claim.",
+    "No supported SQL execution in these Spring applications; JPA/MyBatis and broader object flow remain unknown.",
+    "Heap exit sample is not peak; GC high-water sample and maximum RSS are separate measures.",
+    "Product API tests use isolated H2 and real workers with mocked GitHub acquisition; no live private GitHub E2E."
+  ],
+  "failureCaseHistory": [
+    {
+      "originalPackCaseId": "next-svg-namespace-alerts",
+      "originalObservation": "CONFIRMED_FALSE_POSITIVE",
+      "rootCause": "SVG_NAMESPACE_IDENTIFIER",
+      "codeChanged": "analyzers/typescript/url-context.mjs",
+      "engineCommits": {
+        "baseline": "bd12409888f28bd1316b34c70f92052706d6f952",
+        "afterA": "b521ef8c947aca205a91360ca807c520554690c0",
+        "afterB": "41517e1ed2fe5e4478a23e595d9602464a9020eb"
+      },
+      "repositoryUrl": "https://github.com/vercel/nextjs-postgres-nextauth-tailwindcss-template",
+      "commitSha": "fe026711c19ac3ee4589c86a738f59b84e611559",
+      "sourcePlanSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+      "before": {
+        "ruleCount": 5,
+        "rules": {
+          "INSECURE_API_URL": 5
+        },
+        "securityScore": 65,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 6,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v1",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ]
+        }
+      },
+      "after": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v2",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ]
+        }
+      },
+      "sites": [
+        {
+          "filePath": "components/icons.tsx",
+          "line": 5
+        },
+        {
+          "filePath": "components/icons.tsx",
+          "line": 27
+        },
+        {
+          "filePath": "components/icons.tsx",
+          "line": 47
+        },
+        {
+          "filePath": "components/icons.tsx",
+          "line": 68
+        },
+        {
+          "filePath": "components/icons.tsx",
+          "line": 98
+        }
+      ],
+      "remainingLimitations": [
+        "Same observed corpus is regression, not a blind generalization claim.",
+        "No supported SQL execution in these Spring applications; JPA/MyBatis and broader object flow remain unknown.",
+        "Heap exit sample is not peak; GC high-water sample and maximum RSS are separate measures.",
+        "Product API tests use isolated H2 and real workers with mocked GitHub acquisition; no live private GitHub E2E."
+      ],
+      "status": "IMPROVED_ON_SAME_OBSERVED_SOURCE",
+      "reproduction": "application_track.py run DATA_ROOT NEW_OUTPUT --project vercel--nextjs-postgres-nextauth-tailwindcss-template"
+    },
+    {
+      "originalPackCaseId": "netbox-secret-button-label",
+      "originalObservation": "CONFIRMED_FALSE_POSITIVE",
+      "rootCause": "REGEX_CROSSED_DISPLAY_LITERAL_BOUNDARY",
+      "codeChanged": "analyzers/typescript/url-context.mjs",
+      "engineCommits": {
+        "baseline": "bd12409888f28bd1316b34c70f92052706d6f952",
+        "afterA": "b521ef8c947aca205a91360ca807c520554690c0",
+        "afterB": "41517e1ed2fe5e4478a23e595d9602464a9020eb"
+      },
+      "repositoryUrl": "https://github.com/netbox-community/netbox",
+      "commitSha": "9f8b55c196501a82ea800f8f3d720165db9173a6",
+      "sourcePlanSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+      "before": {
+        "ruleCount": 1,
+        "rules": {
+          "HARDCODED_FRONTEND_SECRET": 1
+        },
+        "securityScore": 86,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 1,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v1",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ]
+        }
+      },
+      "after": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v2",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ]
+        }
+      },
+      "sites": [
+        {
+          "filePath": "netbox/project-static/src/buttons/secretToggle.ts",
+          "line": 16
+        }
+      ],
+      "remainingLimitations": [
+        "Same observed corpus is regression, not a blind generalization claim.",
+        "No supported SQL execution in these Spring applications; JPA/MyBatis and broader object flow remain unknown.",
+        "Heap exit sample is not peak; GC high-water sample and maximum RSS are separate measures.",
+        "Product API tests use isolated H2 and real workers with mocked GitHub acquisition; no live private GitHub E2E."
+      ],
+      "status": "IMPROVED_ON_SAME_OBSERVED_SOURCE",
+      "reproduction": "application_track.py run DATA_ROOT NEW_OUTPUT --project netbox-community--netbox"
+    },
+    {
+      "originalPackCaseId": "northwind-generated-type-comment",
+      "originalObservation": "CONFIRMED_FALSE_POSITIVE",
+      "rootCause": "BOUNDED_PREFIX_COMMENT_CONTEXT",
+      "codeChanged": "src/main/java/com/securedeploy/rule/rules/InsecureApiUrlContext.java",
+      "engineCommits": {
+        "baseline": "bd12409888f28bd1316b34c70f92052706d6f952",
+        "afterA": "b521ef8c947aca205a91360ca807c520554690c0",
+        "afterB": "41517e1ed2fe5e4478a23e595d9602464a9020eb"
+      },
+      "repositoryUrl": "https://github.com/cloudflare/d1-northwind",
+      "commitSha": "766fd0d8b454b6eadd3323f9188a5ac1f8dfab64",
+      "sourcePlanSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+      "before": {
+        "ruleCount": 1,
+        "rules": {
+          "INSECURE_API_URL": 1
+        },
+        "securityScore": 93,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v1",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ]
+        }
+      },
+      "after": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v2",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ]
+        }
+      },
+      "sites": [
+        {
+          "filePath": "worker-configuration.d.ts",
+          "line": 22
+        }
+      ],
+      "remainingLimitations": [
+        "Same observed corpus is regression, not a blind generalization claim.",
+        "No supported SQL execution in these Spring applications; JPA/MyBatis and broader object flow remain unknown.",
+        "Heap exit sample is not peak; GC high-water sample and maximum RSS are separate measures.",
+        "Product API tests use isolated H2 and real workers with mocked GitHub acquisition; no live private GitHub E2E."
+      ],
+      "status": "IMPROVED_ON_SAME_OBSERVED_SOURCE",
+      "reproduction": "application_track.py run DATA_ROOT NEW_OUTPUT --project cloudflare--d1-northwind"
+    },
+    {
+      "originalPackCaseId": "spring-projects--spring-petclinic-java-worker-memory",
+      "originalObservation": "ANALYZER_FAILED_NOT_SAFE",
+      "rootCause": "PER_FILE_COMPILER_CONTEXT_RETENTION",
+      "codeChanged": "src/main/java/com/securedeploy/analysis/javaflow/JavaSqlWorker.java",
+      "engineCommits": {
+        "baseline": "bd12409888f28bd1316b34c70f92052706d6f952",
+        "afterA": "b521ef8c947aca205a91360ca807c520554690c0",
+        "afterB": "41517e1ed2fe5e4478a23e595d9602464a9020eb"
+      },
+      "repositoryUrl": "https://github.com/spring-projects/spring-petclinic",
+      "commitSha": "500158f732419217507c7656904b8e6aa1bcc0d6",
+      "sourcePlanSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+      "before": {
+        "ruleCount": 3,
+        "rules": {
+          "K8S_SECRET_PLAIN_TEXT": 1,
+          "K8S_NODEPORT_EXPOSURE": 1,
+          "EXPOSED_ACTUATOR": 1
+        },
+        "securityScore": 65,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v1",
+          "status": "UNAVAILABLE",
+          "files": {
+            "NOT_RUN": 50
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "JAVA_WORKER_FAILED"
+          ]
+        }
+      },
+      "after": {
+        "ruleCount": 3,
+        "rules": {
+          "K8S_SECRET_PLAIN_TEXT": 1,
+          "K8S_NODEPORT_EXPOSURE": 1,
+          "EXPOSED_ACTUATOR": 1
+        },
+        "securityScore": 65,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v2",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 50
+          },
+          "entrypoints": 17,
+          "functions": 23,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ]
+        }
+      },
+      "sites": [
+        {
+          "filePath": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+          "line": 1
+        }
+      ],
+      "remainingLimitations": [
+        "Same observed corpus is regression, not a blind generalization claim.",
+        "No supported SQL execution in these Spring applications; JPA/MyBatis and broader object flow remain unknown.",
+        "Heap exit sample is not peak; GC high-water sample and maximum RSS are separate measures.",
+        "Product API tests use isolated H2 and real workers with mocked GitHub acquisition; no live private GitHub E2E."
+      ],
+      "status": "IMPROVED_ON_SAME_OBSERVED_SOURCE",
+      "reproduction": "application_track.py run DATA_ROOT NEW_OUTPUT --project spring-projects--spring-petclinic"
+    },
+    {
+      "originalPackCaseId": "macrozheng--mall-tiny-java-worker-memory",
+      "originalObservation": "ANALYZER_FAILED_NOT_SAFE",
+      "rootCause": "PER_FILE_COMPILER_CONTEXT_RETENTION",
+      "codeChanged": "src/main/java/com/securedeploy/analysis/javaflow/JavaSqlWorker.java",
+      "engineCommits": {
+        "baseline": "bd12409888f28bd1316b34c70f92052706d6f952",
+        "afterA": "b521ef8c947aca205a91360ca807c520554690c0",
+        "afterB": "41517e1ed2fe5e4478a23e595d9602464a9020eb"
+      },
+      "repositoryUrl": "https://github.com/macrozheng/mall-tiny",
+      "commitSha": "a81ec4740a0c7c99a06ebffb43a14168beadffc3",
+      "sourcePlanSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+      "before": {
+        "ruleCount": 4,
+        "rules": {
+          "HARDCODED_SECRET": 1,
+          "WEAK_JWT_SECRET": 1,
+          "PERMIT_ALL_USAGE": 2
+        },
+        "securityScore": 58,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 1,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v1",
+          "status": "UNAVAILABLE",
+          "files": {
+            "NOT_RUN": 80
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "JAVA_WORKER_FAILED"
+          ]
+        }
+      },
+      "after": {
+        "ruleCount": 4,
+        "rules": {
+          "HARDCODED_SECRET": 1,
+          "WEAK_JWT_SECRET": 1,
+          "PERMIT_ALL_USAGE": 2
+        },
+        "securityScore": 58,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 1,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v2",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 80
+          },
+          "entrypoints": 40,
+          "functions": 45,
+          "sqlSyntaxCandidates": 6,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ]
+        }
+      },
+      "sites": [
+        {
+          "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsAdminController.java",
+          "line": 1
+        }
+      ],
+      "remainingLimitations": [
+        "Same observed corpus is regression, not a blind generalization claim.",
+        "No supported SQL execution in these Spring applications; JPA/MyBatis and broader object flow remain unknown.",
+        "Heap exit sample is not peak; GC high-water sample and maximum RSS are separate measures.",
+        "Product API tests use isolated H2 and real workers with mocked GitHub acquisition; no live private GitHub E2E."
+      ],
+      "status": "IMPROVED_ON_SAME_OBSERVED_SOURCE",
+      "reproduction": "application_track.py run DATA_ROOT NEW_OUTPUT --project macrozheng--mall-tiny"
+    }
+  ]
+}
