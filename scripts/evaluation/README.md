@@ -480,3 +480,43 @@ from newly replayed applications and already-observed controls. Use
 the original holdout receipt is preserved and cannot be released again. This
 replay is not a new independent evaluation. Final public metadata contains only
 hashes/locations/summaries, never external source text or runtime credentials.
+
+## Hardening #7: external application patch truth versus engine support
+
+`web_patch_intake.py` screens six published advisories from each of five public
+applications. Advisory bodies stay in memory; only allowlisted metadata is
+retained. Two targeted follow-ups make 32 screened candidates, not 32 verified
+patches. `web_patch_cases.py` acquires three exact parent/fixed pairs (NodeBB,
+Ghost, Strapi), their license and selected routing/controller/helper context.
+No original source or advisory body belongs in this Git repository.
+
+The pairs are Grade A by maintainer advisory + original patch facts, but none
+has a supported end-to-end target contract in this baseline. Grade and support
+are independent. The fixed label covers only the named defect/conditions, not
+the whole application; Strapi's guard is production-mode-only. The source
+subset omits bootstrap and external library implementations. No target install,
+build, execution, network payload, AI call or production DB write is performed.
+
+```sh
+python3 -B scripts/evaluation/web_patch_intake.py "$SURVEY_ROOT"
+python3 -B scripts/evaluation/web_patch_cases.py "$PAIR_ROOT" "$SURVEY_ROOT"
+python3 -B scripts/evaluation/benchmark.py run "$PAIR_ROOT" "$PAIR_ROOT/baseline-validation.json" VALIDATION
+python3 -B scripts/evaluation/web_patch_report.py "$PAIR_ROOT" "$NEW_PUBLIC_METADATA"
+python3 -B -m unittest discover -s scripts/evaluation -q
+```
+
+Existing output paths are not overwritten. Identical Failure Case Packs may be
+verified again, but divergent content and symlinks are rejected. Public
+`hardening7-results.json` distinguishes missing request recognition, unsupported
+target APIs, unrelated package alerts, manual patch facts and engine results.
+Its six NOT_SUPPORTED revisions are neither six FN nor six TN. No precision or
+recall is inferred from them. Every case was repeated twice in isolated H2.
+
+All three observed projects/pairs remain together in VALIDATION and become
+development/regression material after review. Directus/Flowise reservations
+are only metadata candidates: no verified patch-pair holdout, second-curator
+review or blind-independence claim. Old BenchmarkJava/Django/Hono/h3/Vul4J/
+CVEfixes/application/NodeGoat/control assets are not relabelled as new holdout.
+The first partial intake and results remain outside Git; later pinned directory
+inspection corrected missing context, not the engine or truth labels. A public
+Flowise SSRF follow-up has no reviewed fixed SHA and is excluded from scoring.

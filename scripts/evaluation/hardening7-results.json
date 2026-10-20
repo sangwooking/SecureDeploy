@@ -1,0 +1,3912 @@
+{
+  "schemaVersion": 1,
+  "engineCommit": "d450c17b1adbb3c345f4152fad997c0a7992147c",
+  "engineChanged": false,
+  "riskPolicyChanged": false,
+  "runnerVersion": "2a480cd052218d6db6e438b0fd95131eae93bbe7140aa2f3ba83029b5d5e6da9",
+  "accountingVersion": "e479d30e207051d401024fcf38ecd596e20bca5567e628c02404a27c9d554aaa",
+  "manifestSha256": "a71734f73855325c0352b6b2a84704f5e87a7bcd57a009e30a33dc12b5f9edf5",
+  "assets": [
+    {
+      "asset": "pilot-2026-10-20-v2",
+      "cases": 38,
+      "datasets": {
+        "OWASP BenchmarkJava": 24,
+        "Django official security patches": 10,
+        "honojs/hono official advisory/patch": 2,
+        "h3js/h3 official advisory/patch": 2
+      },
+      "declaredSplits": {
+        "REGRESSION": 24,
+        "VALIDATION": 10,
+        "HOLDOUT": 4
+      },
+      "reuse": "Previously observed development/evaluation assets; no new blind claim. Split labels alone do not prove unread status."
+    },
+    {
+      "asset": "realworld-2026-10-20-v3",
+      "cases": 40,
+      "datasets": {
+        "Vul4J official CSV": 20,
+        "CVEfixes v1.0.8 fixes table": 20
+      },
+      "declaredSplits": {
+        "REGRESSION": 16,
+        "VALIDATION": 14,
+        "HOLDOUT": 10
+      },
+      "reuse": "Previously observed development/evaluation assets; no new blind claim. Split labels alone do not prove unread status."
+    },
+    {
+      "asset": "hardening6-controls-expanded",
+      "grade": "B",
+      "cases": 17,
+      "reuse": "Observed held-out cases are regression; parent five-module failures remain alongside added local-helper variants."
+    },
+    {
+      "asset": "applications-2026-10-20-v2",
+      "projects": 8,
+      "collected": 7,
+      "reuse": "Seven observed applications including NodeGoat; one collection failure. No whole-project truth label."
+    }
+  ],
+  "survey": {
+    "schemaVersion": 1,
+    "candidates": [
+      {
+        "repository": "NodeBB/NodeBB",
+        "ghsa": "GHSA-4qcv-qf38-5j3j",
+        "cve": "CVE-2023-2850",
+        "summary": "Unintentional leakage of private information via cross-origin websocket session hijacking",
+        "advisoryUrl": "https://github.com/NodeBB/NodeBB/security/advisories/GHSA-4qcv-qf38-5j3j",
+        "cwes": [
+          "CWE-1385"
+        ],
+        "references": [],
+        "explicitCommitReferences": [
+          {
+            "repository": "NodeBB/NodeBB",
+            "commit": "51096ad2345fb1d1380bec0a447113489ef6c359"
+          }
+        ],
+        "metadataUrl": "https://api.github.com/repos/NodeBB/NodeBB/security-advisories?per_page=6",
+        "metadataSha256": "51fc3e453eff6d836f6c17bc16c4d28f3a926e1e0c1ac36485e09d910c32afaa",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "NodeBB/NodeBB",
+        "ghsa": "GHSA-vh2g-6c4x-5hmp",
+        "cve": "CVE-2023-26045",
+        "summary": "Path traversal and code execution via prototype vulnerability",
+        "advisoryUrl": "https://github.com/NodeBB/NodeBB/security/advisories/GHSA-vh2g-6c4x-5hmp",
+        "cwes": [
+          "CWE-22",
+          "CWE-250"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/NodeBB/NodeBB/security-advisories?per_page=6",
+        "metadataSha256": "51fc3e453eff6d836f6c17bc16c4d28f3a926e1e0c1ac36485e09d910c32afaa",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "NodeBB/NodeBB",
+        "ghsa": "GHSA-rf3g-v8p5-p675",
+        "cve": "CVE-2022-46164",
+        "summary": "Account takeover via prototype vulnerability",
+        "advisoryUrl": "https://github.com/NodeBB/NodeBB/security/advisories/GHSA-rf3g-v8p5-p675",
+        "cwes": [],
+        "references": [],
+        "explicitCommitReferences": [
+          {
+            "repository": "NodeBB/NodeBB",
+            "commit": "48d143921753914da45926cca6370a92ed0c46b8"
+          }
+        ],
+        "metadataUrl": "https://api.github.com/repos/NodeBB/NodeBB/security-advisories?per_page=6",
+        "metadataSha256": "51fc3e453eff6d836f6c17bc16c4d28f3a926e1e0c1ac36485e09d910c32afaa",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "NodeBB/NodeBB",
+        "ghsa": "GHSA-xmgg-fx9p-prq6",
+        "cve": "CVE-2022-36076",
+        "summary": "Account takeover via SSO plugins (via shared link to /auth/callback with valid code)",
+        "advisoryUrl": "https://github.com/NodeBB/NodeBB/security/advisories/GHSA-xmgg-fx9p-prq6",
+        "cwes": [
+          "CWE-352"
+        ],
+        "references": [],
+        "explicitCommitReferences": [
+          {
+            "repository": "NodeBB/NodeBB",
+            "commit": "a2400f6baff44cb2996487bcd0cc6e2acc74b3d4"
+          },
+          {
+            "repository": "NodeBB/NodeBB",
+            "commit": "a2400f6baff44cb2996487bcd0cc6e2acc74b3d4"
+          }
+        ],
+        "metadataUrl": "https://api.github.com/repos/NodeBB/NodeBB/security-advisories?per_page=6",
+        "metadataSha256": "51fc3e453eff6d836f6c17bc16c4d28f3a926e1e0c1ac36485e09d910c32afaa",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "NodeBB/NodeBB",
+        "ghsa": "GHSA-p4cc-w597-6cpm",
+        "cve": "CVE-2022-36045",
+        "summary": "Account takeover via cryptographically weak PRNG in `utils.generateUUID`",
+        "advisoryUrl": "https://github.com/NodeBB/NodeBB/security/advisories/GHSA-p4cc-w597-6cpm",
+        "cwes": [
+          "CWE-338"
+        ],
+        "references": [],
+        "explicitCommitReferences": [
+          {
+            "repository": "NodeBB/NodeBB",
+            "commit": "e802fab87f94a13f397f04cfe6068f2f7ddf7888"
+          }
+        ],
+        "metadataUrl": "https://api.github.com/repos/NodeBB/NodeBB/security-advisories?per_page=6",
+        "metadataSha256": "51fc3e453eff6d836f6c17bc16c4d28f3a926e1e0c1ac36485e09d910c32afaa",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "NodeBB/NodeBB",
+        "ghsa": "GHSA-hf2m-j98r-4fqw",
+        "cve": "CVE-2021-43786",
+        "summary": "API token verification can be bypassed",
+        "advisoryUrl": "https://github.com/NodeBB/NodeBB/security/advisories/GHSA-hf2m-j98r-4fqw",
+        "cwes": [
+          "CWE-287"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/NodeBB/NodeBB/security-advisories?per_page=6",
+        "metadataSha256": "51fc3e453eff6d836f6c17bc16c4d28f3a926e1e0c1ac36485e09d910c32afaa",
+        "status": "SELECTED_PATCH_PAIR",
+        "truthGrade": "A",
+        "support": "NOT_SUPPORTED",
+        "review": "Original patch + necessary local routing/helper subset reviewed; support separately evaluated.",
+        "gradeBasis": "POST_COLLECTION_PATCH_FACT_REVIEW"
+      },
+      {
+        "repository": "TryGhost/Ghost",
+        "ghsa": "GHSA-fwh9-qg68-vxp4",
+        "cve": "CVE-2026-105646",
+        "summary": "Regular Expression Denial of Service in Content Import",
+        "advisoryUrl": "https://github.com/TryGhost/Ghost/security/advisories/GHSA-fwh9-qg68-vxp4",
+        "cwes": [
+          "CWE-1333"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/TryGhost/Ghost/security-advisories?per_page=6",
+        "metadataSha256": "0c40f5e4370a1c62e2349fe02803dd8f060c214d11e2894b3fa26d2b8c2a9cc3",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "TryGhost/Ghost",
+        "ghsa": "GHSA-9m4w-fmjw-fvjq",
+        "cve": "CVE-2026-105645",
+        "summary": "Regular Expression Denial of Service in External Media Inliner",
+        "advisoryUrl": "https://github.com/TryGhost/Ghost/security/advisories/GHSA-9m4w-fmjw-fvjq",
+        "cwes": [
+          "CWE-1333"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/TryGhost/Ghost/security-advisories?per_page=6",
+        "metadataSha256": "0c40f5e4370a1c62e2349fe02803dd8f060c214d11e2894b3fa26d2b8c2a9cc3",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "TryGhost/Ghost",
+        "ghsa": "GHSA-hqq2-xqr2-fmx2",
+        "cve": "CVE-2026-105644",
+        "summary": "Stored XSS via SVG Files in Content Imports",
+        "advisoryUrl": "https://github.com/TryGhost/Ghost/security/advisories/GHSA-hqq2-xqr2-fmx2",
+        "cwes": [
+          "CWE-79",
+          "CWE-434"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/TryGhost/Ghost/security-advisories?per_page=6",
+        "metadataSha256": "0c40f5e4370a1c62e2349fe02803dd8f060c214d11e2894b3fa26d2b8c2a9cc3",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "TryGhost/Ghost",
+        "ghsa": "GHSA-69qc-f5m6-889c",
+        "cve": "CVE-2026-105643",
+        "summary": "Stored XSS via Embed Card Previews",
+        "advisoryUrl": "https://github.com/TryGhost/Ghost/security/advisories/GHSA-69qc-f5m6-889c",
+        "cwes": [
+          "CWE-79",
+          "CWE-653"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/TryGhost/Ghost/security-advisories?per_page=6",
+        "metadataSha256": "0c40f5e4370a1c62e2349fe02803dd8f060c214d11e2894b3fa26d2b8c2a9cc3",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "TryGhost/Ghost",
+        "ghsa": "GHSA-788w-68h3-cvxp",
+        "cve": "CVE-2026-105642",
+        "summary": "Remote Code Execution via Bookmark Card Images",
+        "advisoryUrl": "https://github.com/TryGhost/Ghost/security/advisories/GHSA-788w-68h3-cvxp",
+        "cwes": [
+          "CWE-94",
+          "CWE-1395"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/TryGhost/Ghost/security-advisories?per_page=6",
+        "metadataSha256": "0c40f5e4370a1c62e2349fe02803dd8f060c214d11e2894b3fa26d2b8c2a9cc3",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "TryGhost/Ghost",
+        "ghsa": "GHSA-cr6m-qrr6-q3j8",
+        "cve": "CVE-2026-84383",
+        "summary": "Memory Corruption via Crafted Image Uploads",
+        "advisoryUrl": "https://github.com/TryGhost/Ghost/security/advisories/GHSA-cr6m-qrr6-q3j8",
+        "cwes": [
+          "CWE-122",
+          "CWE-345"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/TryGhost/Ghost/security-advisories?per_page=6",
+        "metadataSha256": "0c40f5e4370a1c62e2349fe02803dd8f060c214d11e2894b3fa26d2b8c2a9cc3",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "directus/directus",
+        "ghsa": "GHSA-7h45-q5jx-7r87",
+        "cve": null,
+        "summary": "Share update allows reassigning user_created and role",
+        "advisoryUrl": "https://github.com/directus/directus/security/advisories/GHSA-7h45-q5jx-7r87",
+        "cwes": [
+          "CWE-269",
+          "CWE-863"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/directus/directus/security-advisories?per_page=6",
+        "metadataSha256": "c75ff03eb45c0d23119cbed8b6a0c0d64b8bcadae5554057db36301e16830627",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "directus/directus",
+        "ghsa": "GHSA-8xp8-xrh2-88vr",
+        "cve": null,
+        "summary": "Public registration sends the verification email to the submitted address instead of the matched account",
+        "advisoryUrl": "https://github.com/directus/directus/security/advisories/GHSA-8xp8-xrh2-88vr",
+        "cwes": [
+          "CWE-706"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/directus/directus/security-advisories?per_page=6",
+        "metadataSha256": "c75ff03eb45c0d23119cbed8b6a0c0d64b8bcadae5554057db36301e16830627",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "directus/directus",
+        "ghsa": "GHSA-gwvv-rr68-cmv6",
+        "cve": null,
+        "summary": "Unauthenticated persistent Denial of Service via prototype pollution in the `deep` query parameter",
+        "advisoryUrl": "https://github.com/directus/directus/security/advisories/GHSA-gwvv-rr68-cmv6",
+        "cwes": [
+          "CWE-1321"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/directus/directus/security-advisories?per_page=6",
+        "metadataSha256": "c75ff03eb45c0d23119cbed8b6a0c0d64b8bcadae5554057db36301e16830627",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "directus/directus",
+        "ghsa": "GHSA-97xr-jchp-xm3c",
+        "cve": null,
+        "summary": "Directus public WebSocket clients gain unrestricted item access after a failed auth message",
+        "advisoryUrl": "https://github.com/directus/directus/security/advisories/GHSA-97xr-jchp-xm3c",
+        "cwes": [
+          "CWE-269",
+          "CWE-284",
+          "CWE-636",
+          "CWE-862"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/directus/directus/security-advisories?per_page=6",
+        "metadataSha256": "c75ff03eb45c0d23119cbed8b6a0c0d64b8bcadae5554057db36301e16830627",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "directus/directus",
+        "ghsa": "GHSA-4jw7-6mqj-vrhq",
+        "cve": null,
+        "summary": "Server-side request forgery in AI chat file downloads bypasses the outbound IP deny-list",
+        "advisoryUrl": "https://github.com/directus/directus/security/advisories/GHSA-4jw7-6mqj-vrhq",
+        "cwes": [
+          "CWE-918"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/directus/directus/security-advisories?per_page=6",
+        "metadataSha256": "c75ff03eb45c0d23119cbed8b6a0c0d64b8bcadae5554057db36301e16830627",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "directus/directus",
+        "ghsa": "GHSA-788p-cvgf-q973",
+        "cve": null,
+        "summary": "Stored cross-site scripting via unsanitized project color in the generated favicon",
+        "advisoryUrl": "https://github.com/directus/directus/security/advisories/GHSA-788p-cvgf-q973",
+        "cwes": [
+          "CWE-79"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/directus/directus/security-advisories?per_page=6",
+        "metadataSha256": "c75ff03eb45c0d23119cbed8b6a0c0d64b8bcadae5554057db36301e16830627",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "strapi/strapi",
+        "ghsa": "GHSA-rjg2-95x7-8qmx",
+        "cve": "CVE-2026-27886",
+        "summary": "Leaking sensitive data via relational filtering due to lack of query sanitization",
+        "advisoryUrl": "https://github.com/strapi/strapi/security/advisories/GHSA-rjg2-95x7-8qmx",
+        "cwes": [
+          "CWE-22",
+          "CWE-200",
+          "CWE-943"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/strapi/strapi/security-advisories?per_page=6",
+        "metadataSha256": "0618761e1f014647ca85ecf914f5df758d614bc92e2695fb81d8cf9ac258efe5",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "strapi/strapi",
+        "ghsa": "GHSA-pcw7-5633-82vv",
+        "cve": "CVE-2026-22707",
+        "summary": "Upload Plugin MIME Validation Bypass via Content API",
+        "advisoryUrl": "https://github.com/strapi/strapi/security/advisories/GHSA-pcw7-5633-82vv",
+        "cwes": [
+          "CWE-434",
+          "CWE-693"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/strapi/strapi/security-advisories?per_page=6",
+        "metadataSha256": "0618761e1f014647ca85ecf914f5df758d614bc92e2695fb81d8cf9ac258efe5",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "strapi/strapi",
+        "ghsa": "GHSA-3xcq-8mjw-h6mx",
+        "cve": "CVE-2026-22599",
+        "summary": "SQL Injection in Content Type Builder",
+        "advisoryUrl": "https://github.com/strapi/strapi/security/advisories/GHSA-3xcq-8mjw-h6mx",
+        "cwes": [],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/strapi/strapi/security-advisories?per_page=6",
+        "metadataSha256": "0618761e1f014647ca85ecf914f5df758d614bc92e2695fb81d8cf9ac258efe5",
+        "status": "SELECTED_PATCH_PAIR",
+        "truthGrade": "A",
+        "support": "NOT_SUPPORTED",
+        "review": "Original patch + necessary local routing/helper subset reviewed; support separately evaluated.",
+        "gradeBasis": "POST_COLLECTION_PATCH_FACT_REVIEW"
+      },
+      {
+        "repository": "strapi/strapi",
+        "ghsa": "GHSA-hvp3-26wx-g2w4",
+        "cve": "CVE-2026-22706",
+        "summary": "Password Reset Does Not Revoke Existing Refresh Sessions",
+        "advisoryUrl": "https://github.com/strapi/strapi/security/advisories/GHSA-hvp3-26wx-g2w4",
+        "cwes": [],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/strapi/strapi/security-advisories?per_page=6",
+        "metadataSha256": "0618761e1f014647ca85ecf914f5df758d614bc92e2695fb81d8cf9ac258efe5",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "strapi/strapi",
+        "ghsa": "GHSA-7mqx-wwh4-f9fw",
+        "cve": "CVE-2025-64526",
+        "summary": "Rate limit bypass on auth routes due to invalid prefix checking",
+        "advisoryUrl": "https://github.com/strapi/strapi/security/advisories/GHSA-7mqx-wwh4-f9fw",
+        "cwes": [
+          "CWE-307"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/strapi/strapi/security-advisories?per_page=6",
+        "metadataSha256": "0618761e1f014647ca85ecf914f5df758d614bc92e2695fb81d8cf9ac258efe5",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "strapi/strapi",
+        "ghsa": "GHSA-9329-mxxw-qwf8",
+        "cve": "CVE-2025-53092",
+        "summary": "CORS Misconfiguration Leads to Sensitive Data Exposure",
+        "advisoryUrl": "https://github.com/strapi/strapi/security/advisories/GHSA-9329-mxxw-qwf8",
+        "cwes": [
+          "CWE-200",
+          "CWE-284",
+          "CWE-346",
+          "CWE-942"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/strapi/strapi/security-advisories?per_page=6",
+        "metadataSha256": "0618761e1f014647ca85ecf914f5df758d614bc92e2695fb81d8cf9ac258efe5",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result."
+      },
+      {
+        "repository": "FlowiseAI/Flowise",
+        "ghsa": "GHSA-7x8x-vv46-4579",
+        "cve": null,
+        "summary": "Cross-tenant/cross-org authorization gaps in Enterprise role, and SSO-config endpoints",
+        "advisoryUrl": "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-7x8x-vv46-4579",
+        "cwes": [
+          "CWE-862"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/FlowiseAI/Flowise/security-advisories?per_page=6",
+        "metadataSha256": "23a8cf87267c4a01dcbe48cdea271b71e3bd7199081981e3761738ffeeb8f634",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "FlowiseAI/Flowise",
+        "ghsa": "GHSA-fhxm-xxcx-g6x3",
+        "cve": null,
+        "summary": "Broken access control in GET /api/v1/organizationuser leaks the organization owner's password hash to any member (privilege escalation/account takeover)",
+        "advisoryUrl": "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-fhxm-xxcx-g6x3",
+        "cwes": [],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/FlowiseAI/Flowise/security-advisories?per_page=6",
+        "metadataSha256": "23a8cf87267c4a01dcbe48cdea271b71e3bd7199081981e3761738ffeeb8f634",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "FlowiseAI/Flowise",
+        "ghsa": "GHSA-pprx-4prj-35mj",
+        "cve": null,
+        "summary": "Cross-tenant organization admin takeover via unscoped organization/workspace membership APIs",
+        "advisoryUrl": "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-pprx-4prj-35mj",
+        "cwes": [
+          "CWE-266",
+          "CWE-639",
+          "CWE-862"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/FlowiseAI/Flowise/security-advisories?per_page=6",
+        "metadataSha256": "23a8cf87267c4a01dcbe48cdea271b71e3bd7199081981e3761738ffeeb8f634",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "FlowiseAI/Flowise",
+        "ghsa": "GHSA-9gvv-qjj3-2p6g",
+        "cve": "CVE-2026-73483",
+        "summary": "Flowise NodeVM sandbox escape via puppeteer allowlist - authenticated RCE and arbitrary file read via Chromium",
+        "advisoryUrl": "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-9gvv-qjj3-2p6g",
+        "cwes": [],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/FlowiseAI/Flowise/security-advisories?per_page=6",
+        "metadataSha256": "23a8cf87267c4a01dcbe48cdea271b71e3bd7199081981e3761738ffeeb8f634",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "FlowiseAI/Flowise",
+        "ghsa": "GHSA-x58f-9m57-qc4m",
+        "cve": "CVE-2026-73484",
+        "summary": "Authenticated Sandbox Escape and Data Exfiltration via Pandas Methods Bypass in pythonCodeValidator",
+        "advisoryUrl": "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-x58f-9m57-qc4m",
+        "cwes": [
+          "CWE-184"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/FlowiseAI/Flowise/security-advisories?per_page=6",
+        "metadataSha256": "23a8cf87267c4a01dcbe48cdea271b71e3bd7199081981e3761738ffeeb8f634",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "FlowiseAI/Flowise",
+        "ghsa": "GHSA-vmv7-4m6c-3cg5",
+        "cve": "CVE-2026-69255",
+        "summary": "CSV Agent Remote Code Execution via Pyodide Code Injection — Root Shell Verified",
+        "advisoryUrl": "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-vmv7-4m6c-3cg5",
+        "cwes": [
+          "CWE-94"
+        ],
+        "references": [],
+        "explicitCommitReferences": [],
+        "metadataUrl": "https://api.github.com/repos/FlowiseAI/Flowise/security-advisories?per_page=6",
+        "metadataSha256": "23a8cf87267c4a01dcbe48cdea271b71e3bd7199081981e3761738ffeeb8f634",
+        "status": "NOT_SELECTED_FOR_ENGINE_REPLAY",
+        "truthGrade": null,
+        "support": "NOT_YET_REVIEWED",
+        "review": "Metadata only: fixed SHA and sufficient local context not yet jointly verified. Not a truth-labelled pair or a safe result.",
+        "reservation": "FUTURE_REVIEW_CANDIDATE_NOT_ENGINE_EVALUATED_NOT_VALIDATED_HOLDOUT"
+      },
+      {
+        "repository": "TryGhost/Ghost",
+        "ghsa": "GHSA-w52v-v783-gw97",
+        "cve": "CVE-2026-26980",
+        "summary": "Ghost has a SQL injection in Content API",
+        "advisoryUrl": "https://github.com/advisories/GHSA-w52v-v783-gw97",
+        "cwes": [
+          "CWE-89"
+        ],
+        "references": [
+          "https://github.com/TryGhost/Ghost/security/advisories/GHSA-w52v-v783-gw97",
+          "https://github.com/TryGhost/Ghost/commit/30868d632b2252b638bc8a4c8ebf73964592ed91",
+          "https://github.com/TryGhost/Ghost/releases/tag/v6.19.1",
+          "https://nvd.nist.gov/vuln/detail/CVE-2026-26980",
+          "https://blog.xlab.qianxin.com/ghost-cms-page-poisoning-cve-2026-26980",
+          "https://github.com/advisories/GHSA-w52v-v783-gw97"
+        ],
+        "metadataUrl": "https://api.github.com/advisories/GHSA-w52v-v783-gw97",
+        "metadataSha256": "d161695752e45c2985054454f0344cec0bd11a51beab7090a7bc376a551c4b19",
+        "truthGrade": "A",
+        "support": "NOT_SUPPORTED",
+        "status": "SELECTED_PATCH_PAIR",
+        "review": "Original patch + necessary local routing/helper subset reviewed; support separately evaluated.",
+        "gradeBasis": "POST_COLLECTION_PATCH_FACT_REVIEW"
+      },
+      {
+        "repository": "FlowiseAI/Flowise",
+        "ghsa": "GHSA-hr92-4q35-4j3m",
+        "cve": "CVE-2025-59527",
+        "summary": "SSRF in fetch-links endpoint",
+        "cwes": [
+          "CWE-918"
+        ],
+        "advisoryUrl": "https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-hr92-4q35-4j3m",
+        "vulnerableSourceSha": "5930f1119c655bcf8d2200ae827a1f5b9fec81d0",
+        "fixedCommitSha": null,
+        "status": "NOT_SELECTED_PATCH_IDENTITY_AND_COMPLETE_CONTEXT_NOT_VERIFIED",
+        "truthGrade": null,
+        "review": "Request query -> service -> webCrawl/xmlScrape fetch described by maintainer; fixed release 3.0.6 but precise causally reviewed patch not established in this intake.",
+        "retention": "Advisory example bearer strings are not retained; body cache removed, values never used.",
+        "reservation": "Not engine-evaluated; no validated or blind holdout claim."
+      }
+    ],
+    "screenedCandidates": 32,
+    "selectionPolicy": "Six published advisories returned per named application; no selection by engine detection.",
+    "requests": 1,
+    "bytes": 239247,
+    "originalSourcesInGit": false,
+    "independence": "New external provenance, not blind or independently labelled. Existing observed corpora stay regression."
+  },
+  "acquisitionStages": [
+    "v1 retained initial guessed-path 404s and baseline; v2 corrected routing; v3 final context and baseline. None discarded to select a positive outcome."
+  ],
+  "gradeA": {
+    "pairs": 3,
+    "revisions": 6,
+    "projects": 3,
+    "supportedEndToEndPairs": 0,
+    "independentOfNodeGoat": true,
+    "independentCuratorOrBlind": false,
+    "groundTruth": "Maintainer advisory plus reviewed original patch; condition-local fixed label."
+  },
+  "gradeB": {
+    "newCases": 0
+  },
+  "gradeC": {
+    "newScoredCases": 0
+  },
+  "languagePairs": {
+    "JavaScript": 2,
+    "TypeScript": 1
+  },
+  "cwePairs": {
+    "CWE-287": 1,
+    "CWE-89": 2
+  },
+  "pairs": [
+    {
+      "pairId": "nodebb-api-token",
+      "grade": "A",
+      "results": [
+        {
+          "caseId": "nodebb-api-token-parent",
+          "revision": "parent",
+          "sha": "1783f918bc19568f421473824461ff2ed7755e4c",
+          "label": "DANGEROUS",
+          "labelScope": "Named inherited-property token lookup defect only, not all authentication or session behavior.",
+          "retainedFiles": 10,
+          "fileReceipts": [
+            {
+              "path": "src/routes/authentication.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/1783f918bc19568f421473824461ff2ed7755e4c/src/routes/authentication.js",
+              "sha256": "9faddedcab22857f8aeb18002278d128d9e3878537eedb0df42a165838dc9540"
+            },
+            {
+              "path": "src/routes/write/index.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/1783f918bc19568f421473824461ff2ed7755e4c/src/routes/write/index.js",
+              "sha256": "1954535ef71285aa99a58c3c0fd0867bbc44d651b7cfcb112b4192689c7d43cd"
+            },
+            {
+              "path": "src/routes/index.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/1783f918bc19568f421473824461ff2ed7755e4c/src/routes/index.js",
+              "sha256": "ac31b71c52906748f3b2e2b8378766495a38f6c1d46ab926f9193d42c1798ad6"
+            },
+            {
+              "path": "src/middleware/index.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/1783f918bc19568f421473824461ff2ed7755e4c/src/middleware/index.js",
+              "sha256": "cc869b31d5c25a0370b740eb843a7bbfdbcb56cc9097e8c5896e6b7fe1664de3"
+            },
+            {
+              "path": "src/middleware/user.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/1783f918bc19568f421473824461ff2ed7755e4c/src/middleware/user.js",
+              "sha256": "48baf6b5d1bd3fae242adb113233488917d0ab2b2d3364763c90150cf6c767bc"
+            },
+            {
+              "path": "src/meta/settings.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/1783f918bc19568f421473824461ff2ed7755e4c/src/meta/settings.js",
+              "sha256": "b00f5ea4119498e39697fc8f11f535bf9d4d94bfa8ab80136e6462801d1d85a5"
+            },
+            {
+              "path": "src/meta/index.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/1783f918bc19568f421473824461ff2ed7755e4c/src/meta/index.js",
+              "sha256": "b46a19e18f1ef3dee68c270ee255c751c13c26c8a6ef301dd6ceb7b780229c12"
+            },
+            {
+              "path": "src/api/index.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/1783f918bc19568f421473824461ff2ed7755e4c/src/api/index.js",
+              "sha256": "375526026ffc5066b663c92726a9717ea15edee66febc64c707ee3044a502d9f"
+            },
+            {
+              "path": "install/package.json",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/1783f918bc19568f421473824461ff2ed7755e4c/install/package.json",
+              "sha256": "0606d864f937c2db6722f614cb73c4262123c705f1a518dfc8160778b2b4e713"
+            },
+            {
+              "path": "LICENSE",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/1783f918bc19568f421473824461ff2ed7755e4c/LICENSE",
+              "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+            }
+          ],
+          "contextOmissions": [],
+          "coverage": {
+            "schemaVersion": 1,
+            "policyVersion": "coverage-ledger-v1",
+            "status": "PARTIAL",
+            "discoveredFiles": 10,
+            "selectedFiles": 9,
+            "unsupportedFiles": 1,
+            "excludedFiles": 0,
+            "failedFiles": 0,
+            "inventoryComplete": true,
+            "omittedEntries": 0,
+            "entries": [
+              {
+                "filePath": "install/package.json",
+                "kind": "FILE",
+                "fileType": "PACKAGE_JSON",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "LICENSE",
+                "kind": "FILE",
+                "fileType": null,
+                "status": "UNSUPPORTED",
+                "reason": "NO_SUPPORTED_ANALYZER"
+              },
+              {
+                "filePath": "src/middleware/user.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/middleware/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/meta/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/meta/settings.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/api/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/routes/write/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/routes/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/routes/authentication.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              }
+            ],
+            "analyzers": [
+              {
+                "analyzer": "TYPESCRIPT_SERVER",
+                "status": "PARTIAL",
+                "scope": "Workers/Pages 및 정적으로 연결된 Express 진입점의 제한된 값 전달 검사. Express 코드 실행·MongoDB API 근거를 구분하며 동적 초기화·전체 Node.js·인증·소유권·실행 가능성은 미확인입니다. 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {
+                  "AST_PARSED": 8,
+                  "FLOW_NOT_SUPPORTED": 7,
+                  "FLOW_PARTIAL": 1,
+                  "ENTRYPOINTS": 0,
+                  "FUNCTIONS_TRACED": 1
+                }
+              },
+              {
+                "analyzer": "TYPESCRIPT_EXPOSURE",
+                "status": "PARTIAL",
+                "scope": "지원 서버 진입점의 출처·응답 반환·로그 인자 전달 근거. 환경변수의 민감성, 운영 실행·로그 접근·번들 노출은 미검증.",
+                "fileStatuses": {
+                  "EXPOSURE_PATHS_TRACED": 0
+                }
+              },
+              {
+                "analyzer": "PYTHON_SERVER",
+                "status": "NOT_APPLICABLE",
+                "scope": "Django/DRF 진입점의 제한된 SQL·파일 경로·pickle/YAML 값 전달 검사. 전체 Python, 인증·소유권, 파일시스템·실행 가능성은 미검증이며 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "PYTHON_AUTHORIZATION",
+                "status": "NOT_APPLICABLE",
+                "scope": "지원 Django/DRF 진입점의 권한 선언·사용자/FK 조회 범위·차단 분기 근거. 전역 설정 활성화·미들웨어·상속·전체 객체 권한은 미검증. 인증은 소유권 보증이 아닙니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "DEPLOYMENT_CONFIG",
+                "status": "NOT_APPLICABLE",
+                "scope": "Compose 서비스·Django 리터럴·Wrangler 환경별 선언 검사. 실제 활성 환경·override·네트워크 노출은 미검증. 기존 Risk와 별도 검토 항목입니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "JAVA_SQL_FLOW",
+                "status": "NOT_APPLICABLE",
+                "scope": "Spring/Servlet의 지원 진입점에서 타입이 확인된 DI·유일한 구현체와 JDBC 호출을 제한 추적합니다. 정적 JPA/MyBatis 선언 근거는 실제 DB 실행과 구분합니다. 동적 SQL·외부 상속·모호한 호출은 미확인. 새 독립 후보는 점수·Risk·해결 수와 분리됩니다.",
+                "fileStatuses": {
+                  "CONFIRMED_SAFE_LEGACY_SIGNALS_REMOVED": 0
+                }
+              }
+            ],
+            "inspectionScope": {
+              "schemaVersion": 1,
+              "assurance": "NOT_ESTABLISHED",
+              "evidenceComplete": true,
+              "areas": [],
+              "incompleteAnalyzers": [
+                "TYPESCRIPT_SERVER:PARTIAL",
+                "TYPESCRIPT_EXPOSURE:PARTIAL"
+              ]
+            }
+          },
+          "parserStatus": "PARTIAL",
+          "parsedFiles": 8,
+          "recognizedEntries": 0,
+          "functionsAnalyzed": 1,
+          "analyzerFiles": [
+            {
+              "filePath": "src/api/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/meta/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "CALL_TARGET_UNRESOLVED",
+                "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL",
+                "OBJECT_BRANCH_MERGE_PARTIAL",
+                "PROPERTY_WRITE_UNRESOLVED"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/meta/settings.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/middleware/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "CALL_TARGET_UNRESOLVED",
+                "CLOSURE_SIDE_EFFECTS_UNRESOLVED",
+                "EXPRESSION_UNSUPPORTED",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL",
+                "OBJECT_BRANCH_MERGE_PARTIAL",
+                "OBJECT_MEMBER_UNRESOLVED",
+                "PROPERTY_WRITE_UNRESOLVED"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/middleware/user.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "PARTIAL",
+              "entrypoints": 0,
+              "functionsAnalyzed": 1,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "CALL_TARGET_UNRESOLVED",
+                "CLOSURE_SIDE_EFFECTS_UNRESOLVED",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "PROPERTY_WRITE_UNRESOLVED"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/routes/authentication.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "CALL_TARGET_UNRESOLVED",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/routes/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "ANALYSIS_BUDGET_EXCEEDED",
+                "NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/routes/write/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "ANALYSIS_BUDGET_EXCEEDED",
+                "NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED",
+                "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            }
+          ],
+          "sourceFlow": "NOT_TRACED",
+          "sinkContract": "NOT_SUPPORTED",
+          "defenseRecognition": "STATIC_MANUAL_PATCH_FACTS_ONLY_NOT_ENGINE_PROOF",
+          "layers": {
+            "rule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "filteredRule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "ast": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "finalUser": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            }
+          },
+          "nonTargetRuleAlerts": [
+            {
+              "ruleId": "PACKAGE_JSON_RISK",
+              "severity": "LOW",
+              "falsePositiveRisk": "LOW",
+              "confidence": "HIGH",
+              "filePath": "install/package.json",
+              "line": 44
+            }
+          ],
+          "reviewCandidates": [],
+          "elapsedMs": [
+            297,
+            217
+          ],
+          "parentHeapSamples": [
+            61982008,
+            66176312
+          ],
+          "sca": {
+            "componentCount": 128,
+            "status": "EXTERNAL_LOOKUP_NOT_RUN",
+            "observationCount": 1
+          },
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "nodebb-api-token-fixed",
+          "revision": "fixed",
+          "sha": "04dab1d550cdebf4c1567bca9a51f8b9ca48a500",
+          "label": "SAFE",
+          "labelScope": "Named inherited-property token lookup defect only, not all authentication or session behavior.",
+          "retainedFiles": 10,
+          "fileReceipts": [
+            {
+              "path": "src/routes/authentication.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/04dab1d550cdebf4c1567bca9a51f8b9ca48a500/src/routes/authentication.js",
+              "sha256": "0443c07ce89b87186e707c2439f892bcbb965ea3c10102bde4e04a71ad8c8207"
+            },
+            {
+              "path": "src/routes/write/index.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/04dab1d550cdebf4c1567bca9a51f8b9ca48a500/src/routes/write/index.js",
+              "sha256": "1954535ef71285aa99a58c3c0fd0867bbc44d651b7cfcb112b4192689c7d43cd"
+            },
+            {
+              "path": "src/routes/index.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/04dab1d550cdebf4c1567bca9a51f8b9ca48a500/src/routes/index.js",
+              "sha256": "ac31b71c52906748f3b2e2b8378766495a38f6c1d46ab926f9193d42c1798ad6"
+            },
+            {
+              "path": "src/middleware/index.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/04dab1d550cdebf4c1567bca9a51f8b9ca48a500/src/middleware/index.js",
+              "sha256": "cc869b31d5c25a0370b740eb843a7bbfdbcb56cc9097e8c5896e6b7fe1664de3"
+            },
+            {
+              "path": "src/middleware/user.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/04dab1d550cdebf4c1567bca9a51f8b9ca48a500/src/middleware/user.js",
+              "sha256": "48baf6b5d1bd3fae242adb113233488917d0ab2b2d3364763c90150cf6c767bc"
+            },
+            {
+              "path": "src/meta/settings.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/04dab1d550cdebf4c1567bca9a51f8b9ca48a500/src/meta/settings.js",
+              "sha256": "b00f5ea4119498e39697fc8f11f535bf9d4d94bfa8ab80136e6462801d1d85a5"
+            },
+            {
+              "path": "src/meta/index.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/04dab1d550cdebf4c1567bca9a51f8b9ca48a500/src/meta/index.js",
+              "sha256": "b46a19e18f1ef3dee68c270ee255c751c13c26c8a6ef301dd6ceb7b780229c12"
+            },
+            {
+              "path": "src/api/index.js",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/04dab1d550cdebf4c1567bca9a51f8b9ca48a500/src/api/index.js",
+              "sha256": "375526026ffc5066b663c92726a9717ea15edee66febc64c707ee3044a502d9f"
+            },
+            {
+              "path": "install/package.json",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/04dab1d550cdebf4c1567bca9a51f8b9ca48a500/install/package.json",
+              "sha256": "0606d864f937c2db6722f614cb73c4262123c705f1a518dfc8160778b2b4e713"
+            },
+            {
+              "path": "LICENSE",
+              "url": "https://raw.githubusercontent.com/NodeBB/NodeBB/04dab1d550cdebf4c1567bca9a51f8b9ca48a500/LICENSE",
+              "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+            }
+          ],
+          "contextOmissions": [],
+          "coverage": {
+            "schemaVersion": 1,
+            "policyVersion": "coverage-ledger-v1",
+            "status": "PARTIAL",
+            "discoveredFiles": 10,
+            "selectedFiles": 9,
+            "unsupportedFiles": 1,
+            "excludedFiles": 0,
+            "failedFiles": 0,
+            "inventoryComplete": true,
+            "omittedEntries": 0,
+            "entries": [
+              {
+                "filePath": "install/package.json",
+                "kind": "FILE",
+                "fileType": "PACKAGE_JSON",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "LICENSE",
+                "kind": "FILE",
+                "fileType": null,
+                "status": "UNSUPPORTED",
+                "reason": "NO_SUPPORTED_ANALYZER"
+              },
+              {
+                "filePath": "src/middleware/user.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/middleware/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/meta/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/meta/settings.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/api/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/routes/write/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/routes/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "src/routes/authentication.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              }
+            ],
+            "analyzers": [
+              {
+                "analyzer": "TYPESCRIPT_SERVER",
+                "status": "PARTIAL",
+                "scope": "Workers/Pages 및 정적으로 연결된 Express 진입점의 제한된 값 전달 검사. Express 코드 실행·MongoDB API 근거를 구분하며 동적 초기화·전체 Node.js·인증·소유권·실행 가능성은 미확인입니다. 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {
+                  "AST_PARSED": 8,
+                  "FLOW_NOT_SUPPORTED": 7,
+                  "FLOW_PARTIAL": 1,
+                  "ENTRYPOINTS": 0,
+                  "FUNCTIONS_TRACED": 1
+                }
+              },
+              {
+                "analyzer": "TYPESCRIPT_EXPOSURE",
+                "status": "PARTIAL",
+                "scope": "지원 서버 진입점의 출처·응답 반환·로그 인자 전달 근거. 환경변수의 민감성, 운영 실행·로그 접근·번들 노출은 미검증.",
+                "fileStatuses": {
+                  "EXPOSURE_PATHS_TRACED": 0
+                }
+              },
+              {
+                "analyzer": "PYTHON_SERVER",
+                "status": "NOT_APPLICABLE",
+                "scope": "Django/DRF 진입점의 제한된 SQL·파일 경로·pickle/YAML 값 전달 검사. 전체 Python, 인증·소유권, 파일시스템·실행 가능성은 미검증이며 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "PYTHON_AUTHORIZATION",
+                "status": "NOT_APPLICABLE",
+                "scope": "지원 Django/DRF 진입점의 권한 선언·사용자/FK 조회 범위·차단 분기 근거. 전역 설정 활성화·미들웨어·상속·전체 객체 권한은 미검증. 인증은 소유권 보증이 아닙니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "DEPLOYMENT_CONFIG",
+                "status": "NOT_APPLICABLE",
+                "scope": "Compose 서비스·Django 리터럴·Wrangler 환경별 선언 검사. 실제 활성 환경·override·네트워크 노출은 미검증. 기존 Risk와 별도 검토 항목입니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "JAVA_SQL_FLOW",
+                "status": "NOT_APPLICABLE",
+                "scope": "Spring/Servlet의 지원 진입점에서 타입이 확인된 DI·유일한 구현체와 JDBC 호출을 제한 추적합니다. 정적 JPA/MyBatis 선언 근거는 실제 DB 실행과 구분합니다. 동적 SQL·외부 상속·모호한 호출은 미확인. 새 독립 후보는 점수·Risk·해결 수와 분리됩니다.",
+                "fileStatuses": {
+                  "CONFIRMED_SAFE_LEGACY_SIGNALS_REMOVED": 0
+                }
+              }
+            ],
+            "inspectionScope": {
+              "schemaVersion": 1,
+              "assurance": "NOT_ESTABLISHED",
+              "evidenceComplete": true,
+              "areas": [],
+              "incompleteAnalyzers": [
+                "TYPESCRIPT_SERVER:PARTIAL",
+                "TYPESCRIPT_EXPOSURE:PARTIAL"
+              ]
+            }
+          },
+          "parserStatus": "PARTIAL",
+          "parsedFiles": 8,
+          "recognizedEntries": 0,
+          "functionsAnalyzed": 1,
+          "analyzerFiles": [
+            {
+              "filePath": "src/api/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/meta/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "CALL_TARGET_UNRESOLVED",
+                "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL",
+                "OBJECT_BRANCH_MERGE_PARTIAL",
+                "PROPERTY_WRITE_UNRESOLVED"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/meta/settings.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/middleware/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "CALL_TARGET_UNRESOLVED",
+                "CLOSURE_SIDE_EFFECTS_UNRESOLVED",
+                "EXPRESSION_UNSUPPORTED",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL",
+                "OBJECT_BRANCH_MERGE_PARTIAL",
+                "OBJECT_MEMBER_UNRESOLVED",
+                "PROPERTY_WRITE_UNRESOLVED"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/middleware/user.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "PARTIAL",
+              "entrypoints": 0,
+              "functionsAnalyzed": 1,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "CALL_TARGET_UNRESOLVED",
+                "CLOSURE_SIDE_EFFECTS_UNRESOLVED",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "PROPERTY_WRITE_UNRESOLVED"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/routes/authentication.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "CALL_TARGET_UNRESOLVED",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/routes/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "ANALYSIS_BUDGET_EXCEEDED",
+                "NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "src/routes/write/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "ANALYSIS_BUDGET_EXCEEDED",
+                "NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED",
+                "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT",
+                "NODE_MODULE_RESOLUTION_UNKNOWN",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            }
+          ],
+          "sourceFlow": "NOT_TRACED",
+          "sinkContract": "NOT_SUPPORTED",
+          "defenseRecognition": "STATIC_MANUAL_PATCH_FACTS_ONLY_NOT_ENGINE_PROOF",
+          "layers": {
+            "rule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "filteredRule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "ast": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "finalUser": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            }
+          },
+          "nonTargetRuleAlerts": [
+            {
+              "ruleId": "PACKAGE_JSON_RISK",
+              "severity": "LOW",
+              "falsePositiveRisk": "LOW",
+              "confidence": "HIGH",
+              "filePath": "install/package.json",
+              "line": 44
+            }
+          ],
+          "reviewCandidates": [],
+          "elapsedMs": [
+            217,
+            216
+          ],
+          "parentHeapSamples": [
+            70370616,
+            73516344
+          ],
+          "sca": {
+            "componentCount": 128,
+            "status": "EXTERNAL_LOOKUP_NOT_RUN",
+            "observationCount": 1
+          },
+          "repeatConsistent": true
+        }
+      ]
+    },
+    {
+      "pairId": "ghost-content-filter",
+      "grade": "A",
+      "results": [
+        {
+          "caseId": "ghost-content-filter-parent",
+          "revision": "parent",
+          "sha": "ebf4bb79cb45e487e277318df61c6c559752fd0a",
+          "label": "DANGEROUS",
+          "labelScope": "Slug filter ordering SQL only. The external query plugin implementation and live database behavior are not executed or fully retained.",
+          "retainedFiles": 13,
+          "fileReceipts": [
+            {
+              "path": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+              "sha256": "435471e904283d121529272cc9c3f71a69f874b1ce326ba0b7b2fd062ff0c255"
+            },
+            {
+              "path": "ghost/core/core/server/models/base/plugins/crud.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/core/server/models/base/plugins/crud.js",
+              "sha256": "2c7ed6ad7ab0f650bef8ccb9ac58f153c02baf97e76f989937d92fcd8a9da56b"
+            },
+            {
+              "path": "ghost/core/core/server/web/api/endpoints/content/app.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/core/server/web/api/endpoints/content/app.js",
+              "sha256": "188367d7912c5fe39928f24f504fedf3bb0f755573b78c2735b48d900e672ea1"
+            },
+            {
+              "path": "ghost/core/core/server/web/api/endpoints/content/routes.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/core/server/web/api/endpoints/content/routes.js",
+              "sha256": "1e9f534322bcb6fe073017287690ba548f507d2a2ca600f53ab18d976bc633b2"
+            },
+            {
+              "path": "ghost/core/core/server/web/api/endpoints/content/middleware.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/core/server/web/api/endpoints/content/middleware.js",
+              "sha256": "12051a2ca8c324f2e84f7afe041cdd1ede39df2283bc3c75830c6e35cf50a2d8"
+            },
+            {
+              "path": "ghost/core/core/server/web/api/app.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/core/server/web/api/app.js",
+              "sha256": "ab5830df64755d7c65be1e2fee180fe9d842cb39ceb4be9a4b7e75aa466ce6de"
+            },
+            {
+              "path": "ghost/core/core/server/api/endpoints/tags.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/core/server/api/endpoints/tags.js",
+              "sha256": "fbe13c16f1d0f65bcdf63085780b8bb17e9e5092a552b94afe0fc21f3e711d02"
+            },
+            {
+              "path": "ghost/core/core/server/api/endpoints/utils/serializers/input/tags.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/core/server/api/endpoints/utils/serializers/input/tags.js",
+              "sha256": "8ece585f8db2e411f66306f718b21457b164666f4ea1e651b37688c7be7d9eda"
+            },
+            {
+              "path": "ghost/core/core/server/api/endpoints/utils/serializers/input/posts.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/core/server/api/endpoints/utils/serializers/input/posts.js",
+              "sha256": "0913501ad56241dda239f7f8fcdf1ec3c7e02b0b4c6d07c60cca9e1a9aa61af2"
+            },
+            {
+              "path": "ghost/core/core/server/api/endpoints/utils/serializers/input/index.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/core/server/api/endpoints/utils/serializers/input/index.js",
+              "sha256": "d02a04ef8f7f94783ea2eb42c75b05331c82cc4501669aec55fbde18b167a92f"
+            },
+            {
+              "path": "ghost/core/core/server/models/tag.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/core/server/models/tag.js",
+              "sha256": "9c5a68932d1a36f48348e25e85c66ba9b5066135f306c94274fb1daafc56f416"
+            },
+            {
+              "path": "ghost/core/package.json",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/ghost/core/package.json",
+              "sha256": "bfc7a8e18d27eba6d2423ac7d9c01ce4238a4484aae3a0214653d6ade5660e14"
+            },
+            {
+              "path": "LICENSE",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/ebf4bb79cb45e487e277318df61c6c559752fd0a/LICENSE",
+              "sha256": "56df280a26071c1e84578abcb1e7dce02502d27816bce1184617e93ee5b086bf"
+            }
+          ],
+          "contextOmissions": [],
+          "coverage": {
+            "schemaVersion": 1,
+            "policyVersion": "coverage-ledger-v1",
+            "status": "PARTIAL",
+            "discoveredFiles": 13,
+            "selectedFiles": 12,
+            "unsupportedFiles": 1,
+            "excludedFiles": 0,
+            "failedFiles": 0,
+            "inventoryComplete": true,
+            "omittedEntries": 0,
+            "entries": [
+              {
+                "filePath": "LICENSE",
+                "kind": "FILE",
+                "fileType": null,
+                "status": "UNSUPPORTED",
+                "reason": "NO_SUPPORTED_ANALYZER"
+              },
+              {
+                "filePath": "ghost/core/core/server/web/api/endpoints/content/routes.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/web/api/endpoints/content/middleware.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/web/api/endpoints/content/app.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/web/api/app.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/models/tag.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/models/base/plugins/crud.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/api/endpoints/tags.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/posts.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/tags.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/package.json",
+                "kind": "FILE",
+                "fileType": "PACKAGE_JSON",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              }
+            ],
+            "analyzers": [
+              {
+                "analyzer": "TYPESCRIPT_SERVER",
+                "status": "PARTIAL",
+                "scope": "Workers/Pages 및 정적으로 연결된 Express 진입점의 제한된 값 전달 검사. Express 코드 실행·MongoDB API 근거를 구분하며 동적 초기화·전체 Node.js·인증·소유권·실행 가능성은 미확인입니다. 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {
+                  "AST_PARSED": 11,
+                  "FLOW_NOT_SUPPORTED": 11,
+                  "ENTRYPOINTS": 0,
+                  "FUNCTIONS_TRACED": 0
+                }
+              },
+              {
+                "analyzer": "TYPESCRIPT_EXPOSURE",
+                "status": "PARTIAL",
+                "scope": "지원 서버 진입점의 출처·응답 반환·로그 인자 전달 근거. 환경변수의 민감성, 운영 실행·로그 접근·번들 노출은 미검증.",
+                "fileStatuses": {
+                  "EXPOSURE_PATHS_TRACED": 0
+                }
+              },
+              {
+                "analyzer": "PYTHON_SERVER",
+                "status": "NOT_APPLICABLE",
+                "scope": "Django/DRF 진입점의 제한된 SQL·파일 경로·pickle/YAML 값 전달 검사. 전체 Python, 인증·소유권, 파일시스템·실행 가능성은 미검증이며 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "PYTHON_AUTHORIZATION",
+                "status": "NOT_APPLICABLE",
+                "scope": "지원 Django/DRF 진입점의 권한 선언·사용자/FK 조회 범위·차단 분기 근거. 전역 설정 활성화·미들웨어·상속·전체 객체 권한은 미검증. 인증은 소유권 보증이 아닙니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "DEPLOYMENT_CONFIG",
+                "status": "NOT_APPLICABLE",
+                "scope": "Compose 서비스·Django 리터럴·Wrangler 환경별 선언 검사. 실제 활성 환경·override·네트워크 노출은 미검증. 기존 Risk와 별도 검토 항목입니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "JAVA_SQL_FLOW",
+                "status": "NOT_APPLICABLE",
+                "scope": "Spring/Servlet의 지원 진입점에서 타입이 확인된 DI·유일한 구현체와 JDBC 호출을 제한 추적합니다. 정적 JPA/MyBatis 선언 근거는 실제 DB 실행과 구분합니다. 동적 SQL·외부 상속·모호한 호출은 미확인. 새 독립 후보는 점수·Risk·해결 수와 분리됩니다.",
+                "fileStatuses": {
+                  "CONFIRMED_SAFE_LEGACY_SIGNALS_REMOVED": 0
+                }
+              }
+            ],
+            "inspectionScope": {
+              "schemaVersion": 1,
+              "assurance": "NOT_ESTABLISHED",
+              "evidenceComplete": true,
+              "areas": [],
+              "incompleteAnalyzers": [
+                "TYPESCRIPT_SERVER:PARTIAL",
+                "TYPESCRIPT_EXPOSURE:PARTIAL"
+              ]
+            }
+          },
+          "parserStatus": "PARTIAL",
+          "parsedFiles": 11,
+          "recognizedEntries": 0,
+          "functionsAnalyzed": 0,
+          "analyzerFiles": [
+            {
+              "filePath": "ghost/core/core/server/api/endpoints/tags.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/posts.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/tags.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/models/base/plugins/crud.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "HTTP_CALLS_OUTSIDE_TRACED_FLOW",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 3,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/models/tag.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "HTTP_CALLS_OUTSIDE_TRACED_FLOW",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 1,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/web/api/app.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/web/api/endpoints/content/app.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/web/api/endpoints/content/middleware.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/web/api/endpoints/content/routes.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            }
+          ],
+          "sourceFlow": "NOT_TRACED",
+          "sinkContract": "NOT_SUPPORTED",
+          "defenseRecognition": "STATIC_MANUAL_PATCH_FACTS_ONLY_NOT_ENGINE_PROOF",
+          "layers": {
+            "rule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "filteredRule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "ast": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "finalUser": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            }
+          },
+          "nonTargetRuleAlerts": [
+            {
+              "ruleId": "PACKAGE_JSON_RISK",
+              "severity": "LOW",
+              "falsePositiveRisk": "LOW",
+              "confidence": "HIGH",
+              "filePath": "ghost/core/package.json",
+              "line": 217
+            }
+          ],
+          "reviewCandidates": [],
+          "elapsedMs": [
+            383,
+            384
+          ],
+          "parentHeapSamples": [
+            48941856,
+            55233312
+          ],
+          "sca": {
+            "componentCount": 197,
+            "status": "EXTERNAL_LOOKUP_NOT_RUN",
+            "observationCount": 1
+          },
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "ghost-content-filter-fixed",
+          "revision": "fixed",
+          "sha": "30868d632b2252b638bc8a4c8ebf73964592ed91",
+          "label": "SAFE",
+          "labelScope": "Slug filter ordering SQL only. The external query plugin implementation and live database behavior are not executed or fully retained.",
+          "retainedFiles": 13,
+          "fileReceipts": [
+            {
+              "path": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+              "sha256": "2961388fe1a7088dc326092d8e14c4170224a6b0c7a630afc5edbe49bfdb7d67"
+            },
+            {
+              "path": "ghost/core/core/server/models/base/plugins/crud.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/core/server/models/base/plugins/crud.js",
+              "sha256": "22e57484b66910ec9d26b1fe5885d1a5131e8df2ab587dcc753b2c07edcc434c"
+            },
+            {
+              "path": "ghost/core/core/server/web/api/endpoints/content/app.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/core/server/web/api/endpoints/content/app.js",
+              "sha256": "188367d7912c5fe39928f24f504fedf3bb0f755573b78c2735b48d900e672ea1"
+            },
+            {
+              "path": "ghost/core/core/server/web/api/endpoints/content/routes.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/core/server/web/api/endpoints/content/routes.js",
+              "sha256": "1e9f534322bcb6fe073017287690ba548f507d2a2ca600f53ab18d976bc633b2"
+            },
+            {
+              "path": "ghost/core/core/server/web/api/endpoints/content/middleware.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/core/server/web/api/endpoints/content/middleware.js",
+              "sha256": "12051a2ca8c324f2e84f7afe041cdd1ede39df2283bc3c75830c6e35cf50a2d8"
+            },
+            {
+              "path": "ghost/core/core/server/web/api/app.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/core/server/web/api/app.js",
+              "sha256": "ab5830df64755d7c65be1e2fee180fe9d842cb39ceb4be9a4b7e75aa466ce6de"
+            },
+            {
+              "path": "ghost/core/core/server/api/endpoints/tags.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/core/server/api/endpoints/tags.js",
+              "sha256": "fbe13c16f1d0f65bcdf63085780b8bb17e9e5092a552b94afe0fc21f3e711d02"
+            },
+            {
+              "path": "ghost/core/core/server/api/endpoints/utils/serializers/input/tags.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/core/server/api/endpoints/utils/serializers/input/tags.js",
+              "sha256": "8ece585f8db2e411f66306f718b21457b164666f4ea1e651b37688c7be7d9eda"
+            },
+            {
+              "path": "ghost/core/core/server/api/endpoints/utils/serializers/input/posts.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/core/server/api/endpoints/utils/serializers/input/posts.js",
+              "sha256": "0913501ad56241dda239f7f8fcdf1ec3c7e02b0b4c6d07c60cca9e1a9aa61af2"
+            },
+            {
+              "path": "ghost/core/core/server/api/endpoints/utils/serializers/input/index.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/core/server/api/endpoints/utils/serializers/input/index.js",
+              "sha256": "d02a04ef8f7f94783ea2eb42c75b05331c82cc4501669aec55fbde18b167a92f"
+            },
+            {
+              "path": "ghost/core/core/server/models/tag.js",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/core/server/models/tag.js",
+              "sha256": "9c5a68932d1a36f48348e25e85c66ba9b5066135f306c94274fb1daafc56f416"
+            },
+            {
+              "path": "ghost/core/package.json",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/ghost/core/package.json",
+              "sha256": "a58c93a5a7f92f438132e6b2e5687d91fd77b766d9e60a39924ba1e8fdf7ed51"
+            },
+            {
+              "path": "LICENSE",
+              "url": "https://raw.githubusercontent.com/TryGhost/Ghost/30868d632b2252b638bc8a4c8ebf73964592ed91/LICENSE",
+              "sha256": "56df280a26071c1e84578abcb1e7dce02502d27816bce1184617e93ee5b086bf"
+            }
+          ],
+          "contextOmissions": [],
+          "coverage": {
+            "schemaVersion": 1,
+            "policyVersion": "coverage-ledger-v1",
+            "status": "PARTIAL",
+            "discoveredFiles": 13,
+            "selectedFiles": 12,
+            "unsupportedFiles": 1,
+            "excludedFiles": 0,
+            "failedFiles": 0,
+            "inventoryComplete": true,
+            "omittedEntries": 0,
+            "entries": [
+              {
+                "filePath": "LICENSE",
+                "kind": "FILE",
+                "fileType": null,
+                "status": "UNSUPPORTED",
+                "reason": "NO_SUPPORTED_ANALYZER"
+              },
+              {
+                "filePath": "ghost/core/core/server/web/api/endpoints/content/routes.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/web/api/endpoints/content/middleware.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/web/api/endpoints/content/app.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/web/api/app.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/models/tag.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/models/base/plugins/crud.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/api/endpoints/tags.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/posts.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/tags.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/index.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+                "kind": "FILE",
+                "fileType": "JAVASCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "ghost/core/package.json",
+                "kind": "FILE",
+                "fileType": "PACKAGE_JSON",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              }
+            ],
+            "analyzers": [
+              {
+                "analyzer": "TYPESCRIPT_SERVER",
+                "status": "PARTIAL",
+                "scope": "Workers/Pages 및 정적으로 연결된 Express 진입점의 제한된 값 전달 검사. Express 코드 실행·MongoDB API 근거를 구분하며 동적 초기화·전체 Node.js·인증·소유권·실행 가능성은 미확인입니다. 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {
+                  "AST_PARSED": 11,
+                  "FLOW_NOT_SUPPORTED": 11,
+                  "ENTRYPOINTS": 0,
+                  "FUNCTIONS_TRACED": 0
+                }
+              },
+              {
+                "analyzer": "TYPESCRIPT_EXPOSURE",
+                "status": "PARTIAL",
+                "scope": "지원 서버 진입점의 출처·응답 반환·로그 인자 전달 근거. 환경변수의 민감성, 운영 실행·로그 접근·번들 노출은 미검증.",
+                "fileStatuses": {
+                  "EXPOSURE_PATHS_TRACED": 0
+                }
+              },
+              {
+                "analyzer": "PYTHON_SERVER",
+                "status": "NOT_APPLICABLE",
+                "scope": "Django/DRF 진입점의 제한된 SQL·파일 경로·pickle/YAML 값 전달 검사. 전체 Python, 인증·소유권, 파일시스템·실행 가능성은 미검증이며 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "PYTHON_AUTHORIZATION",
+                "status": "NOT_APPLICABLE",
+                "scope": "지원 Django/DRF 진입점의 권한 선언·사용자/FK 조회 범위·차단 분기 근거. 전역 설정 활성화·미들웨어·상속·전체 객체 권한은 미검증. 인증은 소유권 보증이 아닙니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "DEPLOYMENT_CONFIG",
+                "status": "NOT_APPLICABLE",
+                "scope": "Compose 서비스·Django 리터럴·Wrangler 환경별 선언 검사. 실제 활성 환경·override·네트워크 노출은 미검증. 기존 Risk와 별도 검토 항목입니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "JAVA_SQL_FLOW",
+                "status": "NOT_APPLICABLE",
+                "scope": "Spring/Servlet의 지원 진입점에서 타입이 확인된 DI·유일한 구현체와 JDBC 호출을 제한 추적합니다. 정적 JPA/MyBatis 선언 근거는 실제 DB 실행과 구분합니다. 동적 SQL·외부 상속·모호한 호출은 미확인. 새 독립 후보는 점수·Risk·해결 수와 분리됩니다.",
+                "fileStatuses": {
+                  "CONFIRMED_SAFE_LEGACY_SIGNALS_REMOVED": 0
+                }
+              }
+            ],
+            "inspectionScope": {
+              "schemaVersion": 1,
+              "assurance": "NOT_ESTABLISHED",
+              "evidenceComplete": true,
+              "areas": [],
+              "incompleteAnalyzers": [
+                "TYPESCRIPT_SERVER:PARTIAL",
+                "TYPESCRIPT_EXPOSURE:PARTIAL"
+              ]
+            }
+          },
+          "parserStatus": "PARTIAL",
+          "parsedFiles": 11,
+          "recognizedEntries": 0,
+          "functionsAnalyzed": 0,
+          "analyzerFiles": [
+            {
+              "filePath": "ghost/core/core/server/api/endpoints/tags.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/index.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/posts.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/tags.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/models/base/plugins/crud.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "HTTP_CALLS_OUTSIDE_TRACED_FLOW",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 3,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/models/tag.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "HTTP_CALLS_OUTSIDE_TRACED_FLOW",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 1,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/web/api/app.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/web/api/endpoints/content/app.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/web/api/endpoints/content/middleware.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "ghost/core/core/server/web/api/endpoints/content/routes.js",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            }
+          ],
+          "sourceFlow": "NOT_TRACED",
+          "sinkContract": "NOT_SUPPORTED",
+          "defenseRecognition": "STATIC_MANUAL_PATCH_FACTS_ONLY_NOT_ENGINE_PROOF",
+          "layers": {
+            "rule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "filteredRule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "ast": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "finalUser": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            }
+          },
+          "nonTargetRuleAlerts": [
+            {
+              "ruleId": "PACKAGE_JSON_RISK",
+              "severity": "LOW",
+              "falsePositiveRisk": "LOW",
+              "confidence": "HIGH",
+              "filePath": "ghost/core/package.json",
+              "line": 217
+            }
+          ],
+          "reviewCandidates": [],
+          "elapsedMs": [
+            392,
+            377
+          ],
+          "parentHeapSamples": [
+            61524768,
+            68864800
+          ],
+          "sca": {
+            "componentCount": 197,
+            "status": "EXTERNAL_LOOKUP_NOT_RUN",
+            "observationCount": 1
+          },
+          "repeatConsistent": true
+        }
+      ]
+    },
+    {
+      "pairId": "strapi-content-builder",
+      "grade": "A",
+      "results": [
+        {
+          "caseId": "strapi-content-builder-parent",
+          "revision": "parent",
+          "sha": "f86041c89a8c1545c6437a881dc613e98bc52bd7",
+          "label": "DANGEROUS",
+          "labelScope": "Production autoReload != true only. Patch intentionally leaves development schema editing available; it does not sanitize every raw schema value.",
+          "retainedFiles": 12,
+          "fileReceipts": [
+            {
+              "path": "packages/core/content-type-builder/server/src/routes/admin.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/packages/core/content-type-builder/server/src/routes/admin.ts",
+              "sha256": "fb61c290d6f93953265a044a923cac64ff721ac9be0c8bc4c4b7096e927479eb"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/index.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/packages/core/content-type-builder/server/src/index.ts",
+              "sha256": "f1dc069051717b23e78bf465507a250871ebd9dc92009764a2e34e16cdca1d5c"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/controllers/content-types.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/packages/core/content-type-builder/server/src/controllers/content-types.ts",
+              "sha256": "014dea09d6f25ab6d4bd7e7b61004f95cc7034a213a34e14dd9c5d405e1e16ce"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/controllers/validation/content-type.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/packages/core/content-type-builder/server/src/controllers/validation/content-type.ts",
+              "sha256": "e327c139166a139cb9fa606f1535221043394a5d384c5abb9651aa3f1c0fa455"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/services/content-types.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/packages/core/content-type-builder/server/src/services/content-types.ts",
+              "sha256": "1f81175497f1f3b0a867eec7ee08168182524331d055f3c7cefaf572eeb5a322"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/services/builder.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/packages/core/content-type-builder/server/src/services/builder.ts",
+              "sha256": "db2e8dfb4f6447e7a1fa6ea44fcc065b873390bbf3d995246ed9b6f404404b84"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/services/api-handler.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/packages/core/content-type-builder/server/src/services/api-handler.ts",
+              "sha256": "99b31de7483230a0dd779790376fc33fea5cb507b476240601619f2e9a3818b6"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/utils/index.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/packages/core/content-type-builder/server/src/utils/index.ts",
+              "sha256": "99b6dcb3fa8d290ef4a89d5296bb0a2e498d34fc1905b88c65c917379545ca22"
+            },
+            {
+              "path": "packages/core/database/src/schema/schema.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/packages/core/database/src/schema/schema.ts",
+              "sha256": "d0e5a0b6cd0dc262af30a41c22e22b395615c842dce4c11d09ccf26d572af8c9"
+            },
+            {
+              "path": "packages/core/database/src/schema/builder.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/packages/core/database/src/schema/builder.ts",
+              "sha256": "5282f26989ad29887f70d6324e77183d7d6a10b3ac1f8eeb9b559dd54302afc5"
+            },
+            {
+              "path": "packages/core/content-type-builder/package.json",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/packages/core/content-type-builder/package.json",
+              "sha256": "7f7854caff5bf62dbaa14343b603ca8a4de3f5e0500a75238734b0a2d0cc4430"
+            },
+            {
+              "path": "LICENSE",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/f86041c89a8c1545c6437a881dc613e98bc52bd7/LICENSE",
+              "sha256": "b651f49834c5726917e473ceab038d25e1115041374b615ff5d1688e7403d36d"
+            }
+          ],
+          "contextOmissions": [
+            {
+              "revision": "parent",
+              "path": "packages/core/content-type-builder/server/src/middlewares/is-development-mode.ts",
+              "reason": "ADDED_BY_PATCH_NOT_PRESENT_IN_PARENT",
+              "httpStatus": 404
+            },
+            {
+              "revision": "parent",
+              "path": "packages/core/content-type-builder/server/src/middlewares/index.ts",
+              "reason": "ADDED_BY_PATCH_NOT_PRESENT_IN_PARENT",
+              "httpStatus": 404
+            }
+          ],
+          "coverage": {
+            "schemaVersion": 1,
+            "policyVersion": "coverage-ledger-v1",
+            "status": "PARTIAL",
+            "discoveredFiles": 12,
+            "selectedFiles": 11,
+            "unsupportedFiles": 1,
+            "excludedFiles": 0,
+            "failedFiles": 0,
+            "inventoryComplete": true,
+            "omittedEntries": 0,
+            "entries": [
+              {
+                "filePath": "LICENSE",
+                "kind": "FILE",
+                "fileType": null,
+                "status": "UNSUPPORTED",
+                "reason": "NO_SUPPORTED_ANALYZER"
+              },
+              {
+                "filePath": "packages/core/database/src/schema/schema.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/database/src/schema/builder.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/utils/index.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/index.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/controllers/content-types.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/controllers/validation/content-type.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/services/content-types.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/services/builder.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/services/api-handler.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/package.json",
+                "kind": "FILE",
+                "fileType": "PACKAGE_JSON",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              }
+            ],
+            "analyzers": [
+              {
+                "analyzer": "TYPESCRIPT_SERVER",
+                "status": "PARTIAL",
+                "scope": "Workers/Pages 및 정적으로 연결된 Express 진입점의 제한된 값 전달 검사. Express 코드 실행·MongoDB API 근거를 구분하며 동적 초기화·전체 Node.js·인증·소유권·실행 가능성은 미확인입니다. 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {
+                  "AST_PARSED": 10,
+                  "FLOW_NOT_SUPPORTED": 10,
+                  "ENTRYPOINTS": 0,
+                  "FUNCTIONS_TRACED": 0
+                }
+              },
+              {
+                "analyzer": "TYPESCRIPT_EXPOSURE",
+                "status": "PARTIAL",
+                "scope": "지원 서버 진입점의 출처·응답 반환·로그 인자 전달 근거. 환경변수의 민감성, 운영 실행·로그 접근·번들 노출은 미검증.",
+                "fileStatuses": {
+                  "EXPOSURE_PATHS_TRACED": 0
+                }
+              },
+              {
+                "analyzer": "PYTHON_SERVER",
+                "status": "NOT_APPLICABLE",
+                "scope": "Django/DRF 진입점의 제한된 SQL·파일 경로·pickle/YAML 값 전달 검사. 전체 Python, 인증·소유권, 파일시스템·실행 가능성은 미검증이며 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "PYTHON_AUTHORIZATION",
+                "status": "NOT_APPLICABLE",
+                "scope": "지원 Django/DRF 진입점의 권한 선언·사용자/FK 조회 범위·차단 분기 근거. 전역 설정 활성화·미들웨어·상속·전체 객체 권한은 미검증. 인증은 소유권 보증이 아닙니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "DEPLOYMENT_CONFIG",
+                "status": "NOT_APPLICABLE",
+                "scope": "Compose 서비스·Django 리터럴·Wrangler 환경별 선언 검사. 실제 활성 환경·override·네트워크 노출은 미검증. 기존 Risk와 별도 검토 항목입니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "JAVA_SQL_FLOW",
+                "status": "NOT_APPLICABLE",
+                "scope": "Spring/Servlet의 지원 진입점에서 타입이 확인된 DI·유일한 구현체와 JDBC 호출을 제한 추적합니다. 정적 JPA/MyBatis 선언 근거는 실제 DB 실행과 구분합니다. 동적 SQL·외부 상속·모호한 호출은 미확인. 새 독립 후보는 점수·Risk·해결 수와 분리됩니다.",
+                "fileStatuses": {
+                  "CONFIRMED_SAFE_LEGACY_SIGNALS_REMOVED": 0
+                }
+              }
+            ],
+            "inspectionScope": {
+              "schemaVersion": 1,
+              "assurance": "NOT_ESTABLISHED",
+              "evidenceComplete": true,
+              "areas": [],
+              "incompleteAnalyzers": [
+                "TYPESCRIPT_SERVER:PARTIAL",
+                "TYPESCRIPT_EXPOSURE:PARTIAL"
+              ]
+            }
+          },
+          "parserStatus": "PARTIAL",
+          "parsedFiles": 10,
+          "recognizedEntries": 0,
+          "functionsAnalyzed": 0,
+          "analyzerFiles": [
+            {
+              "filePath": "packages/core/content-type-builder/server/src/controllers/content-types.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/controllers/validation/content-type.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/index.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/services/api-handler.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NAMESPACE_IMPORT_UNSUPPORTED",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/services/builder.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/services/content-types.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/utils/index.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NAMESPACE_IMPORT_UNSUPPORTED",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/database/src/schema/builder.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/database/src/schema/schema.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NAMESPACE_IMPORT_UNSUPPORTED",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            }
+          ],
+          "sourceFlow": "NOT_TRACED",
+          "sinkContract": "NOT_SUPPORTED",
+          "defenseRecognition": "STATIC_MANUAL_PATCH_FACTS_ONLY_NOT_ENGINE_PROOF",
+          "layers": {
+            "rule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "filteredRule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "ast": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "finalUser": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            }
+          },
+          "nonTargetRuleAlerts": [],
+          "reviewCandidates": [],
+          "elapsedMs": [
+            197,
+            204
+          ],
+          "parentHeapSamples": [
+            72010528,
+            76204832
+          ],
+          "sca": {
+            "componentCount": 46,
+            "status": "EXTERNAL_LOOKUP_NOT_RUN",
+            "observationCount": 1
+          },
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "strapi-content-builder-fixed",
+          "revision": "fixed",
+          "sha": "0150b197100692b5bfb9eeb498f30f62c4067a4d",
+          "label": "SAFE",
+          "labelScope": "Production autoReload != true only. Patch intentionally leaves development schema editing available; it does not sanitize every raw schema value.",
+          "retainedFiles": 14,
+          "fileReceipts": [
+            {
+              "path": "packages/core/content-type-builder/server/src/routes/admin.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/content-type-builder/server/src/routes/admin.ts",
+              "sha256": "23df3f85824ba23f67583a8309f9c6ab7f5efa7876f7be8a825e8c39b72cb918"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/middlewares/is-development-mode.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/content-type-builder/server/src/middlewares/is-development-mode.ts",
+              "sha256": "f5d8b33eb6e2e1742f62fadee18ff598592de52bffc49b9c37a58fcab30bd9ab"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/index.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/content-type-builder/server/src/index.ts",
+              "sha256": "fd1ad65657ab8b686368bf88f4da582d3cf9ee93c468fa4d185102a4764b2127"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/middlewares/index.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/content-type-builder/server/src/middlewares/index.ts",
+              "sha256": "b1e0586f89a2db7aec8081b559fbe9ea871a6b536f60966fc5f7dfbe10a8d36d"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/controllers/content-types.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/content-type-builder/server/src/controllers/content-types.ts",
+              "sha256": "014dea09d6f25ab6d4bd7e7b61004f95cc7034a213a34e14dd9c5d405e1e16ce"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/controllers/validation/content-type.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/content-type-builder/server/src/controllers/validation/content-type.ts",
+              "sha256": "e327c139166a139cb9fa606f1535221043394a5d384c5abb9651aa3f1c0fa455"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/services/content-types.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/content-type-builder/server/src/services/content-types.ts",
+              "sha256": "1f81175497f1f3b0a867eec7ee08168182524331d055f3c7cefaf572eeb5a322"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/services/builder.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/content-type-builder/server/src/services/builder.ts",
+              "sha256": "db2e8dfb4f6447e7a1fa6ea44fcc065b873390bbf3d995246ed9b6f404404b84"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/services/api-handler.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/content-type-builder/server/src/services/api-handler.ts",
+              "sha256": "99b31de7483230a0dd779790376fc33fea5cb507b476240601619f2e9a3818b6"
+            },
+            {
+              "path": "packages/core/content-type-builder/server/src/utils/index.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/content-type-builder/server/src/utils/index.ts",
+              "sha256": "99b6dcb3fa8d290ef4a89d5296bb0a2e498d34fc1905b88c65c917379545ca22"
+            },
+            {
+              "path": "packages/core/database/src/schema/schema.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/database/src/schema/schema.ts",
+              "sha256": "d0e5a0b6cd0dc262af30a41c22e22b395615c842dce4c11d09ccf26d572af8c9"
+            },
+            {
+              "path": "packages/core/database/src/schema/builder.ts",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/database/src/schema/builder.ts",
+              "sha256": "5282f26989ad29887f70d6324e77183d7d6a10b3ac1f8eeb9b559dd54302afc5"
+            },
+            {
+              "path": "packages/core/content-type-builder/package.json",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/packages/core/content-type-builder/package.json",
+              "sha256": "7f7854caff5bf62dbaa14343b603ca8a4de3f5e0500a75238734b0a2d0cc4430"
+            },
+            {
+              "path": "LICENSE",
+              "url": "https://raw.githubusercontent.com/strapi/strapi/0150b197100692b5bfb9eeb498f30f62c4067a4d/LICENSE",
+              "sha256": "b651f49834c5726917e473ceab038d25e1115041374b615ff5d1688e7403d36d"
+            }
+          ],
+          "contextOmissions": [
+            {
+              "revision": "parent",
+              "path": "packages/core/content-type-builder/server/src/middlewares/is-development-mode.ts",
+              "reason": "ADDED_BY_PATCH_NOT_PRESENT_IN_PARENT",
+              "httpStatus": 404
+            },
+            {
+              "revision": "parent",
+              "path": "packages/core/content-type-builder/server/src/middlewares/index.ts",
+              "reason": "ADDED_BY_PATCH_NOT_PRESENT_IN_PARENT",
+              "httpStatus": 404
+            }
+          ],
+          "coverage": {
+            "schemaVersion": 1,
+            "policyVersion": "coverage-ledger-v1",
+            "status": "PARTIAL",
+            "discoveredFiles": 14,
+            "selectedFiles": 13,
+            "unsupportedFiles": 1,
+            "excludedFiles": 0,
+            "failedFiles": 0,
+            "inventoryComplete": true,
+            "omittedEntries": 0,
+            "entries": [
+              {
+                "filePath": "LICENSE",
+                "kind": "FILE",
+                "fileType": null,
+                "status": "UNSUPPORTED",
+                "reason": "NO_SUPPORTED_ANALYZER"
+              },
+              {
+                "filePath": "packages/core/database/src/schema/schema.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/database/src/schema/builder.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/middlewares/is-development-mode.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/middlewares/index.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/utils/index.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/index.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/controllers/content-types.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/controllers/validation/content-type.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/services/content-types.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/services/builder.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/server/src/services/api-handler.ts",
+                "kind": "FILE",
+                "fileType": "TYPESCRIPT",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              },
+              {
+                "filePath": "packages/core/content-type-builder/package.json",
+                "kind": "FILE",
+                "fileType": "PACKAGE_JSON",
+                "status": "SELECTED",
+                "reason": "PATTERN_ANALYSIS_INPUT"
+              }
+            ],
+            "analyzers": [
+              {
+                "analyzer": "TYPESCRIPT_SERVER",
+                "status": "PARTIAL",
+                "scope": "Workers/Pages 및 정적으로 연결된 Express 진입점의 제한된 값 전달 검사. Express 코드 실행·MongoDB API 근거를 구분하며 동적 초기화·전체 Node.js·인증·소유권·실행 가능성은 미확인입니다. 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {
+                  "AST_PARSED": 12,
+                  "FLOW_NOT_SUPPORTED": 12,
+                  "ENTRYPOINTS": 0,
+                  "FUNCTIONS_TRACED": 0
+                }
+              },
+              {
+                "analyzer": "TYPESCRIPT_EXPOSURE",
+                "status": "PARTIAL",
+                "scope": "지원 서버 진입점의 출처·응답 반환·로그 인자 전달 근거. 환경변수의 민감성, 운영 실행·로그 접근·번들 노출은 미검증.",
+                "fileStatuses": {
+                  "EXPOSURE_PATHS_TRACED": 0
+                }
+              },
+              {
+                "analyzer": "PYTHON_SERVER",
+                "status": "NOT_APPLICABLE",
+                "scope": "Django/DRF 진입점의 제한된 SQL·파일 경로·pickle/YAML 값 전달 검사. 전체 Python, 인증·소유권, 파일시스템·실행 가능성은 미검증이며 기존 Risk 계산과 분리됩니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "PYTHON_AUTHORIZATION",
+                "status": "NOT_APPLICABLE",
+                "scope": "지원 Django/DRF 진입점의 권한 선언·사용자/FK 조회 범위·차단 분기 근거. 전역 설정 활성화·미들웨어·상속·전체 객체 권한은 미검증. 인증은 소유권 보증이 아닙니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "DEPLOYMENT_CONFIG",
+                "status": "NOT_APPLICABLE",
+                "scope": "Compose 서비스·Django 리터럴·Wrangler 환경별 선언 검사. 실제 활성 환경·override·네트워크 노출은 미검증. 기존 Risk와 별도 검토 항목입니다.",
+                "fileStatuses": {}
+              },
+              {
+                "analyzer": "JAVA_SQL_FLOW",
+                "status": "NOT_APPLICABLE",
+                "scope": "Spring/Servlet의 지원 진입점에서 타입이 확인된 DI·유일한 구현체와 JDBC 호출을 제한 추적합니다. 정적 JPA/MyBatis 선언 근거는 실제 DB 실행과 구분합니다. 동적 SQL·외부 상속·모호한 호출은 미확인. 새 독립 후보는 점수·Risk·해결 수와 분리됩니다.",
+                "fileStatuses": {
+                  "CONFIRMED_SAFE_LEGACY_SIGNALS_REMOVED": 0
+                }
+              }
+            ],
+            "inspectionScope": {
+              "schemaVersion": 1,
+              "assurance": "NOT_ESTABLISHED",
+              "evidenceComplete": true,
+              "areas": [],
+              "incompleteAnalyzers": [
+                "TYPESCRIPT_SERVER:PARTIAL",
+                "TYPESCRIPT_EXPOSURE:PARTIAL"
+              ]
+            }
+          },
+          "parserStatus": "PARTIAL",
+          "parsedFiles": 12,
+          "recognizedEntries": 0,
+          "functionsAnalyzed": 0,
+          "analyzerFiles": [
+            {
+              "filePath": "packages/core/content-type-builder/server/src/controllers/content-types.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/controllers/validation/content-type.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/index.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED",
+                "NAMESPACE_IMPORT_UNSUPPORTED",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/middlewares/index.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/middlewares/is-development-mode.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/services/api-handler.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NAMESPACE_IMPORT_UNSUPPORTED",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/services/builder.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/services/content-types.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/content-type-builder/server/src/utils/index.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NAMESPACE_IMPORT_UNSUPPORTED",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/database/src/schema/builder.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            },
+            {
+              "filePath": "packages/core/database/src/schema/schema.ts",
+              "parseStatus": "PARSED",
+              "flowStatus": "NOT_SUPPORTED",
+              "entrypoints": 0,
+              "functionsAnalyzed": 0,
+              "prepareCallSites": 0,
+              "tracedPrepareCallSites": 0,
+              "limitations": [
+                "NAMESPACE_IMPORT_UNSUPPORTED",
+                "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+              ],
+              "httpCallSites": 0,
+              "tracedHttpCallSites": 0,
+              "selectionReason": null,
+              "resourceCallSites": null,
+              "tracedResourceCallSites": null
+            }
+          ],
+          "sourceFlow": "NOT_TRACED",
+          "sinkContract": "NOT_SUPPORTED",
+          "defenseRecognition": "STATIC_MANUAL_PATCH_FACTS_ONLY_NOT_ENGINE_PROOF",
+          "layers": {
+            "rule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "filteredRule": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "ast": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            },
+            "finalUser": {
+              "verdict": "NOT_SUPPORTED",
+              "matches": 0,
+              "inspection": "NOT_SUPPORTED"
+            }
+          },
+          "nonTargetRuleAlerts": [],
+          "reviewCandidates": [],
+          "elapsedMs": [
+            200,
+            201
+          ],
+          "parentHeapSamples": [
+            49126968,
+            53321272
+          ],
+          "sca": {
+            "componentCount": 46,
+            "status": "EXTERNAL_LOOKUP_NOT_RUN",
+            "observationCount": 1
+          },
+          "repeatConsistent": true
+        }
+      ]
+    }
+  ],
+  "failureCasePacks": [
+    {
+      "pairId": "nodebb-api-token",
+      "grade": "A",
+      "advisory": [
+        "https://github.com/NodeBB/NodeBB/security/advisories/GHSA-hf2m-j98r-4fqw",
+        "https://github.com/NodeBB/NodeBB/commit/04dab1d550cdebf4c1567bca9a51f8b9ca48a500"
+      ],
+      "cve": "CVE-2021-43786",
+      "ghsa": "GHSA-hf2m-j98r-4fqw",
+      "repository": "https://github.com/NodeBB/NodeBB",
+      "parentSha": "1783f918bc19568f421473824461ff2ed7755e4c",
+      "fixedSha": "04dab1d550cdebf4c1567bca9a51f8b9ca48a500",
+      "cwe": "CWE-287",
+      "framework": "Express + Passport bearer strategy",
+      "sourceToDecisionOrSink": "HTTP bearer token -> registered Passport BearerStrategy -> Auth.verifyToken(token, done) -> plain-object token lookup -> uid undefined/positive check -> master:true callback.",
+      "patchDefense": "Replace plain-object indexed lookup with strict token equality in Array.find and derive uid only from a found token record.",
+      "scope": "Named inherited-property token lookup defect only, not all authentication or session behavior.",
+      "patchFacts": {
+        "checks": 4,
+        "status": "STATIC_PATCH_FACTS_MATCH",
+        "runtimeVerified": false
+      },
+      "confirmedSupportGap": "Passport strategy callbacks and prototype-sensitive authorization decisions are not supported by the bounded Express data-flow contracts.",
+      "unverifiedHypothesis": "A framework callback source contract plus typed token lookup/decision evidence may generalize; no such extension is implemented.",
+      "contextLimit": "Selected original files only; bootstrap callers and third-party package implementation are not complete. No runtime reachability proof.",
+      "patchLocations": {
+        "parent": [
+          {
+            "filePath": "src/routes/authentication.js",
+            "startLine": 39,
+            "endLine": 61
+          }
+        ],
+        "fixed": [
+          {
+            "filePath": "src/routes/authentication.js",
+            "startLine": 39,
+            "endLine": 57
+          }
+        ]
+      },
+      "evidenceAnchors": [
+        {
+          "filePath": "src/routes/authentication.js",
+          "lines": [
+            53
+          ],
+          "contentSha256": "9faddedcab22857f8aeb18002278d128d9e3878537eedb0df42a165838dc9540"
+        },
+        {
+          "filePath": "src/routes/authentication.js",
+          "lines": [
+            48
+          ],
+          "contentSha256": "0443c07ce89b87186e707c2439f892bcbb965ea3c10102bde4e04a71ad8c8207"
+        },
+        {
+          "filePath": "src/middleware/user.js",
+          "lines": [
+            21
+          ],
+          "contentSha256": "48baf6b5d1bd3fae242adb113233488917d0ab2b2d3364763c90150cf6c767bc"
+        }
+      ],
+      "targetAlertCount": 0,
+      "recommendedRegression": "Preserve both exact revisions and add minimal independent dangerous/normal/unknown cases for any future adapter; no source-name special cases.",
+      "independentTruthReview": "Pending second curator. Sources are independently published, labels/results are not blinded.",
+      "runtimeAttack": "NOT_RUN"
+    },
+    {
+      "pairId": "ghost-content-filter",
+      "grade": "A",
+      "advisory": [
+        "https://github.com/TryGhost/Ghost/security/advisories/GHSA-w52v-v783-gw97",
+        "https://github.com/TryGhost/Ghost/commit/30868d632b2252b638bc8a4c8ebf73964592ed91"
+      ],
+      "cve": "CVE-2026-26980",
+      "ghsa": "GHSA-w52v-v783-gw97",
+      "repository": "https://github.com/TryGhost/Ghost",
+      "parentSha": "ebf4bb79cb45e487e277318df61c6c559752fd0a",
+      "fixedSha": "30868d632b2252b638bc8a4c8ebf73964592ed91",
+      "cwe": "CWE-89",
+      "framework": "Express + Ghost API framework + Bookshelf/Knex",
+      "sourceToDecisionOrSink": "Content API tags/posts filter -> input serializer autoOrder -> slug-filter-order interpolates slug into CASE SQL -> CRUD options.orderRaw -> external Bookshelf query plugin.",
+      "patchDefense": "CASE value/index placeholders and separate bindings; CRUD forwards orderRawBindings; patch also upgrades Bookshelf plugins.",
+      "scope": "Slug filter ordering SQL only. The external query plugin implementation and live database behavior are not executed or fully retained.",
+      "patchFacts": {
+        "checks": 4,
+        "status": "STATIC_PATCH_FACTS_MATCH",
+        "runtimeVerified": false
+      },
+      "confirmedSupportGap": "Node SQL sink contracts do not cover Bookshelf/Knex orderRaw; API serializer/ORM callback plumbing crosses unsupported library boundaries.",
+      "unverifiedHypothesis": "Explicit ORM raw-query/bindings contracts and API option propagation may be reusable; route recognition alone would not prove this flow.",
+      "contextLimit": "Selected original files only; bootstrap callers and third-party package implementation are not complete. No runtime reachability proof.",
+      "patchLocations": {
+        "parent": [
+          {
+            "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+            "startLine": 1,
+            "endLine": 18
+          },
+          {
+            "filePath": "ghost/core/core/server/models/base/plugins/crud.js",
+            "startLine": 96,
+            "endLine": 112
+          }
+        ],
+        "fixed": [
+          {
+            "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+            "startLine": 1,
+            "endLine": 21
+          },
+          {
+            "filePath": "ghost/core/core/server/models/base/plugins/crud.js",
+            "startLine": 96,
+            "endLine": 117
+          }
+        ]
+      },
+      "evidenceAnchors": [
+        {
+          "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+          "lines": [
+            9
+          ],
+          "contentSha256": "435471e904283d121529272cc9c3f71a69f874b1ce326ba0b7b2fd062ff0c255"
+        },
+        {
+          "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+          "lines": [
+            11
+          ],
+          "contentSha256": "2961388fe1a7088dc326092d8e14c4170224a6b0c7a630afc5edbe49bfdb7d67"
+        },
+        {
+          "filePath": "ghost/core/core/server/web/api/endpoints/content/routes.js",
+          "lines": [
+            32
+          ],
+          "contentSha256": "1e9f534322bcb6fe073017287690ba548f507d2a2ca600f53ab18d976bc633b2"
+        }
+      ],
+      "targetAlertCount": 0,
+      "recommendedRegression": "Preserve both exact revisions and add minimal independent dangerous/normal/unknown cases for any future adapter; no source-name special cases.",
+      "independentTruthReview": "Pending second curator. Sources are independently published, labels/results are not blinded.",
+      "runtimeAttack": "NOT_RUN"
+    },
+    {
+      "pairId": "strapi-content-builder",
+      "grade": "A",
+      "advisory": [
+        "https://github.com/strapi/strapi/security/advisories/GHSA-3xcq-8mjw-h6mx",
+        "https://github.com/strapi/strapi/commit/0150b197100692b5bfb9eeb498f30f62c4067a4d"
+      ],
+      "cve": "CVE-2026-22599",
+      "ghsa": "GHSA-3xcq-8mjw-h6mx",
+      "repository": "https://github.com/strapi/strapi",
+      "parentSha": "f86041c89a8c1545c6437a881dc613e98bc52bd7",
+      "fixedSha": "0150b197100692b5bfb9eeb498f30f62c4067a4d",
+      "cwe": "CWE-89",
+      "framework": "Strapi Koa route configuration + Knex schema builder",
+      "sourceToDecisionOrSink": "Admin content-type route -> controller ctx.request.body -> content-type service/schema metadata -> column.defaultTo tuple -> database raw schema default.",
+      "patchDefense": "Register isDevelopmentMode middleware on write routes; reject when autoReload is not exactly true.",
+      "scope": "Production autoReload != true only. Patch intentionally leaves development schema editing available; it does not sanitize every raw schema value.",
+      "patchFacts": {
+        "checks": 5,
+        "status": "STATIC_PATCH_FACTS_MATCH",
+        "runtimeVerified": false
+      },
+      "confirmedSupportGap": "Strapi route tables, Koa context, environment-dependent middleware and Knex schema defaults have no supported end-to-end contract.",
+      "unverifiedHypothesis": "Framework route/config guard evidence and schema option contracts are separate capabilities; no safe conclusion from a middleware name alone.",
+      "contextLimit": "Selected original files only; bootstrap callers and third-party package implementation are not complete. No runtime reachability proof.",
+      "patchLocations": {
+        "parent": [
+          {
+            "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+            "startLine": 1,
+            "endLine": 8
+          },
+          {
+            "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+            "startLine": 46,
+            "endLine": 87
+          },
+          {
+            "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+            "startLine": 111,
+            "endLine": 178
+          },
+          {
+            "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+            "startLine": 189,
+            "endLine": 204
+          }
+        ],
+        "fixed": [
+          {
+            "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+            "startLine": 1,
+            "endLine": 10
+          },
+          {
+            "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+            "startLine": 48,
+            "endLine": 92
+          },
+          {
+            "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+            "startLine": 116,
+            "endLine": 188
+          },
+          {
+            "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+            "startLine": 199,
+            "endLine": 215
+          },
+          {
+            "filePath": "packages/core/content-type-builder/server/src/middlewares/is-development-mode.ts",
+            "startLine": 1,
+            "endLine": 20
+          }
+        ]
+      },
+      "evidenceAnchors": [
+        {
+          "filePath": "packages/core/database/src/schema/builder.ts",
+          "lines": [
+            247
+          ],
+          "contentSha256": "5282f26989ad29887f70d6324e77183d7d6a10b3ac1f8eeb9b559dd54302afc5"
+        },
+        {
+          "filePath": "packages/core/content-type-builder/server/src/middlewares/is-development-mode.ts",
+          "lines": [
+            12
+          ],
+          "contentSha256": "f5d8b33eb6e2e1742f62fadee18ff598592de52bffc49b9c37a58fcab30bd9ab"
+        }
+      ],
+      "targetAlertCount": 0,
+      "recommendedRegression": "Preserve both exact revisions and add minimal independent dangerous/normal/unknown cases for any future adapter; no source-name special cases.",
+      "independentTruthReview": "Pending second curator. Sources are independently published, labels/results are not blinded.",
+      "runtimeAttack": "NOT_RUN"
+    }
+  ],
+  "targetResults": {
+    "rule": {
+      "counts": {
+        "NOT_SUPPORTED": 6
+      },
+      "precision": null,
+      "recallWithinScoredScope": null,
+      "falsePositiveRate": null,
+      "precisionWilson95": null,
+      "scoredCoverage": 0.0,
+      "sampleSize": 6,
+      "effectiveDangerousDetectionCoverage": 0.0
+    },
+    "filteredRule": {
+      "counts": {
+        "NOT_SUPPORTED": 6
+      },
+      "precision": null,
+      "recallWithinScoredScope": null,
+      "falsePositiveRate": null,
+      "precisionWilson95": null,
+      "scoredCoverage": 0.0,
+      "sampleSize": 6,
+      "effectiveDangerousDetectionCoverage": 0.0
+    },
+    "ast": {
+      "counts": {
+        "NOT_SUPPORTED": 6
+      },
+      "precision": null,
+      "recallWithinScoredScope": null,
+      "falsePositiveRate": null,
+      "precisionWilson95": null,
+      "scoredCoverage": 0.0,
+      "sampleSize": 6,
+      "effectiveDangerousDetectionCoverage": 0.0
+    },
+    "reviewCandidate": {
+      "counts": {
+        "NOT_SUPPORTED": 6
+      },
+      "precision": null,
+      "recallWithinScoredScope": null,
+      "falsePositiveRate": null,
+      "precisionWilson95": null,
+      "scoredCoverage": 0.0,
+      "sampleSize": 6,
+      "effectiveDangerousDetectionCoverage": 0.0
+    },
+    "finalUser": {
+      "counts": {
+        "NOT_SUPPORTED": 6
+      },
+      "precision": null,
+      "recallWithinScoredScope": null,
+      "falsePositiveRate": null,
+      "precisionWilson95": null,
+      "scoredCoverage": 0.0,
+      "sampleSize": 6,
+      "effectiveDangerousDetectionCoverage": 0.0
+    }
+  },
+  "interpretation": "Six NOT_SUPPORTED revisions are not six false negatives or true negatives; no supported dangerous/normal pair was established. Unrelated package alerts are excluded from target success.",
+  "reservations": "Directus/Flowise metadata candidates are not engine evaluated and not validated holdout pairs. Future exact-SHA truth freeze and second-curator review required; no blind claim.",
+  "commonImprovementCandidates": [
+    {
+      "capability": "Framework entry/callback and route-factory contracts",
+      "evidence": [
+        "nodebb-api-token",
+        "ghost-content-filter",
+        "strapi-content-builder"
+      ],
+      "limit": "Framework adapters must be bounded and distinguish missing context from absent handlers."
+    },
+    {
+      "capability": "ORM raw SQL value/binding and option propagation",
+      "evidence": [
+        "ghost-content-filter",
+        "strapi-content-builder"
+      ],
+      "limit": "Bookshelf orderRaw and Knex schema raw defaults are different APIs; no API-name-only safe or vulnerable label."
+    },
+    {
+      "capability": "Authorization decision and environment guard evidence",
+      "evidence": [
+        "nodebb-api-token",
+        "strapi-content-builder"
+      ],
+      "limit": "Typed lookup/uid/master decisions and production-only middleware require distinct semantics; no generic missing-check Finding."
+    }
+  ],
+  "repeatConsistent": true,
+  "resourceLimitsChanged": false,
+  "memoryMeasurement": "Parent JVM samples only, not worker peak/RSS. Time is per frozen context subset, not full application.",
+  "externalCalls": "Anonymous GitHub/raw source and public advisory web research only; no AI/OSV/EPSS/KEV requests.",
+  "safety": {
+    "originalSourcesInGit": false,
+    "targetExecution": false,
+    "targetInstall": false,
+    "targetBuild": false,
+    "targetMutation": false,
+    "paidAiCalls": 0,
+    "userDatabaseWrites": false,
+    "permissionDenials": 0
+  },
+  "accessLimits": [
+    "Global Directus advisory lookup returned HTTP 404; repository advisory remained readable. No authorization bypass attempted.",
+    "Initial guessed source paths returned 404; corrected from pinned directory listings and retained as historical intake evidence.",
+    "No full CVEfixes database download, service attack, patch test execution, independent second review or validated blind holdout."
+  ]
+}
