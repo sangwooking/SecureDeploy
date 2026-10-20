@@ -35,4 +35,26 @@ class FrozenExternalPacketTest(unittest.TestCase):
             (root/'receipt.json').write_text(json.dumps([project]))
             with self.assertRaisesRegex(ValueError,'REPOSITORY_IDENTITY'):external_packets(root)
 
+    def test_public_results_do_not_promote_unknown_or_rejected_truth(self):
+        report=json.loads(Path(__file__).with_name('hardening5-results.json').read_text())
+        self.assertEqual(report['failureCaseFollowup']['status'],'UNKNOWN_CALL_DEPTH_BOUNDARY_REMAINS')
+        self.assertFalse(report['policy']['riskChanged']);self.assertFalse(report['policy']['resourceLimitsChanged'])
+        self.assertFalse(report['safety']['userDatabaseEvaluationWrites'])
+        self.assertEqual(len([p for p in report['projects']if 'after'in p]),7)
+        for p in report['projects']:
+            if 'after'not in p:continue
+            for key in ['rules','securityScore','prioritySummary','deploymentAssessment','java']:
+                self.assertEqual(p['before'][key],p['after'][key])
+            self.assertTrue(p['comparisonFingerprintChanged'])
+        self.assertEqual(report['externalGroundTruth'][1]['truth'],'CANDIDATE_PAIR_EXCLUDED_FROM_GROUND_TRUTH')
+        self.assertIn('NOT_SUPPORTED',report['externalGroundTruth'][0]['result'])
+        for p in report['probe']:self.assertEqual(p['before']['inputSha256'],p['after']['inputSha256'])
+        def inspect(value):
+            if isinstance(value,dict):
+                self.assertFalse(set(value)&{'content','snippet','sourceCode','prompt','responseBody','sql'})
+                for child in value.values():inspect(child)
+            elif isinstance(value,list):
+                for child in value:inspect(child)
+        inspect(report)
+
 if __name__=='__main__':unittest.main()

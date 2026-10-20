@@ -414,6 +414,10 @@ vulnerability lookup, user database evaluation writes or migration occurred.
 
 ## Hardening #5: receiver provenance and external source pairs
 
+`hardening5-results.json` records the pinned implementation and repeated H2
+regressions; `hardening5.py` rebuilds the public summary and external follow-up
+Failure Pack from the frozen receipts/results, without copying source bodies.
+
 `receiver_provenance.py APPLICATION_ROOT EXTERNAL_ROOT OFFICIAL_ROOT NEW_OUTPUT`
 replays hash-verified source subsets through trusted v7/current workers. No
 target module is imported or executed. File-wide coverage notes no longer
