@@ -1,0 +1,3010 @@
+{
+  "schemaVersion": 1,
+  "baselineMilestone": "cd80bfa4b4c0c1d6a249b4d641a3acea752a663b",
+  "engineCommit": "ce556e2bc5add4ac070e4b6904a129300364fe52",
+  "sourcePlanSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+  "projects": [
+    {
+      "projectId": "spring-projects--spring-petclinic",
+      "repositoryUrl": "https://github.com/spring-projects/spring-petclinic",
+      "commitSha": "500158f732419217507c7656904b8e6aa1bcc0d6",
+      "before": {
+        "ruleCount": 3,
+        "rules": {
+          "K8S_SECRET_PLAIN_TEXT": 1,
+          "K8S_NODEPORT_EXPOSURE": 1,
+          "EXPOSED_ACTUATOR": 1
+        },
+        "securityScore": 65,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 50
+          },
+          "entrypoints": 17,
+          "functions": 23,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "dataAccess": {
+            "SPRING_DATA_JPA:DERIVED_OPERATION_CONTRACT": 9
+          },
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v6",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {}
+        }
+      },
+      "after": {
+        "ruleCount": 3,
+        "rules": {
+          "K8S_SECRET_PLAIN_TEXT": 1,
+          "K8S_NODEPORT_EXPOSURE": 1,
+          "EXPOSED_ACTUATOR": 1
+        },
+        "securityScore": 65,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 50
+          },
+          "entrypoints": 17,
+          "functions": 23,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "dataAccess": {
+            "SPRING_DATA_JPA:DERIVED_OPERATION_CONTRACT": 9
+          },
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v7",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {}
+        }
+      },
+      "elapsedMs": [
+        333,
+        303
+      ],
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "macrozheng--mall-tiny",
+      "repositoryUrl": "https://github.com/macrozheng/mall-tiny",
+      "commitSha": "a81ec4740a0c7c99a06ebffb43a14168beadffc3",
+      "before": {
+        "ruleCount": 4,
+        "rules": {
+          "HARDCODED_SECRET": 1,
+          "WEAK_JWT_SECRET": 1,
+          "PERMIT_ALL_USAGE": 2
+        },
+        "securityScore": 58,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 1,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 80
+          },
+          "entrypoints": 40,
+          "functions": 87,
+          "sqlSyntaxCandidates": 6,
+          "tracedSqlCalls": 6,
+          "limitations": [
+            "DATA_ACCESS_RESULT_LIMIT",
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "dataAccess": {
+            "MYBATIS:PARSED_DECLARATIONS": 9,
+            "APPLICATION:RESOLVED_CALL": 94,
+            "APPLICATION:UNKNOWN": 55,
+            "MYBATIS_PLUS:UNKNOWN": 38,
+            "MYBATIS:DECLARED_VALUE_BINDING": 2,
+            "MYBATIS:UNKNOWN": 2
+          },
+          "sqlUseKinds": {
+            "PARAMETERIZED_QUERY": 6
+          },
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v6",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {}
+        }
+      },
+      "after": {
+        "ruleCount": 4,
+        "rules": {
+          "HARDCODED_SECRET": 1,
+          "WEAK_JWT_SECRET": 1,
+          "PERMIT_ALL_USAGE": 2
+        },
+        "securityScore": 58,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 1,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 3,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 2,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 80
+          },
+          "entrypoints": 40,
+          "functions": 87,
+          "sqlSyntaxCandidates": 6,
+          "tracedSqlCalls": 6,
+          "limitations": [
+            "DATA_ACCESS_RESULT_LIMIT",
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "dataAccess": {
+            "MYBATIS:PARSED_DECLARATIONS": 9,
+            "APPLICATION:RESOLVED_CALL": 94,
+            "APPLICATION:UNKNOWN": 55,
+            "MYBATIS_PLUS:UNKNOWN": 38,
+            "MYBATIS:DECLARED_VALUE_BINDING": 2,
+            "MYBATIS:UNKNOWN": 2
+          },
+          "sqlUseKinds": {
+            "PARAMETERIZED_QUERY": 6
+          },
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v7",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {}
+        }
+      },
+      "elapsedMs": [
+        395,
+        386
+      ],
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "wagtail--bakerydemo",
+      "repositoryUrl": "https://github.com/wagtail/bakerydemo",
+      "commitSha": "c9b38d7a7170dba8bb84254beb7e5dc5a955e024",
+      "before": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 1,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v6",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 2
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 1,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 2
+          }
+        }
+      },
+      "after": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 1,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v7",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 4
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 1,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 4,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 1
+          }
+        }
+      },
+      "elapsedMs": [
+        431,
+        349
+      ],
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "repositoryUrl": "https://github.com/vercel/nextjs-postgres-nextauth-tailwindcss-template",
+      "commitSha": "fe026711c19ac3ee4589c86a738f59b84e611559",
+      "before": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v6",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 33
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 33,
+            "REACT_UI_NOT_SERVER_AUTHORIZATION": 23,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 10
+          }
+        }
+      },
+      "after": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v7",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 33
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 33,
+            "REACT_UI_NOT_SERVER_AUTHORIZATION": 23,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 10
+          }
+        }
+      },
+      "elapsedMs": [
+        369,
+        388
+      ],
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "cloudflare--d1-northwind",
+      "repositoryUrl": "https://github.com/cloudflare/d1-northwind",
+      "commitSha": "766fd0d8b454b6eadd3323f9188a5ac1f8dfab64",
+      "before": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v6",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 42,
+            "LIMIT_EXCEEDED": 1
+          },
+          "entrypoints": 1,
+          "functions": 1,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 41,
+            "REACT_UI_NOT_SERVER_AUTHORIZATION": 21,
+            "PREPARE_CALLS_OUTSIDE_TRACED_FLOW": 1,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 14,
+            "CALL_TARGET_UNRESOLVED": 1,
+            "SOURCE_LIMIT_EXCEEDED": 1
+          }
+        }
+      },
+      "after": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v7",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 42,
+            "LIMIT_EXCEEDED": 1
+          },
+          "entrypoints": 1,
+          "functions": 1,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 41,
+            "REACT_UI_NOT_SERVER_AUTHORIZATION": 21,
+            "PREPARE_CALLS_OUTSIDE_TRACED_FLOW": 1,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 14,
+            "CALL_TARGET_UNRESOLVED": 1,
+            "SOURCE_LIMIT_EXCEEDED": 1
+          }
+        }
+      },
+      "elapsedMs": [
+        466,
+        524
+      ],
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "OWASP--NodeGoat",
+      "repositoryUrl": "https://github.com/OWASP/NodeGoat",
+      "commitSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "before": {
+        "ruleCount": 7,
+        "rules": {
+          "INSECURE_API_URL": 1,
+          "HARDCODED_FRONTEND_SECRET": 3,
+          "VULNERABLE_NPM_DEPENDENCY": 3
+        },
+        "securityScore": 16,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 3,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 5,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 1,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v6",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 44
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 44
+          }
+        }
+      },
+      "after": {
+        "ruleCount": 7,
+        "rules": {
+          "INSECURE_API_URL": 1,
+          "HARDCODED_FRONTEND_SECRET": 3,
+          "VULNERABLE_NPM_DEPENDENCY": 3
+        },
+        "securityScore": 16,
+        "deploymentAssessment": "BLOCKED",
+        "prioritySummary": {
+          "BLOCKING": 3,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 5,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 4,
+        "coverageStatus": "PARTIAL",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v7",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 44
+          },
+          "entrypoints": 19,
+          "functions": 48,
+          "findings": {
+            "JS_EVAL_INPUT_FLOW:HIGH": 3
+          },
+          "nodeUses": {
+            "JS_MONGO_WHERE_INPUT_FLOW:RECEIVER_NOT_VERIFIED": 1,
+            "JS_EVAL_INPUT_FLOW:INPUT_TO_EXECUTION": 3,
+            "JS_MONGO_RESOURCE_ACCESS:DATA_QUERY_NOT_AUTHORIZATION_PROOF": 3
+          },
+          "validatedFindings": {
+            "JS_EVAL_INPUT_FLOW": 3
+          },
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 27,
+            "CALL_TARGET_UNRESOLVED": 11,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 2,
+            "NUMERIC_COERCION_PARTIAL": 4,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 3,
+            "PROPERTY_WRITE_UNRESOLVED": 3,
+            "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 1,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 5,
+            "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 9,
+            "EVAL_SCOPE_EFFECTS_UNKNOWN": 1,
+            "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 2,
+            "EXPRESSION_UNSUPPORTED": 2,
+            "CALLER_HEAP_EFFECTS_PARTIAL": 1,
+            "OBJECT_MEMBER_UNRESOLVED": 2,
+            "NODE_INITIALIZATION_STRUCTURE_UNKNOWN": 1
+          }
+        }
+      },
+      "elapsedMs": [
+        538,
+        533
+      ],
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "netbox-community--netbox",
+      "repositoryUrl": "https://github.com/netbox-community/netbox",
+      "commitSha": "9f8b55c196501a82ea800f8f3d720165db9173a6",
+      "before": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v6",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 53
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 1,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 53,
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 3
+          }
+        }
+      },
+      "after": {
+        "ruleCount": 0,
+        "rules": {},
+        "securityScore": 100,
+        "deploymentAssessment": "REVIEW_REQUIRED",
+        "prioritySummary": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "riskPolicyVersion": "risk-v1.2",
+        "supplementalCandidates": 0,
+        "coverageStatus": "FAILED",
+        "java": {
+          "version": "java-sql-v3",
+          "status": "NOT_APPLICABLE",
+          "files": {},
+          "entrypoints": 0,
+          "functions": 0,
+          "sqlSyntaxCandidates": 0,
+          "tracedSqlCalls": 0,
+          "limitations": [
+            "NO_JAVA_FILES"
+          ],
+          "dataAccess": {},
+          "sqlUseKinds": {},
+          "independentCandidates": 0
+        },
+        "typescript": {
+          "version": "ts-server-v7",
+          "status": "PARTIAL",
+          "files": {
+            "PARSED": 54
+          },
+          "entrypoints": 0,
+          "functions": 0,
+          "findings": {},
+          "nodeUses": {},
+          "validatedFindings": {},
+          "limitations": {
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 54,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 1,
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 3
+          }
+        }
+      },
+      "elapsedMs": [
+        940,
+        904
+      ],
+      "comparisonFingerprintChanged": true
+    },
+    {
+      "projectId": "sahat--hackathon-starter",
+      "repositoryUrl": "https://github.com/sahat/hackathon-starter",
+      "commitSha": "d320edb22ea0c42d7cb17f3a7837f1ce5163e234",
+      "status": "COLLECTION_FAILED_NOT_ANALYZED"
+    }
+  ],
+  "failureCaseHistory": [
+    {
+      "originalPackCaseId": "nodegoat-request-eval",
+      "sourceCommit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "baselineMilestone": "cd80bfa4b4c0c1d6a249b4d641a3acea752a663b",
+      "engineCommit": "ce556e2bc5add4ac070e4b6904a129300364fe52",
+      "status": "STATIC_REQUEST_EVAL_PATH_CONNECTED",
+      "confirmedStaticAnchors": [
+        {
+          "filePath": "app/routes/contributions.js",
+          "line": 32,
+          "column": 24,
+          "functionName": "handleContributionsUpdate",
+          "kind": "EVAL_CALL"
+        },
+        {
+          "filePath": "app/routes/contributions.js",
+          "line": 33,
+          "column": 26,
+          "functionName": "handleContributionsUpdate",
+          "kind": "EVAL_CALL"
+        },
+        {
+          "filePath": "app/routes/contributions.js",
+          "line": 34,
+          "column": 22,
+          "functionName": "handleContributionsUpdate",
+          "kind": "EVAL_CALL"
+        }
+      ],
+      "nodeObservations": [],
+      "noRuntimeAttack": true,
+      "groundTruth": "Original manually reviewed conditional path label retained; not whole-project truth.",
+      "remainingLimits": "Unknown middleware, mutable objects, callback/prototype behavior, runtime library version and ownership policy are not proven.",
+      "replay": "application_track.py run DATA_ROOT NEW_OUTPUT --project OWASP--NodeGoat"
+    },
+    {
+      "originalPackCaseId": "nodegoat-nosql-query-construction",
+      "sourceCommit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "baselineMilestone": "cd80bfa4b4c0c1d6a249b4d641a3acea752a663b",
+      "engineCommit": "ce556e2bc5add4ac070e4b6904a129300364fe52",
+      "status": "UNKNOWN_RECEIVER_OR_OBJECT_FLOW_REMAINS",
+      "confirmedStaticAnchors": [],
+      "nodeObservations": [
+        {
+          "ruleId": "JS_MONGO_WHERE_INPUT_FLOW",
+          "kind": "RECEIVER_NOT_VERIFIED",
+          "operation": "find",
+          "location": {
+            "filePath": "app/data/allocations-dao.js",
+            "line": 86,
+            "column": 9,
+            "functionName": "getByUserIdAndThreshold",
+            "kind": "UNVERIFIED_QUERY_CALL"
+          },
+          "trace": [
+            {
+              "filePath": "app/routes/allocations.js",
+              "line": 21,
+              "column": 13,
+              "functionName": "displayAllocations",
+              "kind": "EXPRESS_QUERY"
+            },
+            {
+              "filePath": "app/routes/allocations.js",
+              "line": 19,
+              "column": 15,
+              "functionName": "displayAllocations",
+              "kind": "VARIABLE"
+            },
+            {
+              "filePath": "app/routes/allocations.js",
+              "line": 23,
+              "column": 9,
+              "functionName": "displayAllocations",
+              "kind": "FUNCTION_ARGUMENT"
+            },
+            {
+              "filePath": "app/data/allocations-dao.js",
+              "line": 78,
+              "column": 29,
+              "functionName": "searchCriteria",
+              "kind": "SQL_STRING_CONSTRUCTION"
+            }
+          ],
+          "limitations": [
+            "MONGODB_RECEIVER_OR_OBJECT_FLOW_UNRESOLVED"
+          ]
+        }
+      ],
+      "noRuntimeAttack": true,
+      "groundTruth": "Original manually reviewed conditional path label retained; not whole-project truth.",
+      "remainingLimits": "Unknown middleware, mutable objects, callback/prototype behavior, runtime library version and ownership policy are not proven.",
+      "replay": "application_track.py run DATA_ROOT NEW_OUTPUT --project OWASP--NodeGoat"
+    },
+    {
+      "originalPackCaseId": "nodegoat-owner-selection",
+      "sourceCommit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "baselineMilestone": "cd80bfa4b4c0c1d6a249b4d641a3acea752a663b",
+      "engineCommit": "ce556e2bc5add4ac070e4b6904a129300364fe52",
+      "status": "AUTHORIZATION_NOT_VERIFIED_NO_FINDING",
+      "confirmedStaticAnchors": [],
+      "nodeObservations": [],
+      "noRuntimeAttack": true,
+      "groundTruth": "Original manually reviewed conditional path label retained; not whole-project truth.",
+      "remainingLimits": "Unknown middleware, mutable objects, callback/prototype behavior, runtime library version and ownership policy are not proven.",
+      "replay": "application_track.py run DATA_ROOT NEW_OUTPUT --project OWASP--NodeGoat"
+    }
+  ],
+  "workerProbe": {
+    "schemaVersion": 1,
+    "baselineMilestone": "cd80bfa4b4c0c1d6a249b4d641a3acea752a663b",
+    "engineCommit": "ce556e2bc5add4ac070e4b6904a129300364fe52",
+    "projectId": "OWASP--NodeGoat",
+    "sourceCommit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+    "heapLimitMiB": 192,
+    "results": [
+      {
+        "projectId": "OWASP--NodeGoat",
+        "sourceCommit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+        "stage": "before",
+        "version": "ts-server-v6",
+        "workerSha256": "3464c2f48096e817ec3dfbbd2ae583d27ee2ce9e343b6cc8552b6c8615f3d080",
+        "inputSha256": "d5b8cd636b1d012dbaa3b685a3b8ef30fe5250dd4117e746e435f84a3e70c479",
+        "wallMs": 226,
+        "workerMaximumRssBytes": 145588224,
+        "parsedFiles": 44,
+        "entrypoints": 0,
+        "functions": 0,
+        "findings": [],
+        "nodeUses": null,
+        "fileCoverage": [
+          {
+            "filePath": "Gruntfile.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/assets/js/chart/chart-data-morris.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/assets/js/tour/redirects-steps.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/data/allocations-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/data/benefits-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/data/contributions-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/data/memos-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/data/profile-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/data/research-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/data/user-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/routes/allocations.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/routes/benefits.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/routes/contributions.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/routes/error.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/routes/index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/routes/memos.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/routes/profile.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/routes/research.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/routes/session.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/routes/tutorial.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "artifacts/db-reset.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "config/config.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "config/env/all.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "config/env/development.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "config/env/production.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "config/env/test.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "server.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/allocations_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/benefits_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/contributions_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/dashboard_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/general_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/learn_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/login_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/logout_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/memos_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/profile_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/research_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/signup_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/tutorial_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/plugins/index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/support/commands.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/support/index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/security/profile-test.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          }
+        ]
+      },
+      {
+        "projectId": "OWASP--NodeGoat",
+        "sourceCommit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+        "stage": "after",
+        "version": "ts-server-v7",
+        "workerSha256": "9e8aaff8cd50c75a6356c5fd12b72dcdd51b173ff6f3adc7715f4675c12cf8ba",
+        "inputSha256": "d5b8cd636b1d012dbaa3b685a3b8ef30fe5250dd4117e746e435f84a3e70c479",
+        "wallMs": 233,
+        "workerMaximumRssBytes": 153075712,
+        "parsedFiles": 44,
+        "entrypoints": 19,
+        "functions": 48,
+        "findings": [
+          {
+            "ruleId": "JS_EVAL_INPUT_FLOW",
+            "kind": "CWE-95",
+            "confidence": "HIGH",
+            "disposition": "REVIEW_REQUIRED",
+            "source": {
+              "filePath": "app/routes/contributions.js",
+              "line": 32,
+              "column": 29,
+              "functionName": "handleContributionsUpdate",
+              "kind": "EXPRESS_BODY"
+            },
+            "sink": {
+              "filePath": "app/routes/contributions.js",
+              "line": 32,
+              "column": 24,
+              "functionName": "handleContributionsUpdate",
+              "kind": "EVAL_CALL"
+            },
+            "flow": [
+              {
+                "filePath": "app/routes/contributions.js",
+                "line": 32,
+                "column": 29,
+                "functionName": "handleContributionsUpdate",
+                "kind": "EXPRESS_BODY"
+              }
+            ],
+            "defenses": [],
+            "limitations": [
+              "STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF",
+              "MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED"
+            ],
+            "message": "사용자가 보낸 값이 서버의 코드 실행에 전달될 수 있습니다.",
+            "recommendation": "입력값을 코드로 실행하지 말고 필요한 숫자 변환이나 스키마 검증을 사용하세요."
+          },
+          {
+            "ruleId": "JS_EVAL_INPUT_FLOW",
+            "kind": "CWE-95",
+            "confidence": "HIGH",
+            "disposition": "REVIEW_REQUIRED",
+            "source": {
+              "filePath": "app/routes/contributions.js",
+              "line": 33,
+              "column": 31,
+              "functionName": "handleContributionsUpdate",
+              "kind": "EXPRESS_BODY"
+            },
+            "sink": {
+              "filePath": "app/routes/contributions.js",
+              "line": 33,
+              "column": 26,
+              "functionName": "handleContributionsUpdate",
+              "kind": "EVAL_CALL"
+            },
+            "flow": [
+              {
+                "filePath": "app/routes/contributions.js",
+                "line": 33,
+                "column": 31,
+                "functionName": "handleContributionsUpdate",
+                "kind": "EXPRESS_BODY"
+              }
+            ],
+            "defenses": [],
+            "limitations": [
+              "STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF",
+              "MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED"
+            ],
+            "message": "사용자가 보낸 값이 서버의 코드 실행에 전달될 수 있습니다.",
+            "recommendation": "입력값을 코드로 실행하지 말고 필요한 숫자 변환이나 스키마 검증을 사용하세요."
+          },
+          {
+            "ruleId": "JS_EVAL_INPUT_FLOW",
+            "kind": "CWE-95",
+            "confidence": "HIGH",
+            "disposition": "REVIEW_REQUIRED",
+            "source": {
+              "filePath": "app/routes/contributions.js",
+              "line": 34,
+              "column": 27,
+              "functionName": "handleContributionsUpdate",
+              "kind": "EXPRESS_BODY"
+            },
+            "sink": {
+              "filePath": "app/routes/contributions.js",
+              "line": 34,
+              "column": 22,
+              "functionName": "handleContributionsUpdate",
+              "kind": "EVAL_CALL"
+            },
+            "flow": [
+              {
+                "filePath": "app/routes/contributions.js",
+                "line": 34,
+                "column": 27,
+                "functionName": "handleContributionsUpdate",
+                "kind": "EXPRESS_BODY"
+              }
+            ],
+            "defenses": [],
+            "limitations": [
+              "STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF",
+              "MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED"
+            ],
+            "message": "사용자가 보낸 값이 서버의 코드 실행에 전달될 수 있습니다.",
+            "recommendation": "입력값을 코드로 실행하지 말고 필요한 숫자 변환이나 스키마 검증을 사용하세요."
+          }
+        ],
+        "nodeUses": [
+          {
+            "ruleId": "JS_MONGO_WHERE_INPUT_FLOW",
+            "kind": "RECEIVER_NOT_VERIFIED",
+            "operation": "find",
+            "location": {
+              "filePath": "app/data/allocations-dao.js",
+              "line": 86,
+              "column": 9,
+              "functionName": "getByUserIdAndThreshold",
+              "kind": "UNVERIFIED_QUERY_CALL"
+            },
+            "trace": [
+              {
+                "filePath": "app/routes/allocations.js",
+                "line": 21,
+                "column": 13,
+                "functionName": "displayAllocations",
+                "kind": "EXPRESS_QUERY"
+              },
+              {
+                "filePath": "app/routes/allocations.js",
+                "line": 19,
+                "column": 15,
+                "functionName": "displayAllocations",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "app/routes/allocations.js",
+                "line": 23,
+                "column": 9,
+                "functionName": "displayAllocations",
+                "kind": "FUNCTION_ARGUMENT"
+              },
+              {
+                "filePath": "app/data/allocations-dao.js",
+                "line": 78,
+                "column": 29,
+                "functionName": "searchCriteria",
+                "kind": "SQL_STRING_CONSTRUCTION"
+              }
+            ],
+            "limitations": [
+              "MONGODB_RECEIVER_OR_OBJECT_FLOW_UNRESOLVED"
+            ]
+          },
+          {
+            "ruleId": "JS_EVAL_INPUT_FLOW",
+            "kind": "INPUT_TO_EXECUTION",
+            "operation": "EVAL_CALL",
+            "location": {
+              "filePath": "app/routes/contributions.js",
+              "line": 32,
+              "column": 24,
+              "functionName": "handleContributionsUpdate",
+              "kind": "EVAL_CALL"
+            },
+            "trace": [
+              {
+                "filePath": "app/routes/contributions.js",
+                "line": 32,
+                "column": 29,
+                "functionName": "handleContributionsUpdate",
+                "kind": "EXPRESS_BODY"
+              }
+            ],
+            "limitations": [
+              "STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF"
+            ]
+          },
+          {
+            "ruleId": "JS_EVAL_INPUT_FLOW",
+            "kind": "INPUT_TO_EXECUTION",
+            "operation": "EVAL_CALL",
+            "location": {
+              "filePath": "app/routes/contributions.js",
+              "line": 33,
+              "column": 26,
+              "functionName": "handleContributionsUpdate",
+              "kind": "EVAL_CALL"
+            },
+            "trace": [
+              {
+                "filePath": "app/routes/contributions.js",
+                "line": 33,
+                "column": 31,
+                "functionName": "handleContributionsUpdate",
+                "kind": "EXPRESS_BODY"
+              }
+            ],
+            "limitations": [
+              "STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF"
+            ]
+          },
+          {
+            "ruleId": "JS_EVAL_INPUT_FLOW",
+            "kind": "INPUT_TO_EXECUTION",
+            "operation": "EVAL_CALL",
+            "location": {
+              "filePath": "app/routes/contributions.js",
+              "line": 34,
+              "column": 22,
+              "functionName": "handleContributionsUpdate",
+              "kind": "EVAL_CALL"
+            },
+            "trace": [
+              {
+                "filePath": "app/routes/contributions.js",
+                "line": 34,
+                "column": 27,
+                "functionName": "handleContributionsUpdate",
+                "kind": "EXPRESS_BODY"
+              }
+            ],
+            "limitations": [
+              "STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF"
+            ]
+          },
+          {
+            "ruleId": "JS_MONGO_RESOURCE_ACCESS",
+            "kind": "DATA_QUERY_NOT_AUTHORIZATION_PROOF",
+            "operation": "findOne",
+            "location": {
+              "filePath": "app/data/user-dao.js",
+              "line": 98,
+              "column": 9,
+              "functionName": "getUserById",
+              "kind": "MONGO_RESOURCE_ACCESS"
+            },
+            "trace": [],
+            "limitations": [
+              "OBJECT_OWNERSHIP_AND_MIDDLEWARE_NOT_VERIFIED"
+            ]
+          },
+          {
+            "ruleId": "JS_MONGO_RESOURCE_ACCESS",
+            "kind": "DATA_QUERY_NOT_AUTHORIZATION_PROOF",
+            "operation": "findOne",
+            "location": {
+              "filePath": "app/data/user-dao.js",
+              "line": 91,
+              "column": 9,
+              "functionName": "validateLogin",
+              "kind": "MONGO_RESOURCE_ACCESS"
+            },
+            "trace": [
+              {
+                "filePath": "app/routes/session.js",
+                "line": 57,
+                "column": 13,
+                "functionName": "handleLoginRequest",
+                "kind": "EXPRESS_BODY"
+              },
+              {
+                "filePath": "app/routes/session.js",
+                "line": 54,
+                "column": 15,
+                "functionName": "handleLoginRequest",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "app/routes/session.js",
+                "line": 58,
+                "column": 9,
+                "functionName": "handleLoginRequest",
+                "kind": "FUNCTION_ARGUMENT"
+              }
+            ],
+            "limitations": [
+              "OBJECT_OWNERSHIP_AND_MIDDLEWARE_NOT_VERIFIED"
+            ]
+          },
+          {
+            "ruleId": "JS_MONGO_RESOURCE_ACCESS",
+            "kind": "DATA_QUERY_NOT_AUTHORIZATION_PROOF",
+            "operation": "findOne",
+            "location": {
+              "filePath": "app/data/user-dao.js",
+              "line": 104,
+              "column": 9,
+              "functionName": "getUserByUserName",
+              "kind": "MONGO_RESOURCE_ACCESS"
+            },
+            "trace": [
+              {
+                "filePath": "app/routes/session.js",
+                "line": 198,
+                "column": 13,
+                "functionName": "handleSignup",
+                "kind": "EXPRESS_BODY"
+              },
+              {
+                "filePath": "app/routes/session.js",
+                "line": 191,
+                "column": 15,
+                "functionName": "handleSignup",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "app/routes/session.js",
+                "line": 208,
+                "column": 13,
+                "functionName": "handleSignup",
+                "kind": "FUNCTION_ARGUMENT"
+              }
+            ],
+            "limitations": [
+              "OBJECT_OWNERSHIP_AND_MIDDLEWARE_NOT_VERIFIED"
+            ]
+          }
+        ],
+        "fileCoverage": [
+          {
+            "filePath": "Gruntfile.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/assets/js/chart/chart-data-morris.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/assets/js/tour/redirects-steps.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/data/allocations-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 0,
+            "functionsAnalyzed": 3,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "CLOSURE_SIDE_EFFECTS_UNRESOLVED"
+            ]
+          },
+          {
+            "filePath": "app/data/benefits-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 0,
+            "functionsAnalyzed": 3,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED"
+            ]
+          },
+          {
+            "filePath": "app/data/contributions-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 0,
+            "functionsAnalyzed": 3,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "CLOSURE_SIDE_EFFECTS_UNRESOLVED",
+              "NUMERIC_COERCION_PARTIAL"
+            ]
+          },
+          {
+            "filePath": "app/data/memos-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 0,
+            "functionsAnalyzed": 3,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED"
+            ]
+          },
+          {
+            "filePath": "app/data/profile-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 0,
+            "functionsAnalyzed": 3,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "NUMERIC_COERCION_PARTIAL",
+              "OBJECT_BRANCH_MERGE_PARTIAL",
+              "PROPERTY_WRITE_UNRESOLVED"
+            ]
+          },
+          {
+            "filePath": "app/data/research-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "SUPPORTED_FLOW_ANALYZED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 1,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": []
+          },
+          {
+            "filePath": "app/data/user-dao.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 0,
+            "functionsAnalyzed": 4,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT",
+              "NODE_MODULE_RESOLUTION_UNKNOWN",
+              "NUMERIC_COERCION_PARTIAL"
+            ]
+          },
+          {
+            "filePath": "app/routes/allocations.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 1,
+            "functionsAnalyzed": 2,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED"
+            ]
+          },
+          {
+            "filePath": "app/routes/benefits.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 2,
+            "functionsAnalyzed": 3,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED"
+            ]
+          },
+          {
+            "filePath": "app/routes/contributions.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 2,
+            "functionsAnalyzed": 3,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "EVAL_SCOPE_EFFECTS_UNKNOWN",
+              "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED"
+            ]
+          },
+          {
+            "filePath": "app/routes/error.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "app/routes/index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 1,
+            "functionsAnalyzed": 2,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED",
+              "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN"
+            ]
+          },
+          {
+            "filePath": "app/routes/memos.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 2,
+            "functionsAnalyzed": 3,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED"
+            ]
+          },
+          {
+            "filePath": "app/routes/profile.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 2,
+            "functionsAnalyzed": 3,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "EXPRESSION_UNSUPPORTED",
+              "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED",
+              "NODE_MODULE_RESOLUTION_UNKNOWN",
+              "NUMERIC_COERCION_PARTIAL"
+            ]
+          },
+          {
+            "filePath": "app/routes/research.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 1,
+            "functionsAnalyzed": 2,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED",
+              "NODE_MODULE_RESOLUTION_UNKNOWN"
+            ]
+          },
+          {
+            "filePath": "app/routes/session.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 7,
+            "functionsAnalyzed": 8,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "CALLER_HEAP_EFFECTS_PARTIAL",
+              "CALL_TARGET_UNRESOLVED",
+              "EXPRESSION_UNSUPPORTED",
+              "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED",
+              "OBJECT_BRANCH_MERGE_PARTIAL",
+              "OBJECT_MEMBER_UNRESOLVED",
+              "PROPERTY_WRITE_UNRESOLVED"
+            ]
+          },
+          {
+            "filePath": "app/routes/tutorial.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 1,
+            "functionsAnalyzed": 1,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED",
+              "NODE_INITIALIZATION_STRUCTURE_UNKNOWN"
+            ]
+          },
+          {
+            "filePath": "artifacts/db-reset.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "config/config.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "NODE_MODULE_RESOLUTION_UNKNOWN",
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL",
+              "OBJECT_BRANCH_MERGE_PARTIAL",
+              "OBJECT_MEMBER_UNRESOLVED",
+              "PROPERTY_WRITE_UNRESOLVED"
+            ]
+          },
+          {
+            "filePath": "config/env/all.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "config/env/development.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "config/env/production.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "config/env/test.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "server.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "PARTIAL",
+            "entrypoints": 0,
+            "functionsAnalyzed": 1,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN",
+              "NODE_MODULE_RESOLUTION_UNKNOWN"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/allocations_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/benefits_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/contributions_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/dashboard_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/general_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/learn_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/login_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/logout_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/memos_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/profile_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/research_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/signup_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/integration/tutorial_spec.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/plugins/index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/support/commands.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/e2e/support/index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "test/security/profile-test.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          }
+        ]
+      },
+      {
+        "projectId": "expressjs--express-scope",
+        "sourceCommit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+        "stage": "before",
+        "version": "ts-server-v6",
+        "workerSha256": "3464c2f48096e817ec3dfbbd2ae583d27ee2ce9e343b6cc8552b6c8615f3d080",
+        "inputSha256": "868077a4f22be5aecde41d112428e7c272c617f6287f7fe3bb1e5aa539b45bc8",
+        "wallMs": 186,
+        "workerMaximumRssBytes": 132743168,
+        "parsedFiles": 2,
+        "entrypoints": 0,
+        "functions": 0,
+        "findings": [],
+        "nodeUses": null,
+        "fileCoverage": [
+          {
+            "filePath": "examples/params/index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "examples/route-middleware/index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          }
+        ]
+      },
+      {
+        "projectId": "expressjs--express-scope",
+        "sourceCommit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+        "stage": "after",
+        "version": "ts-server-v7",
+        "workerSha256": "9e8aaff8cd50c75a6356c5fd12b72dcdd51b173ff6f3adc7715f4675c12cf8ba",
+        "inputSha256": "868077a4f22be5aecde41d112428e7c272c617f6287f7fe3bb1e5aa539b45bc8",
+        "wallMs": 179,
+        "workerMaximumRssBytes": 130514944,
+        "parsedFiles": 2,
+        "entrypoints": 0,
+        "functions": 0,
+        "findings": [],
+        "nodeUses": [],
+        "fileCoverage": [
+          {
+            "filePath": "examples/params/index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          },
+          {
+            "filePath": "examples/route-middleware/index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ]
+          }
+        ]
+      }
+    ],
+    "targetExecuted": false,
+    "limitations": [
+      "Same observed source is regression, not an independent accuracy estimate.",
+      "macOS maximum RSS includes native memory; single observations, not performance guarantees.",
+      "No target source packet or raw stderr persisted; API shape is not installed-library or runtime proof."
+    ]
+  },
+  "riskPolicyChanged": false,
+  "scoreFormulaChanged": false,
+  "databaseMigration": "NONE; optional nodeUses JSON only; historical snapshots not recomputed",
+  "userDatabaseUsed": false,
+  "externalVulnerabilityAndAiLookups": "NOT_RUN",
+  "targetCodeExecuted": false,
+  "evaluationLimits": [
+    "Observed NodeGoat is development/regression material, not a blind test.",
+    "Three eval anchors are one teaching defect family, not three independent CVEs.",
+    "MongoDB $where synthetic paths are supported, but this application path still lacks verified receiver provenance.",
+    "Official Express self-package examples are scope observations; not scored as TN when registration is unsupported.",
+    "Java v3 external inheritance, object flow, SQL API gaps, 200-evidence cap and performance cost remain separate follow-up work."
+  ],
+  "newPublicSource": {
+    "repository": "expressjs/express",
+    "commitSha": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+    "files": [
+      {
+        "path": "LICENSE",
+        "sha256": "95a5762890e5c1c9808921cef095661fc482c5e1f0bba31446ac85595df6237c",
+        "bytes": 1249
+      },
+      {
+        "path": "examples/params/index.js",
+        "sha256": "f381d9199eace049b8048d03362010765cf17374a72c2c6656e2757236c9b301",
+        "bytes": 1353
+      },
+      {
+        "path": "examples/route-middleware/index.js",
+        "sha256": "8bbd84ce25e3be1e943d83d2dfe4a8fddc99358c0b7dc454a4df39b7597c26bb",
+        "bytes": 2399
+      }
+    ],
+    "role": "NEW_PUBLIC_SCOPE_OBSERVATION_NOT_A_BLIND_VULNERABILITY_DATASET",
+    "targetExecuted": false,
+    "license": "MIT",
+    "interpretation": "Two official source files parse, but self-package relative require is not resolved in this acquired subset. No verified registration; not scored as TN or a safe project."
+  },
+  "validation": {
+    "backend": {
+      "tests": 512,
+      "passed": 505,
+      "skipped": 7,
+      "failed": 0
+    },
+    "frontendTests": 104,
+    "frontendBuild": "PASS",
+    "typescriptTests": 142,
+    "pythonTests": 110,
+    "evaluationToolTests": 86,
+    "browserWidths": [
+      1440,
+      390,
+      320
+    ],
+    "commonInputPath": "Actual ZIP upload, persistence, detail API and access isolation on H2; GitHub acquisition mocked for public/private common pipeline equivalence.",
+    "realPrivateGithubE2E": "NOT_RUN",
+    "paidOpenAiCalls": 0,
+    "externalVulnerabilityLookups": "NOT_RUN",
+    "syntheticLaterVariations": {
+      "TP": 3,
+      "TN": 3,
+      "UNKNOWN": 3,
+      "FP": 0,
+      "FN": 0,
+      "interpretation": "Same-curator supported cases, not blind or whole-web accuracy."
+    }
+  },
+  "regression": {
+    "pilotCases": 24,
+    "pilotBefore": {
+      "rule": {
+        "counts": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 3,
+          "FP": 9
+        },
+        "precision": 0.55,
+        "recallWithinScoredScope": 0.9166666666666666,
+        "falsePositiveRate": 0.75,
+        "precisionWilson95": [
+          0.3420820083075997,
+          0.7418049791429071
+        ],
+        "scoredCoverage": 1.0,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.9166666666666666
+      },
+      "filteredRule": {
+        "counts": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 6,
+          "FP": 6
+        },
+        "precision": 0.6470588235294118,
+        "recallWithinScoredScope": 0.9166666666666666,
+        "falsePositiveRate": 0.5,
+        "precisionWilson95": [
+          0.4129996672121182,
+          0.826905138560951
+        ],
+        "scoredCoverage": 1.0,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.9166666666666666
+      },
+      "ast": {
+        "counts": {
+          "TP": 3,
+          "UNKNOWN": 9,
+          "NOT_INSPECTED": 10,
+          "TN": 2
+        },
+        "precision": 1.0,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.0,
+        "precisionWilson95": [
+          0.43849391955098227,
+          1
+        ],
+        "scoredCoverage": 0.20833333333333334,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.25
+      },
+      "reviewCandidate": {
+        "counts": {
+          "TP": 1,
+          "UNKNOWN": 9,
+          "MERGED_WITH_LEGACY": 2,
+          "NOT_INSPECTED": 10,
+          "TN": 2
+        },
+        "precision": 1.0,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.0,
+        "precisionWilson95": [
+          0.20654329147389294,
+          1
+        ],
+        "scoredCoverage": 0.125,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.25
+      },
+      "finalUser": {
+        "counts": {
+          "TP": 12,
+          "UNKNOWN": 3,
+          "NOT_INSPECTED": 1,
+          "TN": 2,
+          "FP": 6
+        },
+        "precision": 0.6666666666666666,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.75,
+        "precisionWilson95": [
+          0.4374906934425036,
+          0.8372144563633714
+        ],
+        "scoredCoverage": 0.8333333333333334,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 1.0
+      }
+    },
+    "pilotAfter": {
+      "rule": {
+        "counts": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 3,
+          "FP": 9
+        },
+        "precision": 0.55,
+        "recallWithinScoredScope": 0.9166666666666666,
+        "falsePositiveRate": 0.75,
+        "precisionWilson95": [
+          0.3420820083075997,
+          0.7418049791429071
+        ],
+        "scoredCoverage": 1.0,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.9166666666666666
+      },
+      "filteredRule": {
+        "counts": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 6,
+          "FP": 6
+        },
+        "precision": 0.6470588235294118,
+        "recallWithinScoredScope": 0.9166666666666666,
+        "falsePositiveRate": 0.5,
+        "precisionWilson95": [
+          0.4129996672121182,
+          0.826905138560951
+        ],
+        "scoredCoverage": 1.0,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.9166666666666666
+      },
+      "ast": {
+        "counts": {
+          "TP": 3,
+          "UNKNOWN": 9,
+          "NOT_INSPECTED": 10,
+          "TN": 2
+        },
+        "precision": 1.0,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.0,
+        "precisionWilson95": [
+          0.43849391955098227,
+          1
+        ],
+        "scoredCoverage": 0.20833333333333334,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.25
+      },
+      "reviewCandidate": {
+        "counts": {
+          "TP": 1,
+          "UNKNOWN": 9,
+          "MERGED_WITH_LEGACY": 2,
+          "NOT_INSPECTED": 10,
+          "TN": 2
+        },
+        "precision": 1.0,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.0,
+        "precisionWilson95": [
+          0.20654329147389294,
+          1
+        ],
+        "scoredCoverage": 0.125,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.25
+      },
+      "finalUser": {
+        "counts": {
+          "TP": 12,
+          "UNKNOWN": 3,
+          "NOT_INSPECTED": 1,
+          "TN": 2,
+          "FP": 6
+        },
+        "precision": 0.6666666666666666,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.75,
+        "precisionWilson95": [
+          0.4374906934425036,
+          0.8372144563633714
+        ],
+        "scoredCoverage": 0.8333333333333334,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 1.0
+      }
+    },
+    "realworldRegression": {
+      "rule": {
+        "counts": {
+          "NOT_SUPPORTED": 16
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "filteredRule": {
+        "counts": {
+          "NOT_SUPPORTED": 16
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "ast": {
+        "counts": {
+          "NOT_SUPPORTED": 14,
+          "RESOURCE_LIMIT": 2
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "reviewCandidate": {
+        "counts": {
+          "NOT_SUPPORTED": 14,
+          "RESOURCE_LIMIT": 2
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "finalUser": {
+        "counts": {
+          "NOT_SUPPORTED": 14,
+          "RESOURCE_LIMIT": 2
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      }
+    },
+    "realworldScope": "16 regression cases repeated; remaining previously observed validation/holdout splits not rerun.",
+    "javaApplications": "PetClinic/mall-tiny v3 Java summaries unchanged; no Java worker implementation changes."
+  },
+  "runtime": {
+    "protectedConfigurationPreserved": true,
+    "schemaMode": "validate",
+    "restart": "PASS",
+    "oldJarPreserved": true,
+    "typescriptProtocol": "ts-server-v7",
+    "jarMatchesCurrentBuild": true
+  },
+  "workerLimits": {
+    "heapMiB": 192,
+    "maxFiles": 100,
+    "maxFileCharacters": 100000,
+    "maxTotalCharacters": 1000000,
+    "maxCallDepth": 3,
+    "maxSteps": 100000,
+    "maxNodesPerFile": 200000,
+    "maxFunctions": 500,
+    "maxResultsPerList": 200,
+    "internalTimeoutMs": 5000,
+    "note": "Existing limits retained; parent timeout/output caps and cleared worker environment remain active."
+  },
+  "remainingLimits": [
+    "Direct unshadowed eval calls only; indirect eval, vm APIs and Function execution are not modeled as confirmed sinks.",
+    "Static Express app/Router methods and mounts, literal relative CJS/ESM imports, bounded constructors/closures only.",
+    "Legacy MongoClient.connect callback Db contract requires a declared 2.x dependency family; actual installed version and server-side JavaScript settings unverified.",
+    "Direct MongoClient instance/db/collection contracts are limited; complex wrappers, monkey-patching, middleware ordering and dynamic routes stay unknown.",
+    "NodeGoat $where reaches an unverified receiver after conservative cross-object handling; not connected as a verified Finding.",
+    "Authentication references and resource access are not ownership/authorization proof; no IDOR/BOLA Finding added.",
+    "NestJS decorators, Next.js route handlers, full program flow and arbitrary mutable captures are unsupported.",
+    "No independent external vulnerable/fixed Express pair was acquired. Official example scope observations and same-curator synthetic cases cannot establish general precision/recall."
+  ],
+  "safety": {
+    "targetExecution": false,
+    "targetDependencyInstall": false,
+    "targetRepositoryMutation": false,
+    "userDatabaseEvaluationWrites": false,
+    "privateEvaluationDocumentsCommitted": false,
+    "permissionDenials": 0,
+    "originalSourcesInGit": false,
+    "externalReads": "Official Express/MongoDB documentation and five anonymous GitHub static metadata/file reads for two official Express examples plus license; no source attacks or token validation."
+  },
+  "replayCommands": [
+    "application_track.py run DATA_ROOT NEW_OUTPUT",
+    "node_worker_probe.py DATA_ROOT NEW_OUTPUT --public-root PUBLIC_GUIDE_ROOT",
+    "hardening4.py DATA_ROOT NEW_OUTPUT NEW_PACK_DIR PROBE_JSON"
+  ]
+}

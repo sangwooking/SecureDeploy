@@ -370,3 +370,44 @@ JPA contract scope follows [Spring Data query methods](https://docs.spring.io/sp
 No target compilation, dependency installation, external XML loading or paid AI.
 Real loopback HTTP/H2 tests and shared ZIP/mocked-GitHub integration tests cover
 persistence and access isolation; no new live private GitHub analysis was run.
+
+## Hardening #4: bounded Express execution flows
+
+Engine `ce556e2bc5add4ac070e4b6904a129300364fe52` reuses the TypeScript
+worker for static Express registrations, literal CJS/ESM imports, bounded
+constructors and closures. Library capabilities require a known import origin;
+MongoDB API contracts also require a supported declared dependency family.
+Unknown receivers, mutable captures, middleware effects and dynamic routes do
+not become verified execution Findings. Worker protocol is `ts-server-v7`;
+both the Java validator and comparison fingerprint track this engine change.
+
+`hardening4-results.json` records repeated same-source evaluation of seven
+acquired applications. NodeGoat at `c5cb68a7084e4ae7dcc60e6a98768720a81841e8`
+changes from zero traced entries/functions to 19/48 across 44 parsed files.
+Three request-to-eval anchors belong to one teaching defect family, not three
+CVEs. Its MongoDB `$where` receiver remains unverified and is not a verified
+Finding. Three ordinary data queries are not ownership/authorization proof.
+Rule warnings, scores, deterministic Risk and Java summaries remain unchanged.
+The original acquisition failure and source omission remain explicit.
+
+Replay with `hardening4.py DATA_ROOT NEW_OUTPUT NEW_PACK_DIR PROBE_JSON` and
+`node_worker_probe.py DATA_ROOT NEW_OUTPUT --public-root PUBLIC_GUIDE_ROOT`.
+Raw sources, detailed outputs and three follow-up failure packs stay outside
+Git. Original failure packs are preserved. Pilot regression still includes six
+known false positives; 16 CVE regression cases remain 14 unsupported and two
+resource-limited. Other validation/holdout splits were not rerun.
+
+Nine later same-curator synthetic variations give TP=3/TN=3/UNKNOWN=3,
+FP=0/FN=0 in their labeled supported scope, not independent general accuracy.
+Two newly acquired MIT-licensed official Express examples at
+`0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8` parse, but their self-package
+relative require is unresolved in the acquired subset: no verified entries,
+no TN or safety claim. No external vulnerable/fixed Express pair was acquired.
+
+The identical-input NodeGoat probe observed 226 to 233 ms and maximum RSS
+about 139 to 146 MiB; these single process samples are not performance
+guarantees. Existing 192 MiB heap, file/text/node/time/depth/result caps remain.
+Real ZIP/H2 persistence/detail/access tests and mocked public/private GitHub
+acquisition exercise the common pipeline; live private GitHub E2E was not
+repeated. No target execution, dependency installation, paid AI, external
+vulnerability lookup, user database evaluation writes or migration occurred.
