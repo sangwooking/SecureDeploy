@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from supabase_authorization import prepare,CASES
+from supabase_authorization import prepare,report,CASES
 from application_track import digest
 
 class SupabaseAuthorizationTest(unittest.TestCase):
@@ -34,3 +34,9 @@ class SupabaseAuthorizationTest(unittest.TestCase):
                 else:plan['projects'][0]['files'][0]['sha256']='0'*64
                 (next_root/'application-plan.json').write_text(json.dumps(plan))
                 with self.assertRaisesRegex(ValueError,'LICENSE|SOURCE_HASH'):prepare(edge,next_root,root/'out')
+
+    def test_a_subset_cannot_be_reported_as_the_complete_control_set(self):
+        with tempfile.TemporaryDirectory()as directory:
+            root=Path(directory);plan=root/'application-plan.json';plan.write_text(json.dumps(dict(projects=[])))
+            raw=root/'raw.json';raw.write_text(json.dumps(dict(projects=[],planSha256=digest(plan.read_bytes()))))
+            with self.assertRaisesRegex(ValueError,'CONTROL_CASE_SET'):report(root,raw,root/'missing-before',root/'missing-after',root/'result')
