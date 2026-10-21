@@ -188,6 +188,7 @@ export function analyze(input, overrides = {}) {
         const n = stack.pop();
         if (++nodes > limits.maxNodes || Date.now() > deadline) throw new Error('BUDGET');
         if(ts.isIdentifier(n)&&n.text==='Deno')mod.hasDenoSyntax=true;
+        if(ts.isIdentifier(n)&&['from','createClient'].includes(n.text))mod.hasSupabaseSyntax=true;
         if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'prepare') record.prepareCallSites++;
         if (ts.isCallExpression(n) && (ts.isIdentifier(n.expression) && n.expression.text === 'fetch'
             || ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'fetch')) record.httpCallSites++;

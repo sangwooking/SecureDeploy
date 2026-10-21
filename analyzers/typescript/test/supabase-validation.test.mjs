@@ -1,6 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {analyze} from '../analyzer.mjs';
+import ts from 'typescript';
+import {supabaseAnalysis} from '../supabase.mjs';
 // Separately authored variants, same curator. Not a blind or external accuracy study.
 const base='CREATE TABLE public.documents(id uuid,creator uuid);GRANT UPDATE,DELETE ON public.documents TO authenticated;';
 const cases=[
@@ -36,4 +38,11 @@ test('ordering is deterministic and duplicate timestamps or schema snapshots are
  assert.equal(run([initial,{filePath:'schema.sql',status:'SELECTED',content:base}]).tables.find(t=>t.scope==='').rls,'UNKNOWN');
  const limited=analyze({files:[],policyFiles:[initial]},{maxSteps:1}).supabaseAnalysis;
  assert.equal(limited.findings.length,0);assert.ok(limited.files.some(f=>f.status==='PARSE_FAILED'||f.status==='NOT_RUN'));
+});
+test('a later Client budget failure does not erase already completed SQL declaration evidence',()=>{
+ const ast=ts.createSourceFile('large.ts','const x={'+Array.from({length:400},(_,i)=>`v${i}:${i}`).join(',')+'};',ts.ScriptTarget.Latest,true);
+ const mod={filePath:'large.ts',ast,imports:new Map(),hasSupabaseSyntax:true};let steps=0;
+ const r=supabaseAnalysis({ts,modules:new Map([['large.ts',mod]]),input:{policyFiles:[{filePath:'supabase/migrations/20260101000000_sql.sql',status:'SELECTED',content:base}]},tick:()=>{if(++steps>300)throw Error('SUPABASE_BUDGET');}});
+ assert.equal(r.tables.length,1);assert.equal(r.findings.length,1);assert.ok(r.limitations.includes('CLIENT_AST_BUDGET_LIMIT'));
+ assert.equal(r.accesses.length,0);
 });

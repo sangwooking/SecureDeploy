@@ -16,6 +16,7 @@ export function supabaseAnalysis({ts,modules,input,tick}){
     const official=spec=>spec==='@supabase/supabase-js'||/^npm:@supabase\/supabase-js@2(?:\.\d+){0,2}$/.test(spec)
       ||/^https:\/\/esm\.sh\/@supabase\/supabase-js@2(?:\.\d+){0,2}$/.test(spec);
     for(const mod of modules.values()){
+      if(!mod.hasSupabaseSyntax)continue;
       const declarations=new Map(),writes=new Set(),nodes=[],typeOnly=new Set();
       const visit=n=>{tick();nodes.push(n);if(n.name&&ts.isIdentifier(n.name)&&[ts.isVariableDeclaration,ts.isParameter,ts.isFunctionDeclaration,ts.isClassDeclaration,ts.isBindingElement].some(f=>f(n))){const a=declarations.get(n.name.text)??[];a.push(n);declarations.set(n.name.text,a);}
         if(ts.isImportDeclaration(n)){if(n.importClause?.isTypeOnly&&n.importClause.name)typeOnly.add(n.importClause.name.text);for(const e of n.importClause?.namedBindings?.elements??[])if(n.importClause.isTypeOnly||e.isTypeOnly)typeOnly.add(e.name.text);}
@@ -24,7 +25,7 @@ export function supabaseAnalysis({ts,modules,input,tick}){
     }
     function resolve(mod,original,seen=new Set(),depth=0){
       tick();const node=unwrap(original);if(!node||depth>3||seen.has(node))return null;seen=new Set([...seen,node]);
-      const cache=caches.get(mod);
+      const cache=caches.get(mod);if(!cache)return null;
       if(ts.isIdentifier(node)){
         if(cache.writes.has(node.text)||cache.typeOnly.has(node.text))return null;
         const ds=cache.declarations.get(node.text)??[];
@@ -34,7 +35,7 @@ export function supabaseAnalysis({ts,modules,input,tick}){
         if(imp?.spec.startsWith('.')){
           const base=mod.filePath.split('/').slice(0,-1);for(const p of imp.spec.split('/')){if(p==='..')base.pop();else if(p!=='.')base.push(p);}
           const path=base.join('/');const target=[path,path+'.ts',path+'.tsx',path+'.js',path+'/index.ts'].map(p=>modules.get(p)).find(Boolean);
-          if(target){const d=caches.get(target).declarations.get(imp.exported);if(d?.length===1&&ts.isVariableDeclaration(d[0])&&d[0].parent.parent.modifiers?.some(m=>m.kind===ts.SyntaxKind.ExportKeyword))return resolve(target,d[0].name,seen,depth+1);}
+          if(target){const d=caches.get(target)?.declarations.get(imp.exported);if(d?.length===1&&ts.isVariableDeclaration(d[0])&&d[0].parent.parent.modifiers?.some(m=>m.kind===ts.SyntaxKind.ExportKeyword))return resolve(target,d[0].name,seen,depth+1);}
         }
       }
       if(ts.isCallExpression(node)&&ts.isIdentifier(node.expression)){
@@ -55,7 +56,7 @@ export function supabaseAnalysis({ts,modules,input,tick}){
       }
       return null;
     }
-    for(const mod of modules.values())for(const node of caches.get(mod).nodes){
+    for(const [mod,cache] of caches)for(const node of cache.nodes){
       tick();if(ts.isCallExpression(node)&&ts.isIdentifier(node.expression))resolve(mod,node);
       if(!ts.isCallExpression(node)||!ts.isPropertyAccessExpression(node.expression)||node.expression.name.text!=='from'||node.arguments.length!==1||!ts.isStringLiteral(node.arguments[0]))continue;
       const name=node.arguments[0].text;if(!/^[A-Za-z_][A-Za-z0-9_]{0,99}$/.test(name))continue;
@@ -74,8 +75,10 @@ export function supabaseAnalysis({ts,modules,input,tick}){
         keySource:client?.keySource??'UNKNOWN',policyStatus:declared?'TABLE_DECLARATION_FOUND':'POLICY_CONTEXT_MISSING',
         policyLocation:declared?.location??null,limitations:['CALL_CHAIN_NOT_EXECUTION_PROOF','APPLICATION_USER_AND_DEPLOYED_POLICY_UNKNOWN',...(client?[]:['IMPORT_ALIAS_FACTORY_OR_CONTEXT_NOT_RESOLVED'])]});
     }
-  }catch{
-    return {schemaVersion:1,analyzerVersion:'supabase-rls-v1',status:'PARTIAL',files:(input.policyFiles??[]).map(f=>({filePath:f.filePath,status:'NOT_RUN',statements:0,limitations:['SQL_OR_AST_ANALYSIS_LIMIT']})),tables:[],clients:[],accesses:[],findings:[],limitations:[...limitations,'SQL_OR_AST_ANALYSIS_LIMIT']};
+  }catch(error){
+    if(!policies)return unavailable('SQL_OR_AST_ANALYSIS_LIMIT');
+    clients.length=0;accesses.length=0;
+    limitations.push(error?.message==='SUPABASE_BUDGET'?'CLIENT_AST_BUDGET_LIMIT':'CLIENT_AST_CONTEXT_NOT_COMPLETED');
   }
   const findings=[];
   for(const table of policies.tables){
