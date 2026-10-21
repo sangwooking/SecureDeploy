@@ -55,6 +55,8 @@ def prepare(root,destination):
 def report(root,raw_file,output):
     root=outside(root);plan=read(root/'application-plan.json');raw=read(raw_file)
     if raw['planSha256']!=digest((root/'application-plan.json').read_bytes()):raise ValueError('PLAN_CHANGED')
+    baseline=read(root/'baseline-structure.json')if(root/'baseline-structure.json').exists()else None
+    if baseline and baseline['planSha256']!=raw['planSha256']:raise ValueError('BASELINE_PLAN_CHANGED')
     rows=[];counts={}
     for p in plan['projects']:
         actual=next(r for r in raw['projects']if r['projectId']==p['projectId']);runs=actual.get('runs',[])
@@ -75,7 +77,8 @@ def report(root,raw_file,output):
             elapsedMs=[v['elapsedMs']for v in runs],sampledParentHeapBytes=[v['parentHeapUsedBytes']for v in runs],repeatConsistent=True))
     app.write(output,dict(schemaVersion=1,engineCommit=raw['engineCommit'],planSha256=raw['planSha256'],
         repositoryUrl=plan['projects'][0]['repositoryUrl'],baseCommit=plan['projects'][0]['commitSha'],
-        license=plan['projects'][0]['license'],counts=counts,projects=rows,
+        license=plan['projects'][0]['license'],counts=counts,projects=rows,baselineStructure=baseline,
+        deterministicRiskUnchangedAcrossControls=all(r['risk']==rows[0]['risk']and r['score']==rows[0]['score']for r in rows),
         independence='One previously observed public MIT template; controlled validation not independent/blind; no real CVE detection claim',
         safety='No target code execution/build/install/network/AI; isolated H2 evaluation; no user PostgreSQL changes',
         limitations=['Auth.js reexports and @ imports not resolved','No actual Next build, client bundle, Server Action invocation or middleware verification',
@@ -99,7 +102,7 @@ def probe(root,analyzer,output):
             if path.name=='package.json':
                 document=json.loads(content);manifests.append(dict(filePath=f['path'],next=document.get('dependencies',{}).get('next')))
             if path.suffix in {'.js','.jsx','.ts','.tsx','.mjs','.cjs'}:files.append(dict(filePath=f['path'],content=content.decode()))
-        completed=subprocess.run(['node','--input-type=module','-e',program,str(analyzer.resolve())],
+        completed=subprocess.run(['node','--max-old-space-size=192','--no-addons','--input-type=module','-e',program,str(analyzer.resolve())],
             input=json.dumps(dict(files=sorted(files,key=lambda f:f['filePath']),nodeManifests=manifests)),
             text=True,capture_output=True,timeout=15,check=True)
         result=json.loads(completed.stdout)

@@ -38,6 +38,41 @@ class ServerAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void nextBoundariesPersistIdenticallyAcrossZipPublicAndPrivateInputs() throws Exception {
+        String token=signup();
+        var sources=Map.of("package.json","{\"dependencies\":{\"next\":\"15.3.0\"}}",
+                "app/api/check/route.ts","export async function POST(req:Request){const body=await req.json();await fetch(body.target);return Response.json({value:process.env.SYNTHETIC_API_KEY_NAME});}");
+        var zip=uploadSources(token,sources);var snapshot=zip.path("serverAnalysis");
+        assertThat(snapshot.path("validatedFindings")).hasSize(2);
+        for(var finding:snapshot.path("validatedFindings")) {
+            assertThat(finding.path("priority").asText()).isEqualTo("REVIEW_REQUIRED");
+            assertThat(finding.path("comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        }
+        assertThat(snapshot.toString()).doesNotContain("SYNTHETIC_API_KEY_NAME","process.env");
+        assertThat(zip.path("securityScore").asInt()).isEqualTo(100);
+        assertThat(zip.path("vulnerabilityCount").asInt()).isZero();
+        var roots=new ArrayList<Path>();
+        for(String name:List.of("next-public","next-private")) {
+            Path root=Files.createDirectory(temp.resolve(name));roots.add(root);
+            for(var source:sources.entrySet()) {
+                Path file=root.resolve(source.getKey());Files.createDirectories(file.getParent());Files.writeString(file,source.getValue());
+            }
+        }
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/next",roots.get(0),roots.get(0)));
+        var pub=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/next\",\"scanMode\":\"STANDARD\"}");
+        var metadata=new GitHubSourceSnapshot("fixture","next","https://github.com/fixture/next","main","a".repeat(40),"aaaaaaa",null,null,null,null,2,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/next",roots.get(1),roots.get(1),metadata));
+        var prv=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        for(var response:List.of(pub,prv)) {
+            assertThat(response.path("serverAnalysis")).isEqualTo(snapshot);
+            assertThat(response.path("securityScore")).isEqualTo(zip.path("securityScore"));
+            assertThat(response.at("/riskAssessment/prioritySummary")).isEqualTo(zip.at("/riskAssessment/prioritySummary"));
+        }
+        for(var root:roots)assertThat(root).doesNotExist();
+        long id=zip.path("reviewId").asLong();assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(snapshot);
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+    }
+
     @Test void semanticStringReconciliationPersistsAndPublicGithubMatchesZip() throws Exception {
         String token=signup();
         String code="const icon=<svg xmlns=\"http://www.w3.org/2000/svg\"/>;\n"
