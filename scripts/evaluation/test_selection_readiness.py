@@ -49,6 +49,16 @@ class SelectionReadinessTest(unittest.TestCase):
         for r in p['runs']:r['typescript']['status']='TIMEOUT'
         with self.assertRaisesRegex(ValueError,'WORKER_NOT_COMPLETED'):summarize(p)
 
+    def test_charged_execution_cannot_exceed_or_lose_shared_steps(self):
+        p=self.row()
+        for r in p['runs']:
+            r['typescript']['supabaseAnalysis']['budgetUsage']=dict(STEPS_USED=100001,STEPS_LIMIT=100000,
+                STEPS_SETUP=0,STEPS_POLICY=25000,STEPS_CLIENT=1000,STEPS_ENTRY_DISCOVERY=24000,STEPS_FLOW=50000)
+        with self.assertRaisesRegex(ValueError,'INVALID_STEP_ACCOUNTING'):summarize(p)
+
+    def test_new_budget_metadata_does_not_rewrite_older_missing_evidence(self):
+        self.assertIsNone(summarize(self.row())['budgetUsage'])
+
     def test_source_and_rule_changes_cannot_be_silently_counted_as_selection_improvement(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory);b=dict(planSha256='a'*64,engineCommit='a'*40,projects=[self.row()]);a=copy.deepcopy(b)

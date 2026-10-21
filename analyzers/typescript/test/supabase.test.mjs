@@ -11,7 +11,7 @@ const op=(r,operation,role='authenticated')=>r.tables[0].operations.find(o=>o.op
 test('shared execution pressure preserves client declarations alongside server and policy evidence',()=>{
   const r=analyze({files:[
     {filePath:'client.ts',content:"import {createClient} from '@supabase/supabase-js';const db=createClient('https://example.invalid',process.env.SYNTHETIC_ANON_KEY);db.from('notes').select();"},
-    {filePath:'edge.ts',content:"Deno.serve(req=>{"+'const x=1;'.repeat(1600)+"return Response.json(Deno.env.get('SYNTHETIC_PRIVATE_KEY'));});"}
+    {filePath:'edge.ts',content:"Deno.serve(req=>{"+'var x=1;'.repeat(1600)+"return Response.json(Deno.env.get('SYNTHETIC_PRIVATE_KEY'));});"}
   ],policyFiles:[source(table+grant+owner)]},{maxSteps:15000});
   assert.equal(r.authorizationContexts.length,1);
   assert.equal(r.supabaseAnalysis.clients.length,1);

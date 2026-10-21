@@ -1,0 +1,1085 @@
+{
+  "schemaVersion": 1,
+  "baselineEngine": "824d9621674e0857b801dde1d92a70ac2bc1de90",
+  "engineCommit": "243e624b107e9879c919c3c6a8e28d6c0c3ddc71",
+  "nextRegression": {
+    "counts": {
+      "REGRESSION": {
+        "TP": 2,
+        "TN": 1,
+        "FP": 0,
+        "FN": 0,
+        "UNKNOWN": 0
+      },
+      "VALIDATION": {
+        "TP": 2,
+        "TN": 1,
+        "FP": 0,
+        "FN": 0,
+        "UNKNOWN": 1
+      }
+    },
+    "projects": 8,
+    "repeatConsistent": true,
+    "independence": "Existing same-curator controlled regression, not external independent validation"
+  },
+  "expressRegression": {
+    "cases": 17,
+    "counts": {
+      "UNKNOWN": 8,
+      "NOT_INSPECTED": 4,
+      "TP": 2,
+      "TN": 3
+    },
+    "baselineEngine": "89f55754e08f3f750d8aba2b5e5fd278bd9563f0",
+    "manifestSha256": "911d60995ae26207c540d7b6905c3e2be67a81a044c0b5073deea4927b15d1d8",
+    "results": [
+      {
+        "caseId": "validation-string",
+        "label": "RISK",
+        "inputSha256": "a689e1a7859c35db1cc38fbdf25808ae8478ed2eb7e9128dae247da0e0aa6488",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "beforeMs": 172,
+        "afterMs": 167,
+        "beforeRss": 134627328,
+        "afterRss": 131203072
+      },
+      {
+        "caseId": "validation-static",
+        "label": "NORMAL",
+        "inputSha256": "fb17c908bad3a572047702e7c301910192df84d1ed6e9de7e45314631e077e35",
+        "before": "NOT_INSPECTED",
+        "after": "NOT_INSPECTED",
+        "beforeMs": 167,
+        "afterMs": 169,
+        "beforeRss": 135266304,
+        "afterRss": 133398528
+      },
+      {
+        "caseId": "validation-number",
+        "label": "NORMAL",
+        "inputSha256": "186f849e04ea1dee6545914c8da0180139b859d0fcd44c656d4e5101e0c0ebab",
+        "before": "NOT_INSPECTED",
+        "after": "NOT_INSPECTED",
+        "beforeMs": 167,
+        "afterMs": 177,
+        "beforeRss": 131219456,
+        "afterRss": 134676480
+      },
+      {
+        "caseId": "validation-unknown-db",
+        "label": "UNKNOWN",
+        "inputSha256": "126656117591df8bb1ea3a2c064f954856b260fe86567f8835e3206ea75b7870",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "beforeMs": 177,
+        "afterMs": 173,
+        "beforeRss": 134184960,
+        "afterRss": 131727360
+      },
+      {
+        "caseId": "validation-missing-consumption",
+        "label": "NORMAL",
+        "inputSha256": "eca9691e009142b0f74977f6dd91a15f98835e3d14870f5a6deca70b25ea8bc8",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "beforeMs": 172,
+        "afterMs": 171,
+        "beforeRss": 133087232,
+        "afterRss": 131072000
+      },
+      {
+        "caseId": "validation-transform",
+        "label": "UNKNOWN",
+        "inputSha256": "66a5a06289d6ec450e5a16332c7eb0d34df43f96b86a43eb83860a0371ce9c4d",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "beforeMs": 168,
+        "afterMs": 170,
+        "beforeRss": 132939776,
+        "afterRss": 132972544
+      },
+      {
+        "caseId": "holdout-template",
+        "label": "RISK",
+        "inputSha256": "5910f944b2a560f4ae09c8709b5d5af19355af046b27fd684495c9c86efd6677",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "beforeMs": 171,
+        "afterMs": 173,
+        "beforeRss": 131891200,
+        "afterRss": 129728512
+      },
+      {
+        "caseId": "holdout-number",
+        "label": "NORMAL",
+        "inputSha256": "2d1a6e5d5f2e901979fef1f06d7f463296685b25f513507b76e0b66175ef2a43",
+        "before": "NOT_INSPECTED",
+        "after": "NOT_INSPECTED",
+        "beforeMs": 215,
+        "afterMs": 189,
+        "beforeRss": 139821056,
+        "afterRss": 135036928
+      },
+      {
+        "caseId": "holdout-static",
+        "label": "NORMAL",
+        "inputSha256": "7019bef26a53450acba432db336bed3fc91b0e1540b6853ba2d5bbcd3320ff30",
+        "before": "NOT_INSPECTED",
+        "after": "NOT_INSPECTED",
+        "beforeMs": 169,
+        "afterMs": 173,
+        "beforeRss": 133480448,
+        "afterRss": 130744320
+      },
+      {
+        "caseId": "holdout-unknown",
+        "label": "UNKNOWN",
+        "inputSha256": "1d1ca10e1c61c526463b08e1f92fb09995bcddc86dc75f3eec19dd094988d0b3",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "beforeMs": 170,
+        "afterMs": 169,
+        "beforeRss": 136855552,
+        "afterRss": 132694016
+      },
+      {
+        "caseId": "local-validation-risk",
+        "label": "RISK",
+        "inputSha256": "c780347c9325a1389de2cabd39d5ee0ac2685fa0998adb7169feff23a061de86",
+        "before": "TP",
+        "after": "TP",
+        "beforeMs": 172,
+        "afterMs": 169,
+        "beforeRss": 129761280,
+        "afterRss": 133939200
+      },
+      {
+        "caseId": "local-validation-normal",
+        "label": "NORMAL",
+        "inputSha256": "8bfb8dfacb82db24f294a52b5e87fb24d685ee7279de7e249223532625cca9b3",
+        "before": "TN",
+        "after": "TN",
+        "beforeMs": 171,
+        "afterMs": 174,
+        "beforeRss": 133251072,
+        "afterRss": 129269760
+      },
+      {
+        "caseId": "local-validation-unknown",
+        "label": "UNKNOWN",
+        "inputSha256": "cdb7c87fb2122b7f56944b7a9f688a4477612b200f3f3afad201189bc7f69dd9",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "beforeMs": 169,
+        "afterMs": 172,
+        "beforeRss": 130875392,
+        "afterRss": 135643136
+      },
+      {
+        "caseId": "local-holdout-risk",
+        "label": "RISK",
+        "inputSha256": "db0ba6a6a3d1d9f3d38aa532d7bc32dfe8b52475c95adab5ad3ce450510105e9",
+        "before": "TP",
+        "after": "TP",
+        "beforeMs": 172,
+        "afterMs": 172,
+        "beforeRss": 132874240,
+        "afterRss": 132775936
+      },
+      {
+        "caseId": "local-holdout-number",
+        "label": "NORMAL",
+        "inputSha256": "a91850f156414da42437672dec7438b38db13f13a3b917d016a06d01c72099bf",
+        "before": "TN",
+        "after": "TN",
+        "beforeMs": 174,
+        "afterMs": 173,
+        "beforeRss": 133758976,
+        "afterRss": 131514368
+      },
+      {
+        "caseId": "local-holdout-static",
+        "label": "NORMAL",
+        "inputSha256": "9cea89213efd8ec7c5977e48623a7cb514cba70a67c3c146a2dac35aee3e9060",
+        "before": "TN",
+        "after": "TN",
+        "beforeMs": 172,
+        "afterMs": 175,
+        "beforeRss": 133480448,
+        "afterRss": 132956160
+      },
+      {
+        "caseId": "local-holdout-unknown",
+        "label": "UNKNOWN",
+        "inputSha256": "af20a3448684d872c516cc93199b89c2bd6a4330e6c0c4dee079e89b47809522",
+        "before": "UNKNOWN",
+        "after": "UNKNOWN",
+        "beforeMs": 171,
+        "afterMs": 172,
+        "beforeRss": 135249920,
+        "afterRss": 130924544
+      }
+    ],
+    "scope": "17 previously observed Grade B controls; regression, not independent or blind validation",
+    "targetExecution": false
+  },
+  "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+  "projects": [
+    {
+      "projectId": "nglguarino--echoverse-11labs",
+      "before": {
+        "projectId": "nglguarino--echoverse-11labs",
+        "sourceCommit": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 88,
+          "selectedFiles": 73,
+          "unsupportedFiles": 10,
+          "excludedFiles": 5,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 70,
+          "submittedFiles": 70,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 206588,
+          "omissionReasons": {}
+        },
+        "recordedJsFiles": 70,
+        "parsedJs": 70,
+        "limitedJs": 0,
+        "entries": 4,
+        "tracedFunctions": 7,
+        "selectedRelatedHelpers": 0,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "TS_DENO_REGISTRATION_HINT": 4,
+          "TS_DETERMINISTIC_FALLBACK": 66
+        },
+        "sqlStatuses": {},
+        "sqlStatements": 0,
+        "tables": 0,
+        "policies": 0,
+        "policyOperationStates": {},
+        "clients": 0,
+        "accesses": 0,
+        "clientLinked": 0,
+        "budgetUsage": null,
+        "structural": [
+          {
+            "rule": "TS_SENSITIVE_DATA_EXPOSURE",
+            "file": "supabase/functions/get-secret/index.ts",
+            "line": 30
+          }
+        ],
+        "httpUses": {
+          "UNRESOLVED_DESTINATION": 5
+        },
+        "exposureUses": {
+          "INTERNAL_DIAGNOSTIC_LOG_ONLY": 1,
+          "SENSITIVE_FLOW_CANDIDATE": 1
+        },
+        "ruleSignals": [
+          {
+            "line": 79,
+            "filePath": "src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          638,
+          486
+        ],
+        "sampledParentHeapBytes": [
+          110531968,
+          92053880
+        ]
+      },
+      "after": {
+        "projectId": "nglguarino--echoverse-11labs",
+        "sourceCommit": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 88,
+          "selectedFiles": 73,
+          "unsupportedFiles": 10,
+          "excludedFiles": 5,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 70,
+          "submittedFiles": 70,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 206588,
+          "omissionReasons": {}
+        },
+        "recordedJsFiles": 70,
+        "parsedJs": 70,
+        "limitedJs": 0,
+        "entries": 4,
+        "tracedFunctions": 7,
+        "selectedRelatedHelpers": 0,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "TS_DENO_REGISTRATION_HINT": 4,
+          "TS_DETERMINISTIC_FALLBACK": 66
+        },
+        "sqlStatuses": {},
+        "sqlStatements": 0,
+        "tables": 0,
+        "policies": 0,
+        "policyOperationStates": {},
+        "clients": 0,
+        "accesses": 0,
+        "clientLinked": 0,
+        "budgetUsage": {
+          "AST_NODES_INDEXED": 26282,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 6781,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 2,
+          "STEPS_ENTRY_DISCOVERY": 3197,
+          "STEPS_FLOW": 3582,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "structural": [
+          {
+            "rule": "TS_SENSITIVE_DATA_EXPOSURE",
+            "file": "supabase/functions/get-secret/index.ts",
+            "line": 30
+          }
+        ],
+        "httpUses": {
+          "UNRESOLVED_DESTINATION": 5
+        },
+        "exposureUses": {
+          "INTERNAL_DIAGNOSTIC_LOG_ONLY": 1,
+          "SENSITIVE_FLOW_CANDIDATE": 1
+        },
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 79,
+            "filePath": "src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          680,
+          492
+        ],
+        "sampledParentHeapBytes": [
+          113865016,
+          58986704
+        ]
+      },
+      "newStructural": []
+    },
+    {
+      "projectId": "LellaSriHarsha--power-platform-hub",
+      "before": {
+        "projectId": "LellaSriHarsha--power-platform-hub",
+        "sourceCommit": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 105,
+          "selectedFiles": 71,
+          "unsupportedFiles": 30,
+          "excludedFiles": 4,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 69,
+          "submittedFiles": 69,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 347176,
+          "omissionReasons": {}
+        },
+        "recordedJsFiles": 69,
+        "parsedJs": 69,
+        "limitedJs": 0,
+        "entries": 1,
+        "tracedFunctions": 6,
+        "selectedRelatedHelpers": 0,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "TS_DETERMINISTIC_FALLBACK": 69
+        },
+        "sqlStatuses": {},
+        "sqlStatements": 0,
+        "tables": 0,
+        "policies": 0,
+        "policyOperationStates": {},
+        "clients": 0,
+        "accesses": 0,
+        "clientLinked": 0,
+        "budgetUsage": null,
+        "structural": [],
+        "httpUses": {},
+        "exposureUses": {},
+        "ruleSignals": [
+          {
+            "line": 73,
+            "filePath": "app/src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          436,
+          428
+        ],
+        "sampledParentHeapBytes": [
+          110928248,
+          129802616
+        ]
+      },
+      "after": {
+        "projectId": "LellaSriHarsha--power-platform-hub",
+        "sourceCommit": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 105,
+          "selectedFiles": 71,
+          "unsupportedFiles": 30,
+          "excludedFiles": 4,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 69,
+          "submittedFiles": 69,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 347176,
+          "omissionReasons": {}
+        },
+        "recordedJsFiles": 69,
+        "parsedJs": 69,
+        "limitedJs": 0,
+        "entries": 1,
+        "tracedFunctions": 6,
+        "selectedRelatedHelpers": 0,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "TS_DETERMINISTIC_FALLBACK": 69
+        },
+        "sqlStatuses": {},
+        "sqlStatements": 0,
+        "tables": 0,
+        "policies": 0,
+        "policyOperationStates": {},
+        "clients": 0,
+        "accesses": 0,
+        "clientLinked": 0,
+        "budgetUsage": {
+          "AST_NODES_INDEXED": 35959,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 1676,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 0,
+          "STEPS_ENTRY_DISCOVERY": 1233,
+          "STEPS_FLOW": 443,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "structural": [],
+        "httpUses": {},
+        "exposureUses": {},
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 73,
+            "filePath": "app/src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          456,
+          431
+        ],
+        "sampledParentHeapBytes": [
+          78909648,
+          96735440
+        ]
+      },
+      "newStructural": []
+    },
+    {
+      "projectId": "TinyikoMamban--workflowai-pro",
+      "before": {
+        "projectId": "TinyikoMamban--workflowai-pro",
+        "sourceCommit": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 109,
+          "selectedFiles": 92,
+          "unsupportedFiles": 15,
+          "excludedFiles": 2,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 89,
+          "submittedFiles": 89,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 341967,
+          "omissionReasons": {}
+        },
+        "recordedJsFiles": 87,
+        "parsedJs": 87,
+        "limitedJs": 0,
+        "entries": 1,
+        "tracedFunctions": 5,
+        "selectedRelatedHelpers": 1,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "TS_SUPABASE_CLIENT_MODULE_HINT": 4,
+          "TS_RELATED_IMPORT_HINT": 1,
+          "TS_DETERMINISTIC_FALLBACK": 82
+        },
+        "sqlStatuses": {
+          "PARTIAL": 2
+        },
+        "sqlStatements": 81,
+        "tables": 13,
+        "policies": 15,
+        "policyOperationStates": {
+          "DENY": 55,
+          "UID_COLUMN_EQUALITY": 47,
+          "COLUMN_FILTER": 2
+        },
+        "clients": 3,
+        "accesses": 42,
+        "clientLinked": 0,
+        "budgetUsage": null,
+        "structural": [],
+        "httpUses": {},
+        "exposureUses": {},
+        "ruleSignals": [
+          {
+            "line": 73,
+            "filePath": "src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          538,
+          519
+        ],
+        "sampledParentHeapBytes": [
+          80927472,
+          116440656
+        ]
+      },
+      "after": {
+        "projectId": "TinyikoMamban--workflowai-pro",
+        "sourceCommit": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 109,
+          "selectedFiles": 92,
+          "unsupportedFiles": 15,
+          "excludedFiles": 2,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 89,
+          "submittedFiles": 89,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 341967,
+          "omissionReasons": {}
+        },
+        "recordedJsFiles": 87,
+        "parsedJs": 87,
+        "limitedJs": 0,
+        "entries": 1,
+        "tracedFunctions": 5,
+        "selectedRelatedHelpers": 1,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "TS_SUPABASE_CLIENT_MODULE_HINT": 4,
+          "TS_RELATED_IMPORT_HINT": 1,
+          "TS_DETERMINISTIC_FALLBACK": 82
+        },
+        "sqlStatuses": {
+          "PARTIAL": 2
+        },
+        "sqlStatements": 81,
+        "tables": 13,
+        "policies": 15,
+        "policyOperationStates": {
+          "DENY": 55,
+          "UID_COLUMN_EQUALITY": 47,
+          "COLUMN_FILTER": 2
+        },
+        "clients": 3,
+        "accesses": 42,
+        "clientLinked": 0,
+        "budgetUsage": {
+          "AST_NODES_INDEXED": 45173,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 7015,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 4122,
+          "STEPS_CLIENT": 676,
+          "STEPS_ENTRY_DISCOVERY": 1819,
+          "STEPS_FLOW": 398,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "structural": [],
+        "httpUses": {},
+        "exposureUses": {},
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 73,
+            "filePath": "src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          547,
+          534
+        ],
+        "sampledParentHeapBytes": [
+          101540608,
+          114551760
+        ]
+      },
+      "newStructural": []
+    },
+    {
+      "projectId": "Adriano-Digital2024--CopyMonster",
+      "before": {
+        "projectId": "Adriano-Digital2024--CopyMonster",
+        "sourceCommit": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 312,
+          "selectedFiles": 257,
+          "unsupportedFiles": 42,
+          "excludedFiles": 13,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 251,
+          "submittedFiles": 100,
+          "omittedFiles": 151,
+          "omittedDetails": 51,
+          "submittedCharacters": 616625,
+          "omissionReasons": {
+            "SOURCE_FILE_COUNT_LIMIT": 150,
+            "SOURCE_FILE_SIZE_LIMIT": 1
+          }
+        },
+        "recordedJsFiles": 133,
+        "parsedJs": 33,
+        "limitedJs": 100,
+        "entries": 20,
+        "tracedFunctions": 16,
+        "selectedRelatedHelpers": 3,
+        "tracedRelatedHelpers": 1,
+        "selectedJsReasons": {
+          "TS_DENO_REGISTRATION_HINT": 20,
+          "TS_SUPABASE_CLIENT_MODULE_HINT": 2,
+          "TS_RELATED_IMPORT_HINT": 3,
+          "TS_DETERMINISTIC_FALLBACK": 8
+        },
+        "sqlStatuses": {
+          "PARTIAL": 4,
+          "LIMIT_EXCEEDED": 1,
+          "NOT_RUN": 62
+        },
+        "sqlStatements": 114,
+        "tables": 14,
+        "policies": 57,
+        "policyOperationStates": {
+          "UNKNOWN": 112
+        },
+        "clients": 0,
+        "accesses": 0,
+        "clientLinked": 0,
+        "budgetUsage": null,
+        "structural": [
+          {
+            "rule": "COMPOSE_PORT_BINDING",
+            "file": "docker-compose.yml",
+            "line": 14
+          }
+        ],
+        "httpUses": {
+          "UNRESOLVED_DESTINATION": 4
+        },
+        "exposureUses": {
+          "FLOW_UNRESOLVED": 47
+        },
+        "ruleSignals": [
+          {
+            "line": 81,
+            "filePath": "src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          },
+          {
+            "line": 241,
+            "filePath": "src/pages/Auth.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          },
+          {
+            "line": 166,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          },
+          {
+            "line": 167,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          },
+          {
+            "line": 168,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          },
+          {
+            "line": 207,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          }
+        ],
+        "score": 16,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 7,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_AST_BUDGET_LIMIT",
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "OMITTED_FILE_DETAILS_TRUNCATED",
+          "POLICY_STEP_BUDGET",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED",
+          "TS_COMBINED_SOURCE_SQL_BUDGET_PARTIAL",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          680,
+          650
+        ],
+        "sampledParentHeapBytes": [
+          77677472,
+          127469920
+        ]
+      },
+      "after": {
+        "projectId": "Adriano-Digital2024--CopyMonster",
+        "sourceCommit": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 312,
+          "selectedFiles": 257,
+          "unsupportedFiles": 42,
+          "excludedFiles": 13,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 251,
+          "submittedFiles": 100,
+          "omittedFiles": 151,
+          "omittedDetails": 51,
+          "submittedCharacters": 616625,
+          "omissionReasons": {
+            "SOURCE_FILE_COUNT_LIMIT": 150,
+            "SOURCE_FILE_SIZE_LIMIT": 1
+          }
+        },
+        "recordedJsFiles": 133,
+        "parsedJs": 33,
+        "limitedJs": 100,
+        "entries": 20,
+        "tracedFunctions": 43,
+        "selectedRelatedHelpers": 3,
+        "tracedRelatedHelpers": 2,
+        "selectedJsReasons": {
+          "TS_DENO_REGISTRATION_HINT": 20,
+          "TS_SUPABASE_CLIENT_MODULE_HINT": 2,
+          "TS_RELATED_IMPORT_HINT": 3,
+          "TS_DETERMINISTIC_FALLBACK": 8
+        },
+        "sqlStatuses": {
+          "PARTIAL": 4,
+          "LIMIT_EXCEEDED": 1,
+          "NOT_RUN": 62
+        },
+        "sqlStatements": 114,
+        "tables": 14,
+        "policies": 57,
+        "policyOperationStates": {
+          "UNKNOWN": 112
+        },
+        "clients": 29,
+        "accesses": 75,
+        "clientLinked": 33,
+        "budgetUsage": {
+          "AST_NODES_INDEXED": 30242,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 100000,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 25081,
+          "STEPS_CLIENT": 1863,
+          "STEPS_ENTRY_DISCOVERY": 25454,
+          "STEPS_FLOW": 47602,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "structural": [
+          {
+            "rule": "COMPOSE_PORT_BINDING",
+            "file": "docker-compose.yml",
+            "line": 14
+          }
+        ],
+        "httpUses": {
+          "UNRESOLVED_DESTINATION": 23
+        },
+        "exposureUses": {
+          "FLOW_UNRESOLVED": 87,
+          "SENSITIVITY_UNVERIFIED": 5
+        },
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 81,
+            "filePath": "src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          },
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 241,
+            "filePath": "src/pages/Auth.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          },
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 166,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          },
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 167,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          },
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 168,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          },
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 207,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "score": 16,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 7,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "OMITTED_FILE_DETAILS_TRUNCATED",
+          "POLICY_STEP_BUDGET",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED",
+          "TS_COMBINED_SOURCE_SQL_BUDGET_PARTIAL",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          768,
+          782
+        ],
+        "sampledParentHeapBytes": [
+          93759104,
+          98305600
+        ]
+      },
+      "newStructural": []
+    }
+  ],
+  "invariants": "Same source plan, two semantic repeats, existing Rule/FPR signals, score, Risk summary and structural findings preserved",
+  "scope": "Grade C observed public apps; additional entries or declarations are not TP, safety, ownership or deployment proof",
+  "policy": "RLS grammar and Risk formulas unchanged; incomplete migrations remain UNKNOWN; no P0-2/P0-3 implementation",
+  "limits": {
+    "combinedFiles": 100,
+    "fileCharacters": 100000,
+    "totalCharacters": 1000000,
+    "steps": 100000,
+    "policyWorkShareWithCode": 0.25,
+    "policyWorkShareSqlOnly": 0.9,
+    "clientWorkShare": 0.15,
+    "nodeHeapMiB": 192,
+    "depth": 3
+  },
+  "limitations": [
+    "Parent heap samples are not worker peak RSS",
+    "Input quotas do not promise that all selected files finish analysis",
+    "Previously observed sources and one curator; not blind or independent validation",
+    "OSV/EPSS/KEV/AI calls not run; H2 only"
+  ]
+}

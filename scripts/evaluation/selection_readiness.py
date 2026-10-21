@@ -13,6 +13,11 @@ def summarize(project):
     run=runs[0];ts=run['typescript'];sql=ts['supabaseAnalysis']
     if ts['status'] in {'UNAVAILABLE','TIMEOUT','DISABLED'}:raise ValueError('WORKER_NOT_COMPLETED')
     files=ts['files'];flow=run['reviewCandidates']
+    budget=sql.get('budgetUsage')
+    if budget:
+        phases=('SETUP','POLICY','CLIENT','ENTRY_DISCOVERY','FLOW')
+        if budget['STEPS_USED']>budget['STEPS_LIMIT']or budget['STEPS_LIMIT']>100000 or budget['STEPS_USED']!=sum(budget['STEPS_'+p]for p in phases):
+            raise ValueError('INVALID_STEP_ACCOUNTING')
     return dict(projectId=project['projectId'],sourceCommit=project['commitSha'],repeatConsistent=True,
         inventory={k:run['coverage'][k]for k in ('discoveredFiles','selectedFiles','unsupportedFiles','excludedFiles','failedFiles')},
         selection=ts.get('selectionCoverage'),recordedJsFiles=len(files),parsedJs=sum(f['parseStatus']=='PARSED'for f in files),
@@ -24,7 +29,7 @@ def summarize(project):
         sqlStatuses=dict(Counter(f['status']for f in sql['files'])),sqlStatements=sum(f['statements']for f in sql['files']),
         tables=len(sql['tables']),policies=sum(len(t['policies'])for t in sql['tables']),
         policyOperationStates=dict(Counter(o['state']for t in sql['tables']for o in t['operations'])),
-        clients=len(sql['clients']),accesses=len(sql['accesses']),clientLinked=sum(a['clientStatus']=='CLIENT_DECLARATION_LINKED'for a in sql['accesses']),
+        clients=len(sql['clients']),accesses=len(sql['accesses']),clientLinked=sum(a['clientStatus']=='CLIENT_DECLARATION_LINKED'for a in sql['accesses']),budgetUsage=budget,
         structural=[dict(rule=f['ruleId'],file=f['location']['filePath'],line=f['location']['line'])for f in flow],
         httpUses=dict(Counter(u['kind']for u in ts.get('httpUses',[]))),
         exposureUses=dict(Counter(u['status']for u in ts.get('exposureUses',[]))),
@@ -53,7 +58,18 @@ def next_summary(raw):
     return dict(counts=counts,projects=len(seen),repeatConsistent=True,independence='Existing same-curator controlled regression, not external independent validation')
 
 
-def report(before_file,after_file,output,next_file=None):
+def express_summary(raw,engine):
+    if raw['engineCommit']!=engine:raise ValueError('EXPRESS_ENGINE_MISMATCH')
+    if raw['targetExecution']is not False:raise ValueError('EXPRESS_TARGET_EXECUTED')
+    rows=raw['cases']
+    if len(rows)!=17 or len({r['caseId']for r in rows})!=17 or any(r['before']!=r['after']for r in rows):raise ValueError('EXPRESS_REGRESSION')
+    counts=dict(Counter(r['after']for r in rows))
+    if counts!=raw['counts']:raise ValueError('EXPRESS_COUNTS')
+    return dict(cases=len(rows),counts=counts,baselineEngine=raw['baselineEngine'],manifestSha256=raw['manifestSha256'],
+        results=rows,scope=raw['scope'],targetExecution=raw['targetExecution'])
+
+
+def report(before_file,after_file,output,next_file=None,express_file=None):
     before=read(before_file);after=read(after_file)
     if before['planSha256']!=after['planSha256']:raise ValueError('DIFFERENT_SOURCE_PLAN')
     old={p['projectId']:summarize(p)for p in before['projects']}
@@ -71,12 +87,13 @@ def report(before_file,after_file,output,next_file=None):
         raw=read(next_file)
         if raw['engineCommit']!=after['engineCommit']:raise ValueError('NEXT_ENGINE_MISMATCH')
         regression=next_summary(raw)
-    write(output,dict(schemaVersion=1,baselineEngine=before['engineCommit'],engineCommit=after['engineCommit'],nextRegression=regression,
+    express=express_summary(read(express_file),after['engineCommit'])if express_file else None
+    write(output,dict(schemaVersion=1,baselineEngine=before['engineCommit'],engineCommit=after['engineCommit'],nextRegression=regression,expressRegression=express,
         planSha256=after['planSha256'],projects=rows,
         invariants='Same source plan, two semantic repeats, existing Rule/FPR signals, score, Risk summary and structural findings preserved',
         scope='Grade C observed public apps; additional entries or declarations are not TP, safety, ownership or deployment proof',
         policy='RLS grammar and Risk formulas unchanged; incomplete migrations remain UNKNOWN; no P0-2/P0-3 implementation',
-        limits=dict(combinedFiles=100,fileCharacters=100000,totalCharacters=1000000,steps=100000,policyWorkShareWithCode=0.25,policyWorkShareSqlOnly=0.9,nodeHeapMiB=192,depth=3),
+        limits=dict(combinedFiles=100,fileCharacters=100000,totalCharacters=1000000,steps=100000,policyWorkShareWithCode=0.25,policyWorkShareSqlOnly=0.9,clientWorkShare=0.15,nodeHeapMiB=192,depth=3),
         limitations=['Parent heap samples are not worker peak RSS','Input quotas do not promise that all selected files finish analysis',
                      'Previously observed sources and one curator; not blind or independent validation','OSV/EPSS/KEV/AI calls not run; H2 only']))
 
@@ -85,4 +102,5 @@ if __name__=='__main__':
     p=argparse.ArgumentParser()
     for name in ('before_file','after_file','output'):p.add_argument(name,type=Path)
     p.add_argument('--next-file',type=Path)
+    p.add_argument('--express-file',type=Path)
     report(**vars(p.parse_args()))
