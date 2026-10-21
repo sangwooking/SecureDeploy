@@ -4,6 +4,30 @@ Evaluation only. These tools do not modify engine/Risk policy or existing Review
 Never use production credentials in fixtures. Keep downloaded source, raw results,
 private evidence and process-environment launch helpers outside Git.
 
+## AI/vibe-coded web track
+
+`vibe-catalog.json` pins four licensed, author-attributed AI-assisted apps.
+They include human edits, not guaranteed untouched generated output. Source
+research and licensing exclusions are in `vibe-sources.json`; named manual
+conditions and future repair contracts are in `vibe-review.json`. Whole apps
+remain Grade C. Shared UI scaffolding and already observed cases are not blind
+or independent samples. A public Supabase key is not automatically a secret.
+
+```sh
+ROOT="$HOME/.local/share/securedeploy/benchmark/vibe-new"
+python3 -B scripts/evaluation/vibe_track.py collect scripts/evaluation/vibe-catalog.json "$ROOT"
+python3 -B scripts/evaluation/application_track.py run "$ROOT" "$ROOT/engine-raw.json"
+python3 -B scripts/evaluation/vibe_track.py report "$ROOT" "$ROOT/engine-raw.json" scripts/evaluation/vibe-review.json "$ROOT/results.json"
+```
+
+The review binds to the exact plan hash and engine commit. Fresh acquisition
+that changes omissions, hashes or engine must get a separately checked review;
+never edit the review hash just to make an unreviewed run pass. Retained source
+hashes are verified again before reporting. The existing H2 application runner
+uses actual production analyzers twice but does not call OSV/AI or persist user
+Reviews. Risk uses missing external SCA, not a production deployment verdict.
+Only source-free metadata is public. No controlled repair has been executed.
+
 - `prepare_cases.py DIR`: freeze 38 internal cases before running the engine.
 - `acquire_public.py DIR`: explicitly opt in to anonymous, bounded public text downloads at pinned SHAs.
 - `prepare_external.py DOWNLOAD_DIR CASE_DIR`: preserve upstream Java truth and unmodified sources.

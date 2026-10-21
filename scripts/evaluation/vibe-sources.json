@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "reviewedOn": "2026-10-21",
+  "sources": [
+    {
+      "repository": "AMRIZH/skripsi",
+      "url": "https://github.com/AMRIZH/skripsi",
+      "commitSha": "c21f940555aecfbe93af866ef0546f8309e507c0",
+      "kind": "RESEARCH_WITH_LINKED_GENERATED_APPS",
+      "provenance": "Author describes the same recipe-sharing specification sent to six generators; links companion source repositories.",
+      "originalPromptReference": "standarized_prompt.md",
+      "licenseStatus": "README explicitly says licensing to be determined and requests author contact for permission; companion apps have no license files in current Git trees.",
+      "acquisition": "METADATA_ONLY; no local original app source or scanner reports collected",
+      "companionMetadata": [
+        {"repository":"AMRIZH/bolt-website","commitSha":"6e279cde4c5ed9d100097be3906d5b047f1953b2","status":"PUBLIC_TREE_NO_LICENSE_FILE"},
+        {"repository":"AMRIZH/lovable-website","commitSha":"546ba114f1b4e5404e14eb997638554646bdab8d","status":"PUBLIC_TREE_NO_LICENSE_FILE"},
+        {"repository":"AMRIZH/v0-website","commitSha":"14bce76120ce44ae607241606ceb98ee99b1a5db","status":"PUBLIC_TREE_NO_LICENSE_FILE"},
+        {"repository":"AMRIZH/kimi-website","commitSha":"330293460188fd50e9a2d27d9ddeaff6e2d3aa37","status":"PUBLIC_TREE_NO_LICENSE_FILE"},
+        {"repository":"AMRIZH/antigravity-website","commitSha":"3a50e49617baad697e0100db0e43db8ce5d635e6","status":"PUBLIC_TREE_NO_LICENSE_FILE"},
+        {"repository":"AMRIZH/replit-website","status":"ANONYMOUS_API_HTTP_404_NOT_A_SAFE_SCAN"}
+      ],
+      "truthPolicy": "Semgrep/Horusec/Snyk/ZAP reports are scanner observations, not independent ground truth. Same-prompt variants cannot be independent splits.",
+      "decision": "User selected alternative explicitly licensed apps rather than treating public visibility as reuse permission."
+    },
+    {
+      "repository": "logic-star-ai/baxbench",
+      "url": "https://github.com/logic-star-ai/baxbench",
+      "commitSha": "de885cd93d561682e203a5a0d57c33b08aac6f5e",
+      "license": "MIT",
+      "kind": "BACKEND_GENERATION_TASKS_AND_SECURITY_TESTS",
+      "datasetUrl": "https://huggingface.co/datasets/LogicStar/BaxBench",
+      "observedDatasetCard": {"taskRows":392,"scenarios":28,"frameworks":14,"languages":6},
+      "structure": "API/text specifications, framework instructions, required packages, scenario functionality/security tests and exploit definitions. Static inspection only.",
+      "generatedSubmissionStatus": "No generated full-app submissions found in the inspected repository tree or public task dataset schema; not proof none exist elsewhere.",
+      "acquisition": "METADATA_ONLY; no task execution, Docker or paid generation",
+      "truthPolicy": "A task specification or potential CWE is not a collected generated application or a proven vulnerability in a submission."
+    },
+    {
+      "repository": "LeiLiLab/susvibes",
+      "url": "https://github.com/LeiLiLab/susvibes",
+      "commitSha": "a54d329125b8048f6b9f55752048dcba8022644a",
+      "license": "MIT tooling; original project licenses must be checked separately",
+      "kind": "REAL_OSS_FEATURE_TASKS_WITH_SECURITY_TESTS",
+      "documentedCurrentTasks": 186,
+      "samplePredictionsPath": "datasets/default/examples/sample_predictions.json",
+      "observedSamplePredictions": {"records":5,"nonemptyModelPatches":5,"reportedModel":"kimi-k2-turbo-preview"},
+      "generatedSubmissionStatus": "Five actual nonempty example patch fields verified in memory; not collected as five complete runnable apps or independently validated security outcomes.",
+      "structure": "Problem statements, golden feature/masked feature/security-fix examples, agent patch schema and Docker-based test harness. Human-reviewed security tests described in v1 release notes.",
+      "acquisition": "METADATA_AND_SAMPLE_SCHEMA_ONLY; no original task source reconstruction, Docker pulls or agent runs",
+      "truthPolicy": "Reference human vulnerable feature/fix and an agent-generated patch are separate provenance. Patch availability alone does not establish target correctness."
+    },
+    {
+      "repository": "qualityclouds/state-of-ai-code-2026",
+      "url": "https://github.com/qualityclouds/state-of-ai-code-2026",
+      "commitSha": "78b2fb3428cd45b4f6965a84a8bccc257eb06b88",
+      "license": "README: data CC-BY-4.0, pipeline MIT",
+      "kind": "ANONYMIZED_SCANNER_AGGREGATES",
+      "documentedProjects":424,
+      "attribution":"Quality Clouds / Norma, The State of AI-Generated Code, 2026",
+      "riskCandidates": ["Client/server credential boundary", "Supabase policy and ownership context", "High-volume generic rules dominating severity counts"],
+      "acquisition":"README/tree metadata only; no raw aggregate rows redistributed",
+      "truthPolicy":"Anonymized scanner findings cannot provide fixed-SHA per-path truth or actual original app acquisition. Reported issue rates are not verified vulnerability prevalence."
+    }
+  ],
+  "pilotCommitProvenance": [
+    {"repository":"nglguarino/echoverse-11labs","commitsInspected":5,"toolAttributedCommits":0,"basis":"README attributes Lovable use; recent commit names do not independently prove generation"},
+    {"repository":"LellaSriHarsha/power-platform-hub","commitsInspected":5,"toolAttributedCommits":0,"basis":"README attribution plus checked-in Lovable plan and project metadata"},
+    {"repository":"TinyikoMamban/workflowai-pro","commitsInspected":5,"toolAttributedCommits":2,"basis":"README attribution, project metadata and recent tool-attributed commits"},
+    {"repository":"Adriano-Digital2024/CopyMonster","commitsInspected":5,"toolAttributedCommits":3,"basis":"Lovable plan plus recent tool-attributed commits; AI service integration alone is not generation evidence"}
+  ],
+  "pilotBoundary": "Four separately licensed, author-attributed Lovable-assisted apps, not the six AMRIZH apps, BaxBench generated solutions or SusVibes full agent projects. No claim of untouched AI output, generator comparison or population accuracy."
+}

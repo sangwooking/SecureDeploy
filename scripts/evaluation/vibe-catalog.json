@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "track": "AI_VIBE_CODED_WEB",
+  "engineBaseline": "c8e3f3551452992d4d2387ec4d9c7d189f96116b",
+  "provenancePolicy": "Author-attributed AI-assisted applications, not guaranteed untouched model output. No AI authorship implies a security label.",
+  "selectionBias": "License-available, small, publicly indexed Lovable applications; not representative of all AI generators.",
+  "candidates": [
+    {"selected": true, "full_name": "nglguarino/echoverse-11labs", "repositoryUrl": "https://github.com/nglguarino/echoverse-11labs", "default_branch": "main", "commitSha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e", "license": "MIT", "licensePath": "LICENSE", "generator": "Lovable", "provenanceKind": "AI_ASSISTED_HUMAN_EDITED", "provenancePaths": ["README.md"], "promptStatus": "ORIGINAL_PROMPT_NOT_AVAILABLE", "requirementSummary": "Interactive storytelling with AI scene generation, speech and player choices", "promptFamily": "echoverse-storytelling", "repositoryFamily": "echoverse", "evaluationSplit": "REGRESSION", "grade": "C"},
+    {"selected": true, "full_name": "LellaSriHarsha/power-platform-hub", "repositoryUrl": "https://github.com/LellaSriHarsha/power-platform-hub", "default_branch": "main", "commitSha": "d17092f574c7a9c833bee1da8b37e358efcdafef", "license": "MIT", "licensePath": "LICENSE", "generator": "Lovable", "provenanceKind": "AI_ASSISTED_HUMAN_EDITED", "provenancePaths": ["README.md", "app/.lovable/project.json", "app/.lovable/plan/powerverse-polish-and-security-hardening-2026-09-21.md"], "promptStatus": "PARTIAL_PLAN_NOT_ORIGINAL_TRANSCRIPT", "requirementSummary": "Power Platform learning hub with browser code playground and reference material", "promptFamily": "power-platform-learning", "repositoryFamily": "power-platform-hub", "evaluationSplit": "VALIDATION", "grade": "C"},
+    {"selected": true, "full_name": "TinyikoMamban/workflowai-pro", "repositoryUrl": "https://github.com/TinyikoMamban/workflowai-pro", "default_branch": "main", "commitSha": "1ab6e6fba96ad6cadec64bfa9132398313b40986", "license": "MIT", "licensePath": "LICENSE", "generator": "Lovable and ChatGPT", "provenanceKind": "AI_ASSISTED_HUMAN_EDITED", "provenancePaths": ["README.md", ".lovable/project.json"], "promptStatus": "ORIGINAL_PROMPT_NOT_AVAILABLE", "requirementSummary": "Workplace productivity app with authentication, chat, tasks and prompt library", "promptFamily": "workflow-productivity", "repositoryFamily": "workflowai-pro", "evaluationSplit": "VALIDATION", "grade": "C"},
+    {"selected": true, "full_name": "Adriano-Digital2024/CopyMonster", "repositoryUrl": "https://github.com/Adriano-Digital2024/CopyMonster", "default_branch": "main", "commitSha": "99cf465570ad96abbf0e3325cc655025903e1ba6", "license": "MIT core; separately licensed enterprise excluded", "licensePath": "LICENSE", "generator": "Lovable", "provenanceKind": "AI_ASSISTED_HUMAN_EDITED", "provenancePaths": [".lovable/plan.md", "README.md"], "promptStatus": "PARTIAL_PLAN_NOT_ORIGINAL_TRANSCRIPT", "requirementSummary": "Brand-aware copy generation with Supabase accounts, AI services and billing endpoints", "promptFamily": "copymonster-copywriting", "repositoryFamily": "copymonster", "evaluationSplit": "REGRESSION", "grade": "C"}
+  ],
+  "deferred": [
+    {"repository": "AMRIZH/skripsi", "reason": "README licensing to be determined; companion apps have no license file; permission required before local source acquisition"},
+    {"repository": "AMRIZH/replit-website", "reason": "Anonymous GitHub API returned HTTP 404; not a clean scan"},
+    {"repository": "DecartAI/v0-flight-simulator", "reason": "Indexed page exists but current anonymous GitHub API returned HTTP 404; not collected"},
+    {"repository": "DHTMLX/react-gantt-lovable-starter", "reason": "README explicitly licenses demo source MIT but no root license file; collector requires root license, commercial dependency not acquired"}
+  ],
+  "holdout": "NONE. All pilot apps are observed; future independent evaluation needs new repository, prompt and clone families."
+}
