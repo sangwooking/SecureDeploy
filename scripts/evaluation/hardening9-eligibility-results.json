@@ -1,0 +1,371 @@
+{
+  "schemaVersion": 1,
+  "stage": "EVIDENCE_GATED_BENCHMARK_ELIGIBILITY",
+  "engineCommit": "c64416e192c4cfd51218afdbf697907566dd1923",
+  "productionEngineChanged": false,
+  "policyChanged": false,
+  "databaseMigration": false,
+  "inventory": {
+    "assets": 111,
+    "counts": {
+      "endToEndEligible": {
+        "MET": 10,
+        "UNKNOWN": 87,
+        "NOT_MET": 14
+      },
+      "EXTENSION_CANDIDATE": {
+        "NOT_MET": 22,
+        "UNKNOWN": 89
+      },
+      "NOT_EVALUABLE": {
+        "NOT_MET": 10,
+        "UNKNOWN": 89,
+        "MET": 12
+      }
+    },
+    "conditionCounts": {
+      "VERIFIED_GROUND_TRUTH": {
+        "MET": 96,
+        "UNKNOWN": 10,
+        "NOT_MET": 5
+      },
+      "CONTEXT_COMPLETE": {
+        "MET": 10,
+        "UNKNOWN": 94,
+        "NOT_MET": 7
+      },
+      "ANALYZER_COMPATIBLE": {
+        "MET": 10,
+        "UNKNOWN": 93,
+        "NOT_MET": 8
+      }
+    },
+    "kinds": {
+      "LABELED_BENCHMARK_AND_LIBRARY_PATCH": 38,
+      "CVE_PATCH": 40,
+      "APPLICATION_PATCH": 6,
+      "CONDITIONAL_APPLICATION_PATCH_CANDIDATE": 2,
+      "CONTROLLED_GRADE_B": 17,
+      "PUBLIC_APPLICATION_GRADE_C": 8
+    },
+    "inventorySha256": "c4da0db077af70980861170ea24bfe5ada0cedb4c81f706f6a4d3271f3bc0f72",
+    "scope": "111 canonical assets: revisions, controlled variants and application snapshots, not 111 independent vulnerabilities.",
+    "eligible": {
+      "owaspSyntheticServletPaths": 5,
+      "controlledExpressMongoPaths": 5,
+      "newRealCveEndToEndPairs": 0
+    },
+    "reviewLimit": "96 truth conditions rely on prior curator judgments including 12 controlled labels, not 96 newly independently verified CVEs. Unknown conditions were not guessed."
+  },
+  "flowise": {
+    "parent": "4987a2880da54c9df6d6b639142d5d884bdf30c2",
+    "patched": "e002e617df6177cb603c8c569d224bce5fb96b33",
+    "treeEvidenceSha256": "37fd00cca0af20f315cfbcbeb3af19867d54d8dbc82b56e59816cdb70719a7c2",
+    "helperBlob": "d729f8da5e67de366bad7cede605e4ac194710fb",
+    "helperSha256": "7ebd1506cc19e689e67d9d7c6717e1b903ee657a0b083e80d13ac54362f4790b",
+    "helperSameInBothRevisions": true,
+    "helperCreatedByCandidatePatch": false,
+    "correction": "Prior batch acquired helper before a later source fetch failed; missing batch receipt was incorrectly treated as helper acquisition failure. Exact Git tree/blob verification corrects that conclusion.",
+    "routeDeclaration": "App constructor creates express; config declares /api/v1 mount, route index mounts /fetch-links, Router.get references controller.",
+    "remaining": "Exported start lifecycle, external middleware and workspace barrel/main/dist mapping are not fully engine-resolved.",
+    "defense": "Existing helper checks initial/redirect addresses only when HTTP_DENY_LIST is configured; patched service/helper now use it. DNS pinning/runtime/network behavior not verified.",
+    "implementationDecision": "DEFER: multiple contracts and conditional defense, not one verified extension.",
+    "beforeContext": {
+      "manifestSha256": "387b3fb62e63a6d914717b10692fba47c6df372c45682d6bbac8af75532f503c",
+      "rawSha256": "48460f2e4e8e2d917643dfd75d4d819678a9f57bdb2cb9f01e5ad5eeb154fe2a",
+      "outcomes": {
+        "rule": {
+          "UNKNOWN": 2
+        },
+        "filteredRule": {
+          "UNKNOWN": 2
+        },
+        "ast": {
+          "UNKNOWN": 2
+        },
+        "reviewCandidate": {
+          "UNKNOWN": 2
+        },
+        "finalUser": {
+          "UNKNOWN": 2
+        }
+      },
+      "results": [
+        {
+          "caseId": "flowise-fetch-links-parent",
+          "parsedTypescript": 5,
+          "entries": 0,
+          "structuralTsFindings": 0,
+          "elapsedMs": [
+            280,
+            212
+          ],
+          "parentHeapSamples": [
+            67224376,
+            73515832
+          ],
+          "risk": "REVIEW_REQUIRED",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          }
+        },
+        {
+          "caseId": "flowise-fetch-links-patched",
+          "parsedTypescript": 5,
+          "entries": 0,
+          "structuralTsFindings": 0,
+          "elapsedMs": [
+            200,
+            199
+          ],
+          "parentHeapSamples": [
+            50820736,
+            57112192
+          ],
+          "risk": "REVIEW_REQUIRED",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          }
+        }
+      ],
+      "repeatConsistent": true
+    },
+    "afterContext": {
+      "manifestSha256": "7c3aa812ae3ac777b54d6d029be92fffaf354de006526b5d90bbb1f1a16b461b",
+      "rawSha256": "91b73f184d05247734c8a750d19fc29c586c63002a26da79326f5ce142c987bd",
+      "outcomes": {
+        "rule": {
+          "UNKNOWN": 2
+        },
+        "filteredRule": {
+          "UNKNOWN": 2
+        },
+        "ast": {
+          "UNKNOWN": 2
+        },
+        "reviewCandidate": {
+          "UNKNOWN": 2
+        },
+        "finalUser": {
+          "UNKNOWN": 2
+        }
+      },
+      "results": [
+        {
+          "caseId": "flowise-fetch-links-parent",
+          "parsedTypescript": 8,
+          "entries": 0,
+          "structuralTsFindings": 0,
+          "elapsedMs": [
+            523,
+            397
+          ],
+          "parentHeapSamples": [
+            67842880,
+            75182912
+          ],
+          "risk": "REVIEW_REQUIRED",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          }
+        },
+        {
+          "caseId": "flowise-fetch-links-patched",
+          "parsedTypescript": 8,
+          "entries": 0,
+          "structuralTsFindings": 0,
+          "elapsedMs": [
+            391,
+            373
+          ],
+          "parentHeapSamples": [
+            82522944,
+            58694680
+          ],
+          "risk": "REVIEW_REQUIRED",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          }
+        }
+      ],
+      "repeatConsistent": true
+    },
+    "newIndependentValidation": false
+  },
+  "supportedVertical": {
+    "contract": "Existing Servlet request -> local SQL construction -> JDBC execution; numeric/static branch defense.",
+    "scope": "Previously observed OWASP synthetic regression paths, not new CVE patch pairs or independent validation.",
+    "evaluation": {
+      "manifestSha256": "16f9218541aac5f540265701d679aa1a34776091f7fd09034e6eca7721baf724",
+      "rawSha256": "f160d0deed444f4d2c039ef4843130510889c619a9c8e6478864e990ecc3f35a",
+      "outcomes": {
+        "rule": {
+          "FN": 1,
+          "TP": 2,
+          "FP": 2
+        },
+        "filteredRule": {
+          "FN": 1,
+          "TP": 2,
+          "TN": 2
+        },
+        "ast": {
+          "TP": 3,
+          "TN": 2
+        },
+        "reviewCandidate": {
+          "TP": 1,
+          "MERGED_WITH_LEGACY": 2,
+          "TN": 2
+        },
+        "finalUser": {
+          "TP": 3,
+          "TN": 2
+        }
+      },
+      "results": [
+        {
+          "caseId": "owasp-BenchmarkTest00008",
+          "parsedTypescript": 0,
+          "entries": 0,
+          "structuralTsFindings": 0,
+          "elapsedMs": [
+            189,
+            172
+          ],
+          "parentHeapSamples": [
+            75027144,
+            75027144
+          ],
+          "risk": "REVIEW_REQUIRED",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          }
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00024",
+          "parsedTypescript": 0,
+          "entries": 0,
+          "structuralTsFindings": 0,
+          "elapsedMs": [
+            182,
+            170
+          ],
+          "parentHeapSamples": [
+            76075720,
+            77124296
+          ],
+          "risk": "REVIEW_REQUIRED",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          }
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00027",
+          "parsedTypescript": 0,
+          "entries": 0,
+          "structuralTsFindings": 0,
+          "elapsedMs": [
+            178,
+            177
+          ],
+          "parentHeapSamples": [
+            77124296,
+            78172872
+          ],
+          "risk": "REVIEW_REQUIRED",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          }
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00105",
+          "parsedTypescript": 0,
+          "entries": 0,
+          "structuralTsFindings": 0,
+          "elapsedMs": [
+            169,
+            185
+          ],
+          "parentHeapSamples": [
+            78172872,
+            53963992
+          ],
+          "risk": "REVIEW_REQUIRED",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          }
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00114",
+          "parsedTypescript": 0,
+          "entries": 0,
+          "structuralTsFindings": 0,
+          "elapsedMs": [
+            172,
+            171
+          ],
+          "parentHeapSamples": [
+            53963992,
+            55012568
+          ],
+          "risk": "REVIEW_REQUIRED",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          }
+        }
+      ],
+      "repeatConsistent": true
+    }
+  },
+  "nextAction": "Acquire one actual vulnerable/fixed application pair that already uses supported Servlet/JDBC or Django request/SQL APIs with complete target callers. Do not expand framework support based only on advisory text.",
+  "failurePack": "External hardening9-candidate-v3/eligibility-followup-pack.json; original sources and full inventory stay outside Git.",
+  "runtime": {
+    "protocol": "ts-server-v11",
+    "baselineAppliedPreviously": true,
+    "configurationPreserved": true,
+    "restartedAgain": false
+  },
+  "validation": {
+    "evaluationTools": 116,
+    "backend": "gradle test SUCCESS UP-TO-DATE; not a new full execution",
+    "frontendBrowser": "NOT_RERUN_NO_PRODUCT_CHANGES",
+    "liveGithub": "NOT_RUN",
+    "paidAiCalls": 0,
+    "targetExecution": false,
+    "userDatabaseEvaluationWrites": false
+  },
+  "limits": [
+    "Eligibility is a target-path decision, not complete application safety.",
+    "No new independent or blind data, no new actual-CVE detection improvement claimed.",
+    "Flowise context-only comparison leaves engine unchanged; repeat consistency does not imply correctness.",
+    "Timing and parent heap samples are not peak worker RSS or a causal performance guarantee."
+  ]
+}
