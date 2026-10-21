@@ -7,6 +7,11 @@ const run=(content,provider=config())=>classify([{filePath:'ui.tsx',content},{fi
 test('proven translation labels and fixed translation HTML have separate negative evidence',()=>{
   const r=run(page("label('terms')"));assert.deepEqual(r.files[0].excludedHtmlLines,[1]);assert.deepEqual(r.files[1].excludedSecretLines,[1]);
 });
+test('a property key sharing the resource binding name is not a variable escape',()=>{
+  const provider=config().replaceAll('dictionaries','resources').replace("terms:'", "resources:'Documents',terms:'");
+  assert.deepEqual(run(page("label('terms')"),provider).files[0].excludedHtmlLines,[1]);
+  assert.deepEqual(run(page("label('terms')"),provider+'export {resources};').files[0].excludedHtmlLines,[]);
+});
 test('generic objects, opaque credentials and dynamic resource updates retain secret warnings',()=>{
   assert.deepEqual(classify([{filePath:'data.ts',content:'const data={secret:"The Secret Behind A Better Product"};'}]).files[0].excludedSecretLines,[]);
   const fake='ghp_'+'z'.repeat(36);assert.deepEqual(run(page("label('terms')"),config(fake)).files[1].excludedSecretLines,[]);

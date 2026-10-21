@@ -52,7 +52,9 @@ export function displayContexts(files, rows, deadline) {
         let resources=unwrap(member(options,'resources'));
         if(resources&&ts.isIdentifier(resources)){
           const ds=bindings.get(resources.text);if(ds?.length!==1||writes.has(resources.text)||!ts.isVariableDeclaration(ds[0])||!(ds[0].parent.flags&ts.NodeFlags.Const))continue;
-          if(nodes.some(n=>ts.isIdentifier(n)&&n.text===resources.text&&n!==ds[0].name&&n!==resources))continue;
+          if(nodes.some(n=>ts.isIdentifier(n)&&n.text===resources.text&&n!==ds[0].name&&n!==resources
+              && !(ts.isPropertyAssignment(n.parent)&&n.parent.name===n)
+              && !(ts.isPropertyAccessExpression(n.parent)&&n.parent.name===n)))continue;
           resources=unwrap(ds[0].initializer);
         }
         const leaves=[];
