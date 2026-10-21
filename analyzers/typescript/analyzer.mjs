@@ -8,8 +8,9 @@ import { entryContracts } from './entry-contracts.mjs';
 import { denoEntries } from './deno.mjs';
 import { supabaseAnalysis } from './supabase.mjs';
 import { nextEntries } from './next.mjs';
+import { analyzePolicies } from './rls.mjs';
 
-export const VERSION = 'ts-server-v13';
+export const VERSION = 'ts-server-v14';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -994,6 +995,16 @@ export function analyze(input, overrides = {}) {
     const withResponses={...combined,environmentResponses:returns.flatMap(v=>v.environmentResponses??[]).slice(0,20)};
     return state.nodeMode&&returns.length>1&&returns.length<=4?{...withResponses,nodeAlternatives:returns}:withResponses;
   }
+  // Reserve a bounded SQL pass before flow tracing can consume the shared budget.
+  // Its ticks still count against the same global cap; no target code is run.
+  let precomputedPolicies;
+  if(input.policyFiles?.some(f=>f.status==='SELECTED')) {
+    let sqlWork=0;const sqlCap=Math.floor(limits.maxSteps*(modules.size?0.25:0.9));
+    const globalTick=()=>{if(++steps>limits.maxSteps||Date.now()>deadline)throw Error('SUPABASE_BUDGET');};
+    try {precomputedPolicies=analyzePolicies(input.policyFiles,globalTick,()=>{
+      if(++sqlWork>sqlCap)throw Error('POLICY_STEP_BUDGET');globalTick();
+    });}catch {/* The ordinary unavailable path below stays fail-closed. */}
+  }
   denoEntries({ts,modules,resolve,claimFunction,tick,note,input});
   nextEntries({ts,modules,input,tick,note});
   entryContracts({ts,modules,tick,note,loc,append,result});
@@ -1042,7 +1053,7 @@ export function analyze(input, overrides = {}) {
   result.sqlUses = result.sqlUses.filter((item, i, all) => all.findIndex(other => JSON.stringify(item) === JSON.stringify(other)) === i);
   if (!result.files.length) result.status = 'NOT_APPLICABLE';
   else if (result.files.some(f => f.parseStatus !== 'PARSED' || f.flowStatus !== 'SUPPORTED_FLOW_ANALYZED') || result.limitations.length > 1) result.status = 'PARTIAL';
-  result.supabaseAnalysis=supabaseAnalysis({ts,modules,input,tick:()=>{
+  result.supabaseAnalysis=supabaseAnalysis({ts,modules,input,precomputedPolicies,tick:()=>{
     if(++steps>limits.maxSteps||Date.now()>deadline)throw Error('SUPABASE_BUDGET');
   }});
   return result;

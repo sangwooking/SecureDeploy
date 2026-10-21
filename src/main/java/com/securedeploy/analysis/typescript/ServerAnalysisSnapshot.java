@@ -225,16 +225,17 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
             }
         });
         if (selectionCoverage != null) {
-            counts.put("DISCOVERED_PYTHON_FILES", selectionCoverage.discoveredFiles());
-            counts.put("SUBMITTED_PYTHON_FILES", selectionCoverage.submittedFiles());
-            counts.put("OMITTED_PYTHON_FILES", selectionCoverage.omittedFiles());
+            String prefix=analyzerVersion.startsWith("py-django-")?"PYTHON_FILES":"TS_SQL_FILES";
+            counts.put("DISCOVERED_"+prefix, selectionCoverage.discoveredFiles());
+            counts.put("SUBMITTED_"+prefix, selectionCoverage.submittedFiles());
+            counts.put("OMITTED_"+prefix, selectionCoverage.omittedFiles());
         }
         if (resourceUses != null) resourceUses.forEach(use -> counts.merge("RESOURCE_" + use.kind(), 1, Integer::sum));
         if(nodeUses!=null) {
             nodeUses.forEach(use->counts.merge("NODE_"+use.kind(),1,Integer::sum));
             counts.put("ENTRYPOINTS",files.stream().mapToInt(FileCoverage::entrypoints).sum());
             counts.put("FUNCTIONS_TRACED",files.stream().mapToInt(FileCoverage::functionsAnalyzed).sum());
-            counts.put("SOURCE_SUBMITTED",files.size());
+            counts.put("SOURCE_SUBMITTED",(int)files.stream().filter(f->!"LIMIT_EXCEEDED".equals(f.parseStatus())).count());
             files.forEach(file->file.limitations().forEach(reason->counts.merge("LIMITATION_"+reason,1,Integer::sum)));
             counts.put("STATIC_INPUT_EXECUTION_PATHS",(int)nodeUses.stream().filter(use->"INPUT_TO_EXECUTION".equals(use.kind())).count());
         }

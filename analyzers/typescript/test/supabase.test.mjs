@@ -8,6 +8,22 @@ const owner='CREATE POLICY own ON public.notes FOR ALL TO authenticated USING (a
 const run=(sql,files=[])=>analyze({files,policyFiles:Array.isArray(sql)?sql:[source(sql)]}).supabaseAnalysis;
 const op=(r,operation,role='authenticated')=>r.tables[0].operations.find(o=>o.operation===operation&&o.role===role);
 
+test('policy work cap retains prior facts but invalidates conclusions for incomplete migrations',()=>{
+  const r=run([source(table+grant+owner),
+    source("SELECT '"+'x'.repeat(95_000)+"';",'20260102000000_large.sql'),
+    source('GRANT DELETE ON public.notes TO anon;','20260103000000_later.sql')]);
+  assert.equal(r.tables.length,1);assert.equal(r.tables[0].rls,'UNKNOWN');
+  assert.ok(r.tables[0].operations.every(o=>o.state==='UNKNOWN'&&!o.candidate));
+  assert.equal(r.files[1].status,'LIMIT_EXCEEDED');assert.equal(r.files[2].status,'NOT_RUN');
+  assert.ok(r.limitations.includes('POLICY_STEP_BUDGET'));assert.equal(r.findings.length,0);
+});
+test('reserved policy work does not replace the existing overall budget or hide a reached flow',()=>{
+  const r=analyze({files:[{filePath:'edge.ts',content:"Deno.serve(req=>Response.json(Deno.env.get('SYNTHETIC_PRIVATE_KEY')));"}],
+    policyFiles:[source(table),source("SELECT '"+'x'.repeat(60_000)+"';",'20260102000000_large.sql')]});
+  assert.ok(r.findings.some(f=>f.ruleId==='TS_SENSITIVE_DATA_EXPOSURE'));
+  assert.equal(r.supabaseAnalysis.tables[0].rls,'UNKNOWN');
+});
+
 test('enabled RLS, explicit grant and UID-column equality are separate declaration evidence',()=>{
   const r=run(table+grant+owner);assert.equal(r.tables[0].rls,'ENABLED');assert.equal(op(r,'UPDATE').state,'UID_COLUMN_EQUALITY');
   assert.equal(r.findings.length,0);assert.ok(r.limitations.includes('DECLARATIONS_NOT_LIVE_DATABASE'));

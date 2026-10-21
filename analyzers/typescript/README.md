@@ -115,3 +115,29 @@ Official contracts:
 - https://nextjs.org/docs/app/guides/data-security
 - https://nextjs.org/docs/app/guides/environment-variables
 - https://nextjs.org/docs/pages/building-your-application/routing/api-routes
+
+Version 14 changes input scheduling, not sink, RLS or Risk semantics. The Java
+selector uses bounded lexical/convention hints (at most 1,000 prefixes and
+1,000,000 hint characters, at most 16,000 per file) and relative-import edges to
+depth 3. Hints never establish a real entrypoint; the existing worker revalidates
+every supplied registration and call. Oversized files are skipped, not truncated
+and certified. Unknown or prefix-truncated hint coverage is reported.
+The existing combined 100-file/1,000,000-character input budget and 100,000 per-file
+limit remain. Soft reservations protect up to 24 related code files (250,000
+characters), up to 8 general files within a 32-file/350,000-character code share,
+and up to 68 policy SQL files/650,000 characters. Unused shares are reclaimed for
+related code, SQL, then general code, subject to the same global caps. A file that
+does not fit cannot stop later small files. SQL interpretation stays chronologically
+ordered in the original parser; missing inventory/SQL still invalidates certainty.
+Selection reasons and combined candidate/submitted/omitted counts are optional
+snapshot metadata. Parsed files and traced flows remain separate. SCA/deployment
+inputs still use the original project inventory and their independent existing caps.
+When selected SQL exists, the policy pass runs before request-flow traversal and
+may use at most 25% of the same shared step cap when parsed code exists (90% for
+SQL-only inputs, reserving finalization work). Unused work remains available to
+code tracing; no additional global steps/time/memory are granted. On policy quota
+exhaustion, prior declaration facts remain, the interrupted migration is limited,
+later inputs are NOT_RUN, and affected migration scopes yield UNKNOWN operations
+and no broad-write candidate. Finalization and client inspection still consume the
+remaining global budget. This is scheduling/partial-evidence handling, not a new
+policy grammar or stronger authorization judgment.

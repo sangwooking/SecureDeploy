@@ -1,5 +1,7 @@
 import type { SupabaseAnalysis } from '../types/supabaseAnalysis';
 const labels: Record<string,string>={
+  POLICY_STEP_BUDGET:'정책 작업량 예약 상한 · 남은 migration 미검사, 권한 결론 미확인',
+  SQL_SOURCE_NOT_INSPECTED:'SQL 입력을 검사하지 못함',SOURCE_FILE_COUNT_LIMIT:'공통 파일 수 상한',SOURCE_TOTAL_CHAR_LIMIT:'공통 문자 수 상한',SOURCE_FILE_SIZE_LIMIT:'개별 파일 크기 상한',
   ENABLED:'RLS 활성화 선언',DISABLED:'RLS 비활성화 선언',DISABLED_BY_CREATE:'테이블 생성 시 RLS 비활성 상태',
   UID_COLUMN_EQUALITY:'현재 사용자 ID와 컬럼 일치 조건',AUTHENTICATION_ONLY:'로그인 여부 조건 · 소유권 확인 아님',
   COLUMN_FILTER:'행의 컬럼 조건 · 사용자 소유권 확인 아님',
@@ -48,10 +50,11 @@ export function SupabaseAnalysisSection({snapshot,compact=false}:{snapshot?:Supa
           <details className="technical-details"><summary>인증 문맥 한계</summary><p>{c.authContext}</p></details></div>)}
       </details>
       <details className="coverage-details"><summary>검사한 SQL과 미확인 범위 ({snapshot.files.length})</summary>
-        {snapshot.files.map((f,i)=><p className="finding-location" key={i}>{f.filePath} · {text(f.status)} · 선언문 {f.statements}개</p>)}
+        {snapshot.files.map((f,i)=><p className="finding-location" key={i}>{f.filePath} · {text(f.status)} · 선언문 {f.statements}개
+          {f.limitations.length>0&&<span> · {f.limitations.map(text).join(' · ')}</span>}</p>)}
         <p>미지원 SQL·누락 파일·순서 불명확·자원 제한은 안전으로 처리하지 않습니다. 정책 파일이 없어도 운영 DB에 정책이 없다고 확정하지 않습니다.</p>
         <p>{snapshot.analyzerVersion} · {snapshot.status}</p>
-        <details className="technical-details"><summary>미확인 사유 코드</summary><ul>{snapshot.limitations.map((l,i)=><li key={i}>{l}</li>)}</ul></details>
+        <details className="technical-details"><summary>미확인 사유 코드</summary><ul>{snapshot.limitations.map((l,i)=><li key={i}>{text(l)}</li>)}</ul></details>
       </details>
     </>}
   </section>;

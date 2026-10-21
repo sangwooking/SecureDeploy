@@ -16,6 +16,16 @@ const entryStageLabels: Record<string,string>={
 };
 
 const labels: Record<string, string> = {
+  TS_DENO_REGISTRATION_HINT:'Deno 등록 구문 후보로 선택 · 실제 등록은 별도 확인',
+  TS_NEXT_ROUTE_EXPORT_HINT:'Next.js 요청 export 후보로 선택',TS_EXPRESS_MODULE_HINT:'Express import 모듈 후보로 선택',
+  TS_EDGE_FUNCTION_CONVENTION_HINT:'Edge Function 폴더 규약 후보 · 진입점 확정 아님',
+  TS_SERVER_DIRECTIVE_HINT:'서버 지시어 후보로 선택',TS_RELATED_IMPORT_HINT:'서버 후보의 제한된 상대 import 관계',
+  TS_SUPABASE_CLIENT_MODULE_HINT:'Supabase SDK import 모듈 후보 · Client 의미 연결의 증명 아님',
+  TS_POLICY_SQL_INPUT:'저장소 정책 SQL 입력',TS_DETERMINISTIC_FALLBACK:'일반 코드 예약·남은 예산으로 선택',
+  TS_SELECTION_HINT_LIMIT:'파일 선택용 힌트 탐색 상한 · 일부 관계 미확인',
+  TS_SELECTION_HINTS_NOT_ENTRY_PROOF:'선택 우선순위는 힌트이며 요청·보안 흐름의 증명이 아님',
+  TS_COMBINED_SOURCE_SQL_BUDGET_PARTIAL:'JS/TS·정책 SQL 공통 예산으로 일부 파일 미검사',
+  SOURCE_FILE_SIZE_LIMIT:'개별 파일 문자 수 상한',SOURCE_FILE_COUNT_LIMIT:'JS/TS·SQL 공통 파일 수 상한',SOURCE_TOTAL_CHAR_LIMIT:'JS/TS·SQL 공통 문자 수 상한',
   NEXT_ROUTE_HANDLER:'Next.js 요청 처리 함수 선언',NEXT_SERVER_FUNCTION:'Next.js 서버 함수 선언 · 호출 여부 미확인',
   SERVER_FUNCTION_ARGUMENT:'외부에서 전달할 수 있는 서버 함수 인자',SERVER_FUNCTION_RETURN:'서버 함수 반환 위치',
   NEXT_SERVER_FUNCTION_INVOCATION_NOT_VERIFIED:'서버 함수의 실제 호출·배포 여부는 미확인',
@@ -198,12 +208,17 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
   const current = Math.min(page, Math.max(0, Math.ceil(snapshot.files.length / 10) - 1));
   return <section className="server-analysis-section" aria-label={title}>
     <h3>{title}</h3><p>{text(snapshot.status)}</p>
-    {!python&&['ts-server-v11','ts-server-v12','ts-server-v13'].includes(snapshot.analyzerVersion)&&snapshot.nodeUses!=null&&<p className="review-caution">
+    {!python&&['ts-server-v11','ts-server-v12','ts-server-v13','ts-server-v14'].includes(snapshot.analyzerVersion)&&snapshot.nodeUses!=null&&<p className="review-caution">
       소스 기록 {snapshot.files.length}개 · 파싱 {snapshot.files.filter(f=>f.parseStatus==='PARSED').length}개 ·
       요청 등록 {snapshot.nodeUses.filter(u=>u.kind==='ENTRY_REGISTERED').length}곳 ·
       Router 반환 연결 {snapshot.nodeUses.filter(u=>u.kind==='CALL_LINKED').length}곳 ·
       분석 제한 기록 {snapshot.files.filter(f=>f.limitations.some(l=>l.includes('BUDGET_EXCEEDED')||l.includes('DEPTH_LIMIT'))).length}개 파일.
       파싱·등록·호출 연결은 전체 보안 흐름 검증이나 안전 판정이 아닙니다.
+    </p>}
+    {!python&&snapshot.selectionCoverage&&<p className="review-caution">
+      JS/TS·정책 SQL 후보 {snapshot.selectionCoverage.discoveredFiles}개 · 분석 입력 선택 {snapshot.selectionCoverage.submittedFiles}개 ·
+      미선택 {snapshot.selectionCoverage.omittedFiles}개 · 선택한 문자 {snapshot.selectionCoverage.submittedCharacters}자.
+      입력 선택은 구문 파싱이나 보안 흐름 검증 완료가 아닙니다. 미선택 파일은 안전으로 처리하지 않습니다.
     </p>}
     {!python&&snapshot.files.some(f=>f.limitations.some(l=>l.startsWith('NEXT_')))&&<p className="review-caution">
       Next.js 요청 함수 {snapshot.authorizationContexts.filter(c=>c.entry.kind==='NEXT_ROUTE_HANDLER').length}곳 ·
@@ -305,6 +320,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
       <ul className="coverage-file-list">{snapshot.files.slice(current * 10, current * 10 + 10).map((f, i) => <li key={i}>
         <code className="finding-location">{f.filePath}</code><span>{text(f.parseStatus)} · {text(f.flowStatus)} · 확인한 함수 {f.functionsAnalyzed}개</span>
         {python && <span>확인한 요청 진입점 {f.entrypoints}개{f.selectionReason ? ` · ${text(f.selectionReason)}` : ''}</span>}
+        {!python&&f.selectionReason&&<span>입력 선택 근거 · {text(f.selectionReason)}</span>}
         {f.prepareCallSites != null && <span>{python ? 'SQL 실행 후보' : 'prepare'} 호출 구문 {f.prepareCallSites}곳 · 경로 확인 {f.tracedPrepareCallSites ?? '미기록'}곳 (모든 구문이 실제 SQL 호출이라는 뜻은 아님)</span>}
         {f.httpCallSites != null && <span>fetch 호출 구문 {f.httpCallSites}곳 · 목적지 추적 {f.tracedHttpCallSites ?? '미기록'}곳 (모든 HTTP client를 지원하는 것은 아님)</span>}
         {python && f.resourceCallSites != null && <span>파일·복원 API 후보 구문 {f.resourceCallSites}곳 · 호출 근거 추적 {f.tracedResourceCallSites ?? '미기록'}곳 (이름 후보이며 실제 API 사용을 모두 증명한 것은 아님)</span>}

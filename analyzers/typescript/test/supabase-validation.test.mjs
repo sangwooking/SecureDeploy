@@ -37,7 +37,7 @@ test('ordering is deterministic and duplicate timestamps or schema snapshots are
  assert.equal(run([initial,{...changed,filePath:'supabase/migrations/20260101000000_duplicate.sql'}]).tables[0].rls,'UNKNOWN');
  assert.equal(run([initial,{filePath:'schema.sql',status:'SELECTED',content:base}]).tables.find(t=>t.scope==='').rls,'UNKNOWN');
  const limited=analyze({files:[],policyFiles:[initial]},{maxSteps:1}).supabaseAnalysis;
- assert.equal(limited.findings.length,0);assert.ok(limited.files.some(f=>f.status==='PARSE_FAILED'||f.status==='NOT_RUN'));
+  assert.equal(limited.findings.length,0);assert.ok(limited.files.some(f=>['PARSE_FAILED','NOT_RUN','LIMIT_EXCEEDED'].includes(f.status)));
 });
 test('a later Client budget failure does not erase already completed SQL declaration evidence',()=>{
  const ast=ts.createSourceFile('large.ts','const x={'+Array.from({length:400},(_,i)=>`v${i}:${i}`).join(',')+'};',ts.ScriptTarget.Latest,true);

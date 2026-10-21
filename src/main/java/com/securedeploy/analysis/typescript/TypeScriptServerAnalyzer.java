@@ -19,14 +19,16 @@ public class TypeScriptServerAnalyzer {
     public TypeScriptServerAnalyzer(TypeScriptAnalysisProperties properties) { this.properties = properties; }
 
     public ServerAnalysisSnapshot analyze(ProjectStructure project) {
-        var result=analyzeInternal(project);
+        var selection=TypeScriptSourceSelector.select(project.analysisFiles());
+        var result=analyzeInternal(project,selection).withSelectionCoverage(selection.coverage());
         if(result.supabaseAnalysis()!=null)return result;
-        var sql=project.analysisFiles().stream().filter(f->f.type()==com.securedeploy.project.model.ProjectFileType.SUPABASE_SQL).limit(100)
+        var sql=project.analysisFiles().stream().filter(f->f.type()==com.securedeploy.project.model.ProjectFileType.SUPABASE_SQL)
+                .sorted(Comparator.comparing(f->f.relativePath())).limit(100)
                 .map(f->new SupabaseSnapshot.SqlFile(CoverageRecorder.safePath(f.relativePath()),"NOT_RUN",0,List.of("ANALYZER_NOT_AVAILABLE"))).toList();
         return result.withSupabaseAnalysis(new SupabaseSnapshot(1,"supabase-rls-v1",sql.isEmpty()&&"NOT_APPLICABLE".equals(result.status())?"NOT_APPLICABLE":"PARTIAL",
                 sql,List.of(),List.of(),List.of(),List.of(),List.of("DECLARATIONS_NOT_LIVE_DATABASE","ANALYZER_NOT_AVAILABLE")));
     }
-    private ServerAnalysisSnapshot analyzeInternal(ProjectStructure project) {
+    private ServerAnalysisSnapshot analyzeInternal(ProjectStructure project,TypeScriptSourceSelector.Plan selection) {
         var candidates = project.analysisFiles().stream().filter(f -> f.relativePath().matches(".*(?:\\.[jt]sx?|\\.[cm]js)$"))
                 .sorted(Comparator.comparing(f -> f.relativePath())).toList();
         var sqlCandidates=project.analysisFiles().stream().filter(f->f.type()==com.securedeploy.project.model.ProjectFileType.SUPABASE_SQL)
@@ -35,31 +37,26 @@ public class TypeScriptServerAnalyzer {
         List<Map<String, String>> sources = new ArrayList<>();
         List<FileCoverage> omitted = new ArrayList<>();
         Map<String, Integer> lineCounts = new HashMap<>();
-        int total = 0;
-        for (var file : candidates) {
-            String path = CoverageRecorder.safePath(file.relativePath());
-            long length = file.lines().stream().mapToLong(line -> line.length() + 1L).sum();
-            if (path.equals("[redacted-path]")) {
-                if (omitted.size() < MAX_FILES) omitted.add(skipped(path, "SENSITIVE_PATH_OMITTED"));
-            } else if (sources.size() >= MAX_FILES || length > MAX_FILE_CHARS || length + total > MAX_TOTAL_CHARS) {
-                if (omitted.size() < MAX_FILES) omitted.add(skipped(path, "SOURCE_LIMIT_EXCEEDED"));
-            } else {
-                sources.add(Map.of("filePath", path, "content", String.join("\n", file.lines())));
-                lineCounts.put(path, file.lines().size()); total += (int) length;
-            }
+        var selectionReasons=new HashMap<String,String>();
+        for(var choice:selection.selected())if(!choice.sql()) {
+            var file=choice.file();String path=CoverageRecorder.safePath(file.relativePath());
+            sources.add(Map.of("filePath",path,"content",String.join("\n",file.lines())));
+            lineCounts.put(path,file.lines().size());selectionReasons.put(path,choice.reason());
+        }
+        for(var choice:selection.omitted())if(!choice.sql()&&omitted.size()<MAX_FILES) {
+            String path=CoverageRecorder.safePath(choice.file().relativePath());
+            omitted.add(skipped(path,selection.omissions().get(choice.file().relativePath())).withSelectionReason(choice.reason()));
         }
         List<FileCoverage> unavailableFiles = new ArrayList<>(omitted);
         var policyFiles=new ArrayList<Map<String,String>>();var policyLines=new HashMap<String,Integer>();
-        for(var file:sqlCandidates){
-            if(policyFiles.size()>=100)break;
-            String path=CoverageRecorder.safePath(file.relativePath());
-            long size=file.lines().stream().mapToLong(s->s.length()+1L).sum();
-            if(!path.equals("[redacted-path]")&&size<=MAX_FILE_CHARS&&total+size<=MAX_TOTAL_CHARS&&sources.size()+policyLines.size()<MAX_FILES){
-                policyFiles.add(Map.of("filePath",path,"status","SELECTED","content",String.join("\n",file.lines())));
-                policyLines.put(path,file.lines().size());total+=(int)size;
-            }else policyFiles.add(Map.of("filePath",path,"status","LIMIT_EXCEEDED"));
+        for(var choice:selection.selected())if(choice.sql()) {
+            var file=choice.file();String path=CoverageRecorder.safePath(file.relativePath());
+            policyFiles.add(Map.of("filePath",path,"status","SELECTED","content",String.join("\n",file.lines())));
+            policyLines.put(path,file.lines().size());
         }
-        sources.forEach(f -> unavailableFiles.add(new FileCoverage(f.get("filePath"), "NOT_RUN", "NOT_RUN", 0, 0, List.of())));
+        for(var choice:selection.omitted())if(choice.sql()&&policyFiles.size()<100)
+            policyFiles.add(Map.of("filePath",CoverageRecorder.safePath(choice.file().relativePath()),"status","LIMIT_EXCEEDED","reason",selection.omissions().get(choice.file().relativePath())));
+        sources.forEach(f -> unavailableFiles.add(new FileCoverage(f.get("filePath"), "NOT_RUN", "NOT_RUN", 0, 0, List.of()).withSelectionReason(selectionReasons.get(f.get("filePath")))));
         if (!properties.isEnabled()) return ServerAnalysisSnapshot.unavailable("DISABLED", unavailableFiles, "ANALYZER_DISABLED");
         if (sources.isEmpty()&&policyFiles.isEmpty()) return ServerAnalysisSnapshot.unavailable("PARTIAL", unavailableFiles, "NO_SOURCE_WITHIN_LIMITS");
         if (!capacity.tryAcquire()) return ServerAnalysisSnapshot.unavailable("UNAVAILABLE", unavailableFiles, "ANALYZER_CAPACITY_LIMIT");
@@ -71,7 +68,7 @@ public class TypeScriptServerAnalyzer {
                     || !Files.isRegularFile(directory.resolve("node_modules/typescript/lib/typescript.js")))
                 return ServerAnalysisSnapshot.unavailable("UNAVAILABLE", unavailableFiles, "TRUSTED_PARSER_NOT_INSTALLED");
             var manifests=new ArrayList<Map<String,String>>();
-            for(var file:project.analysisFiles())if(file.relativePath().endsWith("package.json")&&manifests.size()<100
+            for(var file:project.analysisFiles().stream().sorted(Comparator.comparing(f->f.relativePath())).toList())if(file.relativePath().endsWith("package.json")&&manifests.size()<100
                     &&file.lines().stream().mapToLong(String::length).sum()<100_000) {
                 try {
                     var document=mapper.readTree(String.join("\n",file.lines()));var manifest=new HashMap<String,String>();
@@ -85,7 +82,7 @@ public class TypeScriptServerAnalyzer {
                 }catch(Exception ignored){/* A malformed manifest cannot establish a driver API contract. */}
             }
             var denoConfigs=new ArrayList<Map<String,Object>>();
-            for(var file:project.analysisFiles())if(file.relativePath().matches("(?:.*/)?supabase/config\\.toml") && denoConfigs.size()<20
+            for(var file:project.analysisFiles().stream().sorted(Comparator.comparing(f->f.relativePath())).toList())if(file.relativePath().matches("(?:.*/)?supabase/config\\.toml") && denoConfigs.size()<20
                     &&file.lines().stream().mapToLong(String::length).sum()<100_000) {
                 String path=CoverageRecorder.safePath(file.relativePath());
                 if(path.equals("[redacted-path]"))continue;
@@ -125,12 +122,15 @@ public class TypeScriptServerAnalyzer {
             var parsed = mapper.readValue(output, ServerAnalysisSnapshot.class);
             validate(parsed, lineCounts);
             var rlsLines=new HashMap<>(lineCounts);rlsLines.putAll(policyLines);validateSupabase(parsed.supabaseAnalysis(),rlsLines);
-            var files = new ArrayList<>(parsed.files()); files.addAll(omitted);
+            var files = new ArrayList<>(parsed.files().stream().map(f->f.withSelectionReason(selectionReasons.get(f.filePath()))).toList()); files.addAll(omitted);
             var limitations = new ArrayList<>(parsed.limitations());
+            limitations.add("TS_SELECTION_HINTS_NOT_ENTRY_PROOF");
             if (!omitted.isEmpty()) limitations.add("SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED");
+            if(!selection.hintsComplete())limitations.add("TS_SELECTION_HINT_LIMIT");
+            if(selection.coverage().omittedFiles()>0)limitations.add("TS_COMBINED_SOURCE_SQL_BUDGET_PARTIAL");
             if (candidates.size() > sources.size() + omitted.size()) limitations.add("OMITTED_FILE_DETAILS_TRUNCATED");
             return new ServerAnalysisSnapshot(parsed.schemaVersion(), parsed.analyzerVersion(), parsed.parserVersion(),
-                    omitted.isEmpty() ? parsed.status() : "PARTIAL", List.copyOf(files), parsed.findings(), parsed.sqlUses(),
+                    selection.coverage().omittedFiles()==0 ? parsed.status() : "PARTIAL", List.copyOf(files), parsed.findings(), parsed.sqlUses(),
                     parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses()).withExposureUses(parsed.exposureUses()).withNodeUses(parsed.nodeUses()).withSupabaseAnalysis(parsed.supabaseAnalysis());
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
@@ -164,7 +164,7 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v13".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v14".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200

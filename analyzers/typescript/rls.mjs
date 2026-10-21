@@ -83,13 +83,13 @@ class Cursor {
   expr(){this.require('(');const start=this.i;let n=1;while(this.i<this.ts.length&&n){const v=this.ts[this.i++].v;if(v==='(')n++;if(v===')')n--;if(n>30)throw Error('SQL_DEPTH_LIMIT');}if(n)throw Error('SQL_LEXICAL_ERROR');return condition(this.ts.slice(start,this.i-1));}
 }
 
-export function analyzePolicies(files,tick){
+export function analyzePolicies(files,tick,workTick=tick){
   const tables=new Map(),results=[],limits=new Set(['DECLARATIONS_NOT_LIVE_DATABASE','ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN']);
   const scopes=new Map();
   const migrationRoots=new Set(files.map(f=>f.filePath.match(/^(.*)supabase\/migrations\/[^/]+\.sql$/)?.[1]).filter(v=>v!==undefined));
   const ambiguousRoots=new Set(files.filter(f=>!f.filePath.includes('/migrations/')).map(f=>f.filePath.match(/^(.*)supabase\/(?:schemas\/|policies\/)?[^/]+\.sql$/)?.[1]??(f.filePath==='schema.sql'?'':null)).filter(v=>v!==null&&migrationRoots.has(v)));
   function table(scope,name,location){const key=scope+'|'+name;if(!tables.has(key)){if(tables.size>=200)throw Error('SQL_TABLE_LIMIT');tables.set(key,{scope,table:name,rls:'UNKNOWN',force:'UNKNOWN',location,policies:new Map(),grants:new Map(),grantLocations:[],uncertain:false});}return tables.get(key);}
-  let statements=0;
+  let statements=0,workExhausted=false;
   for(const file of [...files].sort((a,b)=>a.filePath.localeCompare(b.filePath,'en'))){
     tick();const path=file.filePath,match=path.match(/^(.*)supabase\/migrations\/(\d{14})_[^/]+\.sql$/);
     const migration=path.match(/^(.*)supabase\/migrations\/[^/]+\.sql$/);
@@ -99,15 +99,16 @@ export function analyzePolicies(files,tick){
     if(migration&&!match)state.unknown=true;
     const location=line=>({filePath:path,line,column:1,functionName:'',kind:'RLS_DECLARATION'});
     if(file.status!=='SELECTED'){
-      state.unknown=true;results.push({filePath:path,status:file.status,statements:0,limitations:['SQL_SOURCE_NOT_INSPECTED']});continue;
+      state.unknown=true;results.push({filePath:path,status:file.status,statements:0,limitations:['SQL_SOURCE_NOT_INSPECTED',...(file.reason?[file.reason]:[])]});continue;
     }
+    if(workExhausted){state.unknown=true;results.push({filePath:path,status:'NOT_RUN',statements:0,limitations:['POLICY_STEP_BUDGET']});continue;}
     if(match&&state.versions.has(match[2]))state.unknown=true;
     if(match)state.versions.add(match[2]);
     const row={filePath:path,status:'PARSED',statements:0,limitations:[]};results.push(row);
     try{
-      const ts=tokens(file.content,tick);let start=0;
+      const ts=tokens(file.content,workTick);let start=0;
       for(let end=0;end<=ts.length;end++)if(end===ts.length||ts[end].v===';'){
-        const s=ts.slice(start,end);start=end+1;if(!s.length)continue;tick();if(++statements>5000)throw Error('SQL_STATEMENT_LIMIT');row.statements++;
+        const s=ts.slice(start,end);start=end+1;if(!s.length)continue;workTick();if(++statements>5000)throw Error('SQL_STATEMENT_LIMIT');row.statements++;
         const c=new Cursor(s);let target;
         try{
           if(c.eat('create')){
@@ -161,7 +162,13 @@ export function analyzePolicies(files,tick){
           else {row.status='PARTIAL';row.limitations.push('OTHER_SQL_NOT_INTERPRETED');}
         }catch{row.status='PARTIAL';row.limitations.push('UNSUPPORTED_SQL_DECLARATION');if(target)target.uncertain=true;else state.unknown=true;}
       }
-    }catch{row.status='PARSE_FAILED';row.limitations.push('SQL_LEXICAL_OR_RESOURCE_LIMIT');state.unknown=true;}
+    }catch(error){
+      state.unknown=true;
+      if(error?.message==='POLICY_STEP_BUDGET'){
+        row.status='LIMIT_EXCEEDED';row.limitations.push('POLICY_STEP_BUDGET');
+        workExhausted=true;limits.add('POLICY_STEP_BUDGET');
+      }else{row.status='PARSE_FAILED';row.limitations.push('SQL_LEXICAL_OR_RESOURCE_LIMIT');}
+    }
     row.limitations=[...new Set(row.limitations)];
   }
   const output=[];

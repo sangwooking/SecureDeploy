@@ -46,10 +46,10 @@ class TypeScriptServerAnalyzerTest {
                 const envClean = Object.keys(process.env).every(key => ['LANG', '__CF_USER_TEXT_ENCODING'].includes(key));
                 let input = ''; for await (const chunk of process.stdin) input += chunk;
                 const files = JSON.parse(input).files.map(f => ({filePath:f.filePath, parseStatus:'PARSED',flowStatus:'NOT_SUPPORTED',entrypoints:0,functionsAnalyzed:0,limitations:[]}));
-                process.stdout.write(JSON.stringify({schemaVersion:1,analyzerVersion:'ts-server-v13',parserVersion:'6.0.3',status:'PARTIAL',files,findings:[],sqlUses:[],httpUses:[],exposureUses:[],nodeUses:[],authorizationContexts:[],limitations:[blocked && envClean ? 'ISOLATED' : 'ISOLATION_FAILED']}));
+                process.stdout.write(JSON.stringify({schemaVersion:1,analyzerVersion:'ts-server-v14',parserVersion:'6.0.3',status:'PARTIAL',files,findings:[],sqlUses:[],httpUses:[],exposureUses:[],nodeUses:[],authorizationContexts:[],limitations:[blocked && envClean ? 'ISOLATED' : 'ISOLATION_FAILED']}));
                 """.formatted(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(outside.toString()));
         var result = new TypeScriptServerAnalyzer(fixtureWorker(code)).analyze(project(UNSAFE));
-        assertThat(result.limitations()).containsExactly("ISOLATED");
+        assertThat(result.limitations()).contains("ISOLATED").doesNotContain("ISOLATION_FAILED");
     }
     @Test void oversizedFilesAndSensitivePathsAreExplicitlyOmitted() {
         var analyzer = new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties());

@@ -5,6 +5,14 @@ const { renderToStaticMarkup } = require('react-dom/server');
 const { ServerAnalysisSection } = require('./load-component.cjs')('ServerAnalysisSection');
 const fixture = require('./server-analysis-fixture.cjs');
 const render = snapshot => renderToStaticMarkup(React.createElement(ServerAnalysisSection, { snapshot }));
+test('combined code and SQL selection is not confused with parsing or verified flows',()=>{
+  const data=fixture();data.analyzerVersion='ts-server-v14';data.nodeUses=[];
+  data.selectionCoverage={discoveredFiles:249,submittedFiles:100,omittedFiles:149,omittedDetails:49,submittedCharacters:450000,omissionReasons:{SOURCE_FILE_COUNT_LIMIT:149}};
+  data.files[0].selectionReason='TS_RELATED_IMPORT_HINT';
+  const html=render(data);
+  for(const phrase of ['JS/TS·정책 SQL 후보 249개','분석 입력 선택 100개','미선택 149개','미선택 파일은 안전으로 처리하지 않습니다',
+    '서버 후보의 제한된 상대 import 관계','구문 파싱이나 보안 흐름 검증 완료가 아닙니다'])assert.ok(html.includes(phrase),phrase);
+});
 test('Next declarations, invocation uncertainty and client bundle scope are separated',()=>{
   const data=fixture();data.analyzerVersion='ts-server-v13';data.nodeUses=[];
   data.files[0].limitations.push('NEXT_SERVER_FUNCTION_INVOCATION_NOT_VERIFIED','NEXT_PAGES_API_NOT_SUPPORTED');

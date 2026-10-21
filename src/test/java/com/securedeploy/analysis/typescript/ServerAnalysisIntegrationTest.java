@@ -40,9 +40,14 @@ class ServerAnalysisIntegrationTest {
 
     @Test void nextBoundariesPersistIdenticallyAcrossZipPublicAndPrivateInputs() throws Exception {
         String token=signup();
-        var sources=Map.of("package.json","{\"dependencies\":{\"next\":\"15.3.0\"}}",
-                "app/api/check/route.ts","export async function POST(req:Request){const body=await req.json();await fetch(body.target);return Response.json({value:process.env.SYNTHETIC_API_KEY_NAME});}");
+        var sources=new LinkedHashMap<>(Map.of("package.json","{\"dependencies\":{\"next\":\"15.3.0\"}}",
+                "app/api/check/route.ts","export async function POST(req:Request){const body=await req.json();await fetch(body.target);return Response.json({value:process.env.SYNTHETIC_API_KEY_NAME});}"));
+        for(int i=0;i<180;i++)sources.put("src/components/Tile"+i+".tsx","export const Tile=()=>null;");
+        for(int i=0;i<67;i++)sources.put("supabase/migrations/20260101%06d_selection.sql".formatted(i),"CREATE TABLE public.sample_"+i+"(id uuid);");
         var zip=uploadSources(token,sources);var snapshot=zip.path("serverAnalysis");
+        assertThat(snapshot.at("/selectionCoverage/submittedFiles").asInt()).isEqualTo(100);
+        assertThat(snapshot.at("/supabaseAnalysis/files")).hasSize(67);
+        for(var policy:snapshot.at("/supabaseAnalysis/files"))assertThat(policy.path("status").asText()).isNotEqualTo("LIMIT_EXCEEDED");
         assertThat(snapshot.path("validatedFindings")).hasSize(2);
         for(var finding:snapshot.path("validatedFindings")) {
             assertThat(finding.path("priority").asText()).isEqualTo("REVIEW_REQUIRED");

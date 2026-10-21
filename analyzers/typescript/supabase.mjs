@@ -1,12 +1,12 @@
 import {analyzePolicies} from './rls.mjs';
 
-export function supabaseAnalysis({ts,modules,input,tick}){
+export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies}){
   const unavailable=reason=>({schemaVersion:1,analyzerVersion:'supabase-rls-v1',status:'PARTIAL',files:(input.policyFiles??[]).slice(0,100).map(f=>({filePath:f.filePath,status:'NOT_RUN',statements:0,limitations:[reason]})),tables:[],clients:[],accesses:[],findings:[],limitations:['DECLARATIONS_NOT_LIVE_DATABASE',reason]});
   const location=(node,mod,kind)=>{const p=mod.ast.getLineAndCharacterOfPosition(node.getStart(mod.ast));return {filePath:mod.filePath,line:p.line+1,column:p.character+1,functionName:'',kind};};
   const clients=[],accesses=[],limitations=['DECLARATIONS_NOT_LIVE_DATABASE','CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF'];
   let policies;
   try{
-    policies=analyzePolicies(input.policyFiles??[],()=>tick());
+    policies=precomputedPolicies??analyzePolicies(input.policyFiles??[],()=>tick());
     if(input.policyInventoryComplete===false){
       policies.limitations.push('SQL_FILE_INVENTORY_TRUNCATED');
       for(const t of policies.tables){t.rls='UNKNOWN';t.limitations.push('SQL_FILE_INVENTORY_TRUNCATED');for(const o of t.operations){o.state='UNKNOWN';o.candidate=false;}}
