@@ -9,6 +9,22 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
 class SupabaseAnalysisTest {
+    @Test void linkedOperationEvidenceSurvivesSnapshotsButOldEvidenceIsNotInvented() throws Exception {
+        var files=new ArrayList<>(project(broad.replace("USING(true) WITH CHECK(true)","USING(auth.uid()=user_id) WITH CHECK(auth.uid()=user_id)")).analysisFiles());
+        String path="src/data.ts",code="import {createClient} from '@supabase/supabase-js';const db=createClient('https://example.invalid',process.env.ANON_KEY);db.from('records').update({});";
+        files.add(new ProjectFile(Path.of(path),path,ProjectFileType.TYPESCRIPT,code.lines().toList()));
+        var result=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties()).analyze(new ProjectStructure(Path.of("/not-executed"),files));
+        var access=result.supabaseAnalysis().accesses().get(0);
+        assertThat(access.authorizationEvidence().state()).isEqualTo("CONFIRMED_POLICY_EVIDENCE");
+        assertThat(access.authorizationEvidence().effectiveRole()).isEqualTo("UNKNOWN");
+        assertThat(result.supabaseAnalysis().findings()).isEmpty();
+        var converter=new ServerAnalysisConverter();String json=converter.convertToDatabaseColumn(result);
+        assertThat(converter.convertToEntityAttribute(json)).isEqualTo(result);
+        assertThat(json).doesNotContain(code,"auth.uid()=user_id");
+        var old=(com.fasterxml.jackson.databind.node.ObjectNode)new com.fasterxml.jackson.databind.ObjectMapper().readTree(json);
+        ((com.fasterxml.jackson.databind.node.ObjectNode)old.path("supabaseAnalysis").path("accesses").get(0)).remove("authorizationEvidence");
+        assertThat(converter.convertToEntityAttribute(old.toString()).supabaseAnalysis().accesses().get(0).authorizationEvidence()).isNull();
+    }
     private ProjectStructure project(String sql){
         String path="supabase/migrations/20260101000000_policy.sql";
         return new ProjectStructure(Path.of("/not-executed"),List.of(new ProjectFile(Path.of(path),path,ProjectFileType.SUPABASE_SQL,sql.lines().toList())));

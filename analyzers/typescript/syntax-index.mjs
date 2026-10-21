@@ -1,8 +1,26 @@
 // Reuse the already bounded parse walk. These are syntax facts, not execution or trust proofs.
 export function syntaxIndex() {
-  return {declarations:new Map(),writes:new Set(),nodes:[],typeOnly:new Set(),dependencies:[]};
+  return {declarations:new Map(),bindings:new Set(),writes:new Set(),nodes:[],typeOnly:new Set(),dependencies:[],argumentUses:new Map(),argumentReferenceIncomplete:new Set(),aliases:new Map()};
 }
 export function indexSyntax(ts,n,index) {
+  if(ts.isVariableDeclaration(n)&&ts.isIdentifier(n.name)&&n.initializer){
+    const values=ts.isObjectLiteralExpression(n.initializer)?n.initializer.properties.flatMap(p=>ts.isShorthandPropertyAssignment(p)?[p.name]:ts.isPropertyAssignment(p)?[p.initializer]:[]):[n.initializer];
+    for(const value of values)if(ts.isIdentifier(value)){
+      const aliases=index.aliases.get(value.text)??[];aliases.push({declaration:n,reference:value});index.aliases.set(value.text,aliases);
+    }
+  }
+  if(ts.isIdentifier(n)&&!(ts.isPropertyAccessExpression(n.parent)&&n.parent.name===n)&&!(ts.isPropertyAssignment(n.parent)&&n.parent.name===n)){
+    let child=n,depth=0;
+    for(;child.parent&&depth<8;child=child.parent,depth++){
+      const parent=child.parent;if(ts.isFunctionLike(parent)||ts.isSourceFile(parent)||ts.isBlock(parent))break;
+      if(ts.isCallExpression(parent)||ts.isNewExpression(parent)){
+        if((parent.arguments??[]).includes(child)){const uses=index.argumentUses.get(n.text)??[];uses.push({call:parent,node:n});index.argumentUses.set(n.text,uses);}
+        break;
+      }
+    }
+    if(depth===8)index.argumentReferenceIncomplete.add(n.text);
+  }
+  if(n.name&&ts.isIdentifier(n.name)&&[ts.isParameter,ts.isVariableDeclaration,ts.isFunctionDeclaration,ts.isClassDeclaration,ts.isImportClause,ts.isImportSpecifier,ts.isNamespaceImport,ts.isImportEqualsDeclaration,ts.isBindingElement].some(f=>f(n)))index.bindings.add(n.name.text);
   if(ts.isCallExpression(n))index.nodes.push(n);
   if(n.name&&ts.isIdentifier(n.name)&&[ts.isVariableDeclaration,ts.isParameter,ts.isFunctionDeclaration,ts.isClassDeclaration,ts.isBindingElement].some(f=>f(n))){
     const a=index.declarations.get(n.name.text)??[];a.push(n);index.declarations.set(n.name.text,a);

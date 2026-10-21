@@ -20,7 +20,16 @@ public record SupabaseSnapshot(int schemaVersion,String analyzerVersion,String s
             List<Operation> operations,List<String> limitations) { }
     public record Client(Location location,String keySource,String authContext,List<String> limitations) { }
     public record Access(Location location,String table,String operation,String clientStatus,Location clientLocation,
-            String keySource,String policyStatus,Location policyLocation,List<String> limitations) { }
+            String keySource,String policyStatus,Location policyLocation,List<String> limitations,AuthorizationEvidence authorizationEvidence) {
+        public Access(Location location,String table,String operation,String clientStatus,Location clientLocation,
+                String keySource,String policyStatus,Location policyLocation,List<String> limitations) {
+            this(location,table,operation,clientStatus,clientLocation,keySource,policyStatus,policyLocation,limitations,null);
+        }
+    }
+    public record AuthCheck(String method,String status,Location location) { }
+    public record AuthorizationEvidence(String state,String clientContract,String authStatus,String effectiveRole,String roleEvidence,
+            List<AuthCheck> authChecks,List<Location> clientTrace,List<Location> policyLocations,List<Location> filterLocations,
+            Location enclosingFunction,List<String> policyStates,List<String> limitations) { }
     public record Finding(String findingId,String ruleId,String priority,String comparisonPolicy,String table,Location location,
             List<String> roles,List<String> operations,List<Location> evidenceLocations,String title,String reason,
             String recommendation,List<String> verificationSteps,List<String> limitations) { }
@@ -29,6 +38,13 @@ public record SupabaseSnapshot(int schemaVersion,String analyzerVersion,String s
         files.forEach(f->counts.merge("SQL_"+f.status(),1,Integer::sum));
         counts.put("TABLE_DECLARATIONS",tables.size());counts.put("CLIENT_DECLARATIONS",clients.size());
         counts.put("DATA_ACCESS_DECLARATIONS",accesses.size());counts.put("REVIEW_CANDIDATES",findings.size());
+        var authSites=new HashSet<AuthCheck>();
+        accesses.forEach(a->{
+            var evidence=a.authorizationEvidence();
+            counts.merge("ACCESS_AUTH_"+(evidence==null?"UNRECORDED":evidence.state()),1,Integer::sum);
+            if(evidence!=null){counts.merge("AUTH_CHECK_REFERENCES",evidence.authChecks().size(),Integer::sum);authSites.addAll(evidence.authChecks());}
+        });
+        counts.put("AUTH_API_CALLS_OBSERVED",authSites.size());
         if(budgetUsage!=null)counts.putAll(budgetUsage);
         var analyzers=new ArrayList<>(ledger.analyzers());
         analyzers.add(new CoverageLedger.Analyzer("SUPABASE_RLS",status,

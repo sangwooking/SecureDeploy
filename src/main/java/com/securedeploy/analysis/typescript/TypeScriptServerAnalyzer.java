@@ -159,6 +159,15 @@ public class TypeScriptServerAnalyzer {
         snapshot.tables().forEach(t->{locations.add(t.location());locations.addAll(t.grantLocations());if(t.policies().size()>500||t.operations().size()>8)throw new IllegalArgumentException("INVALID_RLS_LIMIT");t.policies().forEach(p->locations.add(p.location()));});
         snapshot.clients().forEach(c->locations.add(c.location()));
         snapshot.accesses().forEach(a->{locations.add(a.location());if(a.clientLocation()!=null)locations.add(a.clientLocation());if(a.policyLocation()!=null)locations.add(a.policyLocation());});
+        snapshot.accesses().forEach(a->{
+            var e=a.authorizationEvidence();if(e==null)return;
+            if(!Set.of("UNKNOWN","CONFIRMED_POLICY_EVIDENCE","BROAD_ACCESS_REVIEW","ADMIN_ACCESS_REVIEW","PUBLIC_READ_DECLARATION").contains(e.state())
+                    ||!"UNKNOWN".equals(e.effectiveRole())||e.authChecks().size()>4||e.clientTrace().size()>8||e.policyLocations().size()>8
+                    ||e.policyStates().size()>8||e.filterLocations().size()>4||e.limitations().size()>20)throw new IllegalArgumentException("INVALID_AUTHORIZATION_EVIDENCE");
+            locations.addAll(e.clientTrace());locations.addAll(e.policyLocations());locations.addAll(e.filterLocations());
+            if(e.enclosingFunction()!=null)locations.add(e.enclosingFunction());
+            e.authChecks().forEach(c->{if(!Set.of("getUser","getClaims","getSession").contains(c.method()))throw new IllegalArgumentException("INVALID_AUTH_API");locations.add(c.location());});
+        });
         snapshot.findings().forEach(f->{if(!"REVIEW_REQUIRED".equals(f.priority())||!"NOT_COMPARED".equals(f.comparisonPolicy())||!"SUPABASE_BROAD_WRITE_DECLARATION".equals(f.ruleId()))throw new IllegalArgumentException("INVALID_RLS_FINDING");locations.add(f.location());locations.addAll(f.evidenceLocations());});
         if(snapshot.budgetUsage()!=null){
             var budget=snapshot.budgetUsage();
@@ -172,7 +181,7 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v15".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v16".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200

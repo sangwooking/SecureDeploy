@@ -1,5 +1,13 @@
 import type { SupabaseAnalysis } from '../types/supabaseAnalysis';
 const labels: Record<string,string>={
+  CONFIRMED_POLICY_EVIDENCE:'저장소 정책에 사용자별 행 제한 근거가 있음',BROAD_ACCESS_REVIEW:'넓은 쓰기 허용 선언 · 공유 데이터인지 확인 필요',
+  ADMIN_ACCESS_REVIEW:'관리자 Client 계약 · 앱 자체의 접근권한 확인 필요',PUBLIC_READ_DECLARATION:'공유 읽기 허용 선언 · 공개 의도 미확인',
+  SESSION_REFERENCE_UNVERIFIED:'쿠키·세션 참조 · 사용자 검증은 미확인',SESSION_READ_UNVERIFIED:'세션 읽기 관찰 · 사용자 검증 아님',
+  IDENTITY_VERIFICATION_CALL_OBSERVED:'사용자 검증 API 호출 관찰 · 성공·적용은 미확인',USER_JWT_WRAPPER_DECLARATION:'공식 wrapper의 사용자 JWT 검증 선언',
+  SESSION_AND_AUTH_HEADERS_UNKNOWN:'개별 사용자 세션·인증 헤더 적용 미확인',OPTIONS_OR_AUTH_OVERRIDE_NOT_EVALUATED:'Client 옵션·인증 헤더 문맥 미확인',
+  WRAPPER_CALLER_MODE_NOT_USER_PROOF:'호출 자격 선언 · 개별 사용자 확인의 증거 아님',
+  CLIENT_POLICY_LINK_BUDGET_LIMIT:'Client·정책 연결 작업 상한 · 나머지 연결 미검사',CLIENT_POLICY_EVIDENCE_OUTPUT_LIMIT:'연결 근거 출력 상한 · 나머지 연결 미검사',
+  SERVER_CLIENT_CONTRACT:'관리자 Client 제공 계약 · 실제 운영 DB 역할 미확인',PUBLIC_KEY_FORMAT_HINT:'공개용 키 형식 단서 · 실제 키 검증 없음',SERVER_KEY_FORMAT_HINT:'서버용 키 형식 단서 · 실제 권한 검증 없음',
   POLICY_STEP_BUDGET:'정책 작업량 예약 상한 · 남은 migration 미검사, 권한 결론 미확인',
   CLIENT_STEP_BUDGET:'Client 선언 작업량 예약 상한',CLIENT_AST_BUDGET_LIMIT:'Client 선언 분석의 실행 예산 부족',
   SQL_SOURCE_NOT_INSPECTED:'SQL 입력을 검사하지 못함',SOURCE_FILE_COUNT_LIMIT:'공통 파일 수 상한',SOURCE_TOTAL_CHAR_LIMIT:'공통 문자 수 상한',SOURCE_FILE_SIZE_LIMIT:'개별 파일 크기 상한',
@@ -18,7 +26,8 @@ export function SupabaseAnalysisSection({snapshot,compact=false}:{snapshot?:Supa
   if(snapshot.status==='NOT_APPLICABLE')return null;
   return <section className={compact?'analysis-coverage-brief':'server-analysis-section'} aria-label="Supabase 데이터 접근 검사">
     <h3>Supabase 데이터 접근 검사</h3>
-    <p>정책 파일 {snapshot.files.length}개 · 테이블 선언 {snapshot.tables.length}개 · 별도 검토 항목 {snapshot.findings.length}건</p>
+    <p>정책 파일 {snapshot.files.length}개 · 테이블 선언 {snapshot.tables.length}개 · 정책 검토 항목 {snapshot.findings.length}건</p>
+    <p>앱 접근 {snapshot.accesses.length}곳 · 연결 근거 기록 {snapshot.accesses.filter(a=>a.authorizationEvidence).length}곳 · 권한 문맥 미확인 {snapshot.accesses.filter(a=>a.authorizationEvidence?.state==='UNKNOWN').length}곳 · 연결 미검사 또는 이전 기록 없음 {snapshot.accesses.filter(a=>!a.authorizationEvidence).length}곳</p>
     <p>저장소의 선언만 확인했습니다. 실제 운영 DB 적용·로그인 사용자·관리자 우회는 확인하지 않았으며, 항목이 없어도 안전을 보증하지 않습니다.</p>
     <p className="review-caution">기존 점수·배포 판단·해결 건수와 분리된 결과입니다. 로그인 허용과 데이터 소유권 제한은 다릅니다.</p>
     {!compact&&<>
@@ -47,6 +56,21 @@ export function SupabaseAnalysisSection({snapshot,compact=false}:{snapshot?:Supa
       <details className="coverage-details"><summary>앱의 데이터 접근 선언 ({snapshot.accesses.length})</summary>
         {snapshot.accesses.map((a,i)=><div key={i}><p className="finding-location">{a.location.filePath}:{a.location.line}</p>
           <p>{a.table} · {a.operation} · {text(a.clientStatus)} · {text(a.keySource)} · {text(a.policyStatus)}</p>
+          {a.authorizationEvidence?<>
+            <p>{text(a.authorizationEvidence.state)} · {text(a.authorizationEvidence.authStatus)}</p>
+            <p>API 키와 로그인 사용자는 다릅니다. 실제 DB 역할과 운영 정책 적용은 확인하지 않았습니다.</p>
+            <p>연결된 정책은 같은 저장소의 선언입니다. Client의 실제 접속 프로젝트와 일치하는지는 확인하지 않았습니다.</p>
+            <details className="technical-details"><summary>Client·인증·정책 연결 근거</summary>
+              {a.authorizationEvidence.enclosingFunction&&<p className="finding-location">포함된 함수: {a.authorizationEvidence.enclosingFunction.filePath}:{a.authorizationEvidence.enclosingFunction.line} · 요청 실행 증명 아님</p>}
+              {a.authorizationEvidence.clientTrace.map((l,j)=><p className="finding-location" key={'c'+j}>Client: {l.filePath}:{l.line}</p>)}
+              {a.authorizationEvidence.authChecks.map((c,j)=><p className="finding-location" key={'a'+j}>{c.method}: {c.location.filePath}:{c.location.line} · {text(c.status)}</p>)}
+              {a.authorizationEvidence.policyLocations.map((l,j)=><p className="finding-location" key={'p'+j}>정책: {l.filePath}:{l.line}</p>)}
+              {a.authorizationEvidence.filterLocations.map((l,j)=><p className="finding-location" key={'f'+j}>앱 필터: {l.filePath}:{l.line} · DB 권한 검사 보장 아님</p>)}
+              <p>{a.authorizationEvidence.clientContract} · {a.authorizationEvidence.roleEvidence} · DB 역할: {text(a.authorizationEvidence.effectiveRole)}</p>
+              <ul>{a.authorizationEvidence.policyStates.map((s,j)=><li key={j}>{s}</li>)}</ul>
+              <p>이 호출과 Client 생성·정책 파일을 함께 검토하세요. 허가된 격리 환경에서 사용자 A·B 및 익명의 조회·생성·수정·삭제를 각각 테스트한 뒤 재검사하세요.</p>
+            </details>
+          </>:<p>이 연결의 권한 근거는 미검사이거나 이전 이력에 기록되지 않았습니다. 안전으로 판단하지 않습니다.</p>}
           <p>호출 구문이지 실행·인증 성공의 증거는 아닙니다.</p></div>)}
       </details>
       <details className="coverage-details"><summary>Client 생성과 키 출처 단서 ({snapshot.clients.length})</summary>

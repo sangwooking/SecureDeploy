@@ -208,7 +208,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
   const current = Math.min(page, Math.max(0, Math.ceil(snapshot.files.length / 10) - 1));
   return <section className="server-analysis-section" aria-label={title}>
     <h3>{title}</h3><p>{text(snapshot.status)}</p>
-    {!python&&['ts-server-v11','ts-server-v12','ts-server-v13','ts-server-v14','ts-server-v15'].includes(snapshot.analyzerVersion)&&snapshot.nodeUses!=null&&<p className="review-caution">
+    {!python&&['ts-server-v11','ts-server-v12','ts-server-v13','ts-server-v14','ts-server-v15','ts-server-v16'].includes(snapshot.analyzerVersion)&&snapshot.nodeUses!=null&&<p className="review-caution">
       소스 기록 {snapshot.files.length}개 · 파싱 {snapshot.files.filter(f=>f.parseStatus==='PARSED').length}개 ·
       요청 등록 {snapshot.nodeUses.filter(u=>u.kind==='ENTRY_REGISTERED').length}곳 ·
       Router 반환 연결 {snapshot.nodeUses.filter(u=>u.kind==='CALL_LINKED').length}곳 ·

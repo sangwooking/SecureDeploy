@@ -100,13 +100,15 @@ class ServerAnalysisIntegrationTest {
     @Test void rlsSnapshotUsesAllInputPathsWithoutChangingRiskAndRetainsHistoryIsolation() throws Exception {
         String token=signup(),path="supabase/migrations/20260101000000_permissions.sql";
         String sql="CREATE TABLE public.entries(owner_id uuid);ALTER TABLE public.entries ENABLE ROW LEVEL SECURITY;GRANT UPDATE ON public.entries TO authenticated;CREATE POLICY broad ON public.entries FOR UPDATE TO authenticated USING(true) WITH CHECK(true);";
-        var zip=uploadSource(token,path,sql);
+        String dataPath="src/data.ts",data="import {createClient} from '@supabase/supabase-js';const db=createClient('https://example.invalid',process.env.ANON_KEY);db.from('entries').update({});";
+        var zip=uploadSources(token,Map.of(path,sql,dataPath,data));
         var snapshot=zip.at("/serverAnalysis/supabaseAnalysis");assertThat(snapshot.path("findings")).hasSize(1);
         assertThat(snapshot.at("/findings/0/comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        assertThat(snapshot.at("/accesses/0/authorizationEvidence/state").asText()).isEqualTo("BROAD_ACCESS_REVIEW");
         assertThat(zip.path("securityScore").asInt()).isEqualTo(100);assertThat(zip.path("vulnerabilityCount").asInt()).isZero();
         assertThat(zip.at("/riskAssessment/prioritySummary/BLOCKING").asInt()).isZero();
         var roots=new ArrayList<Path>();
-        for(String name:List.of("rls-public","rls-private")){var root=Files.createDirectory(temp.resolve(name));roots.add(root);Files.createDirectories(root.resolve(path).getParent());Files.writeString(root.resolve(path),sql);}
+        for(String name:List.of("rls-public","rls-private")){var root=Files.createDirectory(temp.resolve(name));roots.add(root);Files.createDirectories(root.resolve(path).getParent());Files.writeString(root.resolve(path),sql);Files.createDirectories(root.resolve(dataPath).getParent());Files.writeString(root.resolve(dataPath),data);}
         when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/rls",roots.get(0),roots.get(0)));
         var pub=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/rls\",\"scanMode\":\"STANDARD\"}");
         var metadata=new GitHubSourceSnapshot("fixture","rls","https://github.com/fixture/rls","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);

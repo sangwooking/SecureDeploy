@@ -1,4 +1,5 @@
 import {analyzePolicies} from './rls.mjs';
+import {linkSupabaseEvidence} from './supabase-evidence.mjs';
 
 export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies}){
   const unavailable=reason=>({schemaVersion:1,analyzerVersion:'supabase-rls-v1',status:'PARTIAL',files:(input.policyFiles??[]).slice(0,100).map(f=>({filePath:f.filePath,status:'NOT_RUN',statements:0,limitations:[reason]})),tables:[],clients:[],accesses:[],findings:[],limitations:['DECLARATIONS_NOT_LIVE_DATABASE',reason]});
@@ -98,5 +99,6 @@ export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies}){
   }
   const snapshot={schemaVersion:1,analyzerVersion:'supabase-rls-v1',status:policies.files.length||accesses.length||clients.length?'PARTIAL':'NOT_APPLICABLE',
     ...policies,clients,accesses,findings,limitations:[...policies.limitations,...limitations]};
+  linkSupabaseEvidence({ts,modules,snapshot,tick});
   return Buffer.byteLength(JSON.stringify(snapshot))>300000?unavailable('SUPABASE_OUTPUT_LIMIT'):snapshot;
 }

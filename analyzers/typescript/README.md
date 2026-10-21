@@ -149,3 +149,41 @@ client, discovery and flow; steps sum to at most the unchanged shared limit. AST
 visits are a separate existing resource cap, not full security-flow validation.
 This is scheduling/partial-evidence handling, not a new policy grammar or stronger
 authorization judgment. Selected SQL may still be NOT_RUN at the policy work cap.
+
+## Client and authorization policy evidence (v16)
+
+An optional access-level evidence record joins bounded immutable aliases, explicit
+relative named exports, straight-line factories, unique static parameter origins and
+the known `@supabase/ssr` browser/server constructors to repository policy facts.
+Official `@supabase/server` `withSupabase` default-fetch declarations with a literal
+single auth mode expose separate user/admin context contracts. Mixed/dynamic modes,
+Proxy clients, path aliases, arbitrary middleware, default/reexports and destructured
+wrapper context remain unsupported. Direct immutable object members and aliases are
+bounded; writes/argument escapes through indexed aliases invalidate protection claims.
+Factory/context links are declarations, not proof that a request or query executes.
+
+Linking runs after legacy Client declarations with at most 5,000 additional ticks
+inside the existing 15,000 Client / 100,000 global shares. It cannot erase prior
+Client/access/SQL facts. Remaining links have no evidence on budget/output truncation;
+missing evidence is not a clean result. Deno shadow/write checks reuse the same
+bounded parse index without changing the registration contract or resource caps.
+
+`getSession` is a session read, while awaited `getUser`/`getClaims` on a linked Client
+are verification-call observations only. They do not prove a successful result,
+guard dominance, request JWT application, object authorization or the runtime DB role.
+Key names/formats are hints; key values/tokens are never included. Custom schema,
+transport, mutable/escaped objects and ambiguous origins prevent a protection claim.
+Broad write evidence wins over another role's ownership condition. Public/shared
+read declarations are not automatically vulnerabilities. Admin context yields a
+review state, not a finding based solely on missing application checks. Existing
+policy findings, Risk formulas and RLS declaration grammar are unchanged.
+
+Official contracts reviewed:
+- https://supabase.com/docs/guides/getting-started/api-keys
+- https://supabase.com/docs/guides/auth/server-side/creating-a-client
+- https://supabase.com/docs/guides/database/postgres/row-level-security
+- https://supabase.com/docs/guides/functions/auth
+
+Installed SDK versions and actual deployments are not verified by these API-shape
+contracts. Policy evidence is repository-local; matching the operational project,
+headers, role inheritance and applied migrations requires authorized external tests.

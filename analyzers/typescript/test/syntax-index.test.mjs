@@ -18,6 +18,7 @@ test('bounded parse index preserves existing client semantics and source order',
     const prior=run(),index=syntaxIndex(),stack=[ast];
     while(stack.length){const node=stack.pop();indexSyntax(ts,node,index);ts.forEachChild(node,n=>{stack.push(n);});}
     index.nodes.sort((a,b)=>a.pos-b.pos||b.end-a.end);mod.syntaxIndex=index;
-    assert.deepEqual(run(),prior);
+    const legacy=r=>({...r,accesses:r.accesses.map(({authorizationEvidence,...a})=>a)});
+    assert.deepEqual(legacy(run()),legacy(prior));
   }
 });

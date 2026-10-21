@@ -24,3 +24,11 @@ test('execution budgets are distinct from selected files and incomplete inspecti
  for(const s of ['분석 실행 예산','100000 / 100000','Client 선언 1863','파일 선택·파싱과 실행 단계는 다릅니다','안전을 보증하지'])assert.ok(h.includes(s),s);
  assert.ok(!render(fixture()).includes('분석 실행 예산'));
 });
+test('policy evidence, identity API observations and unknown runtime roles are separate',()=>{
+ const f=fixture(),l=f.accesses[0].location;
+ f.accesses[0].authorizationEvidence={state:'CONFIRMED_POLICY_EVIDENCE',clientContract:'SUPABASE_SSR_SERVER',authStatus:'IDENTITY_VERIFICATION_CALL_OBSERVED',effectiveRole:'UNKNOWN',roleEvidence:'PUBLIC_KEY_NAME_HINT',
+  authChecks:[{method:'getUser',status:'IDENTITY_VERIFICATION_CALL_OBSERVED',location:l}],clientTrace:[l],policyLocations:[f.tables[0].location],filterLocations:[],enclosingFunction:l,policyStates:['authenticated:UPDATE:UID_COLUMN_EQUALITY'],limitations:[]};
+ const h=render(f);
+ for(const s of ['사용자별 행 제한 근거','성공·적용은 미확인','실제 DB 역할','getUser','Client·인증·정책 연결 근거','사용자 A·B'])assert.ok(h.includes(s),s);
+ assert.ok(render(fixture()).includes('이 연결의 권한 근거는 미검사'));
+});

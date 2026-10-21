@@ -16,7 +16,10 @@ export function denoEntries({ts, modules, resolve, claimFunction, tick, note, in
       ts.forEachChild(n, scan);
     };
     try {
-      scan(mod.ast);
+      if(mod.syntaxIndex?.bindings){
+        for(const name of mod.syntaxIndex.bindings){tick(mod);shadowed.add(name);}
+        for(const name of mod.syntaxIndex.writes){tick(mod);writes.add(name);}
+      }else scan(mod.ast);
       mod.denoGlobals = !shadowed.has('Deno') && !writes.has('Deno');
       for (const statement of mod.ast.statements) {
         if (!ts.isExpressionStatement(statement) || !ts.isCallExpression(statement.expression)) continue;
