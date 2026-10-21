@@ -311,6 +311,11 @@ def inspection(c, row, layer):
     if row[name].get("status") in {"UNAVAILABLE", "TIMEOUT", "FAILED"}:
         return "ANALYSIS_FAILED"
     files = row[name].get("files", [])
+    # Flow budget exhaustion can occur after successful parsing. Preserve old
+    # raw results, but do not classify that missing flow as framework support.
+    if any(any(reason in {'ANALYSIS_BUDGET_EXCEEDED','ANALYSIS_STEP_BUDGET_EXCEEDED','ANALYSIS_TIME_BUDGET_EXCEEDED'}
+               for reason in f.get('limitations',[])) for f in files):
+        return "RESOURCE_LIMIT"
     if any(f["parseStatus"] == "PARSE_FAILED" for f in files):
         return "PARSE_FAILED"
     if any(f["parseStatus"] in {"LIMIT_EXCEEDED", "NOT_RUN"} for f in files):

@@ -1,0 +1,1428 @@
+{
+  "schemaVersion": 1,
+  "engineCommit": "31f4832c7df768a2692935ea6d25a7934afb2928",
+  "baselineCommit": "73f5d588736336c8f6023c469f2748c6d22f153c",
+  "accountingVersion": "FLOW_BUDGET_LIMITS_V2",
+  "historicalCorrection": "Old NodeBB parsed files include flow-budget exhaustion: classify two revisions RESOURCE_LIMIT, not solely NOT_SUPPORTED. Historical files unchanged.",
+  "matrix": {
+    "originalBefore": {
+      "engineCommit": "73f5d588736336c8f6023c469f2748c6d22f153c",
+      "inputManifestSha256": "a71734f73855325c0352b6b2a84704f5e87a7bcd57a009e30a33dc12b5f9edf5",
+      "targetOutcomes": {
+        "RESOURCE_LIMIT": 2,
+        "NOT_SUPPORTED": 4
+      },
+      "cases": [
+        {
+          "caseId": "nodebb-api-token-parent",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 8,
+          "entries": 0,
+          "functions": 1,
+          "nodeUseKinds": {},
+          "limitations": {
+            "ANALYSIS_BUDGET_EXCEEDED": 2,
+            "CALL_TARGET_UNRESOLVED": 4,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 2,
+            "EXPRESSION_UNSUPPORTED": 1,
+            "NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED": 2,
+            "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 2,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 7,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 7,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 2,
+            "OBJECT_MEMBER_UNRESOLVED": 1,
+            "PROPERTY_WRITE_UNRESOLVED": 3
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            277,
+            207
+          ],
+          "parentHeapSamples": [
+            86127616,
+            90321920
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "nodebb-api-token-fixed",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 8,
+          "entries": 0,
+          "functions": 1,
+          "nodeUseKinds": {},
+          "limitations": {
+            "ANALYSIS_BUDGET_EXCEEDED": 2,
+            "CALL_TARGET_UNRESOLVED": 4,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 2,
+            "EXPRESSION_UNSUPPORTED": 1,
+            "NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED": 2,
+            "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 2,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 7,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 7,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 2,
+            "OBJECT_MEMBER_UNRESOLVED": 1,
+            "PROPERTY_WRITE_UNRESOLVED": 3
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            226,
+            212
+          ],
+          "parentHeapSamples": [
+            61464384,
+            64610112
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "ghost-content-filter-parent",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 11,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 11
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            362,
+            357
+          ],
+          "parentHeapSamples": [
+            71950144,
+            78241600
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "ghost-content-filter-fixed",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 11,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 11
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            358,
+            362
+          ],
+          "parentHeapSamples": [
+            84533056,
+            90824512
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "strapi-content-builder-parent",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 10,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 3,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 10
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            193,
+            189
+          ],
+          "parentHeapSamples": [
+            60849456,
+            63995184
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "strapi-content-builder-fixed",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 12,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 3,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 4,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 12
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            191,
+            187
+          ],
+          "parentHeapSamples": [
+            68189488,
+            71335216
+          ],
+          "repeatConsistent": true
+        }
+      ]
+    },
+    "originalAfter": {
+      "engineCommit": "31f4832c7df768a2692935ea6d25a7934afb2928",
+      "inputManifestSha256": "a71734f73855325c0352b6b2a84704f5e87a7bcd57a009e30a33dc12b5f9edf5",
+      "targetOutcomes": {
+        "NOT_SUPPORTED": 6
+      },
+      "cases": [
+        {
+          "caseId": "nodebb-api-token-parent",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 8,
+          "entries": 0,
+          "functions": 1,
+          "nodeUseKinds": {
+            "EXTERNAL_IMPLEMENTATION_UNKNOWN": 1,
+            "CALLBACK_BOUND": 1
+          },
+          "limitations": {
+            "CALL_TARGET_UNRESOLVED": 4,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 2,
+            "CONTEXT_MISSING": 8,
+            "EXPRESSION_UNSUPPORTED": 1,
+            "EXTERNAL_IMPLEMENTATION_UNKNOWN": 6,
+            "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 2,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 7,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 7,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 2,
+            "OBJECT_MEMBER_UNRESOLVED": 1,
+            "PASSPORT_DECLARATION_NOT_HTTP_ENTRY": 1,
+            "PROPERTY_WRITE_UNRESOLVED": 3
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            329,
+            232
+          ],
+          "parentHeapSamples": [
+            58877032,
+            63071336
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "nodebb-api-token-fixed",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 8,
+          "entries": 0,
+          "functions": 1,
+          "nodeUseKinds": {
+            "EXTERNAL_IMPLEMENTATION_UNKNOWN": 1,
+            "CALLBACK_BOUND": 1
+          },
+          "limitations": {
+            "CALL_TARGET_UNRESOLVED": 4,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 2,
+            "CONTEXT_MISSING": 8,
+            "EXPRESSION_UNSUPPORTED": 1,
+            "EXTERNAL_IMPLEMENTATION_UNKNOWN": 6,
+            "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 2,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 7,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 7,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 2,
+            "OBJECT_MEMBER_UNRESOLVED": 1,
+            "PASSPORT_DECLARATION_NOT_HTTP_ENTRY": 1,
+            "PROPERTY_WRITE_UNRESOLVED": 3
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            225,
+            230
+          ],
+          "parentHeapSamples": [
+            67265640,
+            71459944
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "ghost-content-filter-parent",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 11,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "CONTEXT_MISSING": 9,
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 11
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            444,
+            450
+          ],
+          "parentHeapSamples": [
+            78799976,
+            85091432
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "ghost-content-filter-fixed",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 11,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "CONTEXT_MISSING": 9,
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 11
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            477,
+            441
+          ],
+          "parentHeapSamples": [
+            52151968,
+            57394848
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "strapi-content-builder-parent",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 10,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "CONTEXT_MISSING": 4,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 3,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 10
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            240,
+            233
+          ],
+          "parentHeapSamples": [
+            61589152,
+            64734880
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "strapi-content-builder-fixed",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 12,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "CONTEXT_MISSING": 4,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 3,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 4,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 12
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            231,
+            236
+          ],
+          "parentHeapSamples": [
+            67880608,
+            72074912
+          ],
+          "repeatConsistent": true
+        }
+      ]
+    },
+    "enrichedBefore": {
+      "engineCommit": "73f5d588736336c8f6023c469f2748c6d22f153c",
+      "inputManifestSha256": "d2f87da0eb123e402454e0ad6d1620d4e7b6c2cf538676f3a763e65f1591e4af",
+      "targetOutcomes": {
+        "RESOURCE_LIMIT": 2,
+        "NOT_SUPPORTED": 4
+      },
+      "cases": [
+        {
+          "caseId": "nodebb-api-token-parent",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 15,
+          "entries": 0,
+          "functions": 2,
+          "nodeUseKinds": {},
+          "limitations": {
+            "ANALYSIS_BUDGET_EXCEEDED": 5,
+            "CALL_TARGET_UNRESOLVED": 3,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 1,
+            "EXPRESSION_UNSUPPORTED": 1,
+            "NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED": 5,
+            "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 2,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 10,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 13,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 3,
+            "OBJECT_MEMBER_UNRESOLVED": 1,
+            "PROPERTY_WRITE_UNRESOLVED": 3
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            451,
+            384
+          ],
+          "parentHeapSamples": [
+            91678208,
+            96921088
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "nodebb-api-token-fixed",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 15,
+          "entries": 0,
+          "functions": 2,
+          "nodeUseKinds": {},
+          "limitations": {
+            "ANALYSIS_BUDGET_EXCEEDED": 5,
+            "CALL_TARGET_UNRESOLVED": 3,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 1,
+            "EXPRESSION_UNSUPPORTED": 1,
+            "NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED": 5,
+            "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 2,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 10,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 13,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 3,
+            "OBJECT_MEMBER_UNRESOLVED": 1,
+            "PROPERTY_WRITE_UNRESOLVED": 3
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            381,
+            374
+          ],
+          "parentHeapSamples": [
+            103212544,
+            109504000
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "ghost-content-filter-parent",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 17,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "CALL_TARGET_UNRESOLVED": 1,
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 1,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 17,
+            "PROPERTY_WRITE_UNRESOLVED": 1
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            362,
+            361
+          ],
+          "parentHeapSamples": [
+            117892608,
+            126281216
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "ghost-content-filter-fixed",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 17,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "CALL_TARGET_UNRESOLVED": 1,
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 1,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 17,
+            "PROPERTY_WRITE_UNRESOLVED": 1
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            362,
+            355
+          ],
+          "parentHeapSamples": [
+            66162272,
+            74550880
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "strapi-content-builder-parent",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 15,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 4,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 3,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 15
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            191,
+            186
+          ],
+          "parentHeapSamples": [
+            78745184,
+            82939488
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "strapi-content-builder-fixed",
+          "version": "ts-server-v10",
+          "status": "PARTIAL",
+          "parsed": 17,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 5,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 4,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 17
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            189,
+            187
+          ],
+          "parentHeapSamples": [
+            87133792,
+            91328096
+          ],
+          "repeatConsistent": true
+        }
+      ]
+    },
+    "enrichedAfter": {
+      "engineCommit": "31f4832c7df768a2692935ea6d25a7934afb2928",
+      "inputManifestSha256": "d2f87da0eb123e402454e0ad6d1620d4e7b6c2cf538676f3a763e65f1591e4af",
+      "targetOutcomes": {
+        "NOT_SUPPORTED": 6
+      },
+      "cases": [
+        {
+          "caseId": "nodebb-api-token-parent",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 15,
+          "entries": 0,
+          "functions": 6,
+          "nodeUseKinds": {
+            "EXTERNAL_IMPLEMENTATION_UNKNOWN": 1,
+            "CALLBACK_BOUND": 1
+          },
+          "limitations": {
+            "CALL_TARGET_UNRESOLVED": 6,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 2,
+            "CONTEXT_MISSING": 15,
+            "EXCEPTION_FLOW_PARTIAL": 1,
+            "EXPRESSION_UNSUPPORTED": 1,
+            "EXTERNAL_IMPLEMENTATION_UNKNOWN": 10,
+            "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 2,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 14,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 12,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 6,
+            "OBJECT_MEMBER_UNRESOLVED": 1,
+            "PASSPORT_DECLARATION_NOT_HTTP_ENTRY": 1,
+            "PROPERTY_WRITE_UNRESOLVED": 5,
+            "SWITCH_FLOW_PARTIAL": 1,
+            "UNREACHED_FUNCTIONS_NOT_ANALYZED": 1
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            509,
+            415
+          ],
+          "parentHeapSamples": [
+            81771008,
+            87013888
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "nodebb-api-token-fixed",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 15,
+          "entries": 0,
+          "functions": 6,
+          "nodeUseKinds": {
+            "EXTERNAL_IMPLEMENTATION_UNKNOWN": 1,
+            "CALLBACK_BOUND": 1
+          },
+          "limitations": {
+            "CALL_TARGET_UNRESOLVED": 6,
+            "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 2,
+            "CONTEXT_MISSING": 15,
+            "EXCEPTION_FLOW_PARTIAL": 1,
+            "EXPRESSION_UNSUPPORTED": 1,
+            "EXTERNAL_IMPLEMENTATION_UNKNOWN": 10,
+            "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 2,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 14,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 12,
+            "OBJECT_BRANCH_MERGE_PARTIAL": 6,
+            "OBJECT_MEMBER_UNRESOLVED": 1,
+            "PASSPORT_DECLARATION_NOT_HTTP_ENTRY": 1,
+            "PROPERTY_WRITE_UNRESOLVED": 5,
+            "SWITCH_FLOW_PARTIAL": 1,
+            "UNREACHED_FUNCTIONS_NOT_ANALYZED": 1
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            437,
+            475
+          ],
+          "parentHeapSamples": [
+            53916808,
+            59159688
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "ghost-content-filter-parent",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 17,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "CALL_TARGET_UNRESOLVED": 4,
+            "CONTEXT_MISSING": 13,
+            "EXTERNAL_IMPLEMENTATION_UNKNOWN": 6,
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+            "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 1,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 6,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 17,
+            "OBJECT_MEMBER_UNRESOLVED": 1
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            521,
+            513
+          ],
+          "parentHeapSamples": [
+            66499720,
+            73839752
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "ghost-content-filter-fixed",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 17,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "CALL_TARGET_UNRESOLVED": 4,
+            "CONTEXT_MISSING": 13,
+            "EXTERNAL_IMPLEMENTATION_UNKNOWN": 6,
+            "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+            "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 1,
+            "NODE_MODULE_RESOLUTION_UNKNOWN": 6,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 17,
+            "OBJECT_MEMBER_UNRESOLVED": 1
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            494,
+            476
+          ],
+          "parentHeapSamples": [
+            81179784,
+            88519816
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "strapi-content-builder-parent",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 15,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "CONTEXT_MISSING": 6,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 4,
+            "FRAMEWORK_NOT_SUPPORTED": 4,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 3,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 15
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            272,
+            269
+          ],
+          "parentHeapSamples": [
+            53343000,
+            57537304
+          ],
+          "repeatConsistent": true
+        },
+        {
+          "caseId": "strapi-content-builder-fixed",
+          "version": "ts-server-v11",
+          "status": "PARTIAL",
+          "parsed": 17,
+          "entries": 0,
+          "functions": 0,
+          "nodeUseKinds": {},
+          "limitations": {
+            "CONTEXT_MISSING": 6,
+            "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 5,
+            "FRAMEWORK_NOT_SUPPORTED": 4,
+            "NAMESPACE_IMPORT_UNSUPPORTED": 4,
+            "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 17
+          },
+          "structuralFindingCount": 0,
+          "elapsedMs": [
+            285,
+            285
+          ],
+          "parentHeapSamples": [
+            61731608,
+            65925912
+          ],
+          "repeatConsistent": true
+        }
+      ]
+    }
+  },
+  "patchPairs": [
+    {
+      "caseId": "nodebb-api-token-parent",
+      "pairId": "nodebb-api-token",
+      "grade": "A",
+      "repository": "https://github.com/NodeBB/NodeBB",
+      "sourceCommit": "1783f918bc19568f421473824461ff2ed7755e4c",
+      "cve": "CVE-2021-43786",
+      "ghsa": "GHSA-hf2m-j98r-4fqw",
+      "targetSites": [
+        {
+          "filePath": "src/routes/authentication.js",
+          "startLine": 39,
+          "endLine": 61
+        }
+      ],
+      "contextEnrichment": {
+        "originalFiles": 10,
+        "added": [
+          "src/webserver.js",
+          "app.js",
+          "src/start.js",
+          "src/routes/helpers.js",
+          "src/middleware/helpers.js",
+          "src/controllers/write/index.js",
+          "src/routes/write/users.js"
+        ],
+        "notAvailable": []
+      },
+      "gap": {
+        "confirmed": "Passport bearer registration declaration resolves the verify callback; HTTP dispatch through startup/plugin and promise middleware remains unverified.",
+        "remaining": [
+          "Dynamic initialization and plugins",
+          "External Passport dispatch",
+          "Token lookup is not a SQL or authorization sink contract"
+        ]
+      },
+      "targetDetection": "NOT_SUPPORTED_NOT_SAFE",
+      "split": "REGRESSION",
+      "blind": false
+    },
+    {
+      "caseId": "nodebb-api-token-fixed",
+      "pairId": "nodebb-api-token",
+      "grade": "A",
+      "repository": "https://github.com/NodeBB/NodeBB",
+      "sourceCommit": "04dab1d550cdebf4c1567bca9a51f8b9ca48a500",
+      "cve": "CVE-2021-43786",
+      "ghsa": "GHSA-hf2m-j98r-4fqw",
+      "targetSites": [
+        {
+          "filePath": "src/routes/authentication.js",
+          "startLine": 39,
+          "endLine": 57
+        }
+      ],
+      "contextEnrichment": {
+        "originalFiles": 10,
+        "added": [
+          "src/webserver.js",
+          "app.js",
+          "src/start.js",
+          "src/routes/helpers.js",
+          "src/middleware/helpers.js",
+          "src/controllers/write/index.js",
+          "src/routes/write/users.js"
+        ],
+        "notAvailable": []
+      },
+      "gap": {
+        "confirmed": "Passport bearer registration declaration resolves the verify callback; HTTP dispatch through startup/plugin and promise middleware remains unverified.",
+        "remaining": [
+          "Dynamic initialization and plugins",
+          "External Passport dispatch",
+          "Token lookup is not a SQL or authorization sink contract"
+        ]
+      },
+      "targetDetection": "NOT_SUPPORTED_NOT_SAFE",
+      "split": "REGRESSION",
+      "blind": false
+    },
+    {
+      "caseId": "ghost-content-filter-parent",
+      "pairId": "ghost-content-filter",
+      "grade": "A",
+      "repository": "https://github.com/TryGhost/Ghost",
+      "sourceCommit": "ebf4bb79cb45e487e277318df61c6c559752fd0a",
+      "cve": "CVE-2026-26980",
+      "ghsa": "GHSA-w52v-v783-gw97",
+      "targetSites": [
+        {
+          "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+          "startLine": 1,
+          "endLine": 18
+        },
+        {
+          "filePath": "ghost/core/core/server/models/base/plugins/crud.js",
+          "startLine": 96,
+          "endLine": 112
+        }
+      ],
+      "contextEnrichment": {
+        "originalFiles": 13,
+        "added": [
+          "ghost/core/core/shared/express.js",
+          "ghost/core/core/server/api/index.js",
+          "ghost/core/core/server/api/endpoints/index.js",
+          "ghost/core/core/server/api/endpoints/tags-public.js",
+          "ghost/core/core/server/api/endpoints/utils/index.js",
+          "ghost/core/core/server/web/api/index.js"
+        ],
+        "notAvailable": [
+          {
+            "filePath": "ghost/core/core/server/web/ghost-app.js",
+            "reason": "CONTEXT_MISSING",
+            "httpStatus": 404
+          }
+        ]
+      },
+      "gap": {
+        "confirmed": "Express wrapper has an own Router field, but lazyUse/Promise/express-lazy-router bootstrap and external API-framework dispatch are not resolved.",
+        "remaining": [
+          "Lazy router initialization",
+          "External API wrapper",
+          "Bookshelf/Knex execution contract"
+        ]
+      },
+      "targetDetection": "NOT_SUPPORTED_NOT_SAFE",
+      "split": "REGRESSION",
+      "blind": false
+    },
+    {
+      "caseId": "ghost-content-filter-fixed",
+      "pairId": "ghost-content-filter",
+      "grade": "A",
+      "repository": "https://github.com/TryGhost/Ghost",
+      "sourceCommit": "30868d632b2252b638bc8a4c8ebf73964592ed91",
+      "cve": "CVE-2026-26980",
+      "ghsa": "GHSA-w52v-v783-gw97",
+      "targetSites": [
+        {
+          "filePath": "ghost/core/core/server/api/endpoints/utils/serializers/input/utils/slug-filter-order.js",
+          "startLine": 1,
+          "endLine": 21
+        },
+        {
+          "filePath": "ghost/core/core/server/models/base/plugins/crud.js",
+          "startLine": 96,
+          "endLine": 117
+        }
+      ],
+      "contextEnrichment": {
+        "originalFiles": 13,
+        "added": [
+          "ghost/core/core/shared/express.js",
+          "ghost/core/core/server/api/index.js",
+          "ghost/core/core/server/api/endpoints/index.js",
+          "ghost/core/core/server/api/endpoints/tags-public.js",
+          "ghost/core/core/server/api/endpoints/utils/index.js",
+          "ghost/core/core/server/web/api/index.js"
+        ],
+        "notAvailable": [
+          {
+            "filePath": "ghost/core/core/server/web/ghost-app.js",
+            "reason": "CONTEXT_MISSING",
+            "httpStatus": 404
+          }
+        ]
+      },
+      "gap": {
+        "confirmed": "Express wrapper has an own Router field, but lazyUse/Promise/express-lazy-router bootstrap and external API-framework dispatch are not resolved.",
+        "remaining": [
+          "Lazy router initialization",
+          "External API wrapper",
+          "Bookshelf/Knex execution contract"
+        ]
+      },
+      "targetDetection": "NOT_SUPPORTED_NOT_SAFE",
+      "split": "REGRESSION",
+      "blind": false
+    },
+    {
+      "caseId": "strapi-content-builder-parent",
+      "pairId": "strapi-content-builder",
+      "grade": "A",
+      "repository": "https://github.com/strapi/strapi",
+      "sourceCommit": "f86041c89a8c1545c6437a881dc613e98bc52bd7",
+      "cve": "CVE-2026-22599",
+      "ghsa": "GHSA-3xcq-8mjw-h6mx",
+      "targetSites": [
+        {
+          "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+          "startLine": 1,
+          "endLine": 8
+        },
+        {
+          "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+          "startLine": 46,
+          "endLine": 87
+        },
+        {
+          "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+          "startLine": 111,
+          "endLine": 178
+        },
+        {
+          "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+          "startLine": 189,
+          "endLine": 204
+        }
+      ],
+      "contextEnrichment": {
+        "originalFiles": 12,
+        "added": [
+          "packages/core/core/src/services/server/register-routes.ts",
+          "packages/core/core/src/services/server/index.ts",
+          "packages/core/core/src/services/server/api.ts",
+          "packages/core/core/src/services/server/routing.ts",
+          "packages/core/core/src/services/server/compose-endpoint.ts"
+        ],
+        "notAvailable": []
+      },
+      "gap": {
+        "confirmed": "Added route registration delegates through Koa composition and dynamic controller registries, not supported Express registration.",
+        "remaining": [
+          "Koa/Strapi dispatch",
+          "Plugin configuration hydration",
+          "Knex raw SQL execution contract",
+          "Production-only patch guard is not universal safety"
+        ]
+      },
+      "targetDetection": "NOT_SUPPORTED_NOT_SAFE",
+      "split": "REGRESSION",
+      "blind": false
+    },
+    {
+      "caseId": "strapi-content-builder-fixed",
+      "pairId": "strapi-content-builder",
+      "grade": "A",
+      "repository": "https://github.com/strapi/strapi",
+      "sourceCommit": "0150b197100692b5bfb9eeb498f30f62c4067a4d",
+      "cve": "CVE-2026-22599",
+      "ghsa": "GHSA-3xcq-8mjw-h6mx",
+      "targetSites": [
+        {
+          "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+          "startLine": 1,
+          "endLine": 10
+        },
+        {
+          "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+          "startLine": 48,
+          "endLine": 92
+        },
+        {
+          "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+          "startLine": 116,
+          "endLine": 188
+        },
+        {
+          "filePath": "packages/core/content-type-builder/server/src/routes/admin.ts",
+          "startLine": 199,
+          "endLine": 215
+        },
+        {
+          "filePath": "packages/core/content-type-builder/server/src/middlewares/is-development-mode.ts",
+          "startLine": 1,
+          "endLine": 20
+        }
+      ],
+      "contextEnrichment": {
+        "originalFiles": 14,
+        "added": [
+          "packages/core/core/src/services/server/register-routes.ts",
+          "packages/core/core/src/services/server/index.ts",
+          "packages/core/core/src/services/server/api.ts",
+          "packages/core/core/src/services/server/routing.ts",
+          "packages/core/core/src/services/server/compose-endpoint.ts"
+        ],
+        "notAvailable": []
+      },
+      "gap": {
+        "confirmed": "Added route registration delegates through Koa composition and dynamic controller registries, not supported Express registration.",
+        "remaining": [
+          "Koa/Strapi dispatch",
+          "Plugin configuration hydration",
+          "Knex raw SQL execution contract",
+          "Production-only patch guard is not universal safety"
+        ]
+      },
+      "targetDetection": "NOT_SUPPORTED_NOT_SAFE",
+      "split": "REGRESSION",
+      "blind": false
+    }
+  ],
+  "applications": [
+    {
+      "projectId": "spring-projects--spring-petclinic",
+      "sourceCommit": "500158f732419217507c7656904b8e6aa1bcc0d6",
+      "result": {
+        "version": "ts-server-v11",
+        "status": "NOT_APPLICABLE",
+        "parsed": 0,
+        "entries": 0,
+        "functions": 0,
+        "nodeUseKinds": {},
+        "limitations": {},
+        "structuralFindingCount": 0,
+        "elapsedMs": [
+          504,
+          462
+        ],
+        "parentHeapSamples": [
+          55850104,
+          70530168
+        ],
+        "repeatConsistent": true
+      },
+      "legacyRuleRiskJavaUnchanged": true
+    },
+    {
+      "projectId": "macrozheng--mall-tiny",
+      "sourceCommit": "a81ec4740a0c7c99a06ebffb43a14168beadffc3",
+      "result": {
+        "version": "ts-server-v11",
+        "status": "NOT_APPLICABLE",
+        "parsed": 0,
+        "entries": 0,
+        "functions": 0,
+        "nodeUseKinds": {},
+        "limitations": {},
+        "structuralFindingCount": 0,
+        "elapsedMs": [
+          720,
+          685
+        ],
+        "parentHeapSamples": [
+          54897912,
+          70626552
+        ],
+        "repeatConsistent": true
+      },
+      "legacyRuleRiskJavaUnchanged": true
+    },
+    {
+      "projectId": "wagtail--bakerydemo",
+      "sourceCommit": "c9b38d7a7170dba8bb84254beb7e5dc5a955e024",
+      "result": {
+        "version": "ts-server-v11",
+        "status": "PARTIAL",
+        "parsed": 4,
+        "entries": 0,
+        "functions": 0,
+        "nodeUseKinds": {},
+        "limitations": {
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 1,
+          "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 1,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 4
+        },
+        "structuralFindingCount": 0,
+        "elapsedMs": [
+          651,
+          512
+        ],
+        "parentHeapSamples": [
+          121494096,
+          71018616
+        ],
+        "repeatConsistent": true
+      },
+      "legacyRuleRiskJavaUnchanged": true
+    },
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "sourceCommit": "fe026711c19ac3ee4589c86a738f59b84e611559",
+      "result": {
+        "version": "ts-server-v11",
+        "status": "PARTIAL",
+        "parsed": 33,
+        "entries": 0,
+        "functions": 0,
+        "nodeUseKinds": {},
+        "limitations": {
+          "CONTEXT_MISSING": 4,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 10,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 33,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 23
+        },
+        "structuralFindingCount": 0,
+        "elapsedMs": [
+          499,
+          588
+        ],
+        "parentHeapSamples": [
+          78358648,
+          85698680
+        ],
+        "repeatConsistent": true
+      },
+      "legacyRuleRiskJavaUnchanged": true
+    },
+    {
+      "projectId": "cloudflare--d1-northwind",
+      "sourceCommit": "766fd0d8b454b6eadd3323f9188a5ac1f8dfab64",
+      "result": {
+        "version": "ts-server-v11",
+        "status": "PARTIAL",
+        "parsed": 42,
+        "entries": 1,
+        "functions": 1,
+        "nodeUseKinds": {},
+        "limitations": {
+          "CALL_TARGET_UNRESOLVED": 1,
+          "CONTEXT_MISSING": 1,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 14,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 41,
+          "PREPARE_CALLS_OUTSIDE_TRACED_FLOW": 1,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 21,
+          "SOURCE_LIMIT_EXCEEDED": 1
+        },
+        "structuralFindingCount": 0,
+        "elapsedMs": [
+          640,
+          610
+        ],
+        "parentHeapSamples": [
+          160147576,
+          113872000
+        ],
+        "repeatConsistent": true
+      },
+      "legacyRuleRiskJavaUnchanged": true
+    },
+    {
+      "projectId": "OWASP--NodeGoat",
+      "sourceCommit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "result": {
+        "version": "ts-server-v11",
+        "status": "PARTIAL",
+        "parsed": 44,
+        "entries": 19,
+        "functions": 48,
+        "nodeUseKinds": {
+          "CONSTRUCTOR_SUMMARY_MUST": 1,
+          "ENTRY_REGISTERED": 19,
+          "CURSOR_CREATED_EXECUTION_NOT_OBSERVED": 3,
+          "INPUT_TO_EXECUTION": 4,
+          "DATA_QUERY_NOT_AUTHORIZATION_PROOF": 8
+        },
+        "limitations": {
+          "CALL_TARGET_UNRESOLVED": 10,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 1,
+          "CONSTRUCTOR_SUMMARY_APPLIED_NOT_FULL_CALL_TRACE": 1,
+          "EVAL_SCOPE_EFFECTS_UNKNOWN": 1,
+          "EXPRESSION_UNSUPPORTED": 2,
+          "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 9,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 2,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 5,
+          "MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED": 9,
+          "NODE_INITIALIZATION_STRUCTURE_UNKNOWN": 1,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 5,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 27,
+          "NUMERIC_COERCION_PARTIAL": 4,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 3,
+          "OBJECT_MEMBER_UNRESOLVED": 2,
+          "PROPERTY_WRITE_UNRESOLVED": 2
+        },
+        "structuralFindingCount": 4,
+        "elapsedMs": [
+          694,
+          644
+        ],
+        "parentHeapSamples": [
+          111752240,
+          135168000
+        ],
+        "repeatConsistent": true
+      },
+      "legacyRuleRiskJavaUnchanged": true
+    },
+    {
+      "projectId": "netbox-community--netbox",
+      "sourceCommit": "9f8b55c196501a82ea800f8f3d720165db9173a6",
+      "result": {
+        "version": "ts-server-v11",
+        "status": "PARTIAL",
+        "parsed": 54,
+        "entries": 0,
+        "functions": 0,
+        "nodeUseKinds": {},
+        "limitations": {
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 1,
+          "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 3,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 54
+        },
+        "structuralFindingCount": 0,
+        "elapsedMs": [
+          927,
+          932
+        ],
+        "parentHeapSamples": [
+          127822888,
+          108236864
+        ],
+        "repeatConsistent": true
+      },
+      "legacyRuleRiskJavaUnchanged": true
+    },
+    {
+      "projectId": "sahat--hackathon-starter",
+      "status": "COLLECTION_FAILED_NOT_ANALYZED"
+    }
+  ],
+  "controls": {
+    "count": 17,
+    "outcomes": {
+      "UNKNOWN": 8,
+      "NOT_INSPECTED": 4,
+      "TP": 2,
+      "TN": 3
+    },
+    "split": "REGRESSION",
+    "independent": false
+  },
+  "benchmarks": {
+    "pilot": {
+      "rule": {
+        "counts": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 3,
+          "FP": 9
+        },
+        "precision": 0.55,
+        "recallWithinScoredScope": 0.9166666666666666,
+        "falsePositiveRate": 0.75,
+        "precisionWilson95": [
+          0.3420820083075997,
+          0.7418049791429071
+        ],
+        "scoredCoverage": 1.0,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.9166666666666666
+      },
+      "filteredRule": {
+        "counts": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 6,
+          "FP": 6
+        },
+        "precision": 0.6470588235294118,
+        "recallWithinScoredScope": 0.9166666666666666,
+        "falsePositiveRate": 0.5,
+        "precisionWilson95": [
+          0.4129996672121182,
+          0.826905138560951
+        ],
+        "scoredCoverage": 1.0,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.9166666666666666
+      },
+      "ast": {
+        "counts": {
+          "TP": 3,
+          "UNKNOWN": 9,
+          "NOT_INSPECTED": 10,
+          "TN": 2
+        },
+        "precision": 1.0,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.0,
+        "precisionWilson95": [
+          0.43849391955098227,
+          1
+        ],
+        "scoredCoverage": 0.20833333333333334,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.25
+      },
+      "reviewCandidate": {
+        "counts": {
+          "TP": 1,
+          "UNKNOWN": 9,
+          "MERGED_WITH_LEGACY": 2,
+          "NOT_INSPECTED": 10,
+          "TN": 2
+        },
+        "precision": 1.0,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.0,
+        "precisionWilson95": [
+          0.20654329147389294,
+          1
+        ],
+        "scoredCoverage": 0.125,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 0.25
+      },
+      "finalUser": {
+        "counts": {
+          "TP": 12,
+          "UNKNOWN": 3,
+          "NOT_INSPECTED": 1,
+          "TN": 2,
+          "FP": 6
+        },
+        "precision": 0.6666666666666666,
+        "recallWithinScoredScope": 1.0,
+        "falsePositiveRate": 0.75,
+        "precisionWilson95": [
+          0.4374906934425036,
+          0.8372144563633714
+        ],
+        "scoredCoverage": 0.8333333333333334,
+        "sampleSize": 24,
+        "effectiveDangerousDetectionCoverage": 1.0
+      }
+    },
+    "realworld": {
+      "rule": {
+        "counts": {
+          "NOT_SUPPORTED": 16
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "filteredRule": {
+        "counts": {
+          "NOT_SUPPORTED": 16
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "ast": {
+        "counts": {
+          "NOT_SUPPORTED": 14,
+          "RESOURCE_LIMIT": 2
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "reviewCandidate": {
+        "counts": {
+          "NOT_SUPPORTED": 14,
+          "RESOURCE_LIMIT": 2
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      },
+      "finalUser": {
+        "counts": {
+          "NOT_SUPPORTED": 14,
+          "RESOURCE_LIMIT": 2
+        },
+        "precision": null,
+        "recallWithinScoredScope": null,
+        "falsePositiveRate": null,
+        "precisionWilson95": null,
+        "scoredCoverage": 0.0,
+        "sampleSize": 16,
+        "effectiveDangerousDetectionCoverage": 0.0
+      }
+    }
+  },
+  "protocol": "ts-server-v11",
+  "limitsChanged": false,
+  "riskFormulaChanged": false,
+  "databaseMigration": false,
+  "userDatabaseWrites": false,
+  "paidAiCalls": 0,
+  "newIndependentPublicExample": "NOT_EVALUATED; no new independent or blind generalization claim",
+  "limitations": [
+    "No target CVE path or HTTP entry confirmed in the three actual patch pairs.",
+    "Passport declarations are not dispatch, authorization, signature verification, or exploit proof.",
+    "Static cache stores AST write-name plans only; runtime symbolic states are not cached.",
+    "Timing includes startup; parent heap samples are not peak worker RSS.",
+    "Live private GitHub, full application execution, operational attacks and external vulnerability lookups were not performed.",
+    "Existing live backend was not restarted by this evaluation; isolated tests use v11."
+  ]
+}
