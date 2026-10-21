@@ -59,6 +59,8 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       result.serverAnalysis.validatedFindings.push({findingId:'ts-flow:synthetic-express',sourceType:'TYPESCRIPT_DATA_FLOW',analyzerVersion:'ts-server-v7',ruleId:nodeEvidence.ruleId,priority:'REVIEW_REQUIRED',comparisonPolicy:'NOT_COMPARED',location:nodeSink,evidence:[nodeEvidence],executionLocations:[nodeSink],title:'사용자가 보낸 값이 서버에서 코드로 실행될 수 있습니다',riskExplanation:'정적 전달 근거이며 실제 공격은 미검증입니다.',recommendedAction:nodeEvidence.recommendation,verificationSteps:['로컬 Mock으로 검증 후 재검사하세요.']});
       result.serverAnalysis.nodeUses=[{ruleId:nodeEvidence.ruleId,kind:'INPUT_TO_EXECUTION',operation:'EVAL_CALL',location:nodeSink,trace:[nodeSource],limitations:['STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF']},{ruleId:'JS_MONGO_WHERE_INPUT_FLOW',kind:'RECEIVER_NOT_VERIFIED',operation:'find',location:nodeSink,trace:[],limitations:['MONGODB_RECEIVER_OR_OBJECT_FLOW_UNRESOLVED']}];
       for(const kind of ['CONSTRUCTOR_SUMMARY_MUST','CONSTRUCTOR_SUMMARY_UNKNOWN','CURSOR_CREATED_EXECUTION_NOT_OBSERVED'])result.serverAnalysis.nodeUses.push({ruleId:kind.startsWith('CONSTRUCTOR')?'JS_CONSTRUCTOR_EFFECT':'JS_MONGO_WHERE_INPUT_FLOW',kind,operation:'STATIC_ONLY',location:nodeSink,trace:[],limitations:['NOT_WHOLE_FUNCTION_FLOW']});
+      result.serverAnalysis.analyzerVersion='ts-server-v11';
+      for(const kind of ['ENTRY_REGISTERED','CALL_LINKED','CALLBACK_BOUND','AUTHENTICATOR_REFERENCED'])result.serverAnalysis.nodeUses.push({ruleId:'JS_SERVER_ENTRY_CONTEXT',kind,operation:'STATIC_ONLY',location:nodeSink,trace:[],limitations:['INITIALIZATION_AND_REQUEST_DISPATCH_NOT_VERIFIED']});
       page.on('pageerror', e => errors.push(e.message));
       await page.addInitScript(() => {
         localStorage.setItem('securedeploy.accessToken', 'synthetic-server-analysis-not-authentication');
@@ -130,7 +132,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       assert.ok((await pythonSection.innerText()).includes('파일 수 상한'));
       assert.ok((await section.innerText()).includes('functions/api/items.ts:3'));
       assert.equal(await section.locator('article').count(), 3);
-      await section.getByText('Express 코드 실행·데이터 접근 근거 (5)',{exact:true}).click();
+      await section.getByText('Express 코드 실행·데이터 접근 근거 (9)',{exact:true}).click();
       for(const phrase of ['서버에서 코드로 실행될 수 있습니다','요청 본문','객체 출처 또는 값 전달을 확인하지 못함','소유권 검증의 증명이 아니며'])assert.ok((await section.innerText()).includes(phrase),phrase);
       for(const phrase of ['제한된 생성자의 필드 전달·읽기 효과 확인','생성자 효과를 확인하지 못함','커서 구성 단계 · 이 근거만으로 실행은 미확인'])assert.ok((await section.innerText()).includes(phrase),phrase);
       for (const title of ['Finding 기술 근거와 한계', '쿼리 값 처리와 방어 근거 (1)', '서버 HTTP 요청 목적지 (1)', '인증·권한 관련 문맥 (1)', '파일별 구문 검사·추적 범위 (1)'])

@@ -7,7 +7,26 @@ import { ExposureDetails } from './ExposureDetails';
 import { ServiceStabilityDetails } from './ServiceStabilityDetails';
 import { JavaSqlAnalysisSection } from './JavaSqlAnalysisSection';
 
+const entryStageLabels: Record<string,string>={
+  ENTRY_REGISTERED:'요청 handler의 정적 등록·Router 연결 확인',CALL_LINKED:'확인된 함수에서 Router 반환 연결',
+  CALLBACK_BOUND:'Passport 콜백 등록 선언 확인 · 요청 실행은 미확인',
+  AUTHENTICATOR_REFERENCED:'같은 파일에서 등록한 인증 전략 참조 확인 · 실행은 미확인',
+  CALL_TARGET_UNKNOWN:'등록된 콜백 대상을 확인하지 못함',EXTERNAL_IMPLEMENTATION_UNKNOWN:'외부 인증 전략 등록은 미확인'
+};
+
 const labels: Record<string, string> = {
+  CONTEXT_MISSING:'연결에 필요한 로컬 소스 문맥 누락',FRAMEWORK_NOT_SUPPORTED:'이 프레임워크의 요청 등록 계약은 미지원',
+  EXTERNAL_IMPLEMENTATION_UNKNOWN:'외부 구현 또는 등록 관계 미확인',CALL_TARGET_UNKNOWN:'콜백 대상을 확인하지 못함',
+  ANALYSIS_STEP_BUDGET_EXCEEDED:'구문·값 전달 분석 작업량 상한 도달',ANALYSIS_TIME_BUDGET_EXCEEDED:'분석 시간 상한 도달',
+  NODE_DISCOVERY_IMPORT_DEPTH_LIMIT:'상위 모듈 탐색 깊이 상한',ENTRY_CONTRACT_ANALYSIS_INCOMPLETE:'등록 계약 분석 일부 미완료',
+  PASSPORT_DECLARATION_NOT_HTTP_ENTRY:'Passport 등록 선언만 확인 · HTTP 요청 진입점 확정은 아님',
+  PASSPORT_STRATEGY_REGISTRATION:'Passport 전략 등록 위치',PASSPORT_VERIFY_CALLBACK:'토큰 확인 콜백 위치',
+  PASSPORT_AUTHENTICATOR_REFERENCE:'인증 middleware 참조 위치',ROUTER_FACTORY_TARGET:'Router 반환 함수',
+  STATIC_CALL_ONLY_NOT_RUNTIME_PROOF:'정적 호출 연결이며 실제 서버 실행을 입증하지 않음',STATIC_REGISTRATION_ONLY:'정적 요청 등록 근거',
+  REGISTRATION_DECLARATION_NOT_HTTP_ENTRY:'등록 선언은 HTTP 진입점이나 취약점의 증명이 아님',
+  INITIALIZATION_AND_REQUEST_DISPATCH_NOT_VERIFIED:'초기화 실행과 실제 요청 전달은 미확인',
+  PASSPORT_LIBRARY_VERSION_NOT_VERIFIED:'실제 Passport 설치 버전·구현은 미검증',
+  SAME_FILE_REGISTRATION_SCOPE_ONLY:'같은 파일의 명시적 등록만 대조함',NOT_AUTHORIZATION_OR_SIGNATURE_PROOF:'접근권한·토큰 서명 검증의 증명은 아님',
   EXPRESS_QUERY:'요청 검색값',EXPRESS_BODY:'요청 본문',EXPRESS_PARAMS:'요청 경로값',EXPRESS_REGISTRATION:'정적 Express 요청 연결',
   PRINCIPAL_CONTEXT_UNVERIFIED:'요청 사용자·세션 참조 · 인증·권한 검증의 증명은 아님',EVAL_CALL:'서버 코드 실행 호출',
   FUNCTION_RETURN:'함수 반환으로 전달',NODE_FLOW_UNRESOLVED:'Node.js 값 전달 또는 제어 흐름 미확인',
@@ -149,6 +168,13 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
   const current = Math.min(page, Math.max(0, Math.ceil(snapshot.files.length / 10) - 1));
   return <section className="server-analysis-section" aria-label={title}>
     <h3>{title}</h3><p>{text(snapshot.status)}</p>
+    {!python&&snapshot.analyzerVersion==='ts-server-v11'&&snapshot.nodeUses!=null&&<p className="review-caution">
+      소스 기록 {snapshot.files.length}개 · 파싱 {snapshot.files.filter(f=>f.parseStatus==='PARSED').length}개 ·
+      요청 등록 {snapshot.nodeUses.filter(u=>u.kind==='ENTRY_REGISTERED').length}곳 ·
+      Router 반환 연결 {snapshot.nodeUses.filter(u=>u.kind==='CALL_LINKED').length}곳 ·
+      분석 제한 기록 {snapshot.files.filter(f=>f.limitations.some(l=>l.includes('BUDGET_EXCEEDED')||l.includes('DEPTH_LIMIT'))).length}개 파일.
+      파싱·등록·호출 연결은 전체 보안 흐름 검증이나 안전 판정이 아닙니다.
+    </p>}
     {python && <p>Django/DRF에서 연결된 일부 요청 경로의 SQL·파일 경로·pickle/YAML 값 전달을 확인한 결과입니다. 전체 Python 코드·인증·권한·미들웨어를 검사한 것은 아닙니다.</p>}
     {python && <PythonCoverageSummary snapshot={snapshot} />}
     <p className="review-caution">코드 구조에서 확인한 별도 검토 항목입니다. 기존 점수·위험 판정·반드시 처리 건수에 합산하지 않습니다. 항목이 없어도 전체 코드가 안전하다는 의미는 아닙니다.</p>
@@ -195,7 +221,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
       <p>정적으로 연결된 요청·함수 호출만 확인합니다. 데이터 조회 근거는 소유권 검증의 증명이 아니며, 미확인 호출은 안전이나 취약점 확정으로 처리하지 않습니다.</p>
       <ul className="coverage-file-list">{snapshot.nodeUses.map((use,i)=><li key={i}>
         <code className="finding-location">{location(use.location)}</code>
-        <span>{use.kind==='INPUT_TO_EXECUTION'?'요청 입력이 실행 문자열로 전달됨':use.kind==='STATIC_OR_DATA_ONLY'?'고정 문자열 또는 일반 데이터 처리':use.kind==='DATA_QUERY_NOT_AUTHORIZATION_PROOF'?'데이터 조회 확인 · 접근권한은 미확인':use.kind==='CONSTRUCTOR_SUMMARY_MUST'?'제한된 생성자의 필드 전달·읽기 효과 확인':use.kind==='CONSTRUCTOR_SUMMARY_UNKNOWN'?'생성자 효과를 확인하지 못함':use.kind==='CURSOR_CREATED_EXECUTION_NOT_OBSERVED'?'커서 구성 단계 · 이 근거만으로 실행은 미확인':'객체 출처 또는 값 전달을 확인하지 못함'}</span>
+        <span>{entryStageLabels[use.kind]??(use.kind==='INPUT_TO_EXECUTION'?'요청 입력이 실행 문자열로 전달됨':use.kind==='STATIC_OR_DATA_ONLY'?'고정 문자열 또는 일반 데이터 처리':use.kind==='DATA_QUERY_NOT_AUTHORIZATION_PROOF'?'데이터 조회 확인 · 접근권한은 미확인':use.kind==='CONSTRUCTOR_SUMMARY_MUST'?'제한된 생성자의 필드 전달·읽기 효과 확인':use.kind==='CONSTRUCTOR_SUMMARY_UNKNOWN'?'생성자 효과를 확인하지 못함':use.kind==='CURSOR_CREATED_EXECUTION_NOT_OBSERVED'?'커서 구성 단계 · 이 근거만으로 실행은 미확인':'객체 출처 또는 값 전달을 확인하지 못함')}</span>
         <p>{use.operation} · {use.ruleId}</p>
         <ul>{use.trace.map((entry,j)=><li key={j}>{text(entry.kind)} · <code>{location(entry)}</code></li>)}</ul>
         {use.limitations.map((limit,j)=><p key={j}>{text(limit)}</p>)}

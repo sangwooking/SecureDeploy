@@ -134,15 +134,19 @@ class ServerAnalysisIntegrationTest {
     }
 
     @Test void expressCommonInputsStoreReviewOnlyCandidatesAndPreserveHistoricalRisk() throws Exception {
-        String token=signup();String code="const express=require('express');const app=express();app.post('/run',(req,res)=>{eval(req.body.code);});";
-        var zip=uploadSource(token,"server.cjs",code);
+        String token=signup();String code="const web=require('./web');const app=web();const router=web.Router();router.post('/run',(req,res)=>{eval(req.body.code);});app.use('/api',router);";
+        String web="const express=require('express');module.exports=function(){return express();};module.exports.Router=()=>express.Router();";
+        String auth="const passport=require('passport');const Bearer=require('passport-http-bearer').Strategy;const handlers=module.exports;handlers.verify=(token,done)=>done(null,false);handlers.setup=()=>passport.use(new Bearer(handlers.verify));";
+        var sources=Map.of("server.cjs",code,"web.cjs",web,"auth.cjs",auth);
+        var zip=uploadSources(token,sources);
         assertThat(zip.at("/serverAnalysis/validatedFindings/0/ruleId").asText()).isEqualTo("JS_EVAL_INPUT_FLOW");
         assertThat(zip.at("/serverAnalysis/validatedFindings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
-        assertThat(zip.at("/serverAnalysis/nodeUses/0/kind").asText()).isEqualTo("INPUT_TO_EXECUTION");
+        assertThat(zip.at("/serverAnalysis/nodeUses").toString()).contains("INPUT_TO_EXECUTION","ENTRY_REGISTERED","CALL_LINKED","CALLBACK_BOUND");
+        assertThat(zip.at("/coverage/analyzers").toString()).contains("SOURCE_SUBMITTED","NODE_ENTRY_REGISTERED","STATIC_INPUT_EXECUTION_PATHS");
         assertThat(zip.path("securityScore").asInt()).isEqualTo(100);
         assertThat(zip.at("/riskAssessment/prioritySummary/BLOCKING").asInt()).isZero();
         Path pub=Files.createDirectory(temp.resolve("express-public")),prv=Files.createDirectory(temp.resolve("express-private"));
-        Files.writeString(pub.resolve("server.cjs"),code);Files.writeString(prv.resolve("server.cjs"),code);
+        for(var root:List.of(pub,prv))for(var entry:sources.entrySet())Files.writeString(root.resolve(entry.getKey()),entry.getValue());
         when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/express",pub,pub));
         var publicResult=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/express\",\"scanMode\":\"STANDARD\"}");
         var meta=new GitHubSourceSnapshot("fixture","express","https://github.com/fixture/express","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
@@ -150,7 +154,7 @@ class ServerAnalysisIntegrationTest {
         var privateResult=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
         for(var value:List.of(publicResult,privateResult))assertThat(value.path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
         assertThat(pub).doesNotExist();assertThat(prv).doesNotExist();
-        var fixed=uploadSource(token,"server.cjs",code.replace("eval(req.body.code)","Number(req.body.code)"));
+        var fixed=uploadSources(token,Map.of("server.cjs",code.replace("eval(req.body.code)","Number(req.body.code)"),"web.cjs",web,"auth.cjs",auth));
         assertThat(fixed.at("/serverAnalysis/validatedFindings")).isEmpty();
         assertThat(fixed.at("/comparison/counts/RESOLVED").asInt()).isZero();
         assertThat(fixed.path("riskAssessment").path("prioritySummary")).isEqualTo(zip.path("riskAssessment").path("prioritySummary"));

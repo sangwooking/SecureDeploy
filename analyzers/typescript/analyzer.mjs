@@ -4,8 +4,9 @@ import { destinationOf, joinDestinations, concatenatedDestination, constructedUr
 import { credentialShape, sources as exposureSources, uncertain as exposureUncertain, trails as exposureTrails } from './exposure.mjs';
 import { nodeServer } from './node-server.mjs';
 import { entryState } from './entry-state.mjs';
+import { entryContracts } from './entry-contracts.mjs';
 
-export const VERSION = 'ts-server-v10';
+export const VERSION = 'ts-server-v11';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -86,6 +87,7 @@ export function analyze(input, overrides = {}) {
     functionName: safeName(fn?.name ?? 'module'), kind });
   function tick(mod) {
     if (++steps > limits.maxSteps || Date.now() > deadline) {
+      mod.record.limitations.add(steps > limits.maxSteps ? 'ANALYSIS_STEP_BUDGET_EXCEEDED' : 'ANALYSIS_TIME_BUDGET_EXCEEDED');
       mod.record.limitations.add('ANALYSIS_BUDGET_EXCEEDED'); throw new Error('BUDGET');
     }
   }
@@ -321,7 +323,10 @@ export function analyze(input, overrides = {}) {
     mergeVars(state, [skipped, taken]);
     return union(selected, fallback);
   }
+  const writePlans = new WeakMap();
   function writtenNames(node, state) {
+    tick(state.mod);
+    if (writePlans.has(node)) return writePlans.get(node);
     const effects = new Set();
     const scan = n => {
       tick(state.mod);
@@ -336,7 +341,7 @@ export function analyze(input, overrides = {}) {
       ts.forEachChild(n, scan);
     };
     scan(node);
-    return [...effects];
+    const plan=Object.freeze([...effects]);writePlans.set(node,plan);return plan;
   }
   function invalidateWrites(names, state, incoming = unknown()) {
     for (const name of names) {
@@ -477,11 +482,15 @@ export function analyze(input, overrides = {}) {
         const member=ts.isPropertyAccessExpression(callee)?property(receiverInput,callee.name.text,callee,state):callable;
         const supported=nodeSupport.call(node,callee,receiverInput,args,state,global,member);
         if(supported)return supported.value;
-        if(member?.target&&!member.unknown) {
+        if(member?.target&&!member.unknown&&!member.ref?.unknown) {
           if(ts.isNewExpression(node))return nodeSupport.construct(member.target,args,state);
           const passed=args.map(a=>step(a,loc(node,mod,'FUNCTION_ARGUMENT',fn),mod));
           const returned=invoke(member.target,passed,state.depth+1,state.context,state.stack,state.uncertain,state.exposureUncertain,receiverInput);
           if(member.effects?.length)invalidateWrites(member.effects,state,union(...args));
+          if(returned.tag==='express-router'&&!returned.unknown&&!returned.ref?.unknown)
+            append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'CALL_LINKED',operation:'STATIC_ROUTER_FACTORY_RETURN',
+              location:loc(node,mod,'ROUTER_FACTORY_CALL',fn),trace:[loc(member.target.node,member.target.mod,'ROUTER_FACTORY_TARGET',member.target)],
+              limitations:['STATIC_CALL_ONLY_NOT_RUNTIME_PROOF']},mod);
           return step(returned,loc(node,mod,'FUNCTION_RETURN',fn),mod);
         }
       }
@@ -492,7 +501,7 @@ export function analyze(input, overrides = {}) {
       if (global && callee.text === 'Response' && ts.isNewExpression(node) || globalObject('Response') && callee.name.text === 'json')
         return { tag: 'exposureResponse', trace: [], exposures: exposureSources(args[0]), exposureTrail: exposureTrails(args[0]), unknown: exposureUncertain(args[0]) || state.uncertain || state.exposureUncertain, responseLocations: [loc(node, mod, 'HTTP_RESPONSE', fn)] };
       if (ts.isIdentifier(callee)) {
-        const target = callable?.target;
+        const target = !state.nodeMode || !callable?.unknown&&!callable?.ref?.unknown ? callable?.target : undefined;
         if (target && ts.isCallExpression(node)) {
           const passed = args.map(a => step(a, loc(node, mod, 'FUNCTION_ARGUMENT', fn), mod));
           return invoke(target, passed, state.depth + 1, state.context, state.stack, state.uncertain, state.exposureUncertain);
@@ -891,6 +900,7 @@ export function analyze(input, overrides = {}) {
     const combined=union(...returns);
     return state.nodeMode&&returns.length>1&&returns.length<=4?{...combined,nodeAlternatives:returns}:combined;
   }
+  entryContracts({ts,modules,tick,note,loc,append,result});
   nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction});
   nodeSupport.discover();
   for (const mod of modules.values()) for (const entry of mod.entries) {

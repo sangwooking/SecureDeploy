@@ -32,7 +32,7 @@ export function nodeServer(api) {
     }
     if(name==='handler'&&ts.isBinaryExpression(node.parent)&&ts.isPropertyAccessExpression(node.parent.left))name=node.parent.left.name.text;
     const target={name,node,mod:state.mod,nodeMode:true,closure,lexicalThis:ts.isArrowFunction(node)?state.thisValue:undefined};
-    const result=value('function',[],{effects:writtenNames(node,state),target});
+    const result={...object('function'),effects:writtenNames(node,state),target};
     const self=node.name?.text??(ts.isVariableDeclaration(node.parent)&&ts.isIdentifier(node.parent.name)?node.parent.name.text:undefined);
     if(self&&!writtenNames(state.fn.node,state).includes(self))closure.set(self,result);
     return result;
@@ -44,6 +44,7 @@ export function nodeServer(api) {
     if(base.startsWith('../'))return;
     const choices=[base,...['.js','.mjs','.cjs','.ts'].map(e=>base+e),...['js','mjs','cjs','ts'].map(e=>base+'/index.'+e)];
     const matches=[...new Set(choices.filter(p=>modules.has(p)))];
+    if(matches.length!==1)note(mod,matches.length?'CALL_TARGET_UNKNOWN':'CONTEXT_MISSING');
     return matches.length===1?modules.get(matches[0]):undefined;
   }
   function dependency(mod,spec) {
@@ -51,7 +52,7 @@ export function nodeServer(api) {
     if(spec==='mongodb')return native('mongodb',mod);
     if(['http','node:http','https','node:https'].includes(spec))return native('node-http',mod);
     const target=findModule(mod,spec);
-    if(!target){note(mod,'NODE_MODULE_RESOLUTION_UNKNOWN');return unknown();}
+    if(!target){note(mod,'NODE_MODULE_RESOLUTION_UNKNOWN');if(!spec.startsWith('.'))note(mod,'EXTERNAL_IMPLEMENTATION_UNKNOWN');return unknown();}
     return load(target);
   }
   function load(mod) {
@@ -61,7 +62,7 @@ export function nodeServer(api) {
     const exports=object('node-exports'), module=object('node-module');module.ref.properties.set('exports',exports);
     const state={mod,fn:{name:'module',node:mod.ast},vars:new Map([['module',module],['exports',exports]]),nodeMode:true,context:context(),depth:0,stack:new Set(),uncertain:false};
     try {
-      for(const [name,fn]of mod.functions)if(typeof name==='string')state.vars.set(name,value('function',[],{target:{...fn,nodeMode:true,closure:state.vars}}));
+      for(const [name,fn]of mod.functions)if(typeof name==='string')state.vars.set(name,{...object('function'),target:{...fn,nodeMode:true,closure:state.vars}});
       for(const s of mod.ast.statements)if(ts.isImportDeclaration(s)&&ts.isStringLiteral(s.moduleSpecifier)&&!s.importClause?.isTypeOnly) {
         const imported=dependency(mod,s.moduleSpecifier.text);
         if(s.importClause?.name)state.vars.set(s.importClause.name.text,imported.native==='express'?imported:imported.ref?.properties.get('default')??imported);
@@ -87,7 +88,7 @@ export function nodeServer(api) {
   }
   function property(base,key,node,state) {
     if(base.unknown||base.ref?.unknown)return;
-    if(base.tag==='function')return unknown();
+    if(base.tag==='function')return base.ref?.properties.get(key)??unknown();
     if(base.native==='mongodb'&&key==='MongoClient')return native('mongo-client',base.nativeMod,base.ref);
     if(base.native==='express'&&key==='Router')return native('router',base.nativeMod,base.ref);
     if(base.tag==='express-router'&&key==='locals'){
@@ -106,7 +107,8 @@ export function nodeServer(api) {
   function write(receiver,key,v,state) {
     if(!state.nodeMode||!literal(key)||!receiver.ref)return false;
     if(receiver.native){receiver.ref.unknown=true;note(state.mod,'NODE_LIBRARY_MUTATION_UNKNOWN');return true;}
-    if(['node-module','node-exports','express-locals','node-instance','object'].includes(receiver.tag)&&!receiver.unknown&&!receiver.ref.unknown) {
+    if(receiver.tag==='function'&&['__proto__','prototype','constructor','caller','arguments'].includes(String(key.constant)))return false;
+    if(['node-module','node-exports','express-locals','node-instance','object','function'].includes(receiver.tag)&&!receiver.unknown&&!receiver.ref.unknown) {
       const ref=state.forkRefs?.get(receiver.ref)??receiver.ref;
       if(state.forkRefs&&ref.nodeIdentity)state.nodeMutations?.add(ref.nodeIdentity);
       ref.properties.set(String(key.constant),v);return true;
@@ -248,12 +250,33 @@ export function nodeServer(api) {
     return instance;
   }
   function discover() {
+    const roots=new Set(),parents=new Map();
     for(const mod of modules.values()) {
       let root=false;
-      const scan=node=>{tick(mod);if(ts.isImportDeclaration(node)&&node.moduleSpecifier.text==='express'&&!node.importClause?.isTypeOnly)root=true;
-        if(ts.isCallExpression(node)&&ts.isIdentifier(node.expression)&&node.expression.text==='require'&&node.arguments.length===1&&ts.isStringLiteral(node.arguments[0])&&node.arguments[0].text==='express')root=true;
+      const dependencyEdge=spec=>{
+        if(spec==='express')root=true;
+        if(['koa','@koa/router','koa-compose'].includes(spec))note(mod,'FRAMEWORK_NOT_SUPPORTED');
+        if(!spec.startsWith('.'))return;
+        const child=findModule(mod,spec);
+        if(!child)return;
+        if(!parents.has(child))parents.set(child,new Set());parents.get(child).add(mod);
+      };
+      const scan=node=>{tick(mod);if(ts.isImportDeclaration(node)&&ts.isStringLiteral(node.moduleSpecifier)&&!node.importClause?.isTypeOnly)dependencyEdge(node.moduleSpecifier.text);
+        if(ts.isCallExpression(node)&&ts.isIdentifier(node.expression)&&node.expression.text==='require'&&node.arguments.length===1&&ts.isStringLiteral(node.arguments[0]))dependencyEdge(node.arguments[0].text);
         ts.forEachChild(node,scan);};
-      try{scan(mod.ast);if(root)load(mod);}catch{note(mod,'NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED');}
+      try{scan(mod.ast);if(root)roots.add(mod);}catch{note(mod,'NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED');}
+    }
+    // Discover bounded static importers of Express wrappers, never invoke an
+    // exported initialization function solely because it exists.
+    const queue=[...roots].map(mod=>[mod,0]),seen=new Set();
+    for(let i=0;i<queue.length;i++){
+      const [mod,depth]=queue[i];if(seen.has(mod))continue;seen.add(mod);
+      try{tick(mod);load(mod);}catch{note(mod,'NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED');}
+      for(const parent of parents.get(mod)??[]){
+        if(seen.has(parent))continue;
+        if(depth>=limits.maxDepth){note(parent,'NODE_DISCOVERY_IMPORT_DEPTH_LIMIT');continue;}
+        queue.push([parent,depth+1]);
+      }
     }
     const reachable=new Set();const visit=app=>{if(reachable.has(app)||app.unknown||app.ref.unknown)return;reachable.add(app);for(const child of app.mounts){tick(child.routes[0]?.target.mod??[...modules.values()][0]);visit(child);}};
     for(const app of apps)visit(app);
@@ -261,6 +284,9 @@ export function nodeServer(api) {
       const mod=route.target.mod;
       if(mod.entries.length>=limits.maxResults){note(mod,'EXPRESS_ENTRY_LIMIT');continue;}
       mod.entries.push({fn:route.target,kind:'EXPRESS_HANDLER',registration:route.location,uncertain:route.uncertain||!!route.setupContext.unresolved,middleware:route.middleware});mod.record.entrypoints++;
+      append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ENTRY_REGISTERED',operation:'EXPRESS_ROUTER_MOUNTED',
+        location:route.location,trace:[loc(route.target.node,mod,'EXPRESS_HANDLER_TARGET',route.target)],
+        limitations:['STATIC_REGISTRATION_ONLY','MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED']},mod);
     }
     for(const route of routes)if(![...reachable].some(app=>app.routes.includes(route)))note(route.target.mod,'UNMOUNTED_ROUTER_NOT_ANALYZED');
   }

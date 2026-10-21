@@ -5,6 +5,16 @@ const { renderToStaticMarkup } = require('react-dom/server');
 const { ServerAnalysisSection } = require('./load-component.cjs')('ServerAnalysisSection');
 const fixture = require('./server-analysis-fixture.cjs');
 const render = snapshot => renderToStaticMarkup(React.createElement(ServerAnalysisSection, { snapshot }));
+test('entry stages distinguish static registration and declared Passport callbacks from security proof',()=>{
+  const snapshot=fixture();snapshot.analyzerVersion='ts-server-v11';snapshot.nodeUses=[];
+  for(const kind of ['ENTRY_REGISTERED','CALL_LINKED','CALLBACK_BOUND','AUTHENTICATOR_REFERENCED'])snapshot.nodeUses.push({
+    ruleId:'JS_SERVER_ENTRY_CONTEXT',kind,operation:'STATIC_ONLY',location:{filePath:'server.cjs',line:1},trace:[],
+    limitations:['INITIALIZATION_AND_REQUEST_DISPATCH_NOT_VERIFIED']});
+  const html=render(snapshot);
+  for(const phrase of ['요청 등록 1곳','Router 반환 연결 1곳','전체 보안 흐름 검증이나 안전 판정이 아닙니다',
+    'Passport 콜백 등록 선언 확인','초기화 실행과 실제 요청 전달은 미확인'])assert.ok(html.includes(phrase),phrase);
+  snapshot.analyzerVersion='ts-server-v10';assert.ok(!render(snapshot).includes('소스 기록'));
+});
 test('Python evidence shares the UI but keeps scope, guidance and counts separate from TypeScript', () => {
   const root = fixture();
   const py = fixture(); py.analyzerVersion = 'py-django-v1'; py.parserVersion = 'CPython-3.14.5';

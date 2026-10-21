@@ -197,7 +197,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
             List<Location> ownershipComparisons, List<AuthorizationAccess> accesses, List<String> limitations) { }
 
     public static ServerAnalysisSnapshot unavailable(String status, List<FileCoverage> files, String reason) {
-        return new ServerAnalysisSnapshot(1, "ts-server-v10", null, status, files, List.of(), List.of(), List.of(), List.of(reason));
+        return new ServerAnalysisSnapshot(1, "ts-server-v11", null, status, files, List.of(), List.of(), List.of(), List.of(reason));
     }
 
     public CoverageLedger attachCoverage(CoverageLedger ledger) {
@@ -221,6 +221,9 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
             nodeUses.forEach(use->counts.merge("NODE_"+use.kind(),1,Integer::sum));
             counts.put("ENTRYPOINTS",files.stream().mapToInt(FileCoverage::entrypoints).sum());
             counts.put("FUNCTIONS_TRACED",files.stream().mapToInt(FileCoverage::functionsAnalyzed).sum());
+            counts.put("SOURCE_SUBMITTED",files.size());
+            files.forEach(file->file.limitations().forEach(reason->counts.merge("LIMITATION_"+reason,1,Integer::sum)));
+            counts.put("STATIC_INPUT_EXECUTION_PATHS",(int)nodeUses.stream().filter(use->"INPUT_TO_EXECUTION".equals(use.kind())).count());
         }
         var analyzers = new java.util.ArrayList<>(ledger.analyzers());
         boolean python = analyzerVersion.startsWith("py-django-");
