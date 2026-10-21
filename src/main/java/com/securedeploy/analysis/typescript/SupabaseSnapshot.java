@@ -6,7 +6,11 @@ import com.securedeploy.analysis.typescript.ServerAnalysisSnapshot.Location;
 
 /** Repository declarations and call sites, never live database authorization. */
 public record SupabaseSnapshot(int schemaVersion,String analyzerVersion,String status,List<SqlFile> files,
-        List<Table> tables,List<Client> clients,List<Access> accesses,List<Finding> findings,List<String> limitations) {
+        List<Table> tables,List<Client> clients,List<Access> accesses,List<Finding> findings,List<String> limitations,Map<String,Integer> budgetUsage) {
+    public SupabaseSnapshot(int schemaVersion,String analyzerVersion,String status,List<SqlFile> files,
+            List<Table> tables,List<Client> clients,List<Access> accesses,List<Finding> findings,List<String> limitations) {
+        this(schemaVersion,analyzerVersion,status,files,tables,clients,accesses,findings,limitations,null);
+    }
     public record SqlFile(String filePath,String status,int statements,List<String> limitations) { }
     public record Condition(String kind,List<String> columns) { }
     public record Policy(String name,String command,String mode,List<String> roles,Condition using,Condition check,Location location) { }
@@ -25,6 +29,7 @@ public record SupabaseSnapshot(int schemaVersion,String analyzerVersion,String s
         files.forEach(f->counts.merge("SQL_"+f.status(),1,Integer::sum));
         counts.put("TABLE_DECLARATIONS",tables.size());counts.put("CLIENT_DECLARATIONS",clients.size());
         counts.put("DATA_ACCESS_DECLARATIONS",accesses.size());counts.put("REVIEW_CANDIDATES",findings.size());
+        if(budgetUsage!=null)counts.putAll(budgetUsage);
         var analyzers=new ArrayList<>(ledger.analyzers());
         analyzers.add(new CoverageLedger.Analyzer("SUPABASE_RLS",status,
                 "SQL migration 선언과 제한된 Client 사용 위치를 확인합니다. 실제 DB 적용·사용자 인증·권한 상속·RLS 우회는 미검증이며 기존 점수·Risk와 분리됩니다.",counts));

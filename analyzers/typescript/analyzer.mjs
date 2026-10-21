@@ -9,8 +9,9 @@ import { denoEntries } from './deno.mjs';
 import { supabaseAnalysis } from './supabase.mjs';
 import { nextEntries } from './next.mjs';
 import { analyzePolicies } from './rls.mjs';
+import { syntaxIndex, indexSyntax } from './syntax-index.mjs';
 
-export const VERSION = 'ts-server-v14';
+export const VERSION = 'ts-server-v15';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -85,14 +86,20 @@ export function analyze(input, overrides = {}) {
   let nodeSupport;
   const functionNodes=new WeakSet();
   let chars = 0, steps = 0, totalFunctions = 0;
+  let phase='SETUP', astNodes=0;
+  const phaseSteps={};
+  function charged() {
+    if(steps>=limits.maxSteps||Date.now()>deadline)throw Error('SUPABASE_BUDGET');
+    steps++;phaseSteps[phase]=(phaseSteps[phase]??0)+1;
+  }
   const safeName = text => /^[A-Za-z_$][\w$]{0,79}$/.test(text ?? '') && !/^(?:sk_|gh[pousr]_|AKIA)/.test(text) ? text : '[identifier]';
   const loc = (node, mod, kind, fn) => ({ filePath: mod.filePath,
     line: mod.ast.getLineAndCharacterOfPosition(node.getStart(mod.ast)).line + 1,
     column: mod.ast.getLineAndCharacterOfPosition(node.getStart(mod.ast)).character + 1,
     functionName: safeName(fn?.name ?? 'module'), kind });
   function tick(mod) {
-    if (++steps > limits.maxSteps || Date.now() > deadline) {
-      mod.record.limitations.add(steps > limits.maxSteps ? 'ANALYSIS_STEP_BUDGET_EXCEEDED' : 'ANALYSIS_TIME_BUDGET_EXCEEDED');
+    try { charged(); } catch {
+      mod.record.limitations.add(steps >= limits.maxSteps ? 'ANALYSIS_STEP_BUDGET_EXCEEDED' : 'ANALYSIS_TIME_BUDGET_EXCEEDED');
       mod.record.limitations.add('ANALYSIS_BUDGET_EXCEEDED'); throw new Error('BUDGET');
     }
   }
@@ -185,12 +192,14 @@ export function analyze(input, overrides = {}) {
         /\.[jt]sx$/.test(filePath) ? ts.ScriptKind.TSX : /\.[cm]?js$/.test(filePath) ? ts.ScriptKind.JS : ts.ScriptKind.TS);
       if (ast.parseDiagnostics.length) { record.parseStatus = 'PARSE_FAILED'; record.limitations.add('INVALID_SYNTAX'); continue; }
       const mod = { filePath, ast, record, functions: new Map(), exports: new Map(), imports: new Map(),
-        constants: new Map(), declared: new Set(), entries: [], visited: new Set() };
+        constants: new Map(), declared: new Set(), entries: [], visited: new Set(), syntaxIndex:syntaxIndex() };
       let nodes = 0;
       const stack = [ast];
       while (stack.length) {
         const n = stack.pop();
         if (++nodes > limits.maxNodes || Date.now() > deadline) throw new Error('BUDGET');
+        astNodes++;
+        indexSyntax(ts,n,mod.syntaxIndex);
         if(ts.isIdentifier(n)&&n.text==='Deno')mod.hasDenoSyntax=true;
         if(ts.isIdentifier(n)&&['from','createClient'].includes(n.text))mod.hasSupabaseSyntax=true;
         if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'prepare') record.prepareCallSites++;
@@ -198,6 +207,8 @@ export function analyze(input, overrides = {}) {
             || ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'fetch')) record.httpCallSites++;
         ts.forEachChild(n, child => { stack.push(child); });
       }
+      mod.syntaxIndex.nodes.sort((a,b)=>a.pos-b.pos||b.end-a.end);
+      mod.syntaxIndex.dependencies.sort((a,b)=>a.pos-b.pos);
       const register = (name, node, exported = false, lexical = true) => {
         if (!claimFunction(node,mod)) return;
         const fn = { name, node, mod };
@@ -995,21 +1006,30 @@ export function analyze(input, overrides = {}) {
     const withResponses={...combined,environmentResponses:returns.flatMap(v=>v.environmentResponses??[]).slice(0,20)};
     return state.nodeMode&&returns.length>1&&returns.length<=4?{...withResponses,nodeAlternatives:returns}:withResponses;
   }
-  // Reserve a bounded SQL pass before flow tracing can consume the shared budget.
+  // Reserve bounded declaration passes before flow tracing consumes the remainder.
   // Its ticks still count against the same global cap; no target code is run.
   let precomputedPolicies;
-  if(input.policyFiles?.some(f=>f.status==='SELECTED')) {
+  phase='POLICY';
+  if(input.policyFiles?.length) {
     let sqlWork=0;const sqlCap=Math.floor(limits.maxSteps*(modules.size?0.25:0.9));
-    const globalTick=()=>{if(++steps>limits.maxSteps||Date.now()>deadline)throw Error('SUPABASE_BUDGET');};
+    const globalTick=()=>charged();
     try {precomputedPolicies=analyzePolicies(input.policyFiles,globalTick,()=>{
       if(++sqlWork>sqlCap)throw Error('POLICY_STEP_BUDGET');globalTick();
     });}catch {/* The ordinary unavailable path below stays fail-closed. */}
   }
+  phase='CLIENT';
+  let clientWork=0;const clientCap=Math.floor(limits.maxSteps*0.15);
+  const precomputedSupabase=supabaseAnalysis({ts,modules,input,precomputedPolicies,tick:()=>{
+    if(clientWork>=clientCap)throw Error('CLIENT_STEP_BUDGET');clientWork++;
+    charged();
+  }});
+  phase='ENTRY_DISCOVERY';
   denoEntries({ts,modules,resolve,claimFunction,tick,note,input});
   nextEntries({ts,modules,input,tick,note});
   entryContracts({ts,modules,tick,note,loc,append,result});
   nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction});
   nodeSupport.discover();
+  phase='FLOW';
   for (const mod of modules.values()) for (const entry of mod.entries) {
     const context = { entry: loc(entry.registrationNode ?? entry.fn.node, mod, entry.kind, entry.fn), checks: [], defenses: [], resources: [] };
     try {
@@ -1053,8 +1073,10 @@ export function analyze(input, overrides = {}) {
   result.sqlUses = result.sqlUses.filter((item, i, all) => all.findIndex(other => JSON.stringify(item) === JSON.stringify(other)) === i);
   if (!result.files.length) result.status = 'NOT_APPLICABLE';
   else if (result.files.some(f => f.parseStatus !== 'PARSED' || f.flowStatus !== 'SUPPORTED_FLOW_ANALYZED') || result.limitations.length > 1) result.status = 'PARTIAL';
-  result.supabaseAnalysis=supabaseAnalysis({ts,modules,input,precomputedPolicies,tick:()=>{
-    if(++steps>limits.maxSteps||Date.now()>deadline)throw Error('SUPABASE_BUDGET');
-  }});
+  result.supabaseAnalysis=precomputedSupabase;
+  result.supabaseAnalysis.budgetUsage={AST_NODES_INDEXED:astNodes,STEPS_LIMIT:limits.maxSteps,STEPS_USED:steps,
+    STEPS_SETUP:phaseSteps.SETUP??0,STEPS_POLICY:phaseSteps.POLICY??0,STEPS_CLIENT:phaseSteps.CLIENT??0,
+    STEPS_ENTRY_DISCOVERY:phaseSteps.ENTRY_DISCOVERY??0,STEPS_FLOW:phaseSteps.FLOW??0,
+    CLIENT_WORK_LIMIT:clientCap,POLICY_WORK_LIMIT:Math.floor(limits.maxSteps*(modules.size?0.25:0.9))};
   return result;
 }

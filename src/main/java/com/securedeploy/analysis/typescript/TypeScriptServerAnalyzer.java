@@ -160,11 +160,19 @@ public class TypeScriptServerAnalyzer {
         snapshot.clients().forEach(c->locations.add(c.location()));
         snapshot.accesses().forEach(a->{locations.add(a.location());if(a.clientLocation()!=null)locations.add(a.clientLocation());if(a.policyLocation()!=null)locations.add(a.policyLocation());});
         snapshot.findings().forEach(f->{if(!"REVIEW_REQUIRED".equals(f.priority())||!"NOT_COMPARED".equals(f.comparisonPolicy())||!"SUPABASE_BROAD_WRITE_DECLARATION".equals(f.ruleId()))throw new IllegalArgumentException("INVALID_RLS_FINDING");locations.add(f.location());locations.addAll(f.evidenceLocations());});
+        if(snapshot.budgetUsage()!=null){
+            var budget=snapshot.budgetUsage();
+            var keys=Set.of("AST_NODES_INDEXED","STEPS_LIMIT","STEPS_USED","STEPS_SETUP","STEPS_POLICY","STEPS_CLIENT","STEPS_ENTRY_DISCOVERY","STEPS_FLOW","CLIENT_WORK_LIMIT","POLICY_WORK_LIMIT");
+            if(!budget.keySet().equals(keys)||budget.values().stream().anyMatch(v->v==null||v<0||v>20_000_000)
+                    ||budget.get("STEPS_LIMIT")>100_000||budget.get("STEPS_USED")>budget.get("STEPS_LIMIT")
+                    ||budget.get("STEPS_USED")!=List.of("STEPS_SETUP","STEPS_POLICY","STEPS_CLIENT","STEPS_ENTRY_DISCOVERY","STEPS_FLOW").stream().mapToInt(budget::get).sum())
+                throw new IllegalArgumentException("INVALID_BUDGET_USAGE");
+        }
         for(var l:locations)if(l==null||!files.containsKey(l.filePath())||l.line()<1||l.line()>files.get(l.filePath()))throw new IllegalArgumentException("INVALID_RLS_LOCATION");
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v14".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v15".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200

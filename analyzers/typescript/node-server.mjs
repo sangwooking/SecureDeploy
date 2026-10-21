@@ -264,7 +264,11 @@ export function nodeServer(api) {
       const scan=node=>{tick(mod);if(ts.isImportDeclaration(node)&&ts.isStringLiteral(node.moduleSpecifier)&&!node.importClause?.isTypeOnly)dependencyEdge(node.moduleSpecifier.text);
         if(ts.isCallExpression(node)&&ts.isIdentifier(node.expression)&&node.expression.text==='require'&&node.arguments.length===1&&ts.isStringLiteral(node.arguments[0]))dependencyEdge(node.arguments[0].text);
         ts.forEachChild(node,scan);};
-      try{scan(mod.ast);if(root)roots.add(mod);}catch{note(mod,'NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED');}
+      try{
+        if(mod.syntaxIndex)for(const edge of mod.syntaxIndex.dependencies){tick(mod);dependencyEdge(edge.spec);}
+        else scan(mod.ast);
+        if(root)roots.add(mod);
+      }catch{note(mod,'NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED');}
     }
     // Discover bounded static importers of Express wrappers, never invoke an
     // exported initialization function solely because it exists.

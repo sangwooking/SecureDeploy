@@ -6,7 +6,7 @@ const { ServerAnalysisSection } = require('./load-component.cjs')('ServerAnalysi
 const fixture = require('./server-analysis-fixture.cjs');
 const render = snapshot => renderToStaticMarkup(React.createElement(ServerAnalysisSection, { snapshot }));
 test('combined code and SQL selection is not confused with parsing or verified flows',()=>{
-  const data=fixture();data.analyzerVersion='ts-server-v14';data.nodeUses=[];
+  const data=fixture();data.analyzerVersion='ts-server-v15';data.nodeUses=[];
   data.selectionCoverage={discoveredFiles:249,submittedFiles:100,omittedFiles:149,omittedDetails:49,submittedCharacters:450000,omissionReasons:{SOURCE_FILE_COUNT_LIMIT:149}};
   data.files[0].selectionReason='TS_RELATED_IMPORT_HINT';
   const html=render(data);

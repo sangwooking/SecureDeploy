@@ -1,6 +1,7 @@
 import type { SupabaseAnalysis } from '../types/supabaseAnalysis';
 const labels: Record<string,string>={
   POLICY_STEP_BUDGET:'정책 작업량 예약 상한 · 남은 migration 미검사, 권한 결론 미확인',
+  CLIENT_STEP_BUDGET:'Client 선언 작업량 예약 상한',CLIENT_AST_BUDGET_LIMIT:'Client 선언 분석의 실행 예산 부족',
   SQL_SOURCE_NOT_INSPECTED:'SQL 입력을 검사하지 못함',SOURCE_FILE_COUNT_LIMIT:'공통 파일 수 상한',SOURCE_TOTAL_CHAR_LIMIT:'공통 문자 수 상한',SOURCE_FILE_SIZE_LIMIT:'개별 파일 크기 상한',
   ENABLED:'RLS 활성화 선언',DISABLED:'RLS 비활성화 선언',DISABLED_BY_CREATE:'테이블 생성 시 RLS 비활성 상태',
   UID_COLUMN_EQUALITY:'현재 사용자 ID와 컬럼 일치 조건',AUTHENTICATION_ONLY:'로그인 여부 조건 · 소유권 확인 아님',
@@ -21,6 +22,10 @@ export function SupabaseAnalysisSection({snapshot,compact=false}:{snapshot?:Supa
     <p>저장소의 선언만 확인했습니다. 실제 운영 DB 적용·로그인 사용자·관리자 우회는 확인하지 않았으며, 항목이 없어도 안전을 보증하지 않습니다.</p>
     <p className="review-caution">기존 점수·배포 판단·해결 건수와 분리된 결과입니다. 로그인 허용과 데이터 소유권 제한은 다릅니다.</p>
     {!compact&&<>
+      {snapshot.budgetUsage&&<details className="coverage-details"><summary>분석 실행 예산</summary>
+        <p>공통 단계 {snapshot.budgetUsage.STEPS_USED} / {snapshot.budgetUsage.STEPS_LIMIT} · 정책 {snapshot.budgetUsage.STEPS_POLICY} · Client 선언 {snapshot.budgetUsage.STEPS_CLIENT} · 진입점 확인 {snapshot.budgetUsage.STEPS_ENTRY_DISCOVERY} · 흐름 추적 {snapshot.budgetUsage.STEPS_FLOW}</p>
+        <p>파일 선택·파싱과 실행 단계는 다릅니다. 일부 분석이 중단되어도 다른 단계의 확인된 근거는 별도로 보존합니다. 선언은 실제 실행이나 권한 검증의 증거가 아닙니다.</p>
+      </details>}
       <div className="vulnerability-list">{snapshot.findings.map(f=><article className="vulnerability-item action-finding" key={f.findingId}>
         <span className="risk-badge risk-review_required">사용자 접근권한 · 추가 확인 필요</span><h4>{f.title}</h4>
         <p className="finding-location">{f.location.filePath}:{f.location.line} · {f.table}</p>

@@ -8,6 +8,30 @@ const owner='CREATE POLICY own ON public.notes FOR ALL TO authenticated USING (a
 const run=(sql,files=[])=>analyze({files,policyFiles:Array.isArray(sql)?sql:[source(sql)]}).supabaseAnalysis;
 const op=(r,operation,role='authenticated')=>r.tables[0].operations.find(o=>o.operation===operation&&o.role===role);
 
+test('shared execution pressure preserves client declarations alongside server and policy evidence',()=>{
+  const r=analyze({files:[
+    {filePath:'client.ts',content:"import {createClient} from '@supabase/supabase-js';const db=createClient('https://example.invalid',process.env.SYNTHETIC_ANON_KEY);db.from('notes').select();"},
+    {filePath:'edge.ts',content:"Deno.serve(req=>{"+'const x=1;'.repeat(1600)+"return Response.json(Deno.env.get('SYNTHETIC_PRIVATE_KEY'));});"}
+  ],policyFiles:[source(table+grant+owner)]},{maxSteps:15000});
+  assert.equal(r.authorizationContexts.length,1);
+  assert.equal(r.supabaseAnalysis.clients.length,1);
+  assert.equal(r.supabaseAnalysis.accesses.length,1);
+  assert.equal(r.supabaseAnalysis.tables.length,1);
+  assert.ok(!r.supabaseAnalysis.limitations.includes('CLIENT_AST_BUDGET_LIMIT'));
+  const b=r.supabaseAnalysis.budgetUsage;
+  assert.ok(b.STEPS_USED<=15000);
+  assert.equal(b.STEPS_USED,b.STEPS_SETUP+b.STEPS_POLICY+b.STEPS_CLIENT+b.STEPS_ENTRY_DISCOVERY+b.STEPS_FLOW);
+});
+
+test('client reservation exhaustion is explicit and cannot erase policy facts or exceed global steps',()=>{
+  const r=analyze({files:[{filePath:'client.ts',content:"import {createClient} from '@supabase/supabase-js';const db=createClient('https://example.invalid',process.env.ANON_KEY);"+"db.from('notes').select();".repeat(300)}],
+    policyFiles:[source(table+grant+owner)]},{maxSteps:3000});
+  assert.equal(r.supabaseAnalysis.tables.length,1);
+  assert.ok(r.supabaseAnalysis.limitations.includes('CLIENT_STEP_BUDGET'));
+  assert.ok(r.supabaseAnalysis.budgetUsage.STEPS_USED<=3000);
+  assert.equal(r.supabaseAnalysis.budgetUsage.STEPS_CLIENT,450);
+});
+
 test('policy work cap retains prior facts but invalidates conclusions for incomplete migrations',()=>{
   const r=run([source(table+grant+owner),
     source("SELECT '"+'x'.repeat(95_000)+"';",'20260102000000_large.sql'),

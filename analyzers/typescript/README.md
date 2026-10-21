@@ -138,6 +138,14 @@ SQL-only inputs, reserving finalization work). Unused work remains available to
 code tracing; no additional global steps/time/memory are granted. On policy quota
 exhaustion, prior declaration facts remain, the interrupted migration is limited,
 later inputs are NOT_RUN, and affected migration scopes yield UNKNOWN operations
-and no broad-write candidate. Finalization and client inspection still consume the
-remaining global budget. This is scheduling/partial-evidence handling, not a new
-policy grammar or stronger authorization judgment.
+and no broad-write candidate. Finalization also consumes the global budget.
+Client declarations run before entry discovery/flow, with at most 15% of the same
+global step budget; unused work remains available to flow tracing. Client and Node
+dependency inspection reuse syntax indexes produced by the existing bounded AST
+walk instead of repeating whole-tree traversals. The indexes preserve the existing
+API/shadow/write contracts and source order, not new alias or factory semantics.
+Optional `budgetUsage` records AST node visits and charged steps for setup, policy,
+client, discovery and flow; steps sum to at most the unchanged shared limit. AST
+visits are a separate existing resource cap, not full security-flow validation.
+This is scheduling/partial-evidence handling, not a new policy grammar or stronger
+authorization judgment. Selected SQL may still be NOT_RUN at the policy work cap.

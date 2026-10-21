@@ -34,5 +34,10 @@ class TypeScriptSelectionValidationTest {
         var old=(com.fasterxml.jackson.databind.node.ObjectNode)new com.fasterxml.jackson.databind.ObjectMapper()
                 .readTree(converter.convertToDatabaseColumn(result));old.remove("selectionCoverage");
         assertThat(converter.convertToEntityAttribute(old.toString()).selectionCoverage()).isNull();
+        var budget=result.supabaseAnalysis().budgetUsage();
+        assertThat(budget.get("STEPS_USED")).isLessThanOrEqualTo(budget.get("STEPS_LIMIT"));
+        assertThat(converter.convertToEntityAttribute(converter.convertToDatabaseColumn(result)).supabaseAnalysis().budgetUsage()).isEqualTo(budget);
+        ((com.fasterxml.jackson.databind.node.ObjectNode)old.get("supabaseAnalysis")).remove("budgetUsage");
+        assertThat(converter.convertToEntityAttribute(old.toString()).supabaseAnalysis().budgetUsage()).isNull();
     }
 }

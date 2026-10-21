@@ -1,6 +1,7 @@
 import type { AnalysisLocation } from './serverAnalysis';
 export interface SupabaseAnalysis {
   schemaVersion:number;analyzerVersion:string;status:string;limitations:string[];
+  budgetUsage?:Record<string,number>|null;
   files:{filePath:string;status:string;statements:number;limitations:string[]}[];
   tables:{scope:string;table:string;rls:string;force:string;location:AnalysisLocation;grantLocations:AnalysisLocation[];limitations:string[];
     policies:{name:string;command:string;mode:string;roles:string[];using:{kind:string;columns:string[]};check:{kind:string;columns:string[]};location:AnalysisLocation}[];

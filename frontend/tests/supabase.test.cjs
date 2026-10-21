@@ -18,3 +18,9 @@ test('untrusted table, policy and path metadata is escaped rather than rendered'
  const f=fixture();f.tables[0].table='<img src=x>';f.findings[0].title='<script>malicious</script>';const h=render(f);
  assert.ok(!h.includes('<img'));assert.ok(!h.includes('<script>'));assert.ok(h.includes('&lt;img'));
 });
+test('execution budgets are distinct from selected files and incomplete inspection is not safety',()=>{
+ const f=fixture();f.budgetUsage={STEPS_USED:100000,STEPS_LIMIT:100000,STEPS_POLICY:25081,STEPS_CLIENT:1863,STEPS_ENTRY_DISCOVERY:25454,STEPS_FLOW:47602};
+ const h=render(f);
+ for(const s of ['분석 실행 예산','100000 / 100000','Client 선언 1863','파일 선택·파싱과 실행 단계는 다릅니다','안전을 보증하지'])assert.ok(h.includes(s),s);
+ assert.ok(!render(fixture()).includes('분석 실행 예산'));
+});

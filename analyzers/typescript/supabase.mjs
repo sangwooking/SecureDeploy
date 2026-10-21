@@ -17,8 +17,9 @@ export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies}){
       ||/^https:\/\/esm\.sh\/@supabase\/supabase-js@2(?:\.\d+){0,2}$/.test(spec);
     for(const mod of modules.values()){
       if(!mod.hasSupabaseSyntax)continue;
+      if(mod.syntaxIndex){caches.set(mod,mod.syntaxIndex);continue;}
       const declarations=new Map(),writes=new Set(),nodes=[],typeOnly=new Set();
-      const visit=n=>{tick();nodes.push(n);if(n.name&&ts.isIdentifier(n.name)&&[ts.isVariableDeclaration,ts.isParameter,ts.isFunctionDeclaration,ts.isClassDeclaration,ts.isBindingElement].some(f=>f(n))){const a=declarations.get(n.name.text)??[];a.push(n);declarations.set(n.name.text,a);}
+      const visit=n=>{tick();if(ts.isCallExpression(n))nodes.push(n);if(n.name&&ts.isIdentifier(n.name)&&[ts.isVariableDeclaration,ts.isParameter,ts.isFunctionDeclaration,ts.isClassDeclaration,ts.isBindingElement].some(f=>f(n))){const a=declarations.get(n.name.text)??[];a.push(n);declarations.set(n.name.text,a);}
         if(ts.isImportDeclaration(n)){if(n.importClause?.isTypeOnly&&n.importClause.name)typeOnly.add(n.importClause.name.text);for(const e of n.importClause?.namedBindings?.elements??[])if(n.importClause.isTypeOnly||e.isTypeOnly)typeOnly.add(e.name.text);}
         if(ts.isBinaryExpression(n)&&ts.isAssignmentOperator(n.operatorToken.kind)){let x=n.left;while(ts.isPropertyAccessExpression(x)||ts.isElementAccessExpression(x))x=x.expression;if(ts.isIdentifier(x))writes.add(x.text);}
         ts.forEachChild(n,visit);};visit(mod.ast);caches.set(mod,{declarations,writes,nodes,typeOnly});
@@ -78,7 +79,8 @@ export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies}){
   }catch(error){
     if(!policies)return unavailable('SQL_OR_AST_ANALYSIS_LIMIT');
     clients.length=0;accesses.length=0;
-    limitations.push(error?.message==='SUPABASE_BUDGET'?'CLIENT_AST_BUDGET_LIMIT':'CLIENT_AST_CONTEXT_NOT_COMPLETED');
+    limitations.push(['SUPABASE_BUDGET','CLIENT_STEP_BUDGET'].includes(error?.message)?'CLIENT_AST_BUDGET_LIMIT':'CLIENT_AST_CONTEXT_NOT_COMPLETED');
+    if(error?.message==='CLIENT_STEP_BUDGET')limitations.push('CLIENT_STEP_BUDGET');
   }
   const findings=[];
   for(const table of policies.tables){
