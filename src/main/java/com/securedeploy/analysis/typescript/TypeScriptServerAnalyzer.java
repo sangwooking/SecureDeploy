@@ -19,9 +19,19 @@ public class TypeScriptServerAnalyzer {
     public TypeScriptServerAnalyzer(TypeScriptAnalysisProperties properties) { this.properties = properties; }
 
     public ServerAnalysisSnapshot analyze(ProjectStructure project) {
+        var result=analyzeInternal(project);
+        if(result.supabaseAnalysis()!=null)return result;
+        var sql=project.analysisFiles().stream().filter(f->f.type()==com.securedeploy.project.model.ProjectFileType.SUPABASE_SQL).limit(100)
+                .map(f->new SupabaseSnapshot.SqlFile(CoverageRecorder.safePath(f.relativePath()),"NOT_RUN",0,List.of("ANALYZER_NOT_AVAILABLE"))).toList();
+        return result.withSupabaseAnalysis(new SupabaseSnapshot(1,"supabase-rls-v1",sql.isEmpty()&&"NOT_APPLICABLE".equals(result.status())?"NOT_APPLICABLE":"PARTIAL",
+                sql,List.of(),List.of(),List.of(),List.of(),List.of("DECLARATIONS_NOT_LIVE_DATABASE","ANALYZER_NOT_AVAILABLE")));
+    }
+    private ServerAnalysisSnapshot analyzeInternal(ProjectStructure project) {
         var candidates = project.analysisFiles().stream().filter(f -> f.relativePath().matches(".*(?:\\.[jt]sx?|\\.[cm]js)$"))
                 .sorted(Comparator.comparing(f -> f.relativePath())).toList();
-        if (candidates.isEmpty()) return ServerAnalysisSnapshot.unavailable("NOT_APPLICABLE", List.of(), "NO_JAVASCRIPT_OR_TYPESCRIPT_FILES");
+        var sqlCandidates=project.analysisFiles().stream().filter(f->f.type()==com.securedeploy.project.model.ProjectFileType.SUPABASE_SQL)
+                .sorted(Comparator.comparing(f->f.relativePath())).toList();
+        if (candidates.isEmpty()&&sqlCandidates.isEmpty()) return ServerAnalysisSnapshot.unavailable("NOT_APPLICABLE", List.of(), "NO_JAVASCRIPT_OR_TYPESCRIPT_FILES");
         List<Map<String, String>> sources = new ArrayList<>();
         List<FileCoverage> omitted = new ArrayList<>();
         Map<String, Integer> lineCounts = new HashMap<>();
@@ -39,9 +49,19 @@ public class TypeScriptServerAnalyzer {
             }
         }
         List<FileCoverage> unavailableFiles = new ArrayList<>(omitted);
+        var policyFiles=new ArrayList<Map<String,String>>();var policyLines=new HashMap<String,Integer>();
+        for(var file:sqlCandidates){
+            if(policyFiles.size()>=100)break;
+            String path=CoverageRecorder.safePath(file.relativePath());
+            long size=file.lines().stream().mapToLong(s->s.length()+1L).sum();
+            if(!path.equals("[redacted-path]")&&size<=MAX_FILE_CHARS&&total+size<=MAX_TOTAL_CHARS&&sources.size()+policyLines.size()<MAX_FILES){
+                policyFiles.add(Map.of("filePath",path,"status","SELECTED","content",String.join("\n",file.lines())));
+                policyLines.put(path,file.lines().size());total+=(int)size;
+            }else policyFiles.add(Map.of("filePath",path,"status","LIMIT_EXCEEDED"));
+        }
         sources.forEach(f -> unavailableFiles.add(new FileCoverage(f.get("filePath"), "NOT_RUN", "NOT_RUN", 0, 0, List.of())));
         if (!properties.isEnabled()) return ServerAnalysisSnapshot.unavailable("DISABLED", unavailableFiles, "ANALYZER_DISABLED");
-        if (sources.isEmpty()) return ServerAnalysisSnapshot.unavailable("PARTIAL", unavailableFiles, "NO_SOURCE_WITHIN_LIMITS");
+        if (sources.isEmpty()&&policyFiles.isEmpty()) return ServerAnalysisSnapshot.unavailable("PARTIAL", unavailableFiles, "NO_SOURCE_WITHIN_LIMITS");
         if (!capacity.tryAcquire()) return ServerAnalysisSnapshot.unavailable("UNAVAILABLE", unavailableFiles, "ANALYZER_CAPACITY_LIMIT");
         Process process = null;
         ExecutorService io = Executors.newFixedThreadPool(2, r -> { var thread = new Thread(r, "typescript-analysis-io"); thread.setDaemon(true); return thread; });
@@ -83,7 +103,7 @@ public class TypeScriptServerAnalyzer {
                 }catch(Exception ignored){/* Configuration errors never establish runtime authorization. */}
                 denoConfigs.add(Map.of("filePath",path,"status",status,"verifyJwt",settings));
             }
-            byte[] input = mapper.writeValueAsBytes(Map.of("files", sources,"nodeManifests",manifests,"denoConfigs",denoConfigs));
+            byte[] input = mapper.writeValueAsBytes(Map.of("files", sources,"nodeManifests",manifests,"denoConfigs",denoConfigs,"policyFiles",policyFiles,"policyInventoryComplete",sqlCandidates.size()<=100));
             var builder = new ProcessBuilder(properties.getNodeExecutable(), "--permission", "--no-addons",
                     "--max-old-space-size=192", "--allow-fs-read=" + directory,
                     directory.resolve("worker.mjs").toString());
@@ -104,13 +124,14 @@ public class TypeScriptServerAnalyzer {
                 return ServerAnalysisSnapshot.unavailable("UNAVAILABLE", unavailableFiles, "PARSER_PROCESS_FAILED");
             var parsed = mapper.readValue(output, ServerAnalysisSnapshot.class);
             validate(parsed, lineCounts);
+            var rlsLines=new HashMap<>(lineCounts);rlsLines.putAll(policyLines);validateSupabase(parsed.supabaseAnalysis(),rlsLines);
             var files = new ArrayList<>(parsed.files()); files.addAll(omitted);
             var limitations = new ArrayList<>(parsed.limitations());
             if (!omitted.isEmpty()) limitations.add("SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED");
             if (candidates.size() > sources.size() + omitted.size()) limitations.add("OMITTED_FILE_DETAILS_TRUNCATED");
             return new ServerAnalysisSnapshot(parsed.schemaVersion(), parsed.analyzerVersion(), parsed.parserVersion(),
                     omitted.isEmpty() ? parsed.status() : "PARTIAL", List.copyOf(files), parsed.findings(), parsed.sqlUses(),
-                    parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses()).withExposureUses(parsed.exposureUses()).withNodeUses(parsed.nodeUses());
+                    parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses()).withExposureUses(parsed.exposureUses()).withNodeUses(parsed.nodeUses()).withSupabaseAnalysis(parsed.supabaseAnalysis());
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
             return ServerAnalysisSnapshot.unavailable("UNAVAILABLE", unavailableFiles, "ANALYSIS_INTERRUPTED");
@@ -128,6 +149,18 @@ public class TypeScriptServerAnalyzer {
 
     private FileCoverage skipped(String path, String reason) {
         return new FileCoverage(path, "LIMIT_EXCEEDED", "NOT_RUN", 0, 0, List.of(reason));
+    }
+
+    private void validateSupabase(SupabaseSnapshot snapshot,Map<String,Integer> files){
+        if(snapshot==null)return; // Older fixture workers have no RLS snapshot.
+        if(snapshot.schemaVersion()!=1||!"supabase-rls-v1".equals(snapshot.analyzerVersion())||snapshot.files().size()>100
+                ||snapshot.tables().size()>200||snapshot.clients().size()>100||snapshot.accesses().size()>200||snapshot.findings().size()>200)throw new IllegalArgumentException("INVALID_RLS_RESPONSE");
+        var locations=new ArrayList<ServerAnalysisSnapshot.Location>();
+        snapshot.tables().forEach(t->{locations.add(t.location());locations.addAll(t.grantLocations());if(t.policies().size()>500||t.operations().size()>8)throw new IllegalArgumentException("INVALID_RLS_LIMIT");t.policies().forEach(p->locations.add(p.location()));});
+        snapshot.clients().forEach(c->locations.add(c.location()));
+        snapshot.accesses().forEach(a->{locations.add(a.location());if(a.clientLocation()!=null)locations.add(a.clientLocation());if(a.policyLocation()!=null)locations.add(a.policyLocation());});
+        snapshot.findings().forEach(f->{if(!"REVIEW_REQUIRED".equals(f.priority())||!"NOT_COMPARED".equals(f.comparisonPolicy())||!"SUPABASE_BROAD_WRITE_DECLARATION".equals(f.ruleId()))throw new IllegalArgumentException("INVALID_RLS_FINDING");locations.add(f.location());locations.addAll(f.evidenceLocations());});
+        for(var l:locations)if(l==null||!files.containsKey(l.filePath())||l.line()<1||l.line()>files.get(l.filePath()))throw new IllegalArgumentException("INVALID_RLS_LOCATION");
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {

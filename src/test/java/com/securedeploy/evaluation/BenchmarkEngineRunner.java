@@ -109,6 +109,7 @@ public final class BenchmarkEngineRunner {
                 "severity",f.severity(),"confidence",f.confidence(),"falsePositiveRisk",f.falsePositiveRisk())).toList();
     }
     static void addCandidates(List<Object> out,ServerAnalysisSnapshot snapshot) {
+        if(snapshot.supabaseAnalysis()!=null)for(var f:snapshot.supabaseAnalysis().findings())out.add(Map.of("ruleId",f.ruleId(),"location",f.location(),"trace",f.evidenceLocations(),"priority",f.priority()));
         if(snapshot.validatedFindings()!=null)for(var f:snapshot.validatedFindings())
             out.add(Map.of("ruleId",f.ruleId(),"location",f.location(),"trace",f.evidence().stream().flatMap(e->e.flow().stream()).toList(),"priority",f.priority()));
     }

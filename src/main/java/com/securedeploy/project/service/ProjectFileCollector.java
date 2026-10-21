@@ -15,6 +15,8 @@ public class ProjectFileCollector {
 
         if (lowerName.endsWith(".py")) return Optional.of(ProjectFileType.PYTHON);
         if(normalizedPath.endsWith("/supabase/config.toml")) return Optional.of(ProjectFileType.SUPABASE_CONFIG);
+        if(normalizedPath.matches(".*/supabase/migrations/[^/]+\\.sql") || lowerName.equals("schema.sql")
+                || normalizedPath.matches(".*/supabase/(?:policies|schemas)/[^/]+\\.sql")) return Optional.of(ProjectFileType.SUPABASE_SQL);
 
         if (com.securedeploy.sca.parser.PythonManifestFiles.isRequirements(normalizedPath)) {
             return Optional.of(ProjectFileType.PYTHON_REQUIREMENTS);

@@ -10,6 +10,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       const page = await browser.newPage({ viewport: { width, height: 1000 } });
       const result = require('../result-fixture.cjs')(), errors = [], blocked = [];
       result.serverAnalysis = require('../server-analysis-fixture.cjs')();
+      result.serverAnalysis.supabaseAnalysis = require('../supabase-fixture.cjs')();
       const javaLocation={filePath:'src/Endpoint.java',line:12,column:5,functionName:'inspect',kind:'SQL_EXECUTION'};
       const javaSource={...javaLocation,line:7,kind:'REQUEST_INPUT'};
       result.serverAnalysis.javaAnalysis={analysis:{version:process.env.JAVA_ANALYZER_VERSION||'java-sql-v1',status:'PARTIAL',
@@ -81,6 +82,10 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       await nav.getByRole('button', { name: '결과 요약', exact: true }).click();
       assert.ok((await page.getByRole('region', { name: '서버 코드 흐름 요약', exact: true }).innerText()).includes('별도 결과'));
       await nav.getByRole('button', { name: '배포 전 직접 확인할 부분', exact: true }).click();
+      const rls=page.getByRole('region',{name:'Supabase 데이터 접근 검사',exact:true});
+      await rls.waitFor({state:'visible'});
+      await rls.getByRole('heading',{name:'사용자별 수정 권한이 넓게 선언되어 있습니다',exact:true}).waitFor({state:'visible'});
+      assert.ok((await rls.innerText()).includes('실제 운영 DB 적용'));
       const section = page.getByRole('region', { name: '서버 코드 흐름 검사', exact: true });
       const pythonSection = page.getByRole('region', { name: 'Python 서버 코드 흐름 검사', exact: true });
       const deployment = page.getByRole('region', { name: '서버·배포 설정 검사', exact: true });

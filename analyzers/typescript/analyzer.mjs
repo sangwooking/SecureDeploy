@@ -6,6 +6,7 @@ import { nodeServer } from './node-server.mjs';
 import { entryState } from './entry-state.mjs';
 import { entryContracts } from './entry-contracts.mjs';
 import { denoEntries } from './deno.mjs';
+import { supabaseAnalysis } from './supabase.mjs';
 
 export const VERSION = 'ts-server-v12';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
@@ -1008,5 +1009,8 @@ export function analyze(input, overrides = {}) {
   result.sqlUses = result.sqlUses.filter((item, i, all) => all.findIndex(other => JSON.stringify(item) === JSON.stringify(other)) === i);
   if (!result.files.length) result.status = 'NOT_APPLICABLE';
   else if (result.files.some(f => f.parseStatus !== 'PARSED' || f.flowStatus !== 'SUPPORTED_FLOW_ANALYZED') || result.limitations.length > 1) result.status = 'PARTIAL';
+  result.supabaseAnalysis=supabaseAnalysis({ts,modules,input,tick:()=>{
+    if(++steps>limits.maxSteps||Date.now()>deadline)throw Error('SUPABASE_BUDGET');
+  }});
   return result;
 }

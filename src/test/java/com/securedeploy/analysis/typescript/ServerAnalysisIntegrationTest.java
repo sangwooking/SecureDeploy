@@ -57,6 +57,31 @@ class ServerAnalysisIntegrationTest {
         assertThat(root).doesNotExist();
     }
 
+    @Test void rlsSnapshotUsesAllInputPathsWithoutChangingRiskAndRetainsHistoryIsolation() throws Exception {
+        String token=signup(),path="supabase/migrations/20260101000000_permissions.sql";
+        String sql="CREATE TABLE public.entries(owner_id uuid);ALTER TABLE public.entries ENABLE ROW LEVEL SECURITY;GRANT UPDATE ON public.entries TO authenticated;CREATE POLICY broad ON public.entries FOR UPDATE TO authenticated USING(true) WITH CHECK(true);";
+        var zip=uploadSource(token,path,sql);
+        var snapshot=zip.at("/serverAnalysis/supabaseAnalysis");assertThat(snapshot.path("findings")).hasSize(1);
+        assertThat(snapshot.at("/findings/0/comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        assertThat(zip.path("securityScore").asInt()).isEqualTo(100);assertThat(zip.path("vulnerabilityCount").asInt()).isZero();
+        assertThat(zip.at("/riskAssessment/prioritySummary/BLOCKING").asInt()).isZero();
+        var roots=new ArrayList<Path>();
+        for(String name:List.of("rls-public","rls-private")){var root=Files.createDirectory(temp.resolve(name));roots.add(root);Files.createDirectories(root.resolve(path).getParent());Files.writeString(root.resolve(path),sql);}
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/rls",roots.get(0),roots.get(0)));
+        var pub=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/rls\",\"scanMode\":\"STANDARD\"}");
+        var metadata=new GitHubSourceSnapshot("fixture","rls","https://github.com/fixture/rls","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/rls",roots.get(1),roots.get(1),metadata));
+        var prv=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        assertThat(pub.at("/serverAnalysis/supabaseAnalysis")).isEqualTo(snapshot);assertThat(prv.at("/serverAnalysis/supabaseAnalysis")).isEqualTo(snapshot);
+        assertThat(pub.at("/riskAssessment/prioritySummary")).isEqualTo(zip.at("/riskAssessment/prioritySummary"));
+        for(var root:roots)assertThat(root).doesNotExist();
+        long id=zip.path("reviewId").asLong();assertThat(detail(token,id).at("/serverAnalysis/supabaseAnalysis")).isEqualTo(snapshot);
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+        var legacy=(com.fasterxml.jackson.databind.node.ObjectNode)zip.path("serverAnalysis").deepCopy();legacy.remove("supabaseAnalysis");
+        jdbc.update("update reviews set server_analysis_json=? where id=?",json.writeValueAsString(legacy),id);entities.clear();
+        assertThat(detail(token,id).at("/serverAnalysis/supabaseAnalysis").isNull()).isTrue();
+    }
+
     @Test void eightyJavaUnitsAndSourceLimitHavePersistedDistinctCoverage() throws Exception {
         String token=signup();var sources=new LinkedHashMap<String,String>();
         sources.put("Endpoint.java","import org.springframework.web.bind.annotation.*; import java.sql.Connection; @RestController class Endpoint { Connection c; @GetMapping(\"/\") void inspect(@RequestParam String input){c.prepareCall(\"{call \"+input+\"}\").execute();}}");
