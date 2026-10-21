@@ -77,7 +77,7 @@ public class TypeScriptServerAnalyzer {
                     var document=mapper.readTree(String.join("\n",file.lines()));var manifest=new HashMap<String,String>();
                     String path=CoverageRecorder.safePath(file.relativePath());if(path.equals("[redacted-path]"))continue;
                     manifest.put("filePath",path);
-                    for(String name:List.of("express","mongodb")) {
+                    for(String name:List.of("express","mongodb","next")) {
                         String version=document.path("dependencies").path(name).asText("");
                         if(version.length()<=80&&version.matches("[~^]?[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?"))manifest.put(name,version);
                     }
@@ -164,7 +164,7 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v12".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v13".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200

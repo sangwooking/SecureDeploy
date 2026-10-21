@@ -16,6 +16,22 @@ const entryStageLabels: Record<string,string>={
 };
 
 const labels: Record<string, string> = {
+  NEXT_ROUTE_HANDLER:'Next.js 요청 처리 함수 선언',NEXT_SERVER_FUNCTION:'Next.js 서버 함수 선언 · 호출 여부 미확인',
+  SERVER_FUNCTION_ARGUMENT:'외부에서 전달할 수 있는 서버 함수 인자',SERVER_FUNCTION_RETURN:'서버 함수 반환 위치',
+  NEXT_SERVER_FUNCTION_INVOCATION_NOT_VERIFIED:'서버 함수의 실제 호출·배포 여부는 미확인',
+  NEXT_AUTHENTICATION_IS_NOT_RESOURCE_AUTHORIZATION:'로그인 확인과 개별 데이터 접근권한은 별도 검토 필요',
+  NEXT_ROUTING_CONFIG_AND_MIDDLEWARE_NOT_VERIFIED:'기본 App Router 규약만 대조 · 라우팅 설정·미들웨어는 미검증',
+  NEXT_ROUTE_AUTHORIZATION_NOT_VERIFIED:'요청별 인증·소유권 검사는 미확인',
+  NEXT_INLINE_SERVER_CLOSURE_NOT_SUPPORTED:'중첩 서버 함수의 클로저·호출 관계는 미지원',
+  NEXT_PAGES_API_NOT_SUPPORTED:'Pages Router API 요청 흐름은 이번 분석 범위 밖',
+  NEXT_CLIENT_BOUNDARY_BUNDLE_NOT_VERIFIED:'클라이언트 경계 선언 확인 · 실제 브라우저 번들은 미검증',
+  NEXT_SERVER_ONLY_DECLARATION_NOT_RUNTIME_PROOF:'서버 전용 모듈 선언 · 실제 빌드 경계는 미검증',
+  NEXT_CONFLICTING_SERVER_CLIENT_DIRECTIVES:'서버·클라이언트 선언이 충돌해 경계 미확인',
+  NEXT_VERSION_CONTRACT_NOT_SUPPORTED:'Next.js 선언 버전의 요청 규약은 미지원',
+  NEXT_SERVER_FUNCTION_CONTRACT_NOT_SUPPORTED:'서버 함수 버전·async 규약을 확인하지 못함',
+  NEXT_REEXPORT_REGISTRATION_NOT_SUPPORTED:'재수출한 요청·서버 함수 등록은 미지원',
+  NEXT_MUTABLE_EXPORT_NOT_SUPPORTED:'변경되는 export의 실제 요청 대상을 확인하지 못함',
+  NEXT_REGISTRATION_BUDGET_EXCEEDED:'Next.js 경계 확인 중 분석 예산 상한 도달',
   DENO_HTTP_HANDLER:'Deno HTTP 요청 등록 확인',
   REQUEST_SELECTED_ENVIRONMENT_VALUE:'요청으로 선택한 서버 환경값',
   SERVER_SECRET_ENVIRONMENT_VALUE:'서버 비밀 설정 참조 · 실제 값은 수집하지 않음',
@@ -182,12 +198,17 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
   const current = Math.min(page, Math.max(0, Math.ceil(snapshot.files.length / 10) - 1));
   return <section className="server-analysis-section" aria-label={title}>
     <h3>{title}</h3><p>{text(snapshot.status)}</p>
-    {!python&&['ts-server-v11','ts-server-v12'].includes(snapshot.analyzerVersion)&&snapshot.nodeUses!=null&&<p className="review-caution">
+    {!python&&['ts-server-v11','ts-server-v12','ts-server-v13'].includes(snapshot.analyzerVersion)&&snapshot.nodeUses!=null&&<p className="review-caution">
       소스 기록 {snapshot.files.length}개 · 파싱 {snapshot.files.filter(f=>f.parseStatus==='PARSED').length}개 ·
       요청 등록 {snapshot.nodeUses.filter(u=>u.kind==='ENTRY_REGISTERED').length}곳 ·
       Router 반환 연결 {snapshot.nodeUses.filter(u=>u.kind==='CALL_LINKED').length}곳 ·
       분석 제한 기록 {snapshot.files.filter(f=>f.limitations.some(l=>l.includes('BUDGET_EXCEEDED')||l.includes('DEPTH_LIMIT'))).length}개 파일.
       파싱·등록·호출 연결은 전체 보안 흐름 검증이나 안전 판정이 아닙니다.
+    </p>}
+    {!python&&snapshot.files.some(f=>f.limitations.some(l=>l.startsWith('NEXT_')))&&<p className="review-caution">
+      Next.js 요청 함수 {snapshot.authorizationContexts.filter(c=>c.entry.kind==='NEXT_ROUTE_HANDLER').length}곳 ·
+      서버 함수 선언 {snapshot.authorizationContexts.filter(c=>c.entry.kind==='NEXT_SERVER_FUNCTION').length}곳.
+      서버 함수 선언은 실제 호출·인증·데이터 접근권한의 증명이 아닙니다. 서버 내부에서 사용하는 설정과 반환값으로 전달되는 설정을 구분하며, 실제 클라이언트 번들은 검사하지 않았습니다.
     </p>}
     {python && <p>Django/DRF에서 연결된 일부 요청 경로의 SQL·파일 경로·pickle/YAML 값 전달을 확인한 결과입니다. 전체 Python 코드·인증·권한·미들웨어를 검사한 것은 아닙니다.</p>}
     {python && <PythonCoverageSummary snapshot={snapshot} />}

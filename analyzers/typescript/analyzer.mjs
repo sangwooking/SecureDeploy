@@ -7,8 +7,9 @@ import { entryState } from './entry-state.mjs';
 import { entryContracts } from './entry-contracts.mjs';
 import { denoEntries } from './deno.mjs';
 import { supabaseAnalysis } from './supabase.mjs';
+import { nextEntries } from './next.mjs';
 
-export const VERSION = 'ts-server-v12';
+export const VERSION = 'ts-server-v13';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -153,14 +154,16 @@ export function analyze(input, overrides = {}) {
       const env = proof.origins.filter(o => ['REQUEST_SELECTED_ENVIRONMENT_VALUE', 'SERVER_SECRET_ENVIRONMENT_VALUE','DECLARED_PUBLIC_ENVIRONMENT_VALUE','ENVIRONMENT_VALUE_UNVERIFIED'].includes(o.kind));
       if (!env.length) continue;
       const sensitive=env.filter(o=>['REQUEST_SELECTED_ENVIRONMENT_VALUE','SERVER_SECRET_ENVIRONMENT_VALUE'].includes(o.kind));
+      const serverReturn=proof.location.kind==='SERVER_FUNCTION_RETURN';
       const limitations = ['STATIC_EXPOSURE_NOT_RUNTIME_LEAK_PROOF', 'AUTHORIZATION_AND_DEPLOYMENT_NOT_VERIFIED',
+        ...(serverReturn?['NEXT_SERVER_FUNCTION_INVOCATION_NOT_VERIFIED']:[]),
         'ENVIRONMENT_CONTENTS_AND_GATEWAY_POLICY_UNKNOWN', 'BRANCH_FEASIBILITY_NOT_VERIFIED'];
       const trace = [...proof.origins, ...proof.trail].filter((v,i,a)=>a.findIndex(w=>JSON.stringify(w)===JSON.stringify(v))===i).slice(0,19);
       const status = proof.unresolved ? 'FLOW_UNRESOLVED' : sensitive.length?'SENSITIVE_FLOW_CANDIDATE':'SENSITIVITY_UNVERIFIED';
-      append(result.exposureUses, {kind: 'HTTP_RESPONSE_RETURN', status, location: proof.location, trace, limitations}, state.mod);
+      append(result.exposureUses, {kind: serverReturn?'SERVER_FUNCTION_RETURN':'HTTP_RESPONSE_RETURN', status, location: proof.location, trace, limitations}, state.mod);
       if (!proof.unresolved && sensitive.length) append(result.findings, {ruleId:'TS_SENSITIVE_DATA_EXPOSURE', kind:'CWE-200', confidence:'HIGH',
         disposition:'REVIEW_REQUIRED', source:sensitive[0], sink:proof.location, flow:[...trace, proof.location], defenses:[], limitations,
-        message:'서버 환경 설정의 값이 요청 응답에 전달되는 경로를 확인했습니다.',
+        message:serverReturn?'서버 환경 설정의 값이 서버 함수 반환값으로 전달됩니다. 클라이언트 호출·권한 문맥을 확인해 주세요.':'서버 환경 설정의 값이 요청 응답에 전달되는 경로를 확인했습니다.',
         recommendation:'환경값 전체를 반환하는 기능을 제거하고 필요한 서버 작업만 제공하세요. 공개 설정과 서버 전용 키를 분리하고, 가짜 값으로 일반 사용자 응답에 서버 비밀값이 포함되지 않는지 확인한 뒤 재검사하세요.'}, state.mod);
     }
   }
@@ -284,6 +287,10 @@ export function analyze(input, overrides = {}) {
     }
     if (base.tag === 'request' && key === 'url') return value('urlText', [loc(node, mod, 'REQUEST_URL', fn)], { unknown: base.unknown, destination: unresolvedDestination() });
     if (base.tag === 'request' && key === 'headers') return value('headers', [], { unknown: base.unknown || state.context.headersMutated });
+    if (base.tag === 'request' && key === 'nextUrl' && state.context.entry.kind==='NEXT_ROUTE_HANDLER')
+      return value('url', [loc(node,mod,'REQUEST_URL',fn)], {ref:{http:unresolvedDestination(),properties:new Map(),trace:[],unknown:false}});
+    if (base.tag === 'nextContext' && key === 'params') return value('object',[],{ref:{properties:new Map(
+      (base.paramNames??[]).map(name=>[name,value('input',[loc(node,mod,'ROUTE_PARAMETER',fn)])])),unknown:false,trace:[]}});
     if (base.tag === 'url' && key === 'searchParams') return value('query', base.trace, { unknown: base.unknown });
     if (base.tag === 'url' && key === 'pathname') return value('input', base.trace, { unknown: base.unknown });
     if (key === 'length' && !base.unknown && ['STRING', 'ARRAY'].includes(base.inputShape)) return value('numeric');
@@ -421,6 +428,8 @@ export function analyze(input, overrides = {}) {
       return unknown();
     }
     if (ts.isAwaitExpression(node)) return expr(node.expression, state);
+    const environment=nextEnvironmentValue(node,state);
+    if(environment)return environment;
     if (ts.isPropertyAccessExpression(node)) return property(expr(node.expression, state), node.name.text, node, state);
     if (ts.isElementAccessExpression(node)) {
       const base = expr(node.expression, state);
@@ -546,7 +555,9 @@ export function analyze(input, overrides = {}) {
         const body=responseBody(args[0]);
         return { tag:'serialized', trace:[], exposures:body.origins, exposureTrail:body.trail, unknown:body.unresolved || args.length>1 };
       }
-      if (global && callee.text === 'Response' && ts.isNewExpression(node) || globalObject('Response') && callee.name.text === 'json') {
+      const nextResponse=ts.isPropertyAccessExpression(callee)&&ts.isIdentifier(callee.expression)
+        &&mod.nextResponses?.has(callee.expression.text)&&!state.vars.has(callee.expression.text)&&callee.name.text==='json';
+      if (global && callee.text === 'Response' && ts.isNewExpression(node) || globalObject('Response') && callee.name.text === 'json' || nextResponse) {
         const body=responseBody(args[0]), location=loc(node,mod,'HTTP_RESPONSE',fn);
         if(ts.isNewExpression(node) && args[0]?.ref)body.unresolved=true;
         return { tag:'exposureResponse', trace:[], exposures:body.origins, exposureTrail:body.trail,
@@ -848,7 +859,14 @@ export function analyze(input, overrides = {}) {
       bind(d.name, step(v, loc(d, mod, 'VARIABLE', fn), mod), state);
     }
     else if (ts.isExpressionStatement(node)) expr(node.expression, state);
-    else if (ts.isReturnStatement(node)) {const returned=expr(node.expression,state);return {values:[state.nodeMode&&state.uncertain?{...returned,unknown:true}:returned],stops:true};}
+    else if (ts.isReturnStatement(node)) {
+      let returned=expr(node.expression,state);
+      if(state.fn.nextServerReturn) {
+        const body=responseBody(returned),location=loc(node,state.mod,'SERVER_FUNCTION_RETURN',state.fn);
+        returned={...returned,environmentResponses:[{...body,unresolved:body.unresolved||state.uncertain||state.exposureUncertain,location}]};
+      }
+      return {values:[state.nodeMode&&state.uncertain?{...returned,unknown:true}:returned],stops:true};
+    }
     else if (ts.isThrowStatement(node)) { expr(node.expression, state); return { values: [], stops: true }; }
     else if (ts.isIfStatement(node)) {
       const condition = expr(node.expression, state);
@@ -907,6 +925,17 @@ export function analyze(input, overrides = {}) {
     return { values: [], stops: false };
   }
   const canonicalFunctions = new WeakMap();
+  function nextEnvironmentValue(node,state) {
+    const {mod,fn}=state;
+    if (!(ts.isPropertyAccessExpression(node)||ts.isElementAccessExpression(node)) || !mod.nextContract || !mod.nextEnvironment
+        || state.vars.has('process') || !ts.isPropertyAccessExpression(node.expression)
+        || !ts.isIdentifier(node.expression.expression) || node.expression.expression.text!=='process' || node.expression.name.text!=='env')return;
+    const key=ts.isPropertyAccessExpression(node)?constant(node.name.text):expr(node.argumentExpression,state);
+    const publicValue=hasConstant(key)&&/^NEXT_PUBLIC_[A-Z0-9_]+$/.test(String(key.constant));
+    const secret=hasConstant(key)&&!publicValue&&/(?:SECRET|PRIVATE_KEY|PASSWORD|API_KEY|ACCESS_TOKEN|REFRESH_TOKEN|SERVICE_ROLE|DATABASE_URL)/i.test(String(key.constant));
+    const selected=key.trace.some(s=>['QUERY_PARAMETER','REQUEST_BODY','REQUEST_HEADER','ROUTE_PARAMETER','SERVER_FUNCTION_ARGUMENT'].includes(s.kind))&&!key.unknown;
+    return value('environmentValue',[],{unknown:!!key.unknown,exposures:[...(selected?key.trace:[]),loc(node,mod,selected?'REQUEST_SELECTED_ENVIRONMENT_VALUE':secret?'SERVER_SECRET_ENVIRONMENT_VALUE':publicValue?'DECLARED_PUBLIC_ENVIRONMENT_VALUE':'ENVIRONMENT_VALUE_UNVERIFIED',fn)]});
+  }
   function invoke(fn, args, depth, context, stack, uncertain = false, exposureUncertain = false,thisValue,constructing=false) {
     const { mod, node } = fn;
     if (depth > limits.maxDepth || stack.has(fn)) {
@@ -966,6 +995,7 @@ export function analyze(input, overrides = {}) {
     return state.nodeMode&&returns.length>1&&returns.length<=4?{...withResponses,nodeAlternatives:returns}:withResponses;
   }
   denoEntries({ts,modules,resolve,claimFunction,tick,note,input});
+  nextEntries({ts,modules,input,tick,note});
   entryContracts({ts,modules,tick,note,loc,append,result});
   nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction});
   nodeSupport.discover();
@@ -978,7 +1008,9 @@ export function analyze(input, overrides = {}) {
       const entryFn = entry.fn.nodeMode ? isolate(entry.fn) : entry.fn;
       if(entry.fn.nodeMode)note(mod,'MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED');
       if(entry.registration){context.checks.push(entry.registration);note(mod,'EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED');}
-      const returned = invoke(entryFn, entry.kind === 'WORKER_FETCH' || entry.kind === 'DENO_HTTP_HANDLER' ? [value('request'), value('env')] : entry.kind==='EXPRESS_HANDLER'
+      const returned = invoke(entryFn, entry.kind === 'NEXT_ROUTE_HANDLER' ? [value('request'),value('nextContext',[],{paramNames:entry.paramNames})]
+        : entry.kind==='NEXT_SERVER_FUNCTION'?entry.fn.node.parameters.map(p=>value('input',[loc(p,mod,'SERVER_FUNCTION_ARGUMENT',entry.fn)]))
+        : entry.kind === 'WORKER_FETCH' || entry.kind === 'DENO_HTTP_HANDLER' ? [value('request'), value('env')] : entry.kind==='EXPRESS_HANDLER'
         ?[value('express-request'),value('express-response'),unknown()]:[value('context')], 0, context, new Set(),!!entry.uncertain);
       if (returned.responseLocations?.length) observeExposure(returned, entry.fn.node, { mod, fn: entry.fn, uncertain: false }, 'HTTP_RESPONSE_RETURN');
       observeEnvironmentResponses(returned,{mod,fn:entry.fn});

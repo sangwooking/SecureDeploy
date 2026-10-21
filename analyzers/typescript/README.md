@@ -88,3 +88,30 @@ REVIEW_REQUIRED/NOT_COMPARED finding. Neither HTTP observations nor findings ent
 The SSRF composed quality set is synthetic and internal, not a whole-project accuracy claim.
 URL parsing semantics: https://url.spec.whatwg.org/
 Defense limitations: https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html
+
+Version 13 adds bounded Next.js declaration contracts using the nearest supplied
+package.json dependency, not target module loading. Recognized version declarations
+are 13.2 through 16 for App Router and 14 through 16 for async Server Functions;
+this is an API-shape range, not verification of installed packages or patched versions.
+Default app/**/route.ts/js (or src/app if no root app is present) HTTP exports receive
+Request input. Only path-declared dynamic params are input; params may be awaited.
+json/text/formData, headers, URL query and nextUrl reuse the existing value evaluator.
+Direct async exports under file/function 'use server' receive symbolic external
+arguments. Their serializable returns are separately labeled, not observed network
+execution. Inline closures, reexports, Pages API, aliases, dynamic Next config,
+middleware/auth libraries and client bundles are not resolved. server-only/use client
+are boundary declarations, not runtime protection or exposure proofs.
+Unshadowed process.env references record location and public/secret-name hints only,
+never actual names or values. Only a supported returned body with private-name or
+request-selected provenance connects to the existing review-only exposure finding.
+Fixed-destination fetch data is distinct from user-controlled authority; unknown
+transforms retain uncertainty. Existing Supabase client/policy declarations remain
+separate from unverified factory/context, authentication and live database state.
+All previous process/file/step/depth/memory budgets remain unchanged. Versioned
+structural findings remain NOT_COMPARED, never automatically resolved across versions.
+Official contracts:
+- https://nextjs.org/docs/app/api-reference/file-conventions/route
+- https://nextjs.org/docs/app/api-reference/directives/use-server
+- https://nextjs.org/docs/app/guides/data-security
+- https://nextjs.org/docs/app/guides/environment-variables
+- https://nextjs.org/docs/pages/building-your-application/routing/api-routes

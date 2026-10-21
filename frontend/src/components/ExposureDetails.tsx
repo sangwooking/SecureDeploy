@@ -5,6 +5,8 @@ const labels: Record<string,string> = {
   DECLARED_PUBLIC_ENVIRONMENT_VALUE:'공개용으로 선언한 환경 설정 · 실제 값 미확인',
   INTERNAL_ERROR_DETAIL:'내부 오류 스택 생성·참조', ERROR_DETAIL_CONTEXT_UNKNOWN:'예외·스택 문맥을 확인하지 못함',INTERNAL_DIAGNOSTIC_LOG_ONLY:'내부 진단 로그 전달 · HTTP 오류 응답으로 판단하지 않음',
   HTTP_RESPONSE_RETURN:'서버 진입점에서 반환한 응답',LOG_ARGUMENT:'로그에 전달한 인자',
+  SERVER_FUNCTION_RETURN:'서버 함수 반환값 · 실제 클라이언트 호출 미확인',
+  SERVER_FUNCTION_ARGUMENT:'외부에서 전달할 수 있는 서버 함수 인자',
   SENSITIVE_FLOW_CANDIDATE:'보호 정보 후보의 전달 경로 확인 · 실제 유출은 미검증',
   SENSITIVITY_UNVERIFIED:'정보가 실제로 민감한지 확인하지 못함',FLOW_UNRESOLVED:'값 변환·마스킹·실행 경로 일부 미확인',
   CREDENTIAL_SHAPED_LITERAL:'자격증명 형식의 코드 값 · 유효성 미확인',FRAMEWORK_SECRET_SETTING:'Django 서버 비밀 설정 참조 · 실제 값 미확인',

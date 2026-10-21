@@ -5,6 +5,14 @@ const { renderToStaticMarkup } = require('react-dom/server');
 const { ServerAnalysisSection } = require('./load-component.cjs')('ServerAnalysisSection');
 const fixture = require('./server-analysis-fixture.cjs');
 const render = snapshot => renderToStaticMarkup(React.createElement(ServerAnalysisSection, { snapshot }));
+test('Next declarations, invocation uncertainty and client bundle scope are separated',()=>{
+  const data=fixture();data.analyzerVersion='ts-server-v13';data.nodeUses=[];
+  data.files[0].limitations.push('NEXT_SERVER_FUNCTION_INVOCATION_NOT_VERIFIED','NEXT_PAGES_API_NOT_SUPPORTED');
+  data.authorizationContexts[0].entry.kind='NEXT_SERVER_FUNCTION';
+  const html=render(data);
+  for(const phrase of ['Next.js 요청 함수 0곳','서버 함수 선언 1곳','실제 호출·인증·데이터 접근권한의 증명이 아닙니다',
+    '실제 클라이언트 번들은 검사하지 않았습니다','Pages Router API 요청 흐름은 이번 분석 범위 밖'])assert.ok(html.includes(phrase),phrase);
+});
 test('entry stages distinguish static registration and declared Passport callbacks from security proof',()=>{
   const snapshot=fixture();snapshot.analyzerVersion='ts-server-v11';snapshot.nodeUses=[];
   for(const kind of ['ENTRY_REGISTERED','CALL_LINKED','CALLBACK_BOUND','AUTHENTICATOR_REFERENCED'])snapshot.nodeUses.push({
