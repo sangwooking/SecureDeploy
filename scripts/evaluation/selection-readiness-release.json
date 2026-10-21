@@ -1,0 +1,773 @@
+{
+  "schemaVersion": 1,
+  "baselineEngine": "37becf65c3a8ba5f2405fb65fca0bde651048aa3",
+  "engineCommit": "824d9621674e0857b801dde1d92a70ac2bc1de90",
+  "nextRegression": {
+    "counts": {
+      "REGRESSION": {
+        "TP": 2,
+        "TN": 1,
+        "FP": 0,
+        "FN": 0,
+        "UNKNOWN": 0
+      },
+      "VALIDATION": {
+        "TP": 2,
+        "TN": 1,
+        "FP": 0,
+        "FN": 0,
+        "UNKNOWN": 1
+      }
+    },
+    "projects": 8,
+    "repeatConsistent": true,
+    "independence": "Existing same-curator controlled regression, not external independent validation"
+  },
+  "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+  "projects": [
+    {
+      "projectId": "nglguarino--echoverse-11labs",
+      "before": {
+        "projectId": "nglguarino--echoverse-11labs",
+        "sourceCommit": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 88,
+          "selectedFiles": 73,
+          "unsupportedFiles": 10,
+          "excludedFiles": 5,
+          "failedFiles": 0
+        },
+        "selection": null,
+        "recordedJsFiles": 70,
+        "parsedJs": 70,
+        "limitedJs": 0,
+        "entries": 4,
+        "tracedFunctions": 7,
+        "selectedRelatedHelpers": 0,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "UNRECORDED": 70
+        },
+        "sqlStatuses": {},
+        "sqlStatements": 0,
+        "tables": 0,
+        "policies": 0,
+        "policyOperationStates": {},
+        "clients": 0,
+        "accesses": 0,
+        "clientLinked": 0,
+        "structural": [
+          {
+            "rule": "TS_SENSITIVE_DATA_EXPOSURE",
+            "file": "supabase/functions/get-secret/index.ts",
+            "line": 30
+          }
+        ],
+        "httpUses": {
+          "UNRESOLVED_DESTINATION": 5
+        },
+        "exposureUses": {
+          "INTERNAL_DIAGNOSTIC_LOG_ONLY": 1,
+          "SENSITIVE_FLOW_CANDIDATE": 1
+        },
+        "ruleSignals": [
+          {
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 79,
+            "filePath": "src/components/ui/chart.tsx"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          661,
+          485
+        ],
+        "sampledParentHeapBytes": [
+          83942384,
+          80565672
+        ]
+      },
+      "after": {
+        "projectId": "nglguarino--echoverse-11labs",
+        "sourceCommit": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 88,
+          "selectedFiles": 73,
+          "unsupportedFiles": 10,
+          "excludedFiles": 5,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 70,
+          "submittedFiles": 70,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 206588,
+          "omissionReasons": {}
+        },
+        "recordedJsFiles": 70,
+        "parsedJs": 70,
+        "limitedJs": 0,
+        "entries": 4,
+        "tracedFunctions": 7,
+        "selectedRelatedHelpers": 0,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "TS_DENO_REGISTRATION_HINT": 4,
+          "TS_DETERMINISTIC_FALLBACK": 66
+        },
+        "sqlStatuses": {},
+        "sqlStatements": 0,
+        "tables": 0,
+        "policies": 0,
+        "policyOperationStates": {},
+        "clients": 0,
+        "accesses": 0,
+        "clientLinked": 0,
+        "structural": [
+          {
+            "rule": "TS_SENSITIVE_DATA_EXPOSURE",
+            "file": "supabase/functions/get-secret/index.ts",
+            "line": 30
+          }
+        ],
+        "httpUses": {
+          "UNRESOLVED_DESTINATION": 5
+        },
+        "exposureUses": {
+          "INTERNAL_DIAGNOSTIC_LOG_ONLY": 1,
+          "SENSITIVE_FLOW_CANDIDATE": 1
+        },
+        "ruleSignals": [
+          {
+            "line": 79,
+            "filePath": "src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          638,
+          486
+        ],
+        "sampledParentHeapBytes": [
+          110531968,
+          92053880
+        ]
+      },
+      "newStructural": []
+    },
+    {
+      "projectId": "LellaSriHarsha--power-platform-hub",
+      "before": {
+        "projectId": "LellaSriHarsha--power-platform-hub",
+        "sourceCommit": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 105,
+          "selectedFiles": 71,
+          "unsupportedFiles": 30,
+          "excludedFiles": 4,
+          "failedFiles": 0
+        },
+        "selection": null,
+        "recordedJsFiles": 69,
+        "parsedJs": 69,
+        "limitedJs": 0,
+        "entries": 1,
+        "tracedFunctions": 6,
+        "selectedRelatedHelpers": 0,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "UNRECORDED": 69
+        },
+        "sqlStatuses": {},
+        "sqlStatements": 0,
+        "tables": 0,
+        "policies": 0,
+        "policyOperationStates": {},
+        "clients": 0,
+        "accesses": 0,
+        "clientLinked": 0,
+        "structural": [],
+        "httpUses": {},
+        "exposureUses": {},
+        "ruleSignals": [
+          {
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 73,
+            "filePath": "app/src/components/ui/chart.tsx"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          421,
+          411
+        ],
+        "sampledParentHeapBytes": [
+          97342888,
+          113071528
+        ]
+      },
+      "after": {
+        "projectId": "LellaSriHarsha--power-platform-hub",
+        "sourceCommit": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 105,
+          "selectedFiles": 71,
+          "unsupportedFiles": 30,
+          "excludedFiles": 4,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 69,
+          "submittedFiles": 69,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 347176,
+          "omissionReasons": {}
+        },
+        "recordedJsFiles": 69,
+        "parsedJs": 69,
+        "limitedJs": 0,
+        "entries": 1,
+        "tracedFunctions": 6,
+        "selectedRelatedHelpers": 0,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "TS_DETERMINISTIC_FALLBACK": 69
+        },
+        "sqlStatuses": {},
+        "sqlStatements": 0,
+        "tables": 0,
+        "policies": 0,
+        "policyOperationStates": {},
+        "clients": 0,
+        "accesses": 0,
+        "clientLinked": 0,
+        "structural": [],
+        "httpUses": {},
+        "exposureUses": {},
+        "ruleSignals": [
+          {
+            "line": 73,
+            "filePath": "app/src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          436,
+          428
+        ],
+        "sampledParentHeapBytes": [
+          110928248,
+          129802616
+        ]
+      },
+      "newStructural": []
+    },
+    {
+      "projectId": "TinyikoMamban--workflowai-pro",
+      "before": {
+        "projectId": "TinyikoMamban--workflowai-pro",
+        "sourceCommit": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 109,
+          "selectedFiles": 92,
+          "unsupportedFiles": 15,
+          "excludedFiles": 2,
+          "failedFiles": 0
+        },
+        "selection": null,
+        "recordedJsFiles": 87,
+        "parsedJs": 87,
+        "limitedJs": 0,
+        "entries": 1,
+        "tracedFunctions": 5,
+        "selectedRelatedHelpers": 0,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "UNRECORDED": 87
+        },
+        "sqlStatuses": {
+          "PARTIAL": 2
+        },
+        "sqlStatements": 81,
+        "tables": 13,
+        "policies": 15,
+        "policyOperationStates": {
+          "DENY": 55,
+          "UID_COLUMN_EQUALITY": 47,
+          "COLUMN_FILTER": 2
+        },
+        "clients": 3,
+        "accesses": 42,
+        "clientLinked": 0,
+        "structural": [],
+        "httpUses": {},
+        "exposureUses": {},
+        "ruleSignals": [
+          {
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 73,
+            "filePath": "src/components/ui/chart.tsx"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          527,
+          517
+        ],
+        "sampledParentHeapBytes": [
+          84961720,
+          164447712
+        ]
+      },
+      "after": {
+        "projectId": "TinyikoMamban--workflowai-pro",
+        "sourceCommit": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 109,
+          "selectedFiles": 92,
+          "unsupportedFiles": 15,
+          "excludedFiles": 2,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 89,
+          "submittedFiles": 89,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 341967,
+          "omissionReasons": {}
+        },
+        "recordedJsFiles": 87,
+        "parsedJs": 87,
+        "limitedJs": 0,
+        "entries": 1,
+        "tracedFunctions": 5,
+        "selectedRelatedHelpers": 1,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "TS_SUPABASE_CLIENT_MODULE_HINT": 4,
+          "TS_RELATED_IMPORT_HINT": 1,
+          "TS_DETERMINISTIC_FALLBACK": 82
+        },
+        "sqlStatuses": {
+          "PARTIAL": 2
+        },
+        "sqlStatements": 81,
+        "tables": 13,
+        "policies": 15,
+        "policyOperationStates": {
+          "DENY": 55,
+          "UID_COLUMN_EQUALITY": 47,
+          "COLUMN_FILTER": 2
+        },
+        "clients": 3,
+        "accesses": 42,
+        "clientLinked": 0,
+        "structural": [],
+        "httpUses": {},
+        "exposureUses": {},
+        "ruleSignals": [
+          {
+            "line": 73,
+            "filePath": "src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          }
+        ],
+        "score": 86,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          538,
+          519
+        ],
+        "sampledParentHeapBytes": [
+          80927472,
+          116440656
+        ]
+      },
+      "newStructural": []
+    },
+    {
+      "projectId": "Adriano-Digital2024--CopyMonster",
+      "before": {
+        "projectId": "Adriano-Digital2024--CopyMonster",
+        "sourceCommit": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 312,
+          "selectedFiles": 257,
+          "unsupportedFiles": 42,
+          "excludedFiles": 13,
+          "failedFiles": 0
+        },
+        "selection": null,
+        "recordedJsFiles": 184,
+        "parsedJs": 100,
+        "limitedJs": 84,
+        "entries": 0,
+        "tracedFunctions": 0,
+        "selectedRelatedHelpers": 0,
+        "tracedRelatedHelpers": 0,
+        "selectedJsReasons": {
+          "UNRECORDED": 100
+        },
+        "sqlStatuses": {
+          "LIMIT_EXCEEDED": 67
+        },
+        "sqlStatements": 0,
+        "tables": 0,
+        "policies": 0,
+        "policyOperationStates": {},
+        "clients": 1,
+        "accesses": 21,
+        "clientLinked": 0,
+        "structural": [
+          {
+            "rule": "COMPOSE_PORT_BINDING",
+            "file": "docker-compose.yml",
+            "line": 14
+          }
+        ],
+        "httpUses": {},
+        "exposureUses": {},
+        "ruleSignals": [
+          {
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 81,
+            "filePath": "src/components/ui/chart.tsx"
+          },
+          {
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 241,
+            "filePath": "src/pages/Auth.tsx"
+          },
+          {
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 166,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx"
+          },
+          {
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 167,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx"
+          },
+          {
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 168,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx"
+          },
+          {
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 207,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx"
+          }
+        ],
+        "score": 16,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 7,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          586,
+          572
+        ],
+        "sampledParentHeapBytes": [
+          123257208,
+          84636632
+        ]
+      },
+      "after": {
+        "projectId": "Adriano-Digital2024--CopyMonster",
+        "sourceCommit": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+        "repeatConsistent": true,
+        "inventory": {
+          "discoveredFiles": 312,
+          "selectedFiles": 257,
+          "unsupportedFiles": 42,
+          "excludedFiles": 13,
+          "failedFiles": 0
+        },
+        "selection": {
+          "discoveredFiles": 251,
+          "submittedFiles": 100,
+          "omittedFiles": 151,
+          "omittedDetails": 51,
+          "submittedCharacters": 616625,
+          "omissionReasons": {
+            "SOURCE_FILE_COUNT_LIMIT": 150,
+            "SOURCE_FILE_SIZE_LIMIT": 1
+          }
+        },
+        "recordedJsFiles": 133,
+        "parsedJs": 33,
+        "limitedJs": 100,
+        "entries": 20,
+        "tracedFunctions": 16,
+        "selectedRelatedHelpers": 3,
+        "tracedRelatedHelpers": 1,
+        "selectedJsReasons": {
+          "TS_DENO_REGISTRATION_HINT": 20,
+          "TS_SUPABASE_CLIENT_MODULE_HINT": 2,
+          "TS_RELATED_IMPORT_HINT": 3,
+          "TS_DETERMINISTIC_FALLBACK": 8
+        },
+        "sqlStatuses": {
+          "PARTIAL": 4,
+          "LIMIT_EXCEEDED": 1,
+          "NOT_RUN": 62
+        },
+        "sqlStatements": 114,
+        "tables": 14,
+        "policies": 57,
+        "policyOperationStates": {
+          "UNKNOWN": 112
+        },
+        "clients": 0,
+        "accesses": 0,
+        "clientLinked": 0,
+        "structural": [
+          {
+            "rule": "COMPOSE_PORT_BINDING",
+            "file": "docker-compose.yml",
+            "line": 14
+          }
+        ],
+        "httpUses": {
+          "UNRESOLVED_DESTINATION": 4
+        },
+        "exposureUses": {
+          "FLOW_UNRESOLVED": 47
+        },
+        "ruleSignals": [
+          {
+            "line": 81,
+            "filePath": "src/components/ui/chart.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          },
+          {
+            "line": 241,
+            "filePath": "src/pages/Auth.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          },
+          {
+            "line": 166,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          },
+          {
+            "line": 167,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          },
+          {
+            "line": 168,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          },
+          {
+            "line": 207,
+            "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW",
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML"
+          }
+        ],
+        "score": 16,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 7,
+          "INFORMATIONAL": 0
+        },
+        "limitations": [
+          "CLIENT_AST_BUDGET_LIMIT",
+          "CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF",
+          "DECLARATIONS_NOT_LIVE_DATABASE",
+          "OMITTED_FILE_DETAILS_TRUNCATED",
+          "POLICY_STEP_BUDGET",
+          "ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN",
+          "SOURCE_LIMITS_OR_SENSITIVE_PATHS_OMITTED",
+          "TS_COMBINED_SOURCE_SQL_BUDGET_PARTIAL",
+          "TS_SELECTION_HINTS_NOT_ENTRY_PROOF",
+          "TS_SELECTION_HINT_LIMIT",
+          "제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다."
+        ],
+        "elapsedMs": [
+          680,
+          650
+        ],
+        "sampledParentHeapBytes": [
+          77677472,
+          127469920
+        ]
+      },
+      "newStructural": []
+    }
+  ],
+  "invariants": "Same source plan, two semantic repeats, existing Rule/FPR signals, score, Risk summary and structural findings preserved",
+  "scope": "Grade C observed public apps; additional entries or declarations are not TP, safety, ownership or deployment proof",
+  "policy": "RLS grammar and Risk formulas unchanged; incomplete migrations remain UNKNOWN; no P0-2/P0-3 implementation",
+  "limits": {
+    "combinedFiles": 100,
+    "fileCharacters": 100000,
+    "totalCharacters": 1000000,
+    "steps": 100000,
+    "policyWorkShareWithCode": 0.25,
+    "policyWorkShareSqlOnly": 0.9,
+    "nodeHeapMiB": 192,
+    "depth": 3
+  },
+  "limitations": [
+    "Parent heap samples are not worker peak RSS",
+    "Input quotas do not promise that all selected files finish analysis",
+    "Previously observed sources and one curator; not blind or independent validation",
+    "OSV/EPSS/KEV/AI calls not run; H2 only"
+  ]
+}
