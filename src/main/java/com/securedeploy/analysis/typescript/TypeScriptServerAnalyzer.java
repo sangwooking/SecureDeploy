@@ -64,7 +64,26 @@ public class TypeScriptServerAnalyzer {
                     manifests.add(manifest);
                 }catch(Exception ignored){/* A malformed manifest cannot establish a driver API contract. */}
             }
-            byte[] input = mapper.writeValueAsBytes(Map.of("files", sources,"nodeManifests",manifests));
+            var denoConfigs=new ArrayList<Map<String,Object>>();
+            for(var file:project.analysisFiles())if(file.relativePath().matches("(?:.*/)?supabase/config\\.toml") && denoConfigs.size()<20
+                    &&file.lines().stream().mapToLong(String::length).sum()<100_000) {
+                String path=CoverageRecorder.safePath(file.relativePath());
+                if(path.equals("[redacted-path]"))continue;
+                var settings=new TreeMap<String,Boolean>();String status="UNKNOWN";
+                try {
+                    var parsed=org.tomlj.Toml.parse(String.join("\n",file.lines()));
+                    if(!parsed.hasErrors()) {
+                        status="PARSED";var functions=parsed.getTable("functions");
+                        if(functions!=null)for(String name:functions.keySet().stream().sorted().limit(100).toList()) {
+                            if(!name.matches("[A-Za-z0-9_-]{1,100}"))continue;
+                            var function=functions.getTable(List.of(name));
+                            if(function!=null && function.get("verify_jwt") instanceof Boolean flag)settings.put(name,flag);
+                        }
+                    }
+                }catch(Exception ignored){/* Configuration errors never establish runtime authorization. */}
+                denoConfigs.add(Map.of("filePath",path,"status",status,"verifyJwt",settings));
+            }
+            byte[] input = mapper.writeValueAsBytes(Map.of("files", sources,"nodeManifests",manifests,"denoConfigs",denoConfigs));
             var builder = new ProcessBuilder(properties.getNodeExecutable(), "--permission", "--no-addons",
                     "--max-old-space-size=192", "--allow-fs-read=" + directory,
                     directory.resolve("worker.mjs").toString());
@@ -112,7 +131,7 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v11".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v12".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200

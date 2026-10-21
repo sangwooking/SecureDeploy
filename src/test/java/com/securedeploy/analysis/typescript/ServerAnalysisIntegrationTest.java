@@ -231,8 +231,8 @@ class ServerAnalysisIntegrationTest {
     }
 
     @Test void exposureUsesCommonInputSourcesWithoutChangingRiskOrResolvedCounts() throws Exception {
-        String token=signup(),code="export default {fetch(request){return Response.json({value:request.headers.get('Authorization')});}}";
-        var zip=upload(token,code);var normal=upload(token,code.replace("Authorization","X-Request-ID"));
+        String token=signup(),code="Deno.serve(async request=>{const name=new URL(request.url).searchParams.get('name');return Response.json({value:Deno.env.get(name)});});";
+        var zip=upload(token,code);var normal=upload(token,code.replace("Deno.env.get(name)","false"));
         assertThat(zip.at("/serverAnalysis/validatedFindings/0/ruleId").asText()).isEqualTo("TS_SENSITIVE_DATA_EXPOSURE");
         assertThat(zip.at("/serverAnalysis/exposureUses")).hasSize(1);
         Path pub=Files.createDirectory(temp.resolve("exposure-public")),prv=Files.createDirectory(temp.resolve("exposure-private"));

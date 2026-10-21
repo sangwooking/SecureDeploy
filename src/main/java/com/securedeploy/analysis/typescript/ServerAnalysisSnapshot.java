@@ -197,7 +197,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
             List<Location> ownershipComparisons, List<AuthorizationAccess> accesses, List<String> limitations) { }
 
     public static ServerAnalysisSnapshot unavailable(String status, List<FileCoverage> files, String reason) {
-        return new ServerAnalysisSnapshot(1, "ts-server-v11", null, status, files, List.of(), List.of(), List.of(), List.of(reason));
+        return new ServerAnalysisSnapshot(1, "ts-server-v12", null, status, files, List.of(), List.of(), List.of(), List.of(reason));
     }
 
     public CoverageLedger attachCoverage(CoverageLedger ledger) {
@@ -229,7 +229,7 @@ public record ServerAnalysisSnapshot(int schemaVersion, String analyzerVersion, 
         boolean python = analyzerVersion.startsWith("py-django-");
         analyzers.add(new CoverageLedger.Analyzer(python ? "PYTHON_SERVER" : "TYPESCRIPT_SERVER", status,
                 python ? "Django/DRF 진입점의 제한된 SQL·파일 경로·pickle/YAML 값 전달 검사. 전체 Python, 인증·소유권, 파일시스템·실행 가능성은 미검증이며 기존 Risk 계산과 분리됩니다."
-                : "Workers/Pages 및 정적으로 연결된 Express 진입점의 제한된 값 전달 검사. Express 코드 실행·MongoDB API 근거를 구분하며 동적 초기화·전체 Node.js·인증·소유권·실행 가능성은 미확인입니다. 기존 Risk 계산과 분리됩니다.", counts));
+                : "Workers/Pages, 확인된 Deno HTTP 등록 및 정적으로 연결된 Express 진입점의 제한된 값 전달 검사. 서버 환경값과 반환 응답 근거를 구분하며 동적 초기화·전체 Node.js·인증·소유권·배포 설정의 실제 적용은 미확인입니다. 기존 Risk 계산과 분리됩니다.", counts));
         if (python) {
             if (tokenUses != null || "py-django-v5".equals(analyzerVersion) || "py-django-v6".equals(analyzerVersion)) analyzers.add(new CoverageLedger.Analyzer("PYTHON_TOKEN_SECURITY", files.isEmpty() ? "NOT_APPLICABLE"
                     : List.of("COMPLETE", "PARTIAL").contains(status) ? "PARTIAL" : status,

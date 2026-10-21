@@ -5,8 +5,9 @@ import { credentialShape, sources as exposureSources, uncertain as exposureUncer
 import { nodeServer } from './node-server.mjs';
 import { entryState } from './entry-state.mjs';
 import { entryContracts } from './entry-contracts.mjs';
+import { denoEntries } from './deno.mjs';
 
-export const VERSION = 'ts-server-v11';
+export const VERSION = 'ts-server-v12';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -23,7 +24,7 @@ function addition(left, right) {
   }
   const combined = union(left, right);
   const { constant: ignored, ...withoutConstant } = combined;
-  return { ...withoutConstant, ...concatenatedDestination(left, right) };
+  return { ...withoutConstant, responseLocations:undefined, environmentResponses:undefined, ...concatenatedDestination(left, right) };
 }
 function union(...values) {
   if (!values.length) return unknown();
@@ -49,6 +50,7 @@ function union(...values) {
     exposures: values.flatMap(v => exposureSources(v)).slice(0, 20),
     exposureTrail: values.flatMap(v => exposureTrails(v)).slice(0, 10),
     responseLocations: values.flatMap(v => v?.responseLocations ?? []).slice(0, 20),
+    environmentResponses: values.flatMap(v => v?.environmentResponses ?? []).slice(0, 20),
     destination: joinDestinations(values),
     predicateInput: values.some(v => v?.predicateInput) ? {
       trace: values.flatMap(v => (v?.predicateInput ?? v)?.trace ?? []).slice(0, 20),
@@ -111,6 +113,8 @@ export function analyze(input, overrides = {}) {
     if(state.context?.setup)return;
     const origins = exposureSources(v);
     if (!origins.length) return;
+    if(kind==='HTTP_RESPONSE_RETURN' && origins.some(o=>['REQUEST_SELECTED_ENVIRONMENT_VALUE','SERVER_SECRET_ENVIRONMENT_VALUE','DECLARED_PUBLIC_ENVIRONMENT_VALUE','ENVIRONMENT_VALUE_UNVERIFIED'].includes(o.kind))
+        && !origins.some(o=>['CREDENTIAL_SHAPED_LITERAL','AUTHENTICATION_HEADER','INTERNAL_ERROR_DETAIL','ERROR_DETAIL_CONTEXT_UNKNOWN'].includes(o.kind)))return;
     const location = kind === 'HTTP_RESPONSE_RETURN' && v.responseLocations?.length ? v.responseLocations[0] : loc(node, state.mod, kind, state.fn);
     const unresolved = exposureUncertain(v) || state.uncertain || state.exposureUncertain;
     const supported = origins.filter(o => ['CREDENTIAL_SHAPED_LITERAL', 'AUTHENTICATION_HEADER'].includes(o.kind));
@@ -125,6 +129,39 @@ export function analyze(input, overrides = {}) {
       source: (errors.length ? errors : supported)[0], sink: location, flow: [...trace, location], defenses: [], limitations,
       message: errors.length ? '서버 내부 오류 정보가 사용자에게 전달될 가능성이 있습니다.' : '보호해야 할 정보 후보가 서버 응답 또는 로그에 전달되는 경로를 확인해 주세요.',
       recommendation: errors.length ? '사용자 응답에는 일반 오류 메시지와 추적 ID만 반환하고 상세 스택은 접근이 제한된 내부 로그로 분리하세요. 로컬 오류 응답 테스트 후 재검사하세요.' : '응답·로그에서 해당 값을 제거하거나 목적에 맞게 마스킹하세요. 실제 노출이 확인됐다면 자격증명 교체를 검토하고 로컬 테스트와 재검사로 확인하세요. 클라이언트 공개 환경변수로 옮기는 것은 해결이 아닙니다.' }, state.mod);
+  }
+  function responseBody(v, depth=0, seen=new Set()) {
+    if(!v||depth>3||seen.has(v))return {origins:[],trail:[],unresolved:depth>3};
+    seen.add(v);
+    if(v.tag==='exposureResponse')return {origins:[],trail:[],unresolved:false};
+    // One computed data-property always contributes its value to JSON even
+    // when its key is unknown. It does not make arbitrary property reads safe.
+    if (v?.tag === 'object' && v.ref?.computedKeyOnly && v.ref.properties.size === 1) {
+      const child = [...v.ref.properties.values()][0];
+      return {origins: exposureSources(child), trail: exposureTrails(child), unresolved: exposureUncertain(child)};
+    }
+    if(v.ref?.properties){
+      const children=[...v.ref.properties.values()].map(c=>responseBody(c,depth+1,seen));
+      return {origins:children.flatMap(c=>c.origins).slice(0,20),trail:children.flatMap(c=>c.trail).slice(0,10),
+        unresolved:!!v.unknown||!!v.ref.unknown||children.some(c=>c.unresolved)};
+    }
+    return {origins: exposureSources(v), trail: exposureTrails(v), unresolved: exposureUncertain(v)};
+  }
+  function observeEnvironmentResponses(returned, state) {
+    for (const proof of returned.environmentResponses ?? []) {
+      const env = proof.origins.filter(o => ['REQUEST_SELECTED_ENVIRONMENT_VALUE', 'SERVER_SECRET_ENVIRONMENT_VALUE','DECLARED_PUBLIC_ENVIRONMENT_VALUE','ENVIRONMENT_VALUE_UNVERIFIED'].includes(o.kind));
+      if (!env.length) continue;
+      const sensitive=env.filter(o=>['REQUEST_SELECTED_ENVIRONMENT_VALUE','SERVER_SECRET_ENVIRONMENT_VALUE'].includes(o.kind));
+      const limitations = ['STATIC_EXPOSURE_NOT_RUNTIME_LEAK_PROOF', 'AUTHORIZATION_AND_DEPLOYMENT_NOT_VERIFIED',
+        'ENVIRONMENT_CONTENTS_AND_GATEWAY_POLICY_UNKNOWN', 'BRANCH_FEASIBILITY_NOT_VERIFIED'];
+      const trace = [...proof.origins, ...proof.trail].filter((v,i,a)=>a.findIndex(w=>JSON.stringify(w)===JSON.stringify(v))===i).slice(0,19);
+      const status = proof.unresolved ? 'FLOW_UNRESOLVED' : sensitive.length?'SENSITIVE_FLOW_CANDIDATE':'SENSITIVITY_UNVERIFIED';
+      append(result.exposureUses, {kind: 'HTTP_RESPONSE_RETURN', status, location: proof.location, trace, limitations}, state.mod);
+      if (!proof.unresolved && sensitive.length) append(result.findings, {ruleId:'TS_SENSITIVE_DATA_EXPOSURE', kind:'CWE-200', confidence:'HIGH',
+        disposition:'REVIEW_REQUIRED', source:sensitive[0], sink:proof.location, flow:[...trace, proof.location], defenses:[], limitations,
+        message:'서버 환경 설정의 값이 요청 응답에 전달되는 경로를 확인했습니다.',
+        recommendation:'환경값 전체를 반환하는 기능을 제거하고 필요한 서버 작업만 제공하세요. 공개 설정과 서버 전용 키를 분리하고, 가짜 값으로 일반 사용자 응답에 서버 비밀값이 포함되지 않는지 확인한 뒤 재검사하세요.'}, state.mod);
+    }
   }
   for (const file of input.files ?? []) {
     if (result.files.length >= limits.maxFiles) { result.limitations.push('FILE_COUNT_LIMIT_EXCEEDED'); break; }
@@ -149,6 +186,7 @@ export function analyze(input, overrides = {}) {
       while (stack.length) {
         const n = stack.pop();
         if (++nodes > limits.maxNodes || Date.now() > deadline) throw new Error('BUDGET');
+        if(ts.isIdentifier(n)&&n.text==='Deno')mod.hasDenoSyntax=true;
         if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'prepare') record.prepareCallSites++;
         if (ts.isCallExpression(n) && (ts.isIdentifier(n.expression) && n.expression.text === 'fetch'
             || ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'fetch')) record.httpCallSites++;
@@ -461,15 +499,19 @@ export function analyze(input, overrides = {}) {
       for (const p of node.properties) {
         if (ts.isPropertyAssignment(p) && !ts.isComputedPropertyName(p.name)) properties.set(p.name.getText().replace(/^['"]|['"]$/g, ''), expr(p.initializer, state));
         else if (ts.isShorthandPropertyAssignment(p)) properties.set(p.name.text, expr(p.name, state));
-        else {
+        else if (ts.isPropertyAssignment(p) && ts.isComputedPropertyName(p.name) && node.properties.length === 1) {
+          expr(p.name.expression, state);
+          properties.set(Symbol('computed-data'), expr(p.initializer, state)); incomplete = true;
+        } else {
           note(mod, 'OBJECT_MEMBER_UNRESOLVED'); incomplete = true;
           if (ts.isSpreadAssignment(p)) spread = union(spread, expr(p.expression, state));
         }
       }
       return value('object', spread.trace, { unknown: incomplete, ref: { properties, unknown: incomplete,
+        computedKeyOnly: node.properties.length===1 && ts.isPropertyAssignment(node.properties[0]) && ts.isComputedPropertyName(node.properties[0].name),
         trace: union(spread, ...properties.values()).trace,...(state.nodeMode?{nodeIdentity:{}}:{}) } });
     }
-    if (ts.isArrayLiteralExpression(node)) return union(...node.elements.map(e => expr(e, state)));
+    if (ts.isArrayLiteralExpression(node)) return {...union(...node.elements.map(e => {const v=expr(e,state);return v.tag==='exposureResponse'?constant(null):v;})), responseLocations:undefined, environmentResponses:undefined};
     if (ts.isNewExpression(node) || ts.isCallExpression(node)) {
       const callee = unwrap(node.expression);
       const receiverInput = ts.isPropertyAccessExpression(callee) ? expr(callee.expression, state) : undefined;
@@ -497,9 +539,29 @@ export function analyze(input, overrides = {}) {
       if (globalObject('console') && ['log','info','warn','error','debug'].includes(callee.name.text)) {
         observeExposure(union(...args), node, state, 'LOG_ARGUMENT'); return constant(undefined);
       }
-      if (globalObject('JSON') && callee.name.text === 'stringify') return { tag: 'serialized', trace: [], exposures: exposureSources(args[0]), exposureTrail: exposureTrails(args[0]), unknown: exposureUncertain(args[0]) || args.length > 1 };
-      if (global && callee.text === 'Response' && ts.isNewExpression(node) || globalObject('Response') && callee.name.text === 'json')
-        return { tag: 'exposureResponse', trace: [], exposures: exposureSources(args[0]), exposureTrail: exposureTrails(args[0]), unknown: exposureUncertain(args[0]) || state.uncertain || state.exposureUncertain, responseLocations: [loc(node, mod, 'HTTP_RESPONSE', fn)] };
+      if (globalObject('JSON') && callee.name.text === 'stringify') {
+        if(args[0]?.tag==='exposureResponse')return {...unknown(),exposures:exposureSources(args[0])};
+        const body=responseBody(args[0]);
+        return { tag:'serialized', trace:[], exposures:body.origins, exposureTrail:body.trail, unknown:body.unresolved || args.length>1 };
+      }
+      if (global && callee.text === 'Response' && ts.isNewExpression(node) || globalObject('Response') && callee.name.text === 'json') {
+        const body=responseBody(args[0]), location=loc(node,mod,'HTTP_RESPONSE',fn);
+        if(ts.isNewExpression(node) && args[0]?.ref)body.unresolved=true;
+        return { tag:'exposureResponse', trace:[], exposures:body.origins, exposureTrail:body.trail,
+          unknown:body.unresolved || state.uncertain || state.exposureUncertain, responseLocations:[location],
+          environmentResponses:[{...body, location}] };
+      }
+      if (ts.isPropertyAccessExpression(callee) && callee.name.text==='get'
+          && ts.isPropertyAccessExpression(callee.expression) && callee.expression.name.text==='env'
+          && ts.isIdentifier(callee.expression.expression) && callee.expression.expression.text==='Deno'
+          && mod.denoGlobals && !state.vars.has('Deno') && args.length===1) {
+        const name=args[0];
+        const publicValue=hasConstant(name) && (['SUPABASE_ANON_KEY','SUPABASE_PUBLISHABLE_KEY','SUPABASE_URL'].includes(name.constant) || /^PUBLIC_[A-Z0-9_]+$/.test(name.constant));
+        const secret=hasConstant(name) && /(?:SECRET|SERVICE_ROLE|PRIVATE_KEY|PASSWORD|API_KEY|ACCESS_TOKEN|REFRESH_TOKEN)/i.test(String(name.constant)) && !publicValue;
+        const selected=name.trace.some(s=>['QUERY_PARAMETER','REQUEST_BODY','REQUEST_HEADER','ROUTE_PARAMETER','REQUEST_URL'].includes(s.kind)) && !name.unknown;
+        const origin=loc(node,mod,selected?'REQUEST_SELECTED_ENVIRONMENT_VALUE':secret?'SERVER_SECRET_ENVIRONMENT_VALUE':publicValue?'DECLARED_PUBLIC_ENVIRONMENT_VALUE':'ENVIRONMENT_VALUE_UNVERIFIED',fn);
+        return value('environmentValue',[],{unknown:!!name.unknown, exposures:[...(selected?name.trace:[]),origin]});
+      }
       if (ts.isIdentifier(callee)) {
         const target = !state.nodeMode || !callable?.unknown&&!callable?.ref?.unknown ? callable?.target : undefined;
         if (target && ts.isCallExpression(node)) {
@@ -606,7 +668,7 @@ export function analyze(input, overrides = {}) {
         argument.ref.properties.clear();
       }
       note(mod, 'CALL_TARGET_UNRESOLVED');
-      return { ...incoming, unknown: true, destination: unresolvedDestination(), urlPrefix: undefined };
+      return { ...incoming, unknown: true, environmentResponses:undefined, destination: unresolvedDestination(), urlPrefix: undefined };
     }
     if (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) {
       const operand = expr(node.operand, state);
@@ -898,13 +960,15 @@ export function analyze(input, overrides = {}) {
     }
     const returns=[...r.values,...(!r.stops?[constant(undefined)]:[])];
     const combined=union(...returns);
-    return state.nodeMode&&returns.length>1&&returns.length<=4?{...combined,nodeAlternatives:returns}:combined;
+    const withResponses={...combined,environmentResponses:returns.flatMap(v=>v.environmentResponses??[]).slice(0,20)};
+    return state.nodeMode&&returns.length>1&&returns.length<=4?{...withResponses,nodeAlternatives:returns}:withResponses;
   }
+  denoEntries({ts,modules,resolve,claimFunction,tick,note,input});
   entryContracts({ts,modules,tick,note,loc,append,result});
   nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction});
   nodeSupport.discover();
   for (const mod of modules.values()) for (const entry of mod.entries) {
-    const context = { entry: loc(entry.fn.node, mod, entry.kind, entry.fn), checks: [], defenses: [], resources: [] };
+    const context = { entry: loc(entry.registrationNode ?? entry.fn.node, mod, entry.kind, entry.fn), checks: [], defenses: [], resources: [] };
     try {
       // Runtime require() must use this same graph as captured module values.
       const isolate = entryState(() => tick(mod), canonicalFunctions);
@@ -912,9 +976,10 @@ export function analyze(input, overrides = {}) {
       const entryFn = entry.fn.nodeMode ? isolate(entry.fn) : entry.fn;
       if(entry.fn.nodeMode)note(mod,'MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED');
       if(entry.registration){context.checks.push(entry.registration);note(mod,'EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED');}
-      const returned = invoke(entryFn, entry.kind === 'WORKER_FETCH' ? [value('request'), value('env')] : entry.kind==='EXPRESS_HANDLER'
+      const returned = invoke(entryFn, entry.kind === 'WORKER_FETCH' || entry.kind === 'DENO_HTTP_HANDLER' ? [value('request'), value('env')] : entry.kind==='EXPRESS_HANDLER'
         ?[value('express-request'),value('express-response'),unknown()]:[value('context')], 0, context, new Set(),!!entry.uncertain);
       if (returned.responseLocations?.length) observeExposure(returned, entry.fn.node, { mod, fn: entry.fn, uncertain: false }, 'HTTP_RESPONSE_RETURN');
+      observeEnvironmentResponses(returned,{mod,fn:entry.fn});
     } catch { note(mod, 'ANALYSIS_BUDGET_EXCEEDED'); }
     for (const field of ['checks', 'defenses', 'resources']) {
       context[field] = context[field].filter((item, i, all) => all.findIndex(other => JSON.stringify(item) === JSON.stringify(other)) === i);

@@ -15,6 +15,17 @@ const entryStageLabels: Record<string,string>={
 };
 
 const labels: Record<string, string> = {
+  DENO_HTTP_HANDLER:'Deno HTTP 요청 등록 확인',
+  REQUEST_SELECTED_ENVIRONMENT_VALUE:'요청으로 선택한 서버 환경값',
+  SERVER_SECRET_ENVIRONMENT_VALUE:'서버 비밀 설정 참조 · 실제 값은 수집하지 않음',
+  DECLARED_PUBLIC_ENVIRONMENT_VALUE:'공개용으로 선언된 환경 설정',
+  SUPABASE_VERIFY_JWT_DECLARED_TRUE:'JWT 검증 활성화 선언 · 실제 배포 상태는 미확인',
+  SUPABASE_VERIFY_JWT_DECLARED_FALSE:'JWT 검증 비활성화 선언 · 별도 보호 로직 확인 필요',
+  SUPABASE_VERIFY_JWT_DECLARATION_UNKNOWN:'함수별 JWT 검증 설정을 확인하지 못함',
+  SUPABASE_LIVE_AUTHORIZATION_AND_RLS_NOT_VERIFIED:'운영 인증·사용자 권한·RLS 적용 상태는 미검증',
+  AUTHORIZATION_AND_DEPLOYMENT_NOT_VERIFIED:'접근권한과 실제 배포 조건은 미확인',
+  ENVIRONMENT_CONTENTS_AND_GATEWAY_POLICY_UNKNOWN:'환경값의 실제 내용과 게이트웨이 정책은 미확인',
+  BRANCH_FEASIBILITY_NOT_VERIFIED:'해당 분기의 실제 실행 가능성은 미검증',
   CONTEXT_MISSING:'연결에 필요한 로컬 소스 문맥 누락',FRAMEWORK_NOT_SUPPORTED:'이 프레임워크의 요청 등록 계약은 미지원',
   EXTERNAL_IMPLEMENTATION_UNKNOWN:'외부 구현 또는 등록 관계 미확인',CALL_TARGET_UNKNOWN:'콜백 대상을 확인하지 못함',
   ANALYSIS_STEP_BUDGET_EXCEEDED:'구문·값 전달 분석 작업량 상한 도달',ANALYSIS_TIME_BUDGET_EXCEEDED:'분석 시간 상한 도달',
@@ -169,7 +180,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
   const current = Math.min(page, Math.max(0, Math.ceil(snapshot.files.length / 10) - 1));
   return <section className="server-analysis-section" aria-label={title}>
     <h3>{title}</h3><p>{text(snapshot.status)}</p>
-    {!python&&snapshot.analyzerVersion==='ts-server-v11'&&snapshot.nodeUses!=null&&<p className="review-caution">
+    {!python&&['ts-server-v11','ts-server-v12'].includes(snapshot.analyzerVersion)&&snapshot.nodeUses!=null&&<p className="review-caution">
       소스 기록 {snapshot.files.length}개 · 파싱 {snapshot.files.filter(f=>f.parseStatus==='PARSED').length}개 ·
       요청 등록 {snapshot.nodeUses.filter(u=>u.kind==='ENTRY_REGISTERED').length}곳 ·
       Router 반환 연결 {snapshot.nodeUses.filter(u=>u.kind==='CALL_LINKED').length}곳 ·

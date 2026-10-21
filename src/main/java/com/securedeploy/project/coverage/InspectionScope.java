@@ -32,6 +32,8 @@ public record InspectionScope(int schemaVersion, String assurance, boolean evide
                     "이 파일 영역은 검사하지 못했습니다. 파일 이름에 따른 범위 기록이며 실제 서버 역할이나 위험 여부를 확정하지 않습니다.");
         }
         for (var file : files) {
+            if(file.type()==ProjectFileType.SUPABASE_CONFIG) add(groups,"SUPABASE_CONFIG","Supabase 함수 설정 선언","PARTIAL",file.relativePath(),
+                    "함수별 verify_jwt 선언만 확인합니다. 실제 배포 설정·사용자 인증·객체 소유권·관리자 권한·RLS 적용은 확인하지 않았습니다.");
             if (file.type() == ProjectFileType.PYTHON) {
                 add(groups, "PYTHON_SOURCE", "Python 서버 코드 일부", "PARTIAL", file.relativePath(),
                         "Django/DRF의 제한된 SQL·파일·복원 흐름과 권한 선언·조회 범위·차단 근거를 확인합니다. 인증과 객체 권한은 별도입니다. 파일별 범위와 권한 문맥을 확인하세요. 미들웨어·상속·동적 코드·전체 권한 보호는 미검증입니다.");

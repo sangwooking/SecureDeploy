@@ -14,6 +14,7 @@ public class ProjectFileCollector {
         String normalizedPath = "/" + path.toString().replace('\\', '/').toLowerCase(java.util.Locale.ROOT);
 
         if (lowerName.endsWith(".py")) return Optional.of(ProjectFileType.PYTHON);
+        if(normalizedPath.endsWith("/supabase/config.toml")) return Optional.of(ProjectFileType.SUPABASE_CONFIG);
 
         if (com.securedeploy.sca.parser.PythonManifestFiles.isRequirements(normalizedPath)) {
             return Optional.of(ProjectFileType.PYTHON_REQUIREMENTS);
