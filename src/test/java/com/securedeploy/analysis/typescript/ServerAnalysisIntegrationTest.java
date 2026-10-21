@@ -78,11 +78,12 @@ class ServerAnalysisIntegrationTest {
         String token=signup();
         String prefix="import org.springframework.web.bind.annotation.*; import java.sql.Connection; @RestController class Endpoint {Connection connection; @GetMapping(\"/\") void inspect(@RequestParam String input){\n";
         String code=prefix+"var values=new java.util.HashMap<String,String>();values.put(\"selected\",input);\n"
-                +"connection.prepareCall(\"{call \"+values.get(\"selected\")+\"}\").execute();\n}}";
+                +"Object stored=values.get(\"selected\");String text=(String)stored;\n"
+                +"connection.prepareCall(\"{call \"+text+\"}\").execute();\n}}";
         var zip=uploadSource(token,"Endpoint.java",code);
         assertThat(zip.at("/serverAnalysis/javaAnalysis/findings")).hasSize(1);
         assertThat(zip.at("/serverAnalysis/javaAnalysis/findings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
-        assertThat(zip.at("/serverAnalysis/javaAnalysis/findings/0/trace").toString()).contains("COLLECTION_READ","COLLECTION_WRITE");
+        assertThat(zip.at("/serverAnalysis/javaAnalysis/findings/0/trace").toString()).contains("COLLECTION_READ","COLLECTION_WRITE","STRING_IDENTITY_CAST");
         assertThat(zip.path("vulnerabilityCount").asInt()).isZero();assertThat(zip.path("securityScore").asInt()).isEqualTo(100);
         assertThat(zip.at("/riskAssessment/prioritySummary/BLOCKING").asInt()).isZero();
         assertThat(zip.at("/coverage/analyzers").toString()).contains("JAVA_SQL_FLOW");

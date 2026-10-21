@@ -49,13 +49,14 @@ def source_sites(path, source):
             if 'benchmarkRequest.getParameter' in line]
 
 
-def prepare(applications, output):
+def prepare(applications, output, regression=REGRESSION, validation=VALIDATION, baseline=BASELINE,
+            family='servlet-collection-selection'):
     applications,output=outside(applications),outside(output)
     plan=read(applications/'application-plan.json')
     groups=[('mall','macrozheng--mall-tiny','src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java',
-             'public CommonResult<List<UmsResourceCategory>> listAll() {','LICENSE','REGRESSION',REGRESSION),
+             'public CommonResult<List<UmsResourceCategory>> listAll() {','LICENSE','REGRESSION',regression),
             ('clinic','spring-projects--spring-petclinic','src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java',
-             'public String welcome() {','LICENSE.txt','VALIDATION',VALIDATION)]
+             'public String welcome() {','LICENSE.txt','VALIDATION',validation)]
     output.mkdir(mode=0o700);(output/'cases').mkdir(mode=0o700)
     cases=[]
     for prefix,pid,path,signature,license_path,split,variants in groups:
@@ -79,7 +80,7 @@ def prepare(applications, output):
                     urlMeaning='Original source reference; controlled probe is not upstream code.'))
             cases.append(dict(caseId=cid,grade='B',repositoryUrl=app['repositoryUrl'],repositoryCommitSha=app['commitSha'],
                 repositoryGroup=app['repositoryUrl'],forkGroup=app['repositoryUrl'],vulnerabilityFamily='controlled-collection-'+prefix,
-                sharedWeaknessFamily='servlet-collection-selection',language='JAVA',framework='Spring annotated controller with controlled Servlet/JDBC parameters',
+                sharedWeaknessFamily=family,language='JAVA',framework='Spring annotated controller with controlled Servlet/JDBC parameters',
                 cwe='CWE-89',area='INPUT_INJECTION',license='Apache-2.0',sourceDataset='Grade B application structure, NOT an upstream vulnerability',
                 groundTruthLabel=label,reviewed=True,groundTruthConfidence='CONTROLLED_STATIC_FLOW_REVIEW',evaluationSplit=split,
                 targetSites=[dict(filePath=path,startLine=sink,endLine=sink)],
@@ -92,7 +93,7 @@ def prepare(applications, output):
                 requiredConditions='Mapped method reached with Servlet request and usable JDBC connection. Injection/SQL runtime not executed or proven.',
                 independence='Different repositories and variant forms across splits, but both apps previously observed, one curator and shared weakness; not blind or independent truth adjudication.',
                 contextOmissions=['JDBC probe and parameters are controlled additions, not original application SQL or runtime wiring.','Only original mapped controller and license acquired for this evaluation; external framework/runtime/helper bodies not fully supplied.']))
-    manifest=dict(schemaVersion=1,engineBaselineCommit=BASELINE,cases=cases)
+    manifest=dict(schemaVersion=1,engineBaselineCommit=baseline,cases=cases)
     validate(manifest,output);write(output/'manifest.json',manifest)
     print(dict(cases=len(cases),grade='B',upstreamCves=0,sourceExecuted=False))
 

@@ -121,15 +121,19 @@ public final class JavaSqlWorker {
     private record TypeInfo(Unit unit,ClassTree tree,Map<String,String> fields) { }
     private record Declaration(TypeInfo owner,MethodTree tree) { }
     private record MapperSql(String namespace,String id,String sql,boolean dynamic,Location location) { }
-    private record Val(String type, Object constant, boolean input, boolean unknown, List<Location> trace, Val sql) {
-        static Val literal(Object value) { return new Val("VALUE", value, false, false, List.of(), null); }
+    private record Val(String type, Object constant, boolean input, boolean unknown, List<Location> trace, Val sql,
+                       boolean stringCompatible) {
+        Val(String type,Object constant,boolean input,boolean unknown,List<Location> trace,Val sql) {
+            this(type,constant,input,unknown,trace,sql,constant instanceof String&&type.equals("VALUE"));
+        }
+        static Val literal(Object value) { return new Val("VALUE", value, false, false, List.of(), null,value==null||value instanceof String); }
         static Val unknownValue() { return new Val("VALUE", null, false, true, List.of(), null); }
         static Val object(String type) { return new Val(type, null, false, false, List.of(), null); }
         Val step(Location l) {
             var t = new ArrayList<>(trace); if (t.size() < 20 && !t.contains(l)) t.add(l);
-            return new Val(type, constant, input, unknown || trace.size() >= 20, List.copyOf(t), sql);
+            return new Val(type, constant, input, unknown || trace.size() >= 20, List.copyOf(t), sql,stringCompatible);
         }
-        Val uncertain() { return new Val(type, null, input, true, trace, sql); }
+        Val uncertain() { return new Val(type, null, input, true, trace, sql,stringCompatible); }
     }
     private static final class Env {
         final Map<String,Val> values = new LinkedHashMap<>();
@@ -191,7 +195,7 @@ public final class JavaSqlWorker {
                     else if (springSource(m,p)) {
                         boolean scalar=Set.of("String","java.lang.String").contains(type);
                         boolean dto=annotation(m,p,"RequestBody")&&!scalar;
-                        v=new Val(dto?"DTO":"VALUE",null,true,!scalar,List.of(loc(m,p,"REQUEST_INPUT")),null);
+                        v=new Val(dto?"DTO":"VALUE",null,true,!scalar,List.of(loc(m,p,"REQUEST_INPUT")),null,scalar);
                         if(Set.of("int","long","short","byte","double","float","boolean").contains(type))v=new Val("VALUE",null,false,false,List.of(),null);
                     }
                     env.values.put(p.getName().toString(),v);env.types.put(p.getName().toString(),type);
@@ -688,7 +692,8 @@ public final class JavaSqlWorker {
             boolean sameType=a.type().equals(b.type());
             return new Val(sameType?a.type():"VALUE",Objects.equals(a.constant(),b.constant())?a.constant():null,
                     a.input()||b.input(),a.unknown()||b.unknown()||!sameType||reference(a)&&!Objects.equals(a.constant(),b.constant()),List.copyOf(trace),
-                    a.sql()!=null&&b.sql()!=null?join(a.sql(),b.sql()):null);
+                    a.sql()!=null&&b.sql()!=null?join(a.sql(),b.sql()):null,
+                    sameType&&a.stringCompatible()&&b.stringCompatible());
         }
         void narrow(Method m,ExpressionTree tree,Env env,boolean truth) {
             if(tree instanceof ParenthesizedTree p){narrow(m,p.getExpression(),env,truth);return;}
@@ -713,7 +718,8 @@ public final class JavaSqlWorker {
             if(expression instanceof TypeCastTree cast) {
                 Val value=eval(m,cast.getExpression(),env,depth);
                 if(Set.of("String","java.lang.String").contains(resolve(m.unit(),cast.getType().toString()))
-                        &&value.type().equals("VALUE")&&value.constant() instanceof String)return value;
+                        &&value.type().equals("VALUE")&&!value.unknown()&&value.stringCompatible())
+                    return value.step(loc(m,cast,"STRING_IDENTITY_CAST"));
                 env.partial=true;return value.uncertain();
             }
             if(expression instanceof AssignmentTree assignment) {
@@ -784,7 +790,9 @@ public final class JavaSqlWorker {
                 Integer size=array.getInitializers()!=null?initial.size():dimensions.size()==1?index(dimensions.get(0)):null;
                 if(size==null||size<0){env.partial=true;limits.add("COLLECTION_SHAPE_UNRESOLVED");return Val.unknownValue();}
                 if(size>64){env.partial=true;limits.add("COLLECTION_STATE_LIMIT");return Val.unknownValue();}
-                Val ref=allocate(env,"ARRAY",Val.literal(null),size,List.of());
+                // Do not model floating/primitive defaults as an Integer or as null.
+                Val fallback=array.getType() instanceof PrimitiveTypeTree?Val.unknownValue():Val.literal(null);
+                Val ref=allocate(env,"ARRAY",fallback,size,List.of());
                 for(int i=0;i<initial.size();i++)store(ref,Val.literal(i),initial.get(i),env,"ARRAY");return ref;
             }
             if(expression instanceof NewClassTree object) {
@@ -874,7 +882,7 @@ public final class JavaSqlWorker {
                 if(a.constant() instanceof Number x && b.constant() instanceof Number y)return Val.literal(number(x,y,x.longValue()+y.longValue()));
                 String text=String.valueOf(a.constant())+b.constant();return text.length()>100_000?Val.unknownValue():Val.literal(text);
             }
-            Val result=join(a,b);return new Val("VALUE",null,result.input(),result.unknown(),result.trace(),null);
+            Val result=join(a,b);return new Val("VALUE",null,result.input(),result.unknown(),result.trace(),null,a.stringCompatible()||b.stringCompatible());
         }
         Val calculate(Tree.Kind op,Val a,Val b) {
             Object x=a.constant(),y=b.constant();
@@ -906,7 +914,7 @@ public final class JavaSqlWorker {
             if(node.getMethodSelect() instanceof MemberSelectTree s) { receiverText=s.getExpression().toString();receiver=eval(m,s.getExpression(),env,depth); }
             var args=new ArrayList<Val>();for(var a:node.getArguments())args.add(eval(m,a,env,depth));
             if(receiver.type().equals("REQUEST")) {
-                if(Set.of("getParameter","getHeader","getQueryString","getPathInfo").contains(method))return new Val("VALUE",null,true,false,List.of(loc(m,node,"REQUEST_INPUT")),null);
+                if(Set.of("getParameter","getHeader","getQueryString","getPathInfo").contains(method))return new Val("VALUE",null,true,false,List.of(loc(m,node,"REQUEST_INPUT")),null,true);
                 if(method.equals("getCookies"))return new Val("COOKIE_ARRAY",null,false,false,List.of(loc(m,node,"REQUEST_COOKIE")),null);
                 String kind=switch(method) {
                     case "getParameterValues" -> args.size()==1?"ARRAY":null;
@@ -917,11 +925,11 @@ public final class JavaSqlWorker {
                 };
                 if(kind!=null) {
                     var trace=List.of(loc(m,node,"REQUEST_INPUT"));
-                    return allocate(env,kind,new Val("VALUE",null,true,false,trace,null),null,trace);
+                    return allocate(env,kind,new Val("VALUE",null,true,false,trace,null,true),null,trace);
                 }
             }
             Val collection=collectionCall(m,node,receiver,method,args,env);if(collection!=null)return collection;
-            if(receiver.type().equals("COOKIE")&&method.equals("getValue"))return new Val("VALUE",null,true,false,receiver.trace(),null).step(loc(m,node,"COOKIE_VALUE"));
+            if(receiver.type().equals("COOKIE")&&method.equals("getValue"))return new Val("VALUE",null,true,false,receiver.trace(),null,true).step(loc(m,node,"COOKIE_VALUE"));
             if(receiver.type().equals("DTO")&&args.isEmpty()&&method.startsWith("get"))return receiver.step(loc(m,node,"REQUEST_BODY_FIELD"));
             if(receiver.type().equals("DATASOURCE")&&method.equals("getConnection"))return Val.object("CONNECTION");
             if(receiver.type().equals("CONNECTION")) {
