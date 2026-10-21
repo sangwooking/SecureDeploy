@@ -1,0 +1,495 @@
+{
+  "schemaVersion": 1,
+  "track": "AI_VIBE_CODED_WEB_HARDENING",
+  "beforeEngine": "c8e3f3551452992d4d2387ec4d9c7d189f96116b",
+  "afterEngine": "62122007586d27d131e8aa08889ce115e269e4c4",
+  "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+  "projects": [
+    {
+      "projectId": "nglguarino--echoverse-11labs",
+      "sourceCommit": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "grade": "C",
+      "before": {
+        "ruleCounts": {
+          "REACT_DANGEROUS_HTML": 1
+        },
+        "structuralCounts": {},
+        "entrypoints": 0,
+        "parsedFiles": 70,
+        "limitedFiles": 0,
+        "exposureStatuses": {},
+        "coverage": {
+          "status": "PARTIAL",
+          "discoveredFiles": 88,
+          "selectedFiles": 72,
+          "unsupportedFiles": 11,
+          "excludedFiles": 5,
+          "failedFiles": 0
+        },
+        "score": 86,
+        "assessment": "REVIEW_REQUIRED",
+        "priorities": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "sca": {
+          "observationCount": 2,
+          "status": "EXTERNAL_LOOKUP_NOT_RUN",
+          "componentCount": 490
+        }
+      },
+      "after": {
+        "ruleCounts": {
+          "REACT_DANGEROUS_HTML": 1
+        },
+        "structuralCounts": {
+          "TS_SENSITIVE_DATA_EXPOSURE": 1
+        },
+        "entrypoints": 4,
+        "parsedFiles": 70,
+        "limitedFiles": 0,
+        "exposureStatuses": {
+          "INTERNAL_DIAGNOSTIC_LOG_ONLY": 1,
+          "SENSITIVE_FLOW_CANDIDATE": 1
+        },
+        "coverage": {
+          "status": "PARTIAL",
+          "discoveredFiles": 88,
+          "selectedFiles": 73,
+          "unsupportedFiles": 10,
+          "excludedFiles": 5,
+          "failedFiles": 0
+        },
+        "score": 86,
+        "assessment": "REVIEW_REQUIRED",
+        "priorities": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "sca": {
+          "componentCount": 490,
+          "observationCount": 2,
+          "status": "EXTERNAL_LOOKUP_NOT_RUN"
+        }
+      },
+      "repeatConsistent": true,
+      "removedSignals": [],
+      "addedSignals": [],
+      "structuralLocationsAfter": [
+        {
+          "ruleId": "TS_SENSITIVE_DATA_EXPOSURE",
+          "priority": "REVIEW_REQUIRED",
+          "location": {
+            "filePath": "supabase/functions/get-secret/index.ts",
+            "line": 30,
+            "column": 12,
+            "kind": "HTTP_RESPONSE"
+          },
+          "trace": [
+            {
+              "filePath": "supabase/functions/get-secret/index.ts",
+              "line": 16,
+              "column": 34,
+              "kind": "REQUEST_BODY"
+            },
+            {
+              "filePath": "supabase/functions/get-secret/index.ts",
+              "line": 16,
+              "column": 11,
+              "kind": "VARIABLE"
+            },
+            {
+              "filePath": "supabase/functions/get-secret/index.ts",
+              "line": 23,
+              "column": 25,
+              "kind": "REQUEST_SELECTED_ENVIRONMENT_VALUE"
+            },
+            {
+              "filePath": "supabase/functions/get-secret/index.ts",
+              "line": 23,
+              "column": 11,
+              "kind": "VARIABLE"
+            },
+            {
+              "filePath": "supabase/functions/get-secret/index.ts",
+              "line": 30,
+              "column": 12,
+              "kind": "HTTP_RESPONSE"
+            }
+          ]
+        }
+      ],
+      "elapsedMsBefore": [
+        459,
+        300
+      ],
+      "elapsedMsAfter": [
+        623,
+        530
+      ],
+      "sampledParentHeapBytesBefore": [
+        71559464,
+        100462160
+      ],
+      "sampledParentHeapBytesAfter": [
+        93955056,
+        63675144
+      ]
+    },
+    {
+      "projectId": "LellaSriHarsha--power-platform-hub",
+      "sourceCommit": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "grade": "C",
+      "before": {
+        "ruleCounts": {
+          "REACT_DANGEROUS_HTML": 1
+        },
+        "structuralCounts": {},
+        "entrypoints": 1,
+        "parsedFiles": 69,
+        "limitedFiles": 0,
+        "exposureStatuses": {},
+        "coverage": {
+          "status": "PARTIAL",
+          "discoveredFiles": 105,
+          "selectedFiles": 71,
+          "unsupportedFiles": 30,
+          "excludedFiles": 4,
+          "failedFiles": 0
+        },
+        "score": 86,
+        "assessment": "REVIEW_REQUIRED",
+        "priorities": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "sca": {
+          "observationCount": 1,
+          "status": "EXTERNAL_LOOKUP_NOT_RUN",
+          "componentCount": 69
+        }
+      },
+      "after": {
+        "ruleCounts": {
+          "REACT_DANGEROUS_HTML": 1
+        },
+        "structuralCounts": {},
+        "entrypoints": 1,
+        "parsedFiles": 69,
+        "limitedFiles": 0,
+        "exposureStatuses": {},
+        "coverage": {
+          "status": "PARTIAL",
+          "discoveredFiles": 105,
+          "selectedFiles": 71,
+          "unsupportedFiles": 30,
+          "excludedFiles": 4,
+          "failedFiles": 0
+        },
+        "score": 86,
+        "assessment": "REVIEW_REQUIRED",
+        "priorities": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "sca": {
+          "componentCount": 69,
+          "observationCount": 1,
+          "status": "EXTERNAL_LOOKUP_NOT_RUN"
+        }
+      },
+      "repeatConsistent": true,
+      "removedSignals": [],
+      "addedSignals": [],
+      "structuralLocationsAfter": [],
+      "elapsedMsBefore": [
+        243,
+        240
+      ],
+      "elapsedMsAfter": [
+        434,
+        419
+      ],
+      "sampledParentHeapBytesBefore": [
+        116190800,
+        129822288
+      ],
+      "sampledParentHeapBytesAfter": [
+        80452360,
+        95132424
+      ]
+    },
+    {
+      "projectId": "TinyikoMamban--workflowai-pro",
+      "sourceCommit": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "grade": "C",
+      "before": {
+        "ruleCounts": {
+          "REACT_DANGEROUS_HTML": 1
+        },
+        "structuralCounts": {},
+        "entrypoints": 1,
+        "parsedFiles": 87,
+        "limitedFiles": 0,
+        "exposureStatuses": {},
+        "coverage": {
+          "status": "PARTIAL",
+          "discoveredFiles": 109,
+          "selectedFiles": 89,
+          "unsupportedFiles": 18,
+          "excludedFiles": 2,
+          "failedFiles": 0
+        },
+        "score": 86,
+        "assessment": "REVIEW_REQUIRED",
+        "priorities": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "sca": {
+          "observationCount": 2,
+          "status": "EXTERNAL_LOOKUP_NOT_RUN",
+          "componentCount": 628
+        }
+      },
+      "after": {
+        "ruleCounts": {
+          "REACT_DANGEROUS_HTML": 1
+        },
+        "structuralCounts": {},
+        "entrypoints": 1,
+        "parsedFiles": 87,
+        "limitedFiles": 0,
+        "exposureStatuses": {},
+        "coverage": {
+          "status": "PARTIAL",
+          "discoveredFiles": 109,
+          "selectedFiles": 90,
+          "unsupportedFiles": 17,
+          "excludedFiles": 2,
+          "failedFiles": 0
+        },
+        "score": 86,
+        "assessment": "REVIEW_REQUIRED",
+        "priorities": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 2,
+          "INFORMATIONAL": 0
+        },
+        "sca": {
+          "componentCount": 628,
+          "observationCount": 2,
+          "status": "EXTERNAL_LOOKUP_NOT_RUN"
+        }
+      },
+      "repeatConsistent": true,
+      "removedSignals": [],
+      "addedSignals": [],
+      "structuralLocationsAfter": [],
+      "elapsedMsBefore": [
+        342,
+        318
+      ],
+      "elapsedMsAfter": [
+        520,
+        505
+      ],
+      "sampledParentHeapBytesBefore": [
+        129222520,
+        118190016
+      ],
+      "sampledParentHeapBytesAfter": [
+        176921224,
+        111379984
+      ]
+    },
+    {
+      "projectId": "Adriano-Digital2024--CopyMonster",
+      "sourceCommit": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "grade": "C",
+      "before": {
+        "ruleCounts": {
+          "UNVALIDATED_REDIRECT": 1,
+          "REACT_DANGEROUS_HTML": 6,
+          "HARDCODED_FRONTEND_SECRET": 5
+        },
+        "structuralCounts": {
+          "COMPOSE_PORT_BINDING": 1
+        },
+        "entrypoints": 0,
+        "parsedFiles": 100,
+        "limitedFiles": 84,
+        "exposureStatuses": {},
+        "coverage": {
+          "status": "PARTIAL",
+          "discoveredFiles": 312,
+          "selectedFiles": 189,
+          "unsupportedFiles": 110,
+          "excludedFiles": 13,
+          "failedFiles": 0
+        },
+        "score": 0,
+        "assessment": "BLOCKED",
+        "priorities": {
+          "BLOCKING": 5,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 8,
+          "INFORMATIONAL": 0
+        },
+        "sca": {
+          "observationCount": 2,
+          "status": "EXTERNAL_LOOKUP_NOT_RUN",
+          "componentCount": 555
+        }
+      },
+      "after": {
+        "ruleCounts": {
+          "REACT_DANGEROUS_HTML": 6
+        },
+        "structuralCounts": {
+          "COMPOSE_PORT_BINDING": 1
+        },
+        "entrypoints": 0,
+        "parsedFiles": 100,
+        "limitedFiles": 84,
+        "exposureStatuses": {},
+        "coverage": {
+          "status": "PARTIAL",
+          "discoveredFiles": 312,
+          "selectedFiles": 190,
+          "unsupportedFiles": 109,
+          "excludedFiles": 13,
+          "failedFiles": 0
+        },
+        "score": 16,
+        "assessment": "REVIEW_REQUIRED",
+        "priorities": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 7,
+          "INFORMATIONAL": 0
+        },
+        "sca": {
+          "componentCount": 555,
+          "observationCount": 2,
+          "status": "EXTERNAL_LOOKUP_NOT_RUN"
+        }
+      },
+      "repeatConsistent": true,
+      "removedSignals": [
+        {
+          "ruleId": "HARDCODED_FRONTEND_SECRET",
+          "filePath": "src/i18n/config.ts",
+          "line": 1088
+        },
+        {
+          "ruleId": "HARDCODED_FRONTEND_SECRET",
+          "filePath": "src/i18n/config.ts",
+          "line": 2325
+        },
+        {
+          "ruleId": "HARDCODED_FRONTEND_SECRET",
+          "filePath": "src/i18n/config.ts",
+          "line": 2388
+        },
+        {
+          "ruleId": "HARDCODED_FRONTEND_SECRET",
+          "filePath": "src/i18n/config.ts",
+          "line": 3625
+        },
+        {
+          "ruleId": "HARDCODED_FRONTEND_SECRET",
+          "filePath": "src/i18n/config.ts",
+          "line": 3688
+        },
+        {
+          "ruleId": "UNVALIDATED_REDIRECT",
+          "filePath": "supabase/functions/meta-oauth/index.ts",
+          "line": 23
+        }
+      ],
+      "addedSignals": [],
+      "structuralLocationsAfter": [
+        {
+          "ruleId": "COMPOSE_PORT_BINDING",
+          "priority": "REVIEW_REQUIRED",
+          "location": {
+            "filePath": "docker-compose.yml",
+            "line": 14,
+            "column": null,
+            "kind": null
+          },
+          "trace": []
+        }
+      ],
+      "elapsedMsBefore": [
+        531,
+        509
+      ],
+      "elapsedMsAfter": [
+        583,
+        573
+      ],
+      "sampledParentHeapBytesBefore": [
+        92546256,
+        67208992
+      ],
+      "sampledParentHeapBytesAfter": [
+        166430288,
+        83313984
+      ]
+    }
+  ],
+  "failurePacks": [
+    {
+      "caseId": "copymonster-localization-secrets",
+      "projectId": "Adriano-Digital2024--CopyMonster",
+      "originalOutcome": "FP",
+      "targetWarningsBefore": 5,
+      "targetWarningsAfter": 0,
+      "status": "NEGATIVE_PROOF_REMOVED",
+      "evidencePolicy": "Original reviewed path condition only; not whole-application safety",
+      "beforeEngine": "c8e3f3551452992d4d2387ec4d9c7d189f96116b",
+      "afterEngine": "62122007586d27d131e8aa08889ce115e269e4c4"
+    },
+    {
+      "caseId": "copymonster-configured-redirect",
+      "projectId": "Adriano-Digital2024--CopyMonster",
+      "originalOutcome": "FP",
+      "targetWarningsBefore": 1,
+      "targetWarningsAfter": 0,
+      "status": "NEGATIVE_PROOF_REMOVED",
+      "evidencePolicy": "Original reviewed path condition only; not whole-application safety",
+      "beforeEngine": "c8e3f3551452992d4d2387ec4d9c7d189f96116b",
+      "afterEngine": "62122007586d27d131e8aa08889ce115e269e4c4"
+    },
+    {
+      "caseId": "copymonster-static-terms",
+      "projectId": "Adriano-Digital2024--CopyMonster",
+      "originalOutcome": "FP",
+      "targetWarningsBefore": 1,
+      "targetWarningsAfter": 1,
+      "status": "UNRESOLVED",
+      "evidencePolicy": "Original reviewed path condition only; not whole-application safety",
+      "beforeEngine": "c8e3f3551452992d4d2387ec4d9c7d189f96116b",
+      "afterEngine": "62122007586d27d131e8aa08889ce115e269e4c4"
+    }
+  ],
+  "truthPolicy": "Grade C projects; static candidates are not confirmed exploits or TP labels",
+  "independence": "Observed development/regression material; same curator; no blind evaluation",
+  "omissions": "Original intake and credential-shaped-file omissions unchanged",
+  "externalLookups": "NOT_RUN",
+  "userDatabase": "NOT_USED",
+  "resourceNote": "Parent heap samples are not peak worker RSS; server flow budgets unchanged"
+}
