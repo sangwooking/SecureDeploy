@@ -11,7 +11,7 @@ import javax.xml.stream.*;
 
 /** Trusted JDK-only worker. Target text is parsed, never attributed, compiled or loaded. */
 public final class JavaSqlWorker {
-    public static final String VERSION = "java-sql-v3";
+    public static final String VERSION = "java-sql-v4";
     public record Source(String path, String content) { }
     public record Location(String filePath, int line, int column, String functionName, String kind) { }
     public record FileResult(String filePath, String parseStatus, int entrypoints, int functions,
@@ -136,9 +136,20 @@ public final class JavaSqlWorker {
         final Map<String,String> types = new HashMap<>();
         final Map<String,Integer> bindings = new HashMap<>();
         final Map<String,Val> batches = new HashMap<>();
+        final Map<Integer,Cells> heap = new LinkedHashMap<>();
         boolean guardUnknown, partial;
-        Env copy() { var e = new Env(); e.values.putAll(values); e.types.putAll(types); e.bindings.putAll(bindings);e.batches.putAll(batches); e.guardUnknown=guardUnknown; e.partial=partial; return e; }
-        void take(Env e) { values.clear(); values.putAll(e.values); types.clear(); types.putAll(e.types); bindings.clear();bindings.putAll(e.bindings);batches.clear();batches.putAll(e.batches);guardUnknown=e.guardUnknown; partial=e.partial; }
+        void copyHeap(Env source) { heap.clear();source.heap.forEach((id,c)->heap.put(id,c.copy())); }
+        Env copy() { var e = new Env(); e.values.putAll(values); e.types.putAll(types); e.bindings.putAll(bindings);e.batches.putAll(batches);e.copyHeap(this); e.guardUnknown=guardUnknown; e.partial=partial; return e; }
+        void take(Env e) { values.clear(); values.putAll(e.values); types.clear(); types.putAll(e.types); bindings.clear();bindings.putAll(e.bindings);batches.clear();batches.putAll(e.batches);copyHeap(e);guardUnknown=e.guardUnknown; partial=e.partial; }
+    }
+    private static final class Cells {
+        final String kind;
+        final Map<Object,Val> slots = new LinkedHashMap<>();
+        Val fallback;
+        Integer size;
+        boolean uncertain;
+        Cells(String kind,Val fallback,Integer size) {this.kind=kind;this.fallback=fallback;this.size=size;}
+        Cells copy() {var c=new Cells(kind,fallback,size);c.slots.putAll(slots);c.uncertain=uncertain;return c;}
     }
     private record Flow(boolean stopped, Val value) { static Flow next() { return new Flow(false, Val.unknownValue()); } }
     private static final class Budget extends RuntimeException { }
@@ -159,7 +170,7 @@ public final class JavaSqlWorker {
         final LinkedHashMap<String,Use> uses = new LinkedHashMap<>();
         final Set<String> limits = new LinkedHashSet<>();
         final Map<MethodResult,Boolean> safeStatements = new LinkedHashMap<>();
-        int nodes, steps, entrypoints;
+        int nodes, steps, entrypoints, collections;
         long deadline = System.nanoTime() + 5_000_000_000L;
         Engine(List<Source> sources,List<Source> xmlSources) { this.sources = sources;this.xmlSources=xmlSources; }
         void tick() { if (++steps > 30000 || System.nanoTime() > deadline) throw new Budget(); }
@@ -518,11 +529,13 @@ public final class JavaSqlWorker {
             if (u.localTypes().contains(clean)) return (u.tree().getPackageName()==null?"":u.tree().getPackageName()+".")+clean;
             if(u.imports().containsKey(clean))return u.imports().get(clean);
             var known=Set.of("Connection","Statement","PreparedStatement","CallableStatement","HttpServlet","HttpServletRequest","Cookie",
-                    "RestController","RequestMapping","GetMapping","PostMapping","PutMapping","DeleteMapping","PatchMapping","RequestParam","RequestBody","PathVariable");
+                    "RestController","RequestMapping","GetMapping","PostMapping","PutMapping","DeleteMapping","PatchMapping","RequestParam","RequestBody","PathVariable",
+                    "HashMap","LinkedHashMap","ArrayList","LinkedList");
             if(known.contains(clean)) {
                 var choices=u.imports().values().stream().filter(v->v.endsWith(".*")).map(v->v.substring(0,v.length()-1)+clean)
                         .filter(v->v.startsWith("org.springframework.web.bind.annotation.")&&clean.matches("RestController|.*Mapping|RequestParam|RequestBody|PathVariable")
                                 ||v.startsWith("java.sql.")&&clean.matches("Connection|Statement|PreparedStatement|CallableStatement")
+                                ||v.startsWith("java.util.")&&clean.matches("HashMap|LinkedHashMap|ArrayList|LinkedList")
                                 ||v.matches("(?:javax|jakarta)\\.servlet\\.http\\.(HttpServlet|HttpServletRequest|Cookie)")).toList();
                 if(choices.size()==1)return choices.get(0);
             }
@@ -621,11 +634,14 @@ public final class JavaSqlWorker {
                 Val iterable=eval(m,loop.getExpression(),env,depth);var iteration=env.copy();
                 iteration.values.put(loop.getVariable().getName().toString(),iterable.type().equals("COOKIE_ARRAY")?new Val("COOKIE",null,false,false,iterable.trace(),null):Val.unknownValue());
                 stmt(m,loop.getStatement(),iteration,depth);merge(env,env.copy(),iteration);
+                // A single symbolic iteration cannot prove final mutable collection state.
+                if(!env.heap.isEmpty()){env.heap.values().forEach(c->c.uncertain=true);env.partial=true;}
                 if(!iterable.type().equals("COOKIE_ARRAY"))env.partial=true;return Flow.next();
             }
             if (node instanceof EmptyStatementTree || node instanceof BreakTree) return Flow.next();
             env.partial=true;
             // Unsupported control flow cannot leave existing locals trusted afterwards.
+            env.heap.values().forEach(c->c.uncertain=true);
             env.values.replaceAll((k,v)->v.uncertain());return Flow.next();
         }
         void restoreScope(Env env,Set<String> before,Map<String,Val> shadow) { env.values.keySet().removeIf(k->!before.contains(k));env.values.putAll(shadow); }
@@ -636,6 +652,27 @@ public final class JavaSqlWorker {
             target.bindings.clear();a.bindings.forEach((k,v)->target.bindings.put(k,Math.min(v,b.bindings.getOrDefault(k,0))));
             target.batches.clear();var batchKeys=new HashSet<>(a.batches.keySet());batchKeys.addAll(b.batches.keySet());
             for(String key:batchKeys)target.batches.put(key,join(a.batches.getOrDefault(key,Val.unknownValue()),b.batches.getOrDefault(key,Val.unknownValue())));
+            target.heap.clear();var ids=new LinkedHashSet<>(a.heap.keySet());ids.addAll(b.heap.keySet());
+            for(int id:ids) {
+                if(target.heap.size()>=128){limits.add("COLLECTION_STATE_LIMIT");target.partial=true;target.heap.values().forEach(c->c.uncertain=true);break;}
+                Cells left=a.heap.get(id),right=b.heap.get(id);
+                if(left==null||right==null) {
+                    var c=(left==null?right:left).copy();c.uncertain=true;target.heap.put(id,c);continue;
+                }
+                var c=new Cells(left.kind,join(left.fallback,right.fallback),Objects.equals(left.size,right.size)?left.size:null);
+                c.uncertain=left.uncertain||right.uncertain||!left.kind.equals(right.kind);
+                var slots=new LinkedHashSet<>(left.slots.keySet());slots.addAll(right.slots.keySet());
+                if(slots.size()>64){c.uncertain=true;limits.add("COLLECTION_STATE_LIMIT");target.partial=true;}
+                else for(Object slot:slots)c.slots.put(slot,join(left.slots.getOrDefault(slot,left.fallback),right.slots.getOrDefault(slot,right.fallback)));
+                if(target.heap.values().stream().mapToInt(x->x.slots.size()).sum()+c.slots.size()>2048) {
+                    c.slots.clear();c.uncertain=true;limits.add("COLLECTION_STATE_LIMIT");target.partial=true;
+                }
+                target.heap.put(id,c);
+            }
+            if(target.heap.values().stream().mapToInt(c->c.slots.size()).sum()>2048) {
+                target.heap.values().forEach(c->{c.slots.clear();c.uncertain=true;});
+                limits.add("COLLECTION_STATE_LIMIT");target.partial=true;
+            }
         }
         void proof(Method m,Tree node,boolean safe) {
             String text=m.unit().source().content();long begin=m.unit().positions().getStartPosition(m.unit().tree(),node),end=m.unit().positions().getEndPosition(m.unit().tree(),node);
@@ -650,7 +687,7 @@ public final class JavaSqlWorker {
             var trace=new ArrayList<Location>(a.trace());for(var l:b.trace())if(!trace.contains(l)&&trace.size()<20)trace.add(l);
             boolean sameType=a.type().equals(b.type());
             return new Val(sameType?a.type():"VALUE",Objects.equals(a.constant(),b.constant())?a.constant():null,
-                    a.input()||b.input(),a.unknown()||b.unknown()||!sameType,List.copyOf(trace),
+                    a.input()||b.input(),a.unknown()||b.unknown()||!sameType||reference(a)&&!Objects.equals(a.constant(),b.constant()),List.copyOf(trace),
                     a.sql()!=null&&b.sql()!=null?join(a.sql(),b.sql()):null);
         }
         void narrow(Method m,ExpressionTree tree,Env env,boolean truth) {
@@ -675,10 +712,19 @@ public final class JavaSqlWorker {
             if(expression instanceof ParenthesizedTree p)return eval(m,p.getExpression(),env,depth);
             if(expression instanceof TypeCastTree cast) {
                 Val value=eval(m,cast.getExpression(),env,depth);
+                if(Set.of("String","java.lang.String").contains(resolve(m.unit(),cast.getType().toString()))
+                        &&value.type().equals("VALUE")&&value.constant() instanceof String)return value;
                 env.partial=true;return value.uncertain();
             }
             if(expression instanceof AssignmentTree assignment) {
-                if(!(assignment.getVariable() instanceof IdentifierTree id)){env.partial=true;return eval(m,assignment.getExpression(),env,depth).uncertain();}
+                if(assignment.getVariable() instanceof ArrayAccessTree slot) {
+                    Val base=eval(m,slot.getExpression(),env,depth),index=eval(m,slot.getIndex(),env,depth);
+                    Val value=eval(m,assignment.getExpression(),env,depth).step(loc(m,assignment,"COLLECTION_WRITE"));
+                    store(base,index,value,env,"ARRAY");return value;
+                }
+                if(!(assignment.getVariable() instanceof IdentifierTree id)) {
+                    Val value=eval(m,assignment.getExpression(),env,depth);invalidate(value,env,new HashSet<>());env.partial=true;return value.uncertain();
+                }
                 Val value=eval(m,assignment.getExpression(),env,depth).step(loc(m,assignment,"ASSIGNMENT"));env.values.put(id.getName().toString(),value);return value;
             }
             if(expression instanceof CompoundAssignmentTree assignment && assignment.getVariable() instanceof IdentifierTree id) {
@@ -686,6 +732,12 @@ public final class JavaSqlWorker {
                 Val right=eval(m,assignment.getExpression(),env,depth);
                 Val result=assignment.getKind()==Tree.Kind.PLUS_ASSIGNMENT?plus(left,right):join(left,right).uncertain();
                 env.values.put(id.getName().toString(),result.step(loc(m,assignment,"SQL_CONSTRUCTION")));return result;
+            }
+            if(expression instanceof CompoundAssignmentTree assignment && assignment.getVariable() instanceof ArrayAccessTree slot) {
+                Val base=eval(m,slot.getExpression(),env,depth),index=eval(m,slot.getIndex(),env,depth);
+                Val left=select(base,index,env,"ARRAY"),right=eval(m,assignment.getExpression(),env,depth);
+                Val value=assignment.getKind()==Tree.Kind.PLUS_ASSIGNMENT?plus(left,right):join(left,right).uncertain();
+                store(base,index,value,env,"ARRAY");return value;
             }
             if(expression instanceof BinaryTree binary) {
                 Val left=eval(m,binary.getLeftOperand(),env,depth);
@@ -705,6 +757,10 @@ public final class JavaSqlWorker {
                 var a=env.copy();var b=env.copy();Val yes=eval(m,ternary.getTrueExpression(),a,depth),no=eval(m,ternary.getFalseExpression(),b,depth);merge(env,a,b);return join(yes,no);
             }
             if(expression instanceof UnaryTree unary) {
+                if(unary.getExpression() instanceof ArrayAccessTree slot&&Set.of(Tree.Kind.PREFIX_INCREMENT,Tree.Kind.POSTFIX_INCREMENT,Tree.Kind.PREFIX_DECREMENT,Tree.Kind.POSTFIX_DECREMENT).contains(unary.getKind())) {
+                    Val base=eval(m,slot.getExpression(),env,depth),index=eval(m,slot.getIndex(),env,depth);
+                    Val value=select(base,index,env,"ARRAY").uncertain();store(base,index,value,env,"ARRAY");env.partial=true;return value;
+                }
                 Val v=eval(m,unary.getExpression(),env,depth);
                 if(unary.getKind()==Tree.Kind.LOGICAL_COMPLEMENT && v.constant() instanceof Boolean b)return Val.literal(!b);
                 if(unary.getKind()==Tree.Kind.UNARY_MINUS && v.constant() instanceof Number n)return Val.literal(n instanceof Long?-n.longValue():(int)-n.intValue());
@@ -718,13 +774,102 @@ public final class JavaSqlWorker {
                 return Val.unknownValue();
             }
             if(expression instanceof MethodInvocationTree invocation)return invoke(m,invocation,env,depth);
-            if(expression instanceof NewArrayTree array) {
-                Val result=Val.literal(null);if(array.getInitializers()!=null)for(var e:array.getInitializers())result=join(result,eval(m,e,env,depth));return result;
+            if(expression instanceof ArrayAccessTree slot) {
+                Val base=eval(m,slot.getExpression(),env,depth),index=eval(m,slot.getIndex(),env,depth);
+                return select(base,index,env,"ARRAY").step(loc(m,slot,"COLLECTION_READ"));
             }
-            if(expression instanceof NewClassTree object) { for(var a:object.getArguments())eval(m,a,env,depth);env.partial=true;return Val.unknownValue(); }
-            env.partial=true;return Val.unknownValue();
+            if(expression instanceof NewArrayTree array) {
+                var dimensions=new ArrayList<Val>();for(var e:array.getDimensions())dimensions.add(eval(m,e,env,depth));
+                var initial=new ArrayList<Val>();if(array.getInitializers()!=null)for(var e:array.getInitializers())initial.add(eval(m,e,env,depth));
+                Integer size=array.getInitializers()!=null?initial.size():dimensions.size()==1?index(dimensions.get(0)):null;
+                if(size==null||size<0){env.partial=true;limits.add("COLLECTION_SHAPE_UNRESOLVED");return Val.unknownValue();}
+                if(size>64){env.partial=true;limits.add("COLLECTION_STATE_LIMIT");return Val.unknownValue();}
+                Val ref=allocate(env,"ARRAY",Val.literal(null),size,List.of());
+                for(int i=0;i<initial.size();i++)store(ref,Val.literal(i),initial.get(i),env,"ARRAY");return ref;
+            }
+            if(expression instanceof NewClassTree object) {
+                var args=new ArrayList<Val>();for(var a:object.getArguments())args.add(eval(m,a,env,depth));
+                String type=resolve(m.unit(),object.getIdentifier().toString());
+                if(object.getClassBody()==null&&args.isEmpty()) {
+                    if(Set.of("java.util.HashMap","java.util.LinkedHashMap").contains(type))return allocate(env,"MAP",Val.literal(null),0,List.of());
+                    if(Set.of("java.util.ArrayList","java.util.LinkedList").contains(type))return allocate(env,"LIST",Val.unknownValue(),0,List.of());
+                }
+                for(var arg:args)invalidate(arg,env,new HashSet<>());
+                env.partial=true;return Val.unknownValue();
+            }
+            env.heap.values().forEach(c->c.uncertain=true);env.partial=true;return Val.unknownValue();
+        }
+        boolean reference(Val v) { return v.type().equals("COLLECTION"); }
+        Cells cells(Val v,Env env) {return reference(v)&&!v.unknown()&&v.constant() instanceof Integer id?env.heap.get(id):null;}
+        Integer index(Val v) {return v.type().equals("VALUE")&&!v.input()&&!v.unknown()&&v.constant() instanceof Integer i?i:null;}
+        Object slot(Val key,String kind) {
+            if(!key.type().equals("VALUE")||key.input()||key.unknown())return null;
+            if(Set.of("ARRAY","LIST").contains(kind))return index(key);
+            Object k=key.constant();return k instanceof String s&&s.length()<=256||k instanceof Integer||k instanceof Long||k instanceof Boolean?k:null;
+        }
+        Val allocate(Env env,String kind,Val fallback,Integer size,List<Location> trace) {
+            if(env.heap.size()>=128||++collections>1024){limits.add("COLLECTION_STATE_LIMIT");env.partial=true;return Val.unknownValue();}
+            int id=collections;env.heap.put(id,new Cells(kind,fallback,size));return new Val("COLLECTION",id,false,false,trace,null);
+        }
+        Val select(Val ref,Val key,Env env,String kind) {
+            Cells c=cells(ref,env);if(c==null||!c.kind.equals(kind))return Val.unknownValue();
+            Object slot=slot(key,kind);
+            if(slot==null||c.uncertain)return Val.unknownValue();
+            if(Set.of("ARRAY","LIST").contains(kind)&&((Integer)slot<0||c.size!=null&&(Integer)slot>=c.size))return Val.unknownValue();
+            return c.slots.getOrDefault(slot,c.fallback);
+        }
+        void store(Val ref,Val key,Val value,Env env,String kind) {
+            Cells c=cells(ref,env);Object slot=slot(key,kind);
+            if(c==null||!c.kind.equals(kind)){invalidate(ref,env,new HashSet<>());env.partial=true;return;}
+            if(slot==null||Set.of("ARRAY","LIST").contains(kind)&&((Integer)slot<0||c.size==null||(Integer)slot>=c.size)) {
+                c.uncertain=true;env.partial=true;return;
+            }
+            if(!c.slots.containsKey(slot)&&c.slots.size()>=64||env.heap.values().stream().mapToInt(x->x.slots.size()).sum()>=2048) {
+                c.uncertain=true;env.partial=true;limits.add("COLLECTION_STATE_LIMIT");return;
+            }
+            c.slots.put(slot,value);
+        }
+        void invalidate(Val value,Env env,Set<Integer> visited) {
+            if(!reference(value))return;
+            if(!(value.constant() instanceof Integer id)) {
+                env.heap.values().forEach(c->c.uncertain=true);env.partial=true;return;
+            }
+            Cells c=env.heap.get(id);if(c==null||!visited.add(id))return;
+            c.uncertain=true;env.partial=true;
+            invalidate(c.fallback,env,visited);for(var v:c.slots.values())invalidate(v,env,visited);
+        }
+        Val collectionCall(Method m,MethodInvocationTree node,Val ref,String method,List<Val> args,Env env) {
+            Cells c=cells(ref,env);if(c==null)return null;
+            if(c.kind.equals("ENUM")&&args.isEmpty()) {
+                if(method.equals("hasMoreElements"))return Val.unknownValue();
+                if(method.equals("nextElement"))return c.uncertain?Val.unknownValue():c.fallback.step(loc(m,node,"COLLECTION_READ"));
+            }
+            if(c.kind.equals("REQUEST_MAP")&&method.equals("get")&&args.size()==1) {
+                Object key=slot(args.get(0),"MAP");
+                if(c.uncertain)return Val.unknownValue();
+                if(key==null)return allocate(env,"ARRAY",c.fallback,null,c.fallback.trace());
+                if(!c.slots.containsKey(key)) {
+                    if(c.slots.size()>=64){limits.add("COLLECTION_STATE_LIMIT");c.uncertain=true;env.partial=true;return Val.unknownValue();}
+                    c.slots.put(key,allocate(env,"ARRAY",c.fallback,null,c.fallback.trace()));
+                }
+                return c.slots.get(key).step(loc(m,node,"COLLECTION_READ"));
+            }
+            if(Set.of("MAP","LIST").contains(c.kind)&&method.equals("get")&&args.size()==1)
+                return select(ref,args.get(0),env,c.kind).step(loc(m,node,"COLLECTION_READ"));
+            if((c.kind.equals("MAP")&&method.equals("put")||c.kind.equals("LIST")&&method.equals("set"))&&args.size()==2) {
+                Val previous=select(ref,args.get(0),env,c.kind);
+                store(ref,args.get(0),args.get(1).step(loc(m,node,"COLLECTION_WRITE")),env,c.kind);return previous;
+            }
+            if(c.kind.equals("LIST")&&method.equals("add")&&args.size()==1) {
+                if(c.size==null||c.size>=64){c.uncertain=true;env.partial=true;limits.add("COLLECTION_STATE_LIMIT");return Val.unknownValue();}
+                int i=c.size++;store(ref,Val.literal(i),args.get(0).step(loc(m,node,"COLLECTION_WRITE")),env,"LIST");return Val.literal(true);
+            }
+            // Size checks do not constrain request values or prove a particular branch.
+            if(method.equals("isEmpty")&&args.isEmpty())return Val.unknownValue();
+            return null;
         }
         Val plus(Val a,Val b) {
+            if(reference(a)||reference(b))return Val.unknownValue();
             if(!a.input()&&!b.input()&&!a.unknown()&&!b.unknown()&&a.constant()!=null&&b.constant()!=null) {
                 if(a.constant() instanceof Number x && b.constant() instanceof Number y)return Val.literal(number(x,y,x.longValue()+y.longValue()));
                 String text=String.valueOf(a.constant())+b.constant();return text.length()>100_000?Val.unknownValue():Val.literal(text);
@@ -763,7 +908,19 @@ public final class JavaSqlWorker {
             if(receiver.type().equals("REQUEST")) {
                 if(Set.of("getParameter","getHeader","getQueryString","getPathInfo").contains(method))return new Val("VALUE",null,true,false,List.of(loc(m,node,"REQUEST_INPUT")),null);
                 if(method.equals("getCookies"))return new Val("COOKIE_ARRAY",null,false,false,List.of(loc(m,node,"REQUEST_COOKIE")),null);
+                String kind=switch(method) {
+                    case "getParameterValues" -> args.size()==1?"ARRAY":null;
+                    case "getParameterMap" -> args.isEmpty()?"REQUEST_MAP":null;
+                    case "getHeaders" -> args.size()==1?"ENUM":null;
+                    case "getParameterNames" -> args.isEmpty()?"ENUM":null;
+                    default -> null;
+                };
+                if(kind!=null) {
+                    var trace=List.of(loc(m,node,"REQUEST_INPUT"));
+                    return allocate(env,kind,new Val("VALUE",null,true,false,trace,null),null,trace);
+                }
             }
+            Val collection=collectionCall(m,node,receiver,method,args,env);if(collection!=null)return collection;
             if(receiver.type().equals("COOKIE")&&method.equals("getValue"))return new Val("VALUE",null,true,false,receiver.trace(),null).step(loc(m,node,"COOKIE_VALUE"));
             if(receiver.type().equals("DTO")&&args.isEmpty()&&method.startsWith("get"))return receiver.step(loc(m,node,"REQUEST_BODY_FIELD"));
             if(receiver.type().equals("DATASOURCE")&&method.equals("getConnection"))return Val.object("CONNECTION");
@@ -801,7 +958,8 @@ public final class JavaSqlWorker {
             if(owner.equals("java.net.URLDecoder")&&method.equals("decode")&&!args.isEmpty())return args.get(0).step(loc(m,node,"URL_DECODE"));
             if(Set.of("Integer","Long","java.lang.Integer","java.lang.Long").contains(owner)&&Set.of("parseInt","parseLong").contains(method)
                     &&!m.unit().localTypes().contains(owner)&&!env.values.containsKey(receiverText))return new Val("VALUE",null,false,false,List.of(),null);
-            if(method.equals("equals")&&args.size()==1 && receiver.constant()!=null&&args.get(0).constant()!=null)return Val.literal(Objects.equals(receiver.constant(),args.get(0).constant()));
+            if(method.equals("equals")&&args.size()==1 && receiver.type().equals("VALUE")&&args.get(0).type().equals("VALUE")
+                    &&receiver.constant()!=null&&args.get(0).constant()!=null)return Val.literal(Objects.equals(receiver.constant(),args.get(0).constant()));
             boolean localReceiver=receiverText.isEmpty()||receiverText.equals("this");
             TypeInfo bean=receiver.type().startsWith("BEAN:")?types.get(receiver.type().substring(5)):null;
             List<Method> targets=methods.stream().filter(t->!ambiguousTypes.contains(qualified(t))&&t.tree().getName().contentEquals(method)&&t.tree().getParameters().size()==args.size()
@@ -810,9 +968,11 @@ public final class JavaSqlWorker {
                     || t.tree().getModifiers().getFlags().contains(javax.lang.model.element.Modifier.STATIC)
                        && (qualified(t).equals(owner)||qualified(t).equals((m.unit().tree().getPackageName()==null?"":m.unit().tree().getPackageName()+".")+owner)))).toList();
             TypeInfo accessType=bean!=null?bean:localReceiver?types.get(qualified(m)):null;
-            if(targets.isEmpty()&&accessType!=null&&declaredAccess(m,node,accessType,args,env)){env.partial=true;return Val.unknownValue();}
+            if(targets.isEmpty()&&accessType!=null&&declaredAccess(m,node,accessType,args,env)) {
+                for(var arg:args)invalidate(arg,env,new HashSet<>());env.partial=true;return Val.unknownValue();
+            }
             if(targets.size()==1&&depth<3) {
-                Method target=targets.get(0);var child=new Env();
+                Method target=targets.get(0);var child=new Env();child.copyHeap(env);
                 initialize(target,child);
                 for(int i=0;i<args.size();i++) {
                     var parameter=target.tree().getParameters().get(i);String parameterName=parameter.getName().toString();
@@ -820,8 +980,9 @@ public final class JavaSqlWorker {
                     child.values.put(parameterName,args.get(i).step(loc(m,node,"FUNCTION_ARGUMENT")));
                 }
                 if(target.owner()!=m.owner())access("APPLICATION","RESOLVED_CALL",method,loc(m,node,"APPLICATION_CALL"),loc(target,target.tree(),"METHOD_DECLARATION"),args.stream().flatMap(v->v.trace().stream()).distinct().limit(20).toList(),List.of("BOUNDED_SOURCE_TYPE_RESOLUTION"));
-                Flow result=call(target,child,depth+1);env.partial|=child.partial;return result.stopped()?result.value().step(loc(m,node,"METHOD_RETURN")):Val.unknownValue();
+                Flow result=call(target,child,depth+1);env.copyHeap(child);env.partial|=child.partial;return result.stopped()?result.value().step(loc(m,node,"METHOD_RETURN")):Val.unknownValue();
             }
+            invalidate(receiver,env,new HashSet<>());for(var arg:args)invalidate(arg,env,new HashSet<>());
             if(args.stream().anyMatch(Val::input)&&!receiverText.equals("System.out")&&!receiverText.equals("System.err"))
                 access("APPLICATION","UNKNOWN",method,loc(m,node,"APPLICATION_CALL"),null,args.stream().flatMap(v->v.trace().stream()).distinct().limit(20).toList(),List.of(targets.size()>1?"AMBIGUOUS_OVERLOAD_OR_TARGET":depth>=3?"CALL_DEPTH_LIMIT":"RECEIVER_OR_IMPLEMENTATION_NOT_VERIFIED"));
             if(args.stream().anyMatch(v->v.input()||Set.of("PREPARED","STATEMENT","CONNECTION").contains(v.type()))

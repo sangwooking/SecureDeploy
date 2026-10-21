@@ -14,7 +14,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       const javaSource={...javaLocation,line:7,kind:'REQUEST_INPUT'};
       result.serverAnalysis.javaAnalysis={analysis:{version:process.env.JAVA_ANALYZER_VERSION||'java-sql-v1',status:'PARTIAL',
         files:[{filePath:javaLocation.filePath,parseStatus:'PARSED',entrypoints:1,functions:1,sqlCallSites:2,tracedCallSites:1,limitations:['SQL_CALLS_OUTSIDE_TRACED_FLOW']}],
-        methods:[],dataAccess:[{framework:'MYBATIS',status:'DECLARED_VALUE_BINDING',operation:'lookup',location:javaLocation,declaration:{...javaLocation,filePath:'mapper/Queries.xml',line:3},trace:[javaSource],limitations:['FRAMEWORK_PROXY_RUNTIME_NOT_VERIFIED']},{framework:'MYBATIS_PLUS',status:'UNKNOWN',operation:'update',location:javaLocation,trace:[],limitations:[]}],uses:[{kind:'INPUT_IN_QUERY',api:'executeQuery',location:javaLocation,trace:[javaSource],bindingCalls:0,limitations:[]}],limitations:['BOUNDED_SPRING_AND_SERVLET_ONLY']},
+        methods:[],dataAccess:[{framework:'MYBATIS',status:'DECLARED_VALUE_BINDING',operation:'lookup',location:javaLocation,declaration:{...javaLocation,filePath:'mapper/Queries.xml',line:3},trace:[javaSource],limitations:['FRAMEWORK_PROXY_RUNTIME_NOT_VERIFIED']},{framework:'MYBATIS_PLUS',status:'UNKNOWN',operation:'update',location:javaLocation,trace:[],limitations:[]}],uses:[{kind:'INPUT_IN_QUERY',api:'executeQuery',location:javaLocation,trace:[javaSource],bindingCalls:0,limitations:[]}],limitations:['BOUNDED_SPRING_AND_SERVLET_ONLY','COLLECTION_STATE_LIMIT']},
         suppressedLegacyCount:1,legacyEvidence:[],findings:[{findingId:'java-sql:synthetic-only',ruleId:'JAVA_SQL_INPUT_FLOW',priority:'REVIEW_REQUIRED',comparisonPolicy:'NOT_COMPARED',
           location:javaLocation,trace:[javaSource],title:'사용자가 보낸 값이 SQL 명령문에 들어갈 수 있습니다',explanation:'요청 입력이 SQL 실행까지 전달되는 정적 경로이며 실제 공격은 미확인입니다.',
           recommendation:'SQL 문법을 고정하고 PreparedStatement의 set 메서드로 값을 분리하세요.',verificationSteps:['로컬 Mock으로 값 바인딩을 확인하고 재검사하세요.']}]};
@@ -92,7 +92,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
         assert.ok((await java.innerText()).includes(phrase),phrase);
       }
       await java.getByText('Java 검사 범위와 SQL 호출 근거',{exact:true}).click();
-      for(const phrase of ['SQL 호출 구문 2 / 추적 1','기존 정상 패턴 신호 제외 1건','전체 Java 코드가 안전하다는 뜻이 아닙니다'])
+      for(const phrase of ['SQL 호출 구문 2 / 추적 1','기존 정상 패턴 신호 제외 1건','전체 Java 코드가 안전하다는 뜻이 아닙니다','컬렉션의 객체 수·값 추적 한도','동적 키·복잡한 반복문'])
         assert.ok((await java.innerText()).includes(phrase),phrase);
       await java.getByText('클래스 간 전달과 저장소 선언 근거 (2)',{exact:true}).click();
       for(const phrase of ['정적 SQL 선언과 값 바인딩 확인','호출·SQL 구성 미확인','mapper/Queries.xml:3','안전이나 취약점 확정이 아닙니다'])assert.ok((await java.innerText()).includes(phrase),phrase);

@@ -35,7 +35,9 @@ export function JavaSqlAnalysisSection({ snapshot, compact = false }: { snapshot
       </article>)}
       <details className="technical-details"><summary>Java 검사 범위와 SQL 호출 근거</summary>
         <p>{a.version} · 기존 정상 패턴 신호 제외 {snapshot.suppressedLegacyCount}건</p>
+        {a.limitations.includes('COLLECTION_STATE_LIMIT') && <p className="review-caution">컬렉션의 객체 수·값 추적 한도에 도달해 일부 값을 확인하지 못했습니다. 해당 부분을 안전으로 판단하지 않습니다.</p>}
         <p>확인 가능한 타입·DI·유일한 구현체의 제한된 전달 근거입니다. 저장소 선언 확인은 실제 DB 실행이나 안전성 보증이 아닙니다. 외부 보호 계층·동적 SQL·전체 호출 그래프는 미확인입니다.</p>
+        <p>Servlet 컬렉션 입력과 확인된 JDK Map·List·배열의 일부 값 선택·변경만 추적합니다. 동적 키·복잡한 반복문·미확인 함수의 변경 효과는 확인하지 못할 수 있습니다.</p>
         <ul>{a.files.slice(0, 20).map(f => <li key={f.filePath}>
           <code className="finding-location">{f.filePath}</code> · {statusText(f.parseStatus)}
           <p>진입점 {f.entrypoints} · 추적 함수 {f.functions} · SQL 호출 구문 {f.sqlCallSites} / 추적 {f.tracedCallSites}</p>
