@@ -51,7 +51,7 @@ function strip(ts){
   }return ts;
 }
 export function condition(original,depth=0){
-  if(depth>12)return unknown();const ts=strip(original);if(!ts.length)return atom('ALLOW');
+  if(depth>12)return unknown();const ts=strip(original);if(!ts.length)return unknown();
   for(const op of ['or','and']){
     let n=0;for(let i=0;i<ts.length;i++){const t=ts[i];if(t.v==='(')n++;else if(t.v===')')n--;else if(!n&&is(t,op))return combine(condition(ts.slice(0,i),depth+1),condition(ts.slice(i+1),depth+1),op==='and');}
   }
@@ -122,8 +122,8 @@ export function analyzePolicies(files,tick){
             }else if(c.eat('policy')){
               const name=c.id();c.require('on');target=table(scope,c.table(),location(s[0].line));
               const p={name,command:'ALL',mode:'PERMISSIVE',roles:['public'],using:atom('ALLOW'),check:null,location:location(s[0].line)};
-              if(c.eat('as')){p.mode=c.id().toUpperCase();if(!['PERMISSIVE','RESTRICTIVE'].includes(p.mode))throw Error('UNSUPPORTED_SQL');}
-              if(c.eat('for')){p.command=c.id().toUpperCase();if(![...OPS,'ALL'].includes(p.command))throw Error('UNSUPPORTED_SQL');}
+              if(c.eat('as')){p.mode=c.eat('permissive')?'PERMISSIVE':c.eat('restrictive')?'RESTRICTIVE':null;if(!p.mode)throw Error('UNSUPPORTED_SQL');}
+              if(c.eat('for')){if(s[c.i]?.quoted)throw Error('UNSUPPORTED_SQL');p.command=c.id().toUpperCase();if(![...OPS,'ALL'].includes(p.command))throw Error('UNSUPPORTED_SQL');}
               if(c.eat('to'))p.roles=c.list();
               if(p.roles.some(r=>['current_user','current_role','session_user'].includes(r)))target.uncertain=true;
               if(c.eat('using')){if(p.command==='INSERT')throw Error('INVALID_POLICY_CLAUSE');p.using=c.expr();}
@@ -140,7 +140,8 @@ export function analyzePolicies(files,tick){
             }else if(c.eat('policy')){
               const name=c.id();c.require('on');target=table(scope,c.table(),location(s[0].line));const p=target.policies.get(name);if(!p)throw Error('POLICY_BASE_MISSING');
               if(c.eat('rename')){c.require('to');const next=c.id();c.end();if(target.policies.has(next))throw Error('POLICY_RENAME_CONFLICT');target.policies.delete(name);p.name=next;target.policies.set(next,p);}
-              else {if(c.eat('to'))p.roles=c.list();if(c.eat('using'))p.using=c.expr();if(c.eat('with')){c.require('check');p.check=c.expr();}c.end();}p.location=location(s[0].line);
+              else {if(c.eat('to'))p.roles=c.list();if(c.eat('using')){if(p.command==='INSERT')throw Error('INVALID_POLICY_CLAUSE');p.using=c.expr();}if(c.eat('with')){c.require('check');if(['SELECT','DELETE'].includes(p.command))throw Error('INVALID_POLICY_CLAUSE');p.check=c.expr();}c.end();}p.location=location(s[0].line);
+              if(p.roles.some(r=>['current_user','current_role','session_user'].includes(r)))target.uncertain=true;
             }else throw Error('UNSUPPORTED_ROLE_OR_DEFAULT_CHANGE');
           }else if(c.eat('drop')){
             if(!c.eat('policy'))throw Error('UNSUPPORTED_DROP');const optional=c.eat('if');if(optional)c.require('exists');
@@ -148,6 +149,7 @@ export function analyzePolicies(files,tick){
             if(!optional&&!target.policies.has(name))target.uncertain=true;target.policies.delete(name);
           }else if(is(s[0],'grant')||is(s[0],'revoke')){
             if(is(s[1],'execute')){row.status='PARTIAL';row.limitations.push('FUNCTION_EXECUTE_PRIVILEGES_NOT_INTERPRETED');continue;}
+            if(s[1]?.quoted)throw Error('UNSUPPORTED_GRANT');
             const grant=c.eat('grant');if(!grant)c.require('revoke');let ops;
             if(c.eat('all')){c.eat('privileges');ops=OPS;}else ops=c.list().map(x=>x.toUpperCase());
             if(ops.some(x=>!OPS.includes(x)))throw Error('UNSUPPORTED_GRANT');c.require('on');c.eat('table');target=table(scope,c.table(),location(s[0].line));

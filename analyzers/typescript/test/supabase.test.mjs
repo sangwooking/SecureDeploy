@@ -52,7 +52,7 @@ test('missing policy files and missing grants are not unsafe or verified-safe da
   assert.equal(op(run('ALTER TABLE public.notes ENABLE ROW LEVEL SECURITY;'+grant+owner),'DELETE').state,'UNKNOWN');
 });
 test('unqualified names, dynamic SQL, missing bases and failed parsing retain UNKNOWN',()=>{
-  for(const suffix of ['DO $$ BEGIN EXECUTE query; END $$;','SET search_path=public;','ALTER POLICY missing ON public.notes USING(true);']){
+  for(const suffix of ['DO $$ BEGIN EXECUTE query; END $$;','SET search_path=public;','ALTER POLICY missing ON public.notes USING(true);','ALTER POLICY own ON public.notes TO CURRENT_USER;']){
     const r=run(table+grant+owner+suffix);assert.equal(op(r,'DELETE').state,'UNKNOWN');assert.equal(r.findings.length,0);
   }
   const failed=run(table+"SELECT 'unterminated");assert.equal(failed.files[0].status,'PARSE_FAILED');assert.equal(failed.findings.length,0);
@@ -62,6 +62,11 @@ test('comments, SQL string data, dollar bodies and quoted identifiers are not po
   const r=run(table+grant+owner+"SELECT 'ALTER TABLE public.notes DISABLE ROW LEVEL SECURITY;'; -- DROP POLICY own ON public.notes;\n");
   assert.equal(op(r,'UPDATE').state,'UID_COLUMN_EQUALITY');
   const quoted=run(table+grant+'CREATE POLICY p ON public.notes USING("true");');assert.equal(op(quoted,'UPDATE').state,'UNKNOWN');
+});
+test('empty expressions and quoted policy keywords are not trusted as broad permission syntax',()=>{
+  for(const policy of ['CREATE POLICY p ON public.notes USING();','CREATE POLICY p ON public.notes AS "PERMISSIVE" USING(true);','CREATE POLICY p ON public.notes FOR "UPDATE" USING(true);']){
+    const r=run(table+grant+policy);assert.equal(r.findings.length,0);assert.equal(op(r,'UPDATE').state,'UNKNOWN');
+  }
 });
 test('source and parser budgets fail closed instead of retaining partial protection',()=>{
   const r=run([source(table+grant+owner),{filePath:'supabase/migrations/20260102000000_omitted.sql',status:'LIMIT_EXCEEDED'}]);
