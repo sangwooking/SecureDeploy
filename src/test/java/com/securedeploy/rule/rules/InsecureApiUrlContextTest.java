@@ -36,7 +36,7 @@ class InsecureApiUrlContextTest {
         var missing=new TypeScriptAnalysisProperties();missing.setNodeExecutable("/no/such/trusted-node");
         assertThat(analyze("// http://docs.example",missing)).hasSize(1);
         assertThat(analyze("const = 'http://remote.example';")).hasSize(1);
-        assertThat(analyze("/*"+"x".repeat(100001)+" http://docs.example */")).hasSize(1);
+        assertThat(analyze("/*"+"x".repeat(250001)+" http://docs.example */")).hasSize(1);
     }
     @Test void localhostLookalikeDomainsAreNotLocalhost() {
         assertThat(analyze("fetch('http://localhost:3000/api');")).isEmpty();

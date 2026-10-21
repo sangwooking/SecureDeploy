@@ -30,7 +30,7 @@ test('inert URL base versus real network URL propagation', () => {
 });
 test('parse errors, JSX, size and caller uncertainty never suppress', () => {
   assert.equal(row('const = "http://remote.example"').status,'UNKNOWN');
-  assert.equal(row('x'.repeat(100001)).status,'UNKNOWN');
+  assert.equal(row('x'.repeat(250001)).status,'UNKNOWN');
   assert.deepEqual(row('const x = <div>http://remote.example</div>;', 'App.tsx').excludedLines,[]);
   assert.deepEqual(row('const address = "http://remote.example"; wrapper(address);').excludedLines,[]);
 });

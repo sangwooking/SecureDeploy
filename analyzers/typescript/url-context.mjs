@@ -1,6 +1,7 @@
 import ts from 'typescript';
+import {displayContexts} from './static-display-context.mjs';
 
-export const VERSION = 'string-context-v3';
+export const VERSION = 'string-context-v4';
 const secretPattern = () => /(api[_-]?key|secret|token|accessToken|refreshToken)["']?\s*[:=]\s*["']([^"']{8,})["']/gi;
 function credentialShaped(value) {
   if (/^(?:sk-(?:proj-)?[A-Za-z0-9_-]{24,}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{24,}|AKIA[A-Z0-9]{16}|AIza[A-Za-z0-9_-]{35}|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)$/.test(value)) return true;
@@ -17,7 +18,7 @@ export function classify(files) {
   for (const file of files.slice(0, 100)) {
     const row = { filePath: file.filePath, excludedLines: [], excludedSecretLines: [], requestLines: [], status: 'UNKNOWN' };
     output.files.push(row);
-    if (typeof file.content !== 'string' || file.content.length > 100000 || (total += file.content.length) > 1000000) continue;
+    if (typeof file.content !== 'string' || file.content.length > 250000 || (total += file.content.length) > 1000000) continue;
     if (file.prefixOnly) {
       // Parse only the bounded prefix. Trust completed comments before the first
       // syntax error, never code/flow or the unparsed remainder of the file.
@@ -145,5 +146,6 @@ export function classify(files) {
     for (const [line,values] of secretLines) if (values.every(Boolean)) row.excludedSecretLines.push(line);
     row.status = 'PARSED';
   }
+  displayContexts(files.slice(0,100),output.files,deadline);
   return output;
 }
