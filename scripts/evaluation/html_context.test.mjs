@@ -5,7 +5,8 @@ import {classify} from '../../analyzers/typescript/url-context.mjs';
 test('labelled controls retain danger, passive proof and uncertainty as distinct outcomes',()=>{
   assert.equal(new Set(cases.map(c=>c[0])).size,cases.length);
   const result=evaluate(classify);
-  assert.deepEqual(result.totals,{TP:5,FP:0,FN:0,TN:6,UNKNOWN:7,incorrectExclusion:0});
+  assert.deepEqual(result.totals,{TP:5,FP:1,FN:0,TN:6,UNKNOWN:6,incorrectExclusion:0});
+  assert.equal(result.results.find(r=>r.id==='static-link-normal').outcome,'FP');
   assert.ok(!JSON.stringify(result).includes('onerror='));
 });
 test('source relocation and submission order do not change HTML exclusions',()=>{

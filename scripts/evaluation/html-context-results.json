@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineRef": "5471e8e471e2e46470719d9b968546145c9295ef",
-  "evaluatorSha256": "cd63440e3d96fbb7b380c92e329c6d1059332afb6a60d7c76639ed31b893d254",
+  "evaluatorSha256": "f3d09c624635cf718b04c5c581436f28c3d61f299832abb6ebd9b2f26d02bf83",
   "currentSourceHashes": {
     "url-context.mjs": "2266b5fdbb0bf4637645ac8a36f956c6668c19eb08813befe927b67246edc849",
     "static-display-context.mjs": "7356bc8fc39776bf7f5220851fbc95f8de28f32d91d6cfe3751a7ab79993c99e"
@@ -18,9 +18,9 @@
       "TP": 3,
       "FP": 3,
       "FN": 2,
-      "TN": 3,
-      "UNKNOWN": 7,
-      "incorrectExclusion": 3
+      "TN": 4,
+      "UNKNOWN": 6,
+      "incorrectExclusion": 2
     },
     "results": [
       {
@@ -32,12 +32,12 @@
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 4.385
+            "elapsedMs": 3.92
           },
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.391
+            "elapsedMs": 0.865
           }
         ]
       },
@@ -50,12 +50,12 @@
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.246
+            "elapsedMs": 0.261
           },
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.169
+            "elapsedMs": 0.176
           }
         ]
       },
@@ -68,12 +68,12 @@
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.441
+            "elapsedMs": 0.439
           },
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.191
+            "elapsedMs": 0.188
           }
         ]
       },
@@ -86,12 +86,12 @@
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.176
+            "elapsedMs": 0.195
           },
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.13
+            "elapsedMs": 0.139
           }
         ]
       },
@@ -104,12 +104,12 @@
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.162
+            "elapsedMs": 0.156
           },
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.155
+            "elapsedMs": 0.162
           }
         ]
       },
@@ -122,12 +122,12 @@
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.248
+            "elapsedMs": 0.269
           },
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.152
+            "elapsedMs": 0.218
           }
         ]
       },
@@ -140,12 +140,12 @@
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.192
+            "elapsedMs": 0.209
           },
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.092
+            "elapsedMs": 0.097
           }
         ]
       },
@@ -158,12 +158,12 @@
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.258
+            "elapsedMs": 0.28
           },
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.097
+            "elapsedMs": 0.104
           }
         ]
       },
@@ -176,12 +176,12 @@
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.903
+            "elapsedMs": 0.909
           },
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.399
+            "elapsedMs": 0.397
           }
         ]
       },
@@ -194,7 +194,7 @@
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.108
+            "elapsedMs": 0.116
           },
           {
             "warning": true,
@@ -212,12 +212,12 @@
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.299
+            "elapsedMs": 0.303
           },
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.252
+            "elapsedMs": 0.267
           }
         ]
       },
@@ -230,12 +230,12 @@
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.308
+            "elapsedMs": 0.294
           },
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.121
+            "elapsedMs": 0.141
           }
         ]
       },
@@ -248,12 +248,12 @@
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.328
+            "elapsedMs": 0.333
           },
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.083
+            "elapsedMs": 0.079
           }
         ]
       },
@@ -266,12 +266,12 @@
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.276
+            "elapsedMs": 0.269
           },
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.625
+            "elapsedMs": 0.218
           }
         ]
       },
@@ -284,12 +284,12 @@
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.088
+            "elapsedMs": 0.444
           },
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.064
+            "elapsedMs": 0.082
           }
         ]
       },
@@ -302,12 +302,12 @@
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.089
+            "elapsedMs": 0.1
           },
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.062
+            "elapsedMs": 0.068
           }
         ]
       },
@@ -325,25 +325,25 @@
           {
             "warning": true,
             "contexts": [],
-            "elapsedMs": 0.182
+            "elapsedMs": 0.195
           }
         ]
       },
       {
-        "id": "static-link-unmodelled",
+        "id": "static-link-normal",
         "split": "VALIDATION",
-        "truth": "UNKNOWN",
-        "outcome": "UNKNOWN",
+        "truth": "NORMAL",
+        "outcome": "TN",
         "runs": [
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.177
+            "elapsedMs": 0.183
           },
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.057
+            "elapsedMs": 0.065
           }
         ]
       }
@@ -352,10 +352,10 @@
   "current": {
     "totals": {
       "TP": 5,
-      "FP": 0,
+      "FP": 1,
       "FN": 0,
       "TN": 6,
-      "UNKNOWN": 7,
+      "UNKNOWN": 6,
       "incorrectExclusion": 0
     },
     "results": [
@@ -374,7 +374,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.992
+            "elapsedMs": 0.976
           },
           {
             "warning": true,
@@ -385,7 +385,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.157
+            "elapsedMs": 0.148
           }
         ]
       },
@@ -404,7 +404,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.08
+            "elapsedMs": 0.086
           },
           {
             "warning": true,
@@ -415,7 +415,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.063
+            "elapsedMs": 0.068
           }
         ]
       },
@@ -434,7 +434,7 @@
                 "status": "STATIC_ACTIVE_OR_UNSUPPORTED"
               }
             ],
-            "elapsedMs": 0.102
+            "elapsedMs": 0.113
           },
           {
             "warning": true,
@@ -445,7 +445,7 @@
                 "status": "STATIC_ACTIVE_OR_UNSUPPORTED"
               }
             ],
-            "elapsedMs": 0.083
+            "elapsedMs": 0.087
           }
         ]
       },
@@ -464,7 +464,7 @@
                 "status": "PASSIVE_STATIC"
               }
             ],
-            "elapsedMs": 0.063
+            "elapsedMs": 0.073
           },
           {
             "warning": false,
@@ -475,7 +475,7 @@
                 "status": "PASSIVE_STATIC"
               }
             ],
-            "elapsedMs": 0.051
+            "elapsedMs": 0.058
           }
         ]
       },
@@ -494,7 +494,7 @@
                 "status": "PASSIVE_STATIC"
               }
             ],
-            "elapsedMs": 0.133
+            "elapsedMs": 0.136
           },
           {
             "warning": false,
@@ -505,7 +505,7 @@
                 "status": "PASSIVE_STATIC"
               }
             ],
-            "elapsedMs": 0.078
+            "elapsedMs": 0.082
           }
         ]
       },
@@ -524,7 +524,7 @@
                 "status": "PASSIVE_STATIC"
               }
             ],
-            "elapsedMs": 0.126
+            "elapsedMs": 0.152
           },
           {
             "warning": false,
@@ -535,7 +535,7 @@
                 "status": "PASSIVE_STATIC"
               }
             ],
-            "elapsedMs": 0.097
+            "elapsedMs": 0.103
           }
         ]
       },
@@ -554,7 +554,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.084
+            "elapsedMs": 0.082
           },
           {
             "warning": true,
@@ -565,7 +565,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.071
+            "elapsedMs": 0.073
           }
         ]
       },
@@ -584,7 +584,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.09
+            "elapsedMs": 0.102
           },
           {
             "warning": true,
@@ -595,7 +595,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.084
+            "elapsedMs": 0.087
           }
         ]
       },
@@ -614,7 +614,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.312
+            "elapsedMs": 0.326
           },
           {
             "warning": true,
@@ -625,7 +625,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.24
+            "elapsedMs": 0.246
           }
         ]
       },
@@ -644,7 +644,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.1
+            "elapsedMs": 0.096
           },
           {
             "warning": true,
@@ -655,7 +655,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.089
+            "elapsedMs": 0.091
           }
         ]
       },
@@ -674,7 +674,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.256
+            "elapsedMs": 0.259
           },
           {
             "warning": true,
@@ -685,7 +685,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.166
+            "elapsedMs": 0.273
           }
         ]
       },
@@ -704,7 +704,7 @@
                 "status": "PASSIVE_STATIC"
               }
             ],
-            "elapsedMs": 0.118
+            "elapsedMs": 0.158
           },
           {
             "warning": false,
@@ -715,7 +715,7 @@
                 "status": "PASSIVE_STATIC"
               }
             ],
-            "elapsedMs": 0.102
+            "elapsedMs": 0.112
           }
         ]
       },
@@ -728,12 +728,12 @@
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.07
+            "elapsedMs": 0.072
           },
           {
             "warning": false,
             "contexts": [],
-            "elapsedMs": 0.041
+            "elapsedMs": 0.043
           }
         ]
       },
@@ -752,7 +752,7 @@
                 "status": "PASSIVE_STATIC"
               }
             ],
-            "elapsedMs": 0.133
+            "elapsedMs": 0.145
           },
           {
             "warning": false,
@@ -763,7 +763,7 @@
                 "status": "PASSIVE_STATIC"
               }
             ],
-            "elapsedMs": 0.155
+            "elapsedMs": 0.156
           }
         ]
       },
@@ -782,7 +782,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.068
+            "elapsedMs": 0.07
           },
           {
             "warning": true,
@@ -812,7 +812,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.069
+            "elapsedMs": 0.054
           },
           {
             "warning": true,
@@ -823,7 +823,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.058
+            "elapsedMs": 0.052
           }
         ]
       },
@@ -842,7 +842,7 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.17
+            "elapsedMs": 0.164
           },
           {
             "warning": true,
@@ -853,15 +853,15 @@
                 "status": "UNRESOLVED_HTML"
               }
             ],
-            "elapsedMs": 0.185
+            "elapsedMs": 0.166
           }
         ]
       },
       {
-        "id": "static-link-unmodelled",
+        "id": "static-link-normal",
         "split": "VALIDATION",
-        "truth": "UNKNOWN",
-        "outcome": "UNKNOWN",
+        "truth": "NORMAL",
+        "outcome": "FP",
         "runs": [
           {
             "warning": true,
@@ -872,7 +872,7 @@
                 "status": "STATIC_ACTIVE_OR_UNSUPPORTED"
               }
             ],
-            "elapsedMs": 0.064
+            "elapsedMs": 0.062
           },
           {
             "warning": true,
@@ -883,7 +883,7 @@
                 "status": "STATIC_ACTIVE_OR_UNSUPPORTED"
               }
             ],
-            "elapsedMs": 0.06
+            "elapsedMs": 0.048
           }
         ]
       }

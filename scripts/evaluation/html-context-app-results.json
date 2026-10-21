@@ -1,0 +1,290 @@
+{
+  "schemaVersion": 1,
+  "baselineEngine": "f78bf64e58869af2b307f8365fc23df497d835a0",
+  "engineCommit": "0986b6a57db3a0f6999e89d81e34a49eb1cbe3d4",
+  "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+  "projects": [
+    {
+      "projectId": "nglguarino--echoverse-11labs",
+      "commitSha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "baselineHtml": [
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/components/ui/chart.tsx",
+          "line": 79,
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "severity": "HIGH"
+        }
+      ],
+      "currentHtml": [
+        {
+          "falsePositiveRisk": "LOW",
+          "severity": "HIGH",
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "line": 79,
+          "filePath": "src/components/ui/chart.tsx",
+          "confidence": "HIGH"
+        }
+      ],
+      "baselineScore": 86,
+      "currentScore": 86,
+      "prioritySummary": {
+        "BLOCKING": 0,
+        "SHOULD_FIX": 0,
+        "REVIEW_REQUIRED": 2,
+        "INFORMATIONAL": 0
+      },
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "structuralCandidateCount": 1,
+      "structuralAndNonHtmlUnchanged": true,
+      "baselineElapsedMs": [
+        695,
+        500
+      ],
+      "elapsedMs": [
+        853,
+        573
+      ],
+      "parentHeapUsedBytes": [
+        82593808,
+        75070672
+      ],
+      "semanticRepeatable": true
+    },
+    {
+      "projectId": "LellaSriHarsha--power-platform-hub",
+      "commitSha": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "baselineHtml": [
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "app/src/components/ui/chart.tsx",
+          "line": 73,
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "severity": "HIGH"
+        }
+      ],
+      "currentHtml": [
+        {
+          "falsePositiveRisk": "LOW",
+          "severity": "HIGH",
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "line": 73,
+          "filePath": "app/src/components/ui/chart.tsx",
+          "confidence": "HIGH"
+        }
+      ],
+      "baselineScore": 86,
+      "currentScore": 86,
+      "prioritySummary": {
+        "BLOCKING": 0,
+        "SHOULD_FIX": 0,
+        "REVIEW_REQUIRED": 2,
+        "INFORMATIONAL": 0
+      },
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "structuralCandidateCount": 0,
+      "structuralAndNonHtmlUnchanged": true,
+      "baselineElapsedMs": [
+        450,
+        430
+      ],
+      "elapsedMs": [
+        507,
+        484
+      ],
+      "parentHeapUsedBytes": [
+        93945040,
+        64046880
+      ],
+      "semanticRepeatable": true
+    },
+    {
+      "projectId": "TinyikoMamban--workflowai-pro",
+      "commitSha": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "baselineHtml": [
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/components/ui/chart.tsx",
+          "line": 73,
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "severity": "HIGH"
+        }
+      ],
+      "currentHtml": [
+        {
+          "falsePositiveRisk": "LOW",
+          "severity": "HIGH",
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "line": 73,
+          "filePath": "src/components/ui/chart.tsx",
+          "confidence": "HIGH"
+        }
+      ],
+      "baselineScore": 86,
+      "currentScore": 86,
+      "prioritySummary": {
+        "BLOCKING": 0,
+        "SHOULD_FIX": 0,
+        "REVIEW_REQUIRED": 2,
+        "INFORMATIONAL": 0
+      },
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "structuralCandidateCount": 0,
+      "structuralAndNonHtmlUnchanged": true,
+      "baselineElapsedMs": [
+        553,
+        537
+      ],
+      "elapsedMs": [
+        637,
+        587
+      ],
+      "parentHeapUsedBytes": [
+        71799856,
+        90287040
+      ],
+      "semanticRepeatable": true
+    },
+    {
+      "projectId": "Adriano-Digital2024--CopyMonster",
+      "commitSha": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "baselineHtml": [
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/components/ui/chart.tsx",
+          "line": 81,
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/pages/Auth.tsx",
+          "line": 241,
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+          "line": 166,
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+          "line": 167,
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+          "line": 168,
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "severity": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "confidence": "HIGH",
+          "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+          "line": 207,
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "severity": "HIGH"
+        }
+      ],
+      "currentHtml": [
+        {
+          "falsePositiveRisk": "LOW",
+          "severity": "HIGH",
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "line": 81,
+          "filePath": "src/components/ui/chart.tsx",
+          "confidence": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "severity": "HIGH",
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "line": 241,
+          "filePath": "src/pages/Auth.tsx",
+          "confidence": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "severity": "HIGH",
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "line": 166,
+          "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+          "confidence": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "severity": "HIGH",
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "line": 167,
+          "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+          "confidence": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "severity": "HIGH",
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "line": 168,
+          "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+          "confidence": "HIGH"
+        },
+        {
+          "falsePositiveRisk": "LOW",
+          "severity": "HIGH",
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "line": 207,
+          "filePath": "src/pages/dashboard/partners/PartnersDashboard.tsx",
+          "confidence": "HIGH"
+        }
+      ],
+      "baselineScore": 16,
+      "currentScore": 16,
+      "prioritySummary": {
+        "BLOCKING": 0,
+        "SHOULD_FIX": 0,
+        "REVIEW_REQUIRED": 7,
+        "INFORMATIONAL": 0
+      },
+      "deploymentAssessment": "REVIEW_REQUIRED",
+      "structuralCandidateCount": 1,
+      "structuralAndNonHtmlUnchanged": true,
+      "baselineElapsedMs": [
+        798,
+        780
+      ],
+      "elapsedMs": [
+        848,
+        850
+      ],
+      "parentHeapUsedBytes": [
+        101739008,
+        126113912
+      ],
+      "semanticRepeatable": true
+    }
+  ],
+  "limitations": [
+    "Previously observed public apps; no new blind evaluation",
+    "SCA/threat intelligence external lookups disabled; same engine-only scope as baseline",
+    "Parent heap samples are not worker peak RSS",
+    "No whole-app SAFE labels or new runtime XSS tests"
+  ],
+  "inputSha256": {
+    "baseline": "179fd2d74db47027e5b458d1fb6d4238c635cb660e02e4c6ff39cbf10f8e0a8a",
+    "current": "87c1382277bddde8312a86d3e56aa8d1f5728e2c60f662b82c2875c7c85d6045"
+  }
+}

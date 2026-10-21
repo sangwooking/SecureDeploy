@@ -32,7 +32,7 @@ export const cases=[
   ['dynamic-fallback','VALIDATION','UNKNOWN',packet(view('input||"<b>fallback</b>"'))],
   ['spread-html','VALIDATION','UNKNOWN',packet('const View=()=> <p dangerouslySetInnerHTML={{__html:"ok",...options}}/>;')],
   ['dynamic-interpolation','VALIDATION','UNKNOWN',packet(translated.replace("t('notice')","t('notice',{value:input})"),provider)],
-  ['static-link-unmodelled','VALIDATION','UNKNOWN',packet(view(JSON.stringify('<a href="https://example.invalid">policy</a>')))],
+  ['static-link-normal','VALIDATION','NORMAL',packet(view(JSON.stringify('<a href="https://example.invalid">policy</a>')))],
 ];
 
 export function evaluate(classifier) {
@@ -68,7 +68,7 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
     symlinkSync(join(root,'analyzers/typescript/node_modules'),join(directory,'node_modules'));
     const before=await import(pathToFileURL(join(directory,'url-context.mjs')).href);
     const baseline=evaluate(before.classify),current=evaluate(classify);
-    assert.deepEqual(current.totals,{TP:5,FP:0,FN:0,TN:6,UNKNOWN:7,incorrectExclusion:0});
+    assert.deepEqual(current.totals,{TP:5,FP:1,FN:0,TN:6,UNKNOWN:6,incorrectExclusion:0});
     const report={schemaVersion:1,baselineRef:ref,
       evaluatorSha256:createHash('sha256').update(readFileSync(fileURLToPath(import.meta.url))).digest('hex'),
       currentSourceHashes:Object.fromEntries(['url-context.mjs','static-display-context.mjs'].map(name=>[name,createHash('sha256').update(readFileSync(join(root,'analyzers/typescript',name))).digest('hex')])),
