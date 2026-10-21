@@ -82,6 +82,9 @@ export function displayContexts(files, rows, deadline) {
         }
       }
     }
+    const providerMutation=modules.some(m=>[...m.imports].some(([id,imp])=>imp.spec==='i18next'&&imp.key==='default'
+      && (m.writes.has(id)||m.nodes.some(n=>ts.isCallExpression(n)&&ts.isPropertyAccessExpression(n.expression)
+        && n.expression.expression.getText(m.ast)===id&&!['init','use','changeLanguage','t'].includes(n.expression.name.text)))));
     for(const m of modules){
       const {nodes,bindings,writes,imports,ast,row}=m;
       const unique=id=>bindings.get(id)?.length===1&&!writes.has(id)?bindings.get(id)[0]:undefined;
@@ -123,7 +126,7 @@ export function displayContexts(files, rows, deadline) {
         if(ts.isBinaryExpression(n)&&n.operatorToken.kind===ts.SyntaxKind.EqualsToken&&/^(?:window\.)?location\.href$/.test(n.left.getText(ast))&&origin(n.right))row.excludedRedirectLines.push(ast.getLineAndCharacterOfPosition(n.getStart(ast)).line+1);
         if(!ts.isJsxAttribute(n)||n.name.getText(ast)!=='dangerouslySetInnerHTML'||!n.initializer||!ts.isJsxExpression(n.initializer))continue;
         const content=unwrap(member(unwrap(n.initializer.expression),'__html'));let safe=content&&ts.isStringLiteralLike(content);
-        if(!safe&&content&&ts.isCallExpression(content)&&ts.isIdentifier(content.expression)&&content.arguments.length===1&&ts.isStringLiteral(content.arguments[0])&&providers.length===1){
+        if(!safe&&!providerMutation&&content&&ts.isCallExpression(content)&&ts.isIdentifier(content.expression)&&content.arguments.length===1&&ts.isStringLiteral(content.arguments[0])&&providers.length===1){
           const bound=unique(content.expression.text);
           const declaration=bound&&ts.isBindingElement(bound)?bound.parent.parent:undefined;
           const init=declaration&&ts.isVariableDeclaration(declaration)?unwrap(declaration.initializer):undefined;

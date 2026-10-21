@@ -23,6 +23,11 @@ test('interpolation, unknown providers and custom translators do not suppress HT
   assert.deepEqual(run(page("label('terms')"),'const resources={};').files[0].excludedHtmlLines,[]);
   assert.deepEqual(run(page("label('terms')"),config().replace('Read our <b>terms</b>','Hello {{user}}')).files[0].excludedHtmlLines,[]);
 });
+test('multiple providers and cross-module resource mutation withhold HTML negative proof',()=>{
+  const files=[{filePath:'ui.tsx',content:page("label('terms')")},{filePath:'config.ts',content:config()}];
+  assert.deepEqual(classify([...files,{filePath:'other.ts',content:config()}]).files[0].excludedHtmlLines,[]);
+  assert.deepEqual(classify([...files,{filePath:'extension.ts',content:"import local from 'i18next';local.addResourceBundle(locale,namespace,externalData);"}]).files[0].excludedHtmlLines,[]);
+});
 test('redirect destinations distinguish deployment configuration from request control',()=>{
   const configured='function reply(site,result){const redirectUrl=`${site}/settings?result=${result}`;return `<script>window.location.href="${redirectUrl}"</script>`;}const site=Deno.env.get("SITE_URL")||"http://localhost:5173";reply(site,"ok");';
   assert.deepEqual(classify([{filePath:'server.ts',content:configured}]).files[0].excludedRedirectLines,[1]);

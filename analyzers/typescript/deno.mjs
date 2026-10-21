@@ -7,7 +7,8 @@ export function denoEntries({ts, modules, resolve, claimFunction, tick, note, in
       tick(mod);
       if (n.name && ts.isIdentifier(n.name) && (ts.isParameter(n) || ts.isVariableDeclaration(n)
           || ts.isFunctionDeclaration(n) || ts.isClassDeclaration(n) || ts.isImportClause(n)
-          || ts.isImportSpecifier(n) || ts.isBindingElement(n))) shadowed.add(n.name.text);
+          || ts.isImportSpecifier(n) || ts.isNamespaceImport(n) || ts.isImportEqualsDeclaration(n)
+          || ts.isBindingElement(n))) shadowed.add(n.name.text);
       if (ts.isBinaryExpression(n) && ts.isAssignmentOperator(n.operatorToken.kind)) {
         let base = n.left; while (ts.isPropertyAccessExpression(base) || ts.isElementAccessExpression(base)) base = base.expression;
         if (ts.isIdentifier(base)) writes.add(base.text);

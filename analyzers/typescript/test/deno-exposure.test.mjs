@@ -49,6 +49,7 @@ test('unknown masking and unknown environment name without request provenance st
 test('a generic serve function and shadowed Deno do not establish runtime provenance',()=>{
   for(const [prefix,registration] of [['function serve(handler){}','serve'],
     ['const Deno=customRuntime();','Deno.serve'],
+    ['import * as Deno from "./custom.ts";','Deno.serve'],
     ['import {serve} from "./custom.ts";','serve']]){
     const r=run('return Response.json(Deno.env.get("API_SECRET"));',prefix,registration);
     assert.equal(r.files[0].entrypoints,0);assert.equal(exposures(r).length,0);
