@@ -117,7 +117,9 @@ public class FalsePositiveAnalyzer {
                         "테스트/샘플/생성 파일 또는 minified 파일의 dangerouslySetInnerHTML입니다. 사용자 입력 연결 여부를 검토하세요.");
             }
             return FalsePositiveDecision.keep(match.severity(), FalsePositiveRisk.LOW, DetectionConfidence.HIGH,
-                    "HTML 렌더링 sink가 직접 발견되어 XSS 검토 우선순위를 유지합니다.");
+                    (match.analysisNote() == null ? "HTML_CONTEXT=NOT_INSPECTED" : match.analysisNote())
+                            + " · HTML 삽입 구문을 확인한 신뢰도이며, 외부 입력 연결이나 XSS 공격 성공을 확인한 것은 아닙니다."
+                            + " 입력 출처와 기존 escape·정제 처리를 먼저 확인하고 필요한 경우 수정 후 재검사하세요.");
         }
         if ("LOCAL_STORAGE_TOKEN".equals(match.ruleId())) {
             if (isHighFalsePositivePath(path) || isMinified(path)) {

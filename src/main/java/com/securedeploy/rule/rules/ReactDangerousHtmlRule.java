@@ -29,7 +29,7 @@ public class ReactDangerousHtmlRule implements VulnerabilityRule {
                         file.relativePath(),
                         index + 1,
                         "React에서 dangerouslySetInnerHTML 사용이 발견되었습니다. 사용자 입력이 포함될 경우 XSS 위험이 있습니다.",
-                        "HTML 삽입이 꼭 필요하다면 DOMPurify 같은 검증된 sanitizer를 적용하고, 사용자 입력을 직접 렌더링하지 않도록 제한해야 합니다.",
+                        "먼저 출력값의 출처와 기존 보호 처리를 확인하세요. 일반 텍스트라면 JSX 문자열 출력으로 바꾸고, 외부 HTML이 꼭 필요한 경우에만 검증된 정제 처리를 검토하세요. 정상 입력과 허용하지 않을 HTML을 로컬 테스트한 뒤 재검사하세요.",
                         line.strip()
                 ));
             }

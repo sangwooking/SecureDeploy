@@ -7,5 +7,5 @@ for await (const chunk of process.stdin) {
 try {
   const data = JSON.parse(input);
   if (!Array.isArray(data.files) || data.files.length > 100) process.exit(2);
-  process.stdout.write(JSON.stringify(classify(data.files)));
+  process.stdout.write(JSON.stringify(classify(data.files,data.translationContextComplete!==false)));
 } catch { process.exit(2); }

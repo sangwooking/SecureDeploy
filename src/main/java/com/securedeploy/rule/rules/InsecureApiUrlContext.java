@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 /** Shared bounded string-context reconciliation; missing evidence never removes a warning. */
 @Component
 public final class InsecureApiUrlContext {
-    private static final String VERSION = "string-context-v4";
+    private static final String VERSION = "string-context-v5";
     private final TypeScriptAnalysisProperties properties;
     private final Semaphore capacity = new Semaphore(2);
     private final ObjectMapper mapper = new ObjectMapper();
@@ -24,12 +24,12 @@ public final class InsecureApiUrlContext {
                 .map(RuleMatch::filePath).collect(java.util.stream.Collectors.toSet());
         if(paths.isEmpty())return matches;
         List<Map<String,Object>> files=new ArrayList<>();
-        Map<String,Integer> lineCounts=new HashMap<>();int total=0;
+        Map<String,Integer> lineCounts=new HashMap<>();int total=0;boolean translationContextComplete=true;
         for(var f:project.analysisFiles().stream().sorted(Comparator.comparing(x->x.relativePath())).toList()) {
-            if(!(paths.contains(f.relativePath())||f.lines().stream().anyMatch(s->s.contains("from 'i18next'")||s.contains("from \"i18next\"")))||!(RuleFileTypes.isFrontendSource(f)||f.type()==com.securedeploy.project.model.ProjectFileType.FRONTEND_CONFIG))continue;
+            if(!(paths.contains(f.relativePath())||f.lines().stream().anyMatch(s->s.contains("'i18next'")||s.contains("\"i18next\"")||s.contains("I18nextProvider")))||!(RuleFileTypes.isFrontendSource(f)||f.type()==com.securedeploy.project.model.ProjectFileType.FRONTEND_CONFIG))continue;
             long length=f.lines().stream().mapToLong(s->s.length()+1L).sum();
             int bounded=(int)Math.min(length,250_000);
-            if(total+bounded>1_000_000||files.size()>=100)continue;
+            if(total+bounded>1_000_000||files.size()>=100){translationContextComplete=false;continue;}
             var text=new StringBuilder(bounded);
             for(String line:f.lines()) {
                 int available=250_000-text.length();if(available<=0)break;
@@ -40,6 +40,7 @@ public final class InsecureApiUrlContext {
             lineCounts.put(f.relativePath(),f.lines().size());total+=bounded;
         }
         Map<String,Set<Integer>> excluded=new HashMap<>(),requests=new HashMap<>(),secrets=new HashMap<>(),redirects=new HashMap<>(),html=new HashMap<>();
+        Map<String,Map<Integer,String>> htmlNotes=new HashMap<>();
         if(properties.isEnabled()&&!files.isEmpty()&&capacity.tryAcquire()) {
             Process process=null;
             var io=Executors.newFixedThreadPool(2,r->{var t=new Thread(r,"url-context-io");t.setDaemon(true);return t;});
@@ -50,7 +51,7 @@ public final class InsecureApiUrlContext {
                         "--max-old-space-size=192","--allow-fs-read="+directory,directory.resolve("url-context-worker.mjs").toString());
                 builder.directory(directory.toFile());builder.environment().clear();builder.environment().put("LANG","en_US.UTF-8");
                 builder.redirectError(ProcessBuilder.Redirect.DISCARD);process=builder.start();Process child=process;
-                byte[] input=mapper.writeValueAsBytes(Map.of("files",files));
+                byte[] input=mapper.writeValueAsBytes(Map.of("files",files,"translationContextComplete",translationContextComplete));
                 var writer=io.submit(()->{try(var stream=child.getOutputStream()){stream.write(input);}return true;});
                 var reader=io.submit(()->child.getInputStream().readNBytes(200_001));
                 if(!process.waitFor(properties.getTimeoutSeconds(),TimeUnit.SECONDS))throw new IllegalStateException();
@@ -69,12 +70,27 @@ public final class InsecureApiUrlContext {
                     requests.put(path,lines(row.path("requestLines"),lineCounts.get(path)));
                     redirects.put(path,row.has("excludedRedirectLines")?lines(row.path("excludedRedirectLines"),lineCounts.get(path)):Set.of());
                     html.put(path,row.has("excludedHtmlLines")?lines(row.path("excludedHtmlLines"),lineCounts.get(path)):Set.of());
+                    if(row.has("htmlContexts")) {
+                        if(!row.path("htmlContexts").isArray()||row.path("htmlContexts").size()>lineCounts.get(path))throw new IllegalStateException();
+                        Map<Integer,String> notes=new HashMap<>();
+                        for(var evidence:row.path("htmlContexts")) {
+                            int line=evidence.path("line").asInt(),valueLine=evidence.path("valueLine").asInt();
+                            String state=evidence.path("status").asText();
+                            if(!evidence.path("line").isIntegralNumber()||!evidence.path("valueLine").isIntegralNumber()
+                                    ||!evidence.path("line").canConvertToInt()||!evidence.path("valueLine").canConvertToInt()
+                                    ||line<1||line>lineCounts.get(path)||valueLine<1||valueLine>lineCounts.get(path)
+                                    ||!Set.of("PASSIVE_STATIC","STATIC_ACTIVE_OR_UNSUPPORTED","UNRESOLVED_HTML").contains(state))throw new IllegalStateException();
+                            if(notes.put(line,"HTML_CONTEXT="+state+"; SINK_LINE="+line+"; VALUE_LINE="+valueLine)!=null)throw new IllegalStateException();
+                        }
+                        htmlNotes.put(path,notes);
+                    }
+                    for(int line:html.get(path))if(!htmlNotes.getOrDefault(path,Map.of()).getOrDefault(line,"").startsWith("HTML_CONTEXT=PASSIVE_STATIC;"))throw new IllegalStateException();
                     if(!Collections.disjoint(excluded.get(path),requests.get(path)))throw new IllegalStateException();
                 }
             } catch(InterruptedException failure) {
-                Thread.currentThread().interrupt();excluded.clear();requests.clear();secrets.clear();redirects.clear();html.clear();
+                Thread.currentThread().interrupt();excluded.clear();requests.clear();secrets.clear();redirects.clear();html.clear();htmlNotes.clear();
             } catch(Exception failure) {
-                excluded.clear();requests.clear();secrets.clear();redirects.clear();html.clear();
+                excluded.clear();requests.clear();secrets.clear();redirects.clear();html.clear();htmlNotes.clear();
             } finally {
                 if(process!=null&&process.isAlive()) {
                     process.destroyForcibly();
@@ -87,6 +103,11 @@ public final class InsecureApiUrlContext {
         for(var match:matches) {
             if(match.ruleId().equals("UNVALIDATED_REDIRECT")&&redirects.getOrDefault(match.filePath(),Set.of()).contains(match.line()))continue;
             if(match.ruleId().equals("REACT_DANGEROUS_HTML")&&html.getOrDefault(match.filePath(),Set.of()).contains(match.line()))continue;
+            if(match.ruleId().equals("REACT_DANGEROUS_HTML")) {
+                String note=htmlNotes.getOrDefault(match.filePath(),Map.of()).getOrDefault(match.line(),"HTML_CONTEXT=NOT_INSPECTED");
+                result.add(match.withFalsePositiveAnalysis(match.severity(),match.falsePositiveRisk(),match.confidence(),note));
+                continue;
+            }
             if(match.ruleId().equals("HARDCODED_FRONTEND_SECRET")&&secrets.getOrDefault(match.filePath(),Set.of()).contains(match.line()))continue;
             if(!match.ruleId().equals("INSECURE_API_URL")){result.add(match);continue;}
             if(excluded.getOrDefault(match.filePath(),Set.of()).contains(match.line()))continue;

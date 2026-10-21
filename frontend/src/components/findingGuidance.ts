@@ -42,6 +42,14 @@ export function findingGuidance(finding?: RiskFinding, vulnerability?: Vulnerabi
     steps: ['실제 설치 버전과 해당 보안 공지의 영향 범위를 확인하세요.', '호환되는 수정 버전으로 갱신하고 잠금 파일도 반영하세요.', '관련 기능 테스트 후 SecureDeploy로 다시 검사하세요.'],
     action: '기술 정보의 보안 공지와 수정 버전을 참고하세요. 표시된 버전이 모든 보안 문제의 해결을 보장하지는 않습니다.',
   };
+  if (rule === 'REACT_DANGEROUS_HTML') return {
+    summary: '화면에 넣는 HTML의 출처와 보호 처리를 확인해 주세요.',
+    risk: '외부에서 받은 내용이 HTML로 해석되면 원하지 않는 동작이 생길 수 있습니다. 삽입 구문만으로 사용자 입력 연결이나 실제 공격이 확인된 것은 아닙니다.',
+    steps: ['표시된 파일에서 출력값이 고정 문구인지, 번역·외부 데이터에서 오는지 확인하세요.',
+      '일반 텍스트는 JSX 문자열로 출력하고, HTML이 꼭 필요하면 기존 정제 처리와 허용 범위를 먼저 확인하세요.',
+      '정상 문구와 허용하지 않을 HTML을 로컬 테스트에서 비교하고 같은 프로젝트를 재검사하세요.'],
+    action: '위험한 외부 HTML이 들어오는지 확인한 뒤 필요한 경우에만 보호 처리를 수정하세요. 번역값이나 sanitizer를 확인하지 못했다면 안전하다고 단정하지 마세요.',
+  };
   if (/HARDCODED_.*(?:SECRET|PASSWORD)|DOCKER_SECRET_ENV|K8S_SECRET_PLAIN_TEXT|WEAK_JWT_SECRET/.test(rule)) return {
     summary: needsVerification(finding, vulnerability)
       ? '이 값이 실제 비밀번호나 API Key인지 확인해 주세요.'

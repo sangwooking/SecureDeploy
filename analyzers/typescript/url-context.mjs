@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import {displayContexts} from './static-display-context.mjs';
 
-export const VERSION = 'string-context-v4';
+export const VERSION = 'string-context-v5';
 const secretPattern = () => /(api[_-]?key|secret|token|accessToken|refreshToken)["']?\s*[:=]\s*["']([^"']{8,})["']/gi;
 function credentialShaped(value) {
   if (/^(?:sk-(?:proj-)?[A-Za-z0-9_-]{24,}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{24,}|AKIA[A-Z0-9]{16}|AIza[A-Za-z0-9_-]{35}|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)$/.test(value)) return true;
@@ -11,7 +11,7 @@ function credentialShaped(value) {
   return counts.size >= 12 && entropy >= 3.5;
 }
 // Parse only supplied strings. No compiler host, resolution, imports or target execution.
-export function classify(files) {
+export function classify(files, translationContextComplete=true) {
   const output = { version: VERSION, parserVersion: ts.version, files: [] };
   let total = 0;
   const deadline = Date.now() + 5000;
@@ -146,6 +146,6 @@ export function classify(files) {
     for (const [line,values] of secretLines) if (values.every(Boolean)) row.excludedSecretLines.push(line);
     row.status = 'PARSED';
   }
-  displayContexts(files.slice(0,100),output.files,deadline);
+  displayContexts(files.slice(0,100),output.files,deadline,translationContextComplete&&files.length<=100);
   return output;
 }

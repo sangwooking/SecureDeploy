@@ -41,6 +41,7 @@ export function findingTitle(result: SecurityReviewResponse, finding: RiskFindin
 
 export function codeExplanation(v: Vulnerability): { title: string; location?: string } {
   switch (v.ruleId) {
+    case 'REACT_DANGEROUS_HTML': return { title: '화면에 넣는 HTML의 출처와 보호 처리를 확인해 주세요.' };
     case 'HARDCODED_SECRET':
     case 'HARDCODED_FRONTEND_SECRET':
     case 'HARDCODED_PASSWORD': return { title: '비밀번호나 API Key가 코드에 직접 들어 있을 수 있습니다.' };

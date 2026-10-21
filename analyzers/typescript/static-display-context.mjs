@@ -8,8 +8,27 @@ const member=(object,key)=>{
   return p&&(ts.isShorthandPropertyAssignment(p)?p.name:p.initializer);
 };
 
+// Negative proof accepts a deliberately small grammar, not an HTML sanitizer.
+// No attributes, comments, foreign content, raw-text elements or browser repair.
+function passiveHtml(text, tick) {
+  if(typeof text!=='string'||text.length>250000)return false;
+  const stack=[],tags=new Set(['b','strong','i','em','p','span','div','ul','ol','li','small','br']);
+  let offset=0;
+  while(offset<text.length){
+    tick();const start=text.indexOf('<',offset);if(start<0)break;
+    const end=text.indexOf('>',start);if(end<0)return false;
+    const tag=text.slice(start,end+1).match(/^<(\/)?([a-z]+)>$/);
+    if(!tag||!tags.has(tag[2]))return false;
+    if(tag[2]==='br'){if(tag[1])return false;}
+    else if(tag[1]){if(stack.pop()!==tag[2])return false;}
+    else {if(stack.length>=20)return false;stack.push(tag[2]);}
+    offset=end+1;
+  }
+  return stack.length===0;
+}
+
 // Negative proof only. No code evaluation, module loading or arbitrary library calls.
-export function displayContexts(files, rows, deadline) {
+export function displayContexts(files, rows, deadline, translationContextComplete=true) {
   const modules=[];let steps=0;
   const tick=()=>{if(++steps>200000||Date.now()>deadline)throw Error('CONTEXT_BUDGET');};
   try {
@@ -28,7 +47,7 @@ export function displayContexts(files, rows, deadline) {
         if(n.name&&ts.isIdentifier(n.name)&&(ts.isVariableDeclaration(n)||ts.isParameter(n)||ts.isFunctionDeclaration(n)||ts.isClassDeclaration(n)||ts.isBindingElement(n))){
           const list=bindings.get(n.name.text)??[];list.push(n);bindings.set(n.name.text,list);
         }
-        if(ts.isBinaryExpression(n)&&ts.isAssignmentOperator(n.operatorToken.kind)||ts.isDeleteExpression(n)||ts.isPostfixUnaryExpression(n)){
+        if(ts.isBinaryExpression(n)&&ts.isAssignmentOperator(n.operatorToken.kind)||ts.isDeleteExpression(n)||ts.isPostfixUnaryExpression(n)||ts.isPrefixUnaryExpression(n)){
           let base=ts.isBinaryExpression(n)?n.left:n.expression??n.operand;
           while(base&&(ts.isPropertyAccessExpression(base)||ts.isElementAccessExpression(base)))base=base.expression;
           if(base&&ts.isIdentifier(base))writes.add(base.text);
@@ -42,6 +61,7 @@ export function displayContexts(files, rows, deadline) {
       const {nodes,imports,bindings,writes}=m;
       for(const call of nodes.filter(n=>ts.isCallExpression(n)&&ts.isPropertyAccessExpression(n.expression)&&n.expression.name.text==='init')){
         tick();let root=call.expression.expression,valid=true;
+        if(!ts.isExpressionStatement(call.parent)||!ts.isSourceFile(call.parent.parent))continue;
         while(ts.isCallExpression(root)&&ts.isPropertyAccessExpression(root.expression)&&root.expression.name.text==='use'){
           const plugin=root.arguments[0];const binding=plugin&&ts.isIdentifier(plugin)?imports.get(plugin.text):undefined;
           valid&&=root.arguments.length===1&&binding?.spec==='react-i18next'&&binding.key==='initReactI18next';root=root.expression.expression;
@@ -68,7 +88,7 @@ export function displayContexts(files, rows, deadline) {
           for(const p of n.properties){const key=name(p.name);if(!ts.isPropertyAssignment(p)||key===undefined||seen.has(key))throw Error('DYNAMIC_RESOURCE');seen.add(key);dictionary(p.initializer,[...path,key]);}
         }
         try{dictionary(resources);}catch{continue;}
-        providers.push({m,leaves});
+        providers.push({m,leaves,options});
         for(const leaf of leaves){
           // Require the translation namespace, a descriptive multiword label,
           // and no opaque credential shape. Generic configuration objects do not qualify.
@@ -82,9 +102,19 @@ export function displayContexts(files, rows, deadline) {
         }
       }
     }
-    const providerMutation=modules.some(m=>[...m.imports].some(([id,imp])=>imp.spec==='i18next'&&imp.key==='default'
-      && (m.writes.has(id)||m.nodes.some(n=>ts.isCallExpression(n)&&ts.isPropertyAccessExpression(n.expression)
-        && n.expression.expression.getText(m.ast)===id&&!['init','use','changeLanguage','t'].includes(n.expression.name.text)))));
+    const providerInitCount=modules.reduce((sum,m)=>sum+m.nodes.filter(n=>ts.isCallExpression(n)
+      &&ts.isPropertyAccessExpression(n.expression)&&n.expression.name.text==='init').length,0);
+    const providerMutation=!translationContextComplete||modules.length!==files.length||providerInitCount!==providers.length||modules.some(m=>
+      m.nodes.some(n=>(ts.isJsxOpeningElement(n)||ts.isJsxSelfClosingElement(n))&&n.tagName.getText(m.ast).endsWith('I18nextProvider'))
+      ||[...m.imports.values()].some(imp=>imp.spec==='react-i18next'&&imp.key==='I18nextProvider'||imp.spec==='i18next'&&imp.key!=='default')
+      ||m.nodes.some(n=>ts.isImportDeclaration(n)&&n.moduleSpecifier.text==='i18next'&&n.importClause?.namedBindings&&ts.isNamespaceImport(n.importClause.namedBindings)
+        ||ts.isCallExpression(n)&&n.arguments.some(a=>ts.isStringLiteralLike(a)&&a.text==='i18next'))
+      ||[...m.imports].some(([id,imp])=>imp.spec==='i18next'&&imp.key==='default'
+        && (m.writes.has(id)||m.nodes.some(n=>ts.isIdentifier(n)&&n.text===id
+          &&!ts.isImportClause(n.parent)
+          &&!(ts.isPropertyAccessExpression(n.parent)&&n.parent.expression===n
+            &&['init','use','changeLanguage','t'].includes(n.parent.name.text)
+            &&ts.isCallExpression(n.parent.parent)&&n.parent.parent.expression===n.parent)))));
     for(const m of modules){
       const {nodes,bindings,writes,imports,ast,row}=m;
       const unique=id=>bindings.get(id)?.length===1&&!writes.has(id)?bindings.get(id)[0]:undefined;
@@ -115,7 +145,29 @@ export function displayContexts(files, rows, deadline) {
         }
         return false;
       };
-      row.excludedRedirectLines=[];row.excludedHtmlLines=[];
+      const staticText=(original,stack=new Set(),depth=0)=>{
+        tick();const n=unwrap(original);if(!n||depth>12||stack.has(n))return;
+        stack=new Set([...stack,n]);
+        let value;
+        if(ts.isStringLiteralLike(n))value=n.text;
+        else if(ts.isIdentifier(n)){
+          const decl=declarationFor(n);
+          if(decl&&ts.isVariableDeclaration(decl)&&(decl.parent.flags&ts.NodeFlags.Const)&&decl.end<n.pos)
+            value=staticText(decl.initializer,stack,depth+1);
+        }else if(ts.isBinaryExpression(n)&&n.operatorToken.kind===ts.SyntaxKind.PlusToken){
+          const left=staticText(n.left,stack,depth+1),right=staticText(n.right,stack,depth+1);
+          if(left!==undefined&&right!==undefined)value=left+right;
+        }else if(ts.isTemplateExpression(n)){
+          value=n.head.text;
+          for(const span of n.templateSpans){
+            const part=staticText(span.expression,stack,depth+1);
+            if(part===undefined)return;
+            value+=part+span.literal.text;if(value.length>250000)return;
+          }
+        }
+        return value!==undefined&&value.length<=250000?value:undefined;
+      };
+      row.excludedRedirectLines=[];row.excludedHtmlLines=[];row.htmlContexts=[];
       for(const n of nodes){
         tick();
         if(ts.isTemplateExpression(n)||ts.isStringLiteralLike(n)){
@@ -125,7 +177,15 @@ export function displayContexts(files, rows, deadline) {
         }
         if(ts.isBinaryExpression(n)&&n.operatorToken.kind===ts.SyntaxKind.EqualsToken&&/^(?:window\.)?location\.href$/.test(n.left.getText(ast))&&origin(n.right))row.excludedRedirectLines.push(ast.getLineAndCharacterOfPosition(n.getStart(ast)).line+1);
         if(!ts.isJsxAttribute(n)||n.name.getText(ast)!=='dangerouslySetInnerHTML'||!n.initializer||!ts.isJsxExpression(n.initializer))continue;
-        const content=unwrap(member(unwrap(n.initializer.expression),'__html'));let safe=content&&ts.isStringLiteralLike(content);
+        const object=unwrap(n.initializer.expression);
+        const element=n.parent.parent;
+        const passiveContainer=(ts.isJsxOpeningElement(element)||ts.isJsxSelfClosingElement(element))
+          &&ts.isIdentifier(element.tagName)&&['div','span','p','article','section','aside','main','header','footer','li','td','th'].includes(element.tagName.text);
+        const exact=object&&ts.isObjectLiteralExpression(object)&&object.properties.length===1
+          &&ts.isPropertyAssignment(object.properties[0])&&name(object.properties[0].name)==='__html'
+          &&passiveContainer&&!n.parent.properties.some(p=>ts.isJsxSpreadAttribute(p));
+        const content=exact?unwrap(member(object,'__html')):undefined;
+        const fixed=staticText(content);let safe=fixed!==undefined&&passiveHtml(fixed,tick);
         if(!safe&&!providerMutation&&content&&ts.isCallExpression(content)&&ts.isIdentifier(content.expression)&&content.arguments.length===1&&ts.isStringLiteral(content.arguments[0])&&providers.length===1){
           const bound=unique(content.expression.text);
           const declaration=bound&&ts.isBindingElement(bound)?bound.parent.parent:undefined;
@@ -134,10 +194,21 @@ export function displayContexts(files, rows, deadline) {
           if(imp?.spec==='react-i18next'&&imp.key==='useTranslation'&&!bindings.has(init.expression.text)&&!writes.has(init.expression.text)&&init.arguments.length===0&&(name(bound.propertyName)??name(bound.name))==='t'){
             const wanted=content.arguments[0].text,locales=new Set(providers[0].leaves.map(l=>l.path[0]));
             const values=providers[0].leaves.filter(l=>l.path[1]==='translation'&&l.path.slice(2).join('.')===wanted);
-            safe=values.length===locales.size&&values.every(v=>!v.value.includes('{{'));
+            const options=unwrap(providers[0].options);
+            const plainOptions=options&&ts.isObjectLiteralExpression(options)
+              &&new Set(options.properties.map(p=>name(p.name))).size===options.properties.length&&options.properties.every(p=>
+              ts.isPropertyAssignment(p)&&['resources','lng','fallbackLng','interpolation'].includes(name(p.name))
+              &&(name(p.name)==='resources'||ts.isStringLiteralLike(unwrap(p.initializer))
+                ||name(p.name)==='interpolation'&&ts.isObjectLiteralExpression(unwrap(p.initializer))
+                  &&unwrap(p.initializer).properties.every(x=>ts.isPropertyAssignment(x)&&name(x.name)==='escapeValue'
+                    &&[ts.SyntaxKind.TrueKeyword,ts.SyntaxKind.FalseKeyword].includes(x.initializer.kind))));
+            safe=plainOptions&&values.length===locales.size&&values.every(v=>!v.value.includes('{{')&&!v.value.includes('$t(')&&passiveHtml(v.value,tick));
           }
         }
-        if(safe)row.excludedHtmlLines.push(ast.getLineAndCharacterOfPosition(n.getStart(ast)).line+1);
+        const line=ast.getLineAndCharacterOfPosition(n.getStart(ast)).line+1;
+        row.htmlContexts.push({line,valueLine:content?ast.getLineAndCharacterOfPosition(content.getStart(ast)).line+1:line,
+          status:safe?'PASSIVE_STATIC':fixed!==undefined?'STATIC_ACTIVE_OR_UNSUPPORTED':'UNRESOLVED_HTML'});
+        if(safe)row.excludedHtmlLines.push(line);
       }
       row.excludedHtmlLines=row.excludedHtmlLines.filter(line=>[...m.file.content.split('\n')[line-1].matchAll(/dangerouslySetInnerHTML/g)].length===1);
       row.excludedRedirectLines=row.excludedRedirectLines.filter(line=>[...m.file.content.split('\n')[line-1].matchAll(/(?:window\.)?location\.(?:href|assign)/g)].length===1);
@@ -145,6 +216,6 @@ export function displayContexts(files, rows, deadline) {
     }
   }catch{
     // Any budget exhaustion discards all new negative evidence, not just the last file.
-    for(const row of rows){row.excludedRedirectLines=[];row.excludedHtmlLines=[];row.excludedSecretLines=[];}
+    for(const row of rows){row.excludedRedirectLines=[];row.excludedHtmlLines=[];row.excludedSecretLines=[];row.htmlContexts=[];}
   }
 }

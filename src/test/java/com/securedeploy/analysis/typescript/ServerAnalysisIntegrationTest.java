@@ -97,6 +97,41 @@ class ServerAnalysisIntegrationTest {
         assertThat(root).doesNotExist();
     }
 
+    @Test void htmlContextEvidencePersistsAcrossZipPublicAndPrivateWithoutClearingUnknown() throws Exception {
+        String token=signup();
+        String code="const fixed='<b>Notice</b>';\nconst Safe=()=> <p dangerouslySetInnerHTML={{__html:fixed}}/>;\n"
+                +"const Unknown=({value})=> <p dangerouslySetInnerHTML={{__html:clean(value)}}/>;";
+        var zip=uploadSource(token,"Notice.tsx",code);
+        assertThat(zip.path("vulnerabilities")).hasSize(1);
+        var finding=zip.at("/vulnerabilities/0");
+        assertThat(finding.path("ruleId").asText()).isEqualTo("REACT_DANGEROUS_HTML");
+        assertThat(finding.path("line").asInt()).isEqualTo(3);
+        assertThat(finding.path("analysisNote").asText()).contains("HTML_CONTEXT=UNRESOLVED_HTML","SINK_LINE=3","외부 입력 연결");
+        assertThat(finding.path("confidence").asText()).isEqualTo("HIGH");
+        assertThat(finding.path("falsePositiveRisk").asText()).isEqualTo("LOW");
+        var roots=new ArrayList<Path>();
+        for(String name:List.of("html-public","html-private")) {
+            var root=Files.createDirectory(temp.resolve(name));roots.add(root);Files.writeString(root.resolve("Notice.tsx"),code);
+        }
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/html",roots.get(0),roots.get(0)));
+        var pub=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/html\",\"scanMode\":\"STANDARD\"}");
+        var metadata=new GitHubSourceSnapshot("fixture","html","https://github.com/fixture/html","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/html",roots.get(1),roots.get(1),metadata));
+        var prv=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        for(var response:List.of(pub,prv)) {
+            assertThat(response.path("vulnerabilities")).hasSize(1);
+            for(String field:List.of("ruleId","line","analysisNote","confidence","falsePositiveRisk"))
+                assertThat(response.at("/vulnerabilities/0/"+field)).isEqualTo(finding.path(field));
+            assertThat(response.path("securityScore")).isEqualTo(zip.path("securityScore"));
+            assertThat(response.at("/riskAssessment/prioritySummary")).isEqualTo(zip.at("/riskAssessment/prioritySummary"));
+            assertThat(detail(token,response.path("reviewId").asLong()).path("vulnerabilities")).isEqualTo(response.path("vulnerabilities"));
+        }
+        for(var root:roots)assertThat(root).doesNotExist();
+        long id=zip.path("reviewId").asLong();
+        assertThat(detail(token,id).path("vulnerabilities")).isEqualTo(zip.path("vulnerabilities"));
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+    }
+
     @Test void rlsSnapshotUsesAllInputPathsWithoutChangingRiskAndRetainsHistoryIsolation() throws Exception {
         String token=signup(),path="supabase/migrations/20260101000000_permissions.sql";
         String sql="CREATE TABLE public.entries(owner_id uuid);ALTER TABLE public.entries ENABLE ROW LEVEL SECURITY;GRANT UPDATE ON public.entries TO authenticated;CREATE POLICY broad ON public.entries FOR UPDATE TO authenticated USING(true) WITH CHECK(true);";

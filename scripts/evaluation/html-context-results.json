@@ -1,0 +1,892 @@
+{
+  "schemaVersion": 1,
+  "baselineRef": "5471e8e471e2e46470719d9b968546145c9295ef",
+  "evaluatorSha256": "cd63440e3d96fbb7b380c92e329c6d1059332afb6a60d7c76639ed31b893d254",
+  "currentSourceHashes": {
+    "url-context.mjs": "2266b5fdbb0bf4637645ac8a36f956c6668c19eb08813befe927b67246edc849",
+    "static-display-context.mjs": "7356bc8fc39776bf7f5220851fbc95f8de28f32d91d6cfe3751a7ab79993c99e"
+  },
+  "limitations": [
+    "Same-curator synthetic controls; not independently blind",
+    "Only React dangerouslySetInnerHTML reconciliation; no browser execution",
+    "UNKNOWN retained warnings are not confirmed XSS",
+    "No DOM innerHTML/insertAdjacentHTML/srcdoc flow support added",
+    "No sanitizer semantics or whole-app safety claim"
+  ],
+  "baseline": {
+    "totals": {
+      "TP": 3,
+      "FP": 3,
+      "FN": 2,
+      "TN": 3,
+      "UNKNOWN": 7,
+      "incorrectExclusion": 3
+    },
+    "results": [
+      {
+        "id": "direct-body",
+        "split": "REGRESSION",
+        "truth": "RISK",
+        "outcome": "TP",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 4.385
+          },
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.391
+          }
+        ]
+      },
+      {
+        "id": "external-html",
+        "split": "REGRESSION",
+        "truth": "RISK",
+        "outcome": "TP",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.246
+          },
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.169
+          }
+        ]
+      },
+      {
+        "id": "active-fixed",
+        "split": "REGRESSION",
+        "truth": "RISK",
+        "outcome": "FN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.441
+          },
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.191
+          }
+        ]
+      },
+      {
+        "id": "passive-literal",
+        "split": "REGRESSION",
+        "truth": "NORMAL",
+        "outcome": "TN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.176
+          },
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.13
+          }
+        ]
+      },
+      {
+        "id": "passive-alias",
+        "split": "REGRESSION",
+        "truth": "NORMAL",
+        "outcome": "FP",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.162
+          },
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.155
+          }
+        ]
+      },
+      {
+        "id": "passive-concat",
+        "split": "REGRESSION",
+        "truth": "NORMAL",
+        "outcome": "FP",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.248
+          },
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.152
+          }
+        ]
+      },
+      {
+        "id": "unknown-transform",
+        "split": "REGRESSION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.192
+          },
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.092
+          }
+        ]
+      },
+      {
+        "id": "unknown-import",
+        "split": "REGRESSION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.258
+          },
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.097
+          }
+        ]
+      },
+      {
+        "id": "provider-mutation",
+        "split": "REGRESSION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.903
+          },
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.399
+          }
+        ]
+      },
+      {
+        "id": "query-alias",
+        "split": "VALIDATION",
+        "truth": "RISK",
+        "outcome": "TP",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.108
+          },
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.097
+          }
+        ]
+      },
+      {
+        "id": "active-translation",
+        "split": "VALIDATION",
+        "truth": "RISK",
+        "outcome": "FN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.299
+          },
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.252
+          }
+        ]
+      },
+      {
+        "id": "template-constant",
+        "split": "VALIDATION",
+        "truth": "NORMAL",
+        "outcome": "FP",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.308
+          },
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.121
+          }
+        ]
+      },
+      {
+        "id": "jsx-escaped",
+        "split": "VALIDATION",
+        "truth": "NORMAL",
+        "outcome": "TN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.328
+          },
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.083
+          }
+        ]
+      },
+      {
+        "id": "fixed-translation",
+        "split": "VALIDATION",
+        "truth": "NORMAL",
+        "outcome": "TN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.276
+          },
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.625
+          }
+        ]
+      },
+      {
+        "id": "dynamic-fallback",
+        "split": "VALIDATION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.088
+          },
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.064
+          }
+        ]
+      },
+      {
+        "id": "spread-html",
+        "split": "VALIDATION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.089
+          },
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.062
+          }
+        ]
+      },
+      {
+        "id": "dynamic-interpolation",
+        "split": "VALIDATION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.203
+          },
+          {
+            "warning": true,
+            "contexts": [],
+            "elapsedMs": 0.182
+          }
+        ]
+      },
+      {
+        "id": "static-link-unmodelled",
+        "split": "VALIDATION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.177
+          },
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.057
+          }
+        ]
+      }
+    ]
+  },
+  "current": {
+    "totals": {
+      "TP": 5,
+      "FP": 0,
+      "FN": 0,
+      "TN": 6,
+      "UNKNOWN": 7,
+      "incorrectExclusion": 0
+    },
+    "results": [
+      {
+        "id": "direct-body",
+        "split": "REGRESSION",
+        "truth": "RISK",
+        "outcome": "TP",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.992
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.157
+          }
+        ]
+      },
+      {
+        "id": "external-html",
+        "split": "REGRESSION",
+        "truth": "RISK",
+        "outcome": "TP",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.08
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.063
+          }
+        ]
+      },
+      {
+        "id": "active-fixed",
+        "split": "REGRESSION",
+        "truth": "RISK",
+        "outcome": "TP",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "STATIC_ACTIVE_OR_UNSUPPORTED"
+              }
+            ],
+            "elapsedMs": 0.102
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "STATIC_ACTIVE_OR_UNSUPPORTED"
+              }
+            ],
+            "elapsedMs": 0.083
+          }
+        ]
+      },
+      {
+        "id": "passive-literal",
+        "split": "REGRESSION",
+        "truth": "NORMAL",
+        "outcome": "TN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "PASSIVE_STATIC"
+              }
+            ],
+            "elapsedMs": 0.063
+          },
+          {
+            "warning": false,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "PASSIVE_STATIC"
+              }
+            ],
+            "elapsedMs": 0.051
+          }
+        ]
+      },
+      {
+        "id": "passive-alias",
+        "split": "REGRESSION",
+        "truth": "NORMAL",
+        "outcome": "TN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "PASSIVE_STATIC"
+              }
+            ],
+            "elapsedMs": 0.133
+          },
+          {
+            "warning": false,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "PASSIVE_STATIC"
+              }
+            ],
+            "elapsedMs": 0.078
+          }
+        ]
+      },
+      {
+        "id": "passive-concat",
+        "split": "REGRESSION",
+        "truth": "NORMAL",
+        "outcome": "TN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "PASSIVE_STATIC"
+              }
+            ],
+            "elapsedMs": 0.126
+          },
+          {
+            "warning": false,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "PASSIVE_STATIC"
+              }
+            ],
+            "elapsedMs": 0.097
+          }
+        ]
+      },
+      {
+        "id": "unknown-transform",
+        "split": "REGRESSION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.084
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.071
+          }
+        ]
+      },
+      {
+        "id": "unknown-import",
+        "split": "REGRESSION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.09
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.084
+          }
+        ]
+      },
+      {
+        "id": "provider-mutation",
+        "split": "REGRESSION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.312
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.24
+          }
+        ]
+      },
+      {
+        "id": "query-alias",
+        "split": "VALIDATION",
+        "truth": "RISK",
+        "outcome": "TP",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.1
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.089
+          }
+        ]
+      },
+      {
+        "id": "active-translation",
+        "split": "VALIDATION",
+        "truth": "RISK",
+        "outcome": "TP",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.256
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.166
+          }
+        ]
+      },
+      {
+        "id": "template-constant",
+        "split": "VALIDATION",
+        "truth": "NORMAL",
+        "outcome": "TN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "PASSIVE_STATIC"
+              }
+            ],
+            "elapsedMs": 0.118
+          },
+          {
+            "warning": false,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "PASSIVE_STATIC"
+              }
+            ],
+            "elapsedMs": 0.102
+          }
+        ]
+      },
+      {
+        "id": "jsx-escaped",
+        "split": "VALIDATION",
+        "truth": "NORMAL",
+        "outcome": "TN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.07
+          },
+          {
+            "warning": false,
+            "contexts": [],
+            "elapsedMs": 0.041
+          }
+        ]
+      },
+      {
+        "id": "fixed-translation",
+        "split": "VALIDATION",
+        "truth": "NORMAL",
+        "outcome": "TN",
+        "runs": [
+          {
+            "warning": false,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "PASSIVE_STATIC"
+              }
+            ],
+            "elapsedMs": 0.133
+          },
+          {
+            "warning": false,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "PASSIVE_STATIC"
+              }
+            ],
+            "elapsedMs": 0.155
+          }
+        ]
+      },
+      {
+        "id": "dynamic-fallback",
+        "split": "VALIDATION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.068
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.056
+          }
+        ]
+      },
+      {
+        "id": "spread-html",
+        "split": "VALIDATION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.069
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.058
+          }
+        ]
+      },
+      {
+        "id": "dynamic-interpolation",
+        "split": "VALIDATION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.17
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "UNRESOLVED_HTML"
+              }
+            ],
+            "elapsedMs": 0.185
+          }
+        ]
+      },
+      {
+        "id": "static-link-unmodelled",
+        "split": "VALIDATION",
+        "truth": "UNKNOWN",
+        "outcome": "UNKNOWN",
+        "runs": [
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "STATIC_ACTIVE_OR_UNSUPPORTED"
+              }
+            ],
+            "elapsedMs": 0.064
+          },
+          {
+            "warning": true,
+            "contexts": [
+              {
+                "line": 1,
+                "valueLine": 1,
+                "status": "STATIC_ACTIVE_OR_UNSUPPORTED"
+              }
+            ],
+            "elapsedMs": 0.06
+          }
+        ]
+      }
+    ]
+  }
+}
