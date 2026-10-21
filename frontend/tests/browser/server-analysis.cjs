@@ -127,10 +127,10 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       if(process.env.SCREENSHOT_DIR) await pythonSection.locator('article').nth(1).screenshot({path:require('node:path').join(process.env.SCREENSHOT_DIR,`file-flow-${width}.png`)});
       assert.ok((await pythonSection.innerText()).includes('execute(sql, params)'));
       assert.ok((await pythonSection.innerText()).includes('전체 Python 코드'));
-      assert.ok((await pythonSection.innerText()).includes('문자열 포맷이 동적이거나 지원 범위를 벗어나'));
       for (const phrase of ['구문 파싱 2개','자원 제한 1개','보안 검사를 모두 마쳤다는 뜻이 아닙니다','미선택 1개'])
         assert.ok((await pythonSection.innerText()).includes(phrase),phrase);
       await pythonSection.getByText('파일별 구문 검사·추적 범위 (3)',{exact:true}).click();
+      assert.ok((await pythonSection.innerText()).includes('문자열 포맷이 동적이거나 지원 범위를 벗어나'));
       assert.ok((await pythonSection.innerText()).includes('파일 수 상한'));
       assert.ok((await section.innerText()).includes('functions/api/items.ts:3'));
       assert.equal(await section.locator('article').count(), 3);

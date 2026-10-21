@@ -322,6 +322,17 @@ def inspection(c, row, layer):
         return "RESOURCE_LIMIT"
     if not any(f["entrypoints"] for f in files):
         return "NOT_SUPPORTED"
+    if name == 'python' and 'PY_SQL_INPUT_FLOW' in c.get('flowRules', []):
+        uses = [u for u in row[name].get('sqlUses', []) if at(u['location'], c['targetSites'])]
+        if any(u['kind'] == 'UNRESOLVED_QUERY' for u in uses):
+            return 'UNKNOWN'
+        # A negative is inspected only when every named target has its own
+        # static/bound query and non-lazy call evidence, not merely a parsed file.
+        if c['targetSites'] and all(any(at(u['location'], [site])
+                and u['kind'] in {'STATIC_QUERY', 'PARAMETERIZED_QUERY'}
+                and u.get('executionObserved') is True and not u.get('limitations')
+                for u in uses) for site in c['targetSites']):
+            return 'INSPECTED'
     return "UNKNOWN"  # Parsing/entry recognition alone cannot prove the target path inspected.
 
 

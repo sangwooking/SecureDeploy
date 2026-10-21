@@ -1,0 +1,1229 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "202ac386bdbf6cd6a331f54c3b534a0d363005fd",
+  "engineCommit": "e55dc4e9fe2f51090575925d0181031943a577cc",
+  "productionChange": "Bounded static str.format field selection; unknown dynamic/compound/spec cases remain reviewable.",
+  "protocol": "py-django-v8",
+  "accountingVersion": "PYTHON_SQL_NEGATIVE_EVIDENCE_V3",
+  "accountingCorrection": "Old scorer ignored target-local Python STATIC_QUERY/PARAMETERIZED_QUERY call evidence; same raw outputs are rescored with the same new accounting on both sides.",
+  "manifestSha256": "5943e4a8927f8957a6fae8057fd0845574f3fa6b7e2ae7927b2a2597af8bb49d",
+  "grade": {
+    "A": 0,
+    "B": 14,
+    "C": "Seven observed public app regressions plus one preserved acquisition failure"
+  },
+  "controlled": {
+    "regression": {
+      "before": {
+        "engineCommit": "202ac386bdbf6cd6a331f54c3b534a0d363005fd",
+        "layers": {
+          "rule": {
+            "NOT_SUPPORTED": 5,
+            "UNKNOWN": 1
+          },
+          "filteredRule": {
+            "NOT_SUPPORTED": 5,
+            "UNKNOWN": 1
+          },
+          "ast": {
+            "TP": 2,
+            "FP": 3,
+            "UNKNOWN": 1
+          },
+          "reviewCandidate": {
+            "TP": 2,
+            "FP": 3,
+            "UNKNOWN": 1
+          },
+          "finalUser": {
+            "TP": 2,
+            "FP": 3,
+            "UNKNOWN": 1
+          }
+        },
+        "cases": [
+          {
+            "caseId": "bakery-selected",
+            "label": "DANGEROUS",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              117,
+              47
+            ],
+            "parentHeapSamples": [
+              88534496,
+              56334136
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "bakery-unused-position",
+            "label": "SAFE",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              45,
+              44
+            ],
+            "parentHeapSamples": [
+              56334136,
+              56334136
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "bakery-unused-keyword",
+            "label": "SAFE",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              45,
+              46
+            ],
+            "parentHeapSamples": [
+              57382712,
+              57382712
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "bakery-bound",
+            "label": "SAFE",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              45,
+              44
+            ],
+            "parentHeapSamples": [
+              58431288,
+              58431288
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "bakery-binding-too-late",
+            "label": "DANGEROUS",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              43,
+              45
+            ],
+            "parentHeapSamples": [
+              59479864,
+              59479864
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "bakery-opaque",
+            "label": "UNKNOWN",
+            "sqlKind": "UNRESOLVED_QUERY",
+            "confidence": [
+              "MEDIUM"
+            ],
+            "elapsedMs": [
+              43,
+              43
+            ],
+            "parentHeapSamples": [
+              59479864,
+              60528440
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          }
+        ]
+      },
+      "after": {
+        "engineCommit": "e55dc4e9fe2f51090575925d0181031943a577cc",
+        "layers": {
+          "rule": {
+            "NOT_SUPPORTED": 5,
+            "UNKNOWN": 1
+          },
+          "filteredRule": {
+            "NOT_SUPPORTED": 5,
+            "UNKNOWN": 1
+          },
+          "ast": {
+            "TP": 2,
+            "TN": 3,
+            "UNKNOWN": 1
+          },
+          "reviewCandidate": {
+            "TP": 2,
+            "TN": 3,
+            "UNKNOWN": 1
+          },
+          "finalUser": {
+            "TP": 2,
+            "TN": 3,
+            "UNKNOWN": 1
+          }
+        },
+        "cases": [
+          {
+            "caseId": "bakery-selected",
+            "label": "DANGEROUS",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              88,
+              42
+            ],
+            "parentHeapSamples": [
+              69406272,
+              69406272
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "bakery-unused-position",
+            "label": "SAFE",
+            "sqlKind": "STATIC_QUERY",
+            "confidence": [],
+            "elapsedMs": [
+              41,
+              40
+            ],
+            "parentHeapSamples": [
+              69406272,
+              70454848
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "bakery-unused-keyword",
+            "label": "SAFE",
+            "sqlKind": "STATIC_QUERY",
+            "confidence": [],
+            "elapsedMs": [
+              40,
+              40
+            ],
+            "parentHeapSamples": [
+              70454848,
+              71503424
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "bakery-bound",
+            "label": "SAFE",
+            "sqlKind": "PARAMETERIZED_QUERY",
+            "confidence": [],
+            "elapsedMs": [
+              40,
+              39
+            ],
+            "parentHeapSamples": [
+              72552000,
+              73600576
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "bakery-binding-too-late",
+            "label": "DANGEROUS",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              39,
+              39
+            ],
+            "parentHeapSamples": [
+              73600576,
+              56577264
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "bakery-opaque",
+            "label": "UNKNOWN",
+            "sqlKind": "UNRESOLVED_QUERY",
+            "confidence": [
+              "MEDIUM"
+            ],
+            "elapsedMs": [
+              38,
+              47
+            ],
+            "parentHeapSamples": [
+              56577264,
+              57625840
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          }
+        ]
+      }
+    },
+    "validation": {
+      "before": {
+        "engineCommit": "202ac386bdbf6cd6a331f54c3b534a0d363005fd",
+        "layers": {
+          "rule": {
+            "NOT_SUPPORTED": 7,
+            "UNKNOWN": 1
+          },
+          "filteredRule": {
+            "NOT_SUPPORTED": 7,
+            "UNKNOWN": 1
+          },
+          "ast": {
+            "FP": 3,
+            "TP": 3,
+            "TN": 1,
+            "UNKNOWN": 1
+          },
+          "reviewCandidate": {
+            "FP": 3,
+            "TP": 3,
+            "TN": 1,
+            "UNKNOWN": 1
+          },
+          "finalUser": {
+            "FP": 3,
+            "TP": 3,
+            "TN": 1,
+            "UNKNOWN": 1
+          }
+        },
+        "cases": [
+          {
+            "caseId": "boards-escaped",
+            "label": "SAFE",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              164,
+              64
+            ],
+            "parentHeapSamples": [
+              86831616,
+              87880192
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-repeat-static",
+            "label": "SAFE",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              61,
+              53
+            ],
+            "parentHeapSamples": [
+              88928768,
+              89977344
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-named-static",
+            "label": "SAFE",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              53,
+              70
+            ],
+            "parentHeapSamples": [
+              91025920,
+              92074496
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-named-input",
+            "label": "DANGEROUS",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              54,
+              55
+            ],
+            "parentHeapSamples": [
+              93123072,
+              49460096
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-index-input",
+            "label": "DANGEROUS",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              53,
+              49
+            ],
+            "parentHeapSamples": [
+              50508672,
+              50508672
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-overwrite",
+            "label": "SAFE",
+            "sqlKind": "STATIC_QUERY",
+            "confidence": [],
+            "elapsedMs": [
+              51,
+              70
+            ],
+            "parentHeapSamples": [
+              51557248,
+              51557248
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-captured",
+            "label": "DANGEROUS",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              54,
+              50
+            ],
+            "parentHeapSamples": [
+              52605824,
+              53654400
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-compound",
+            "label": "UNKNOWN",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              51,
+              53
+            ],
+            "parentHeapSamples": [
+              53654400,
+              54702976
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          }
+        ]
+      },
+      "after": {
+        "engineCommit": "e55dc4e9fe2f51090575925d0181031943a577cc",
+        "layers": {
+          "rule": {
+            "NOT_SUPPORTED": 7,
+            "UNKNOWN": 1
+          },
+          "filteredRule": {
+            "NOT_SUPPORTED": 7,
+            "UNKNOWN": 1
+          },
+          "ast": {
+            "TN": 4,
+            "TP": 3,
+            "UNKNOWN": 1
+          },
+          "reviewCandidate": {
+            "TN": 4,
+            "TP": 3,
+            "UNKNOWN": 1
+          },
+          "finalUser": {
+            "TN": 4,
+            "TP": 3,
+            "UNKNOWN": 1
+          }
+        },
+        "cases": [
+          {
+            "caseId": "boards-escaped",
+            "label": "SAFE",
+            "sqlKind": "STATIC_QUERY",
+            "confidence": [],
+            "elapsedMs": [
+              103,
+              53
+            ],
+            "parentHeapSamples": [
+              60310168,
+              61358744
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-repeat-static",
+            "label": "SAFE",
+            "sqlKind": "STATIC_QUERY",
+            "confidence": [],
+            "elapsedMs": [
+              48,
+              49
+            ],
+            "parentHeapSamples": [
+              62407320,
+              62407320
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-named-static",
+            "label": "SAFE",
+            "sqlKind": "STATIC_QUERY",
+            "confidence": [],
+            "elapsedMs": [
+              43,
+              44
+            ],
+            "parentHeapSamples": [
+              63455896,
+              63455896
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-named-input",
+            "label": "DANGEROUS",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              45,
+              45
+            ],
+            "parentHeapSamples": [
+              64504472,
+              65553048
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-index-input",
+            "label": "DANGEROUS",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              43,
+              43
+            ],
+            "parentHeapSamples": [
+              65553048,
+              66601624
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-overwrite",
+            "label": "SAFE",
+            "sqlKind": "STATIC_QUERY",
+            "confidence": [],
+            "elapsedMs": [
+              42,
+              41
+            ],
+            "parentHeapSamples": [
+              67650200,
+              67650200
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-captured",
+            "label": "DANGEROUS",
+            "sqlKind": "INPUT_IN_QUERY",
+            "confidence": [
+              "HIGH"
+            ],
+            "elapsedMs": [
+              42,
+              41
+            ],
+            "parentHeapSamples": [
+              68698776,
+              68698776
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          },
+          {
+            "caseId": "boards-compound",
+            "label": "UNKNOWN",
+            "sqlKind": "UNRESOLVED_QUERY",
+            "confidence": [
+              "MEDIUM"
+            ],
+            "elapsedMs": [
+              42,
+              44
+            ],
+            "parentHeapSamples": [
+              69747352,
+              69747352
+            ],
+            "coverage": "PARTIAL",
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED"
+          }
+        ]
+      }
+    }
+  },
+  "unknownInventory": {
+    "total": 87,
+    "byKind": {
+      "LABELED_BENCHMARK_AND_LIBRARY_PATCH": 33,
+      "CVE_PATCH": 40,
+      "CONTROLLED_GRADE_B": 7,
+      "PUBLIC_APPLICATION_GRADE_C": 7
+    },
+    "samples": [
+      {
+        "assetId": "pilot-2026-10-20-v2/owasp-BenchmarkTest00018",
+        "category": "SOURCE_API_AND_CALL_LINKAGE",
+        "evidence": "Servlet route and JDBC sink exist; getHeaders Enumeration.nextElement input contract is not confirmed. Legacy pattern TP is not structural proof.",
+        "source": {
+          "repositoryUrl": "https://github.com/OWASP-Benchmark/BenchmarkJava",
+          "repositoryCommitSha": "bc5ffeb09fb18ab039806d84ca1f718c2e332c54",
+          "cve": null,
+          "ghsa": null,
+          "language": "JAVA",
+          "framework": "Servlet",
+          "groundTruthLabel": "DANGEROUS"
+        },
+        "reference": "46eccd825182a3e17d10858d83a0fcde2e4a724e0dd945bcb8ace08a85d6a76a",
+        "reviewScope": "Purposive source/retained-evidence and current-contract review; no new exploit, independent truth adjudication or blind source execution."
+      },
+      {
+        "assetId": "pilot-2026-10-20-v2/django-28346-parent",
+        "category": "LIBRARY_BOUNDARY_AND_CONTEXT",
+        "evidence": "ORM annotation alias library code is retained, not an application request-to-SQL compiler path. A patch truth label does not supply missing callers.",
+        "source": {
+          "repositoryUrl": "https://github.com/django/django",
+          "repositoryCommitSha": "78e553b48a728ba68b427a8108e1247e5bb46048",
+          "cve": "CVE-2022-28346",
+          "ghsa": null,
+          "language": "PYTHON",
+          "framework": "Django internals",
+          "groundTruthLabel": "DANGEROUS"
+        },
+        "reference": "46eccd825182a3e17d10858d83a0fcde2e4a724e0dd945bcb8ace08a85d6a76a",
+        "reviewScope": "Purposive source/retained-evidence and current-contract review; no new exploit, independent truth adjudication or blind source execution."
+      },
+      {
+        "assetId": "realworld-2026-10-20-v3/vul4j-2-parent",
+        "category": "UNSUPPORTED_SECURITY_API_AND_CONTEXT",
+        "evidence": "SAX parser feature defense is reviewed, but XML input caller and XXE execution contract are outside current Java SQL analysis.",
+        "source": {
+          "repositoryUrl": "https://github.com/apache/xmlgraphics-batik",
+          "repositoryCommitSha": "efb98a96b9b64a557a1caf030e2c16c3902b9712",
+          "cve": "CVE-2017-5662",
+          "ghsa": null,
+          "language": "JAVA",
+          "framework": "xmlgraphics-batik implementation",
+          "groundTruthLabel": "DANGEROUS"
+        },
+        "reference": "560aae30308d3454706eb3b070828ae0cf81a3a69cc08851cbcbed1727b11ec3",
+        "reviewScope": "Purposive source/retained-evidence and current-contract review; no new exploit, independent truth adjudication or blind source execution."
+      },
+      {
+        "assetId": "realworld-2026-10-20-v3/vul4j-18-parent",
+        "category": "CALLER_CONTEXT_AND_UNSUPPORTED_SINK",
+        "evidence": "getPathInfo appears in a URL-construction helper; downstream servlet forward and Java path-flow contract are not complete.",
+        "source": {
+          "repositoryUrl": "https://github.com/apache/jspwiki",
+          "repositoryCommitSha": "f140a2a4371735ad24d04a1d78c6e1d9ceaed76f",
+          "cve": "CVE-2019-0225",
+          "ghsa": null,
+          "language": "JAVA",
+          "framework": "jspwiki implementation",
+          "groundTruthLabel": "DANGEROUS"
+        },
+        "reference": "560aae30308d3454706eb3b070828ae0cf81a3a69cc08851cbcbed1727b11ec3",
+        "reviewScope": "Purposive source/retained-evidence and current-contract review; no new exploit, independent truth adjudication or blind source execution."
+      },
+      {
+        "assetId": "realworld-2026-10-20-v3/cvefixes-cve-2017-0881-parent",
+        "category": "AUTHORIZATION_MODEL_AND_CONTEXT",
+        "evidence": "Zulip request endpoint exists, but custom decorators, private-stream policy and subscription side effects are not the supported DRF ownership contract.",
+        "source": {
+          "repositoryUrl": "https://github.com/zulip/zulip",
+          "repositoryCommitSha": "7e0ce22808f70793ba1aeab6da46c539296cdec7",
+          "cve": "CVE-2017-0881",
+          "ghsa": null,
+          "language": "PYTHON",
+          "framework": "Django Zulip stream endpoint",
+          "groundTruthLabel": "DANGEROUS"
+        },
+        "reference": "560aae30308d3454706eb3b070828ae0cf81a3a69cc08851cbcbed1727b11ec3",
+        "reviewScope": "Purposive source/retained-evidence and current-contract review; no new exploit, independent truth adjudication or blind source execution."
+      },
+      {
+        "assetId": "realworld-2026-10-20-v3/cvefixes-cve-2024-23334-parent",
+        "category": "UNSUPPORTED_FRAMEWORK_AND_RUNTIME",
+        "evidence": "aiohttp StaticResource is not a Django view; follow_symlinks and filesystem state remain separate conditions.",
+        "source": {
+          "repositoryUrl": "https://github.com/aio-libs/aiohttp",
+          "repositoryCommitSha": "33ccdfb0a12690af5bb49bda2319ec0907fa7827",
+          "cve": "CVE-2024-23334",
+          "ghsa": null,
+          "language": "PYTHON",
+          "framework": "aiohttp static routing",
+          "groundTruthLabel": "DANGEROUS"
+        },
+        "reference": "560aae30308d3454706eb3b070828ae0cf81a3a69cc08851cbcbed1727b11ec3",
+        "reviewScope": "Purposive source/retained-evidence and current-contract review; no new exploit, independent truth adjudication or blind source execution."
+      },
+      {
+        "assetId": "realworld-2026-10-20-v3/cvefixes-cve-2023-34110-parent",
+        "category": "UNSUPPORTED_FRAMEWORK_AND_CONTEXT",
+        "evidence": "Flask-AppBuilder model exception messaging needs UI propagation; a logger/exception string alone is not client exposure.",
+        "source": {
+          "repositoryUrl": "https://github.com/dpgaspar/Flask-AppBuilder",
+          "repositoryCommitSha": "98e38086c3dcc17f954e8f82d074db97b82313a5",
+          "cve": "CVE-2023-34110",
+          "ghsa": null,
+          "language": "PYTHON",
+          "framework": "Flask-AppBuilder model interface",
+          "groundTruthLabel": "DANGEROUS"
+        },
+        "reference": "560aae30308d3454706eb3b070828ae0cf81a3a69cc08851cbcbed1727b11ec3",
+        "reviewScope": "Purposive source/retained-evidence and current-contract review; no new exploit, independent truth adjudication or blind source execution."
+      },
+      {
+        "assetId": "realworld-2026-10-20-v3/cvefixes-cve-2024-34351-parent",
+        "category": "UNSUPPORTED_FRAMEWORK_INTERNAL_ENTRY",
+        "evidence": "Next server-action internals use a request-host redirect path, not the currently recognized Workers/Pages/Express request contract.",
+        "source": {
+          "repositoryUrl": "https://github.com/vercel/next.js",
+          "repositoryCommitSha": "18200a849b8feb74de3fc51583731d49cba3ce2b",
+          "cve": "CVE-2024-34351",
+          "ghsa": null,
+          "language": "TYPESCRIPT",
+          "framework": "Next.js server internals",
+          "groundTruthLabel": "DANGEROUS"
+        },
+        "reference": "560aae30308d3454706eb3b070828ae0cf81a3a69cc08851cbcbed1727b11ec3",
+        "reviewScope": "Purposive source/retained-evidence and current-contract review; no new exploit, independent truth adjudication or blind source execution."
+      },
+      {
+        "assetId": "hardening6-controls-expanded/validation-string",
+        "category": "CALL_LINKAGE_AND_RESOURCE_BOUND",
+        "evidence": "Existing probe records NODE_MODULE_CYCLE_OR_DEPTH_LIMIT and CALL_TARGET_UNRESOLVED; not a time/memory failure or a safe negative.",
+        "source": {},
+        "reference": "911d60995ae26207c540d7b6905c3e2be67a81a044c0b5073deea4927b15d1d8",
+        "reviewScope": "Purposive source/retained-evidence and current-contract review; no new exploit, independent truth adjudication or blind source execution."
+      },
+      {
+        "assetId": "applications-2026-10-20-v2/vercel--nextjs-postgres-nextauth-tailwindcss-template",
+        "category": "GROUND_TRUTH_AND_ENTRY_CONTRACT",
+        "evidence": "No whole-project truth label; Next application handler dispatch is not supported. No-warning cannot become TN.",
+        "source": {
+          "repositoryUrl": "https://github.com/vercel/nextjs-postgres-nextauth-tailwindcss-template",
+          "language": "TypeScript"
+        },
+        "reference": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+        "reviewScope": "Purposive source/retained-evidence and current-contract review; no new exploit, independent truth adjudication or blind source execution."
+      },
+      {
+        "assetId": "applications-2026-10-20-v2/wagtail--bakerydemo",
+        "category": "GROUND_TRUTH_AND_EXTERNAL_INHERITANCE",
+        "evidence": "Function search route is supported as Grade B proves; Wagtail Page inheritance and framework runtime are not thereby fully analyzed.",
+        "source": {
+          "repositoryUrl": "https://github.com/wagtail/bakerydemo",
+          "language": "Python"
+        },
+        "reference": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+        "reviewScope": "Purposive source/retained-evidence and current-contract review; no new exploit, independent truth adjudication or blind source execution."
+      }
+    ],
+    "interpretation": "87 eligibility unknowns are not 87 engine UNKNOWN outcomes. 11 purposive reviews do not estimate population frequencies; old inventory is not overwritten."
+  },
+  "trackB": [
+    {
+      "priority": 1,
+      "area": "Supported Java request collections",
+      "gap": "Enumeration/array input APIs and bounded value propagation",
+      "reuse": "Servlet/Spring request paths, demonstrated by retained BenchmarkTest00018",
+      "cost": "Small/medium adapter with dangerous/static/binding pairs",
+      "risk": "Do not treat every Enumeration as request-derived."
+    },
+    {
+      "priority": 2,
+      "area": "Django/DRF external generic bases",
+      "gap": "Known dispatch/queryset/permission inheritance with explicit overrides",
+      "reuse": "Wagtail and Netbox-like class based applications; function views already work",
+      "cost": "Medium/high; scope library versions and middleware",
+      "risk": "Unknown mixins must not imply absent or proven ownership."
+    },
+    {
+      "priority": 3,
+      "area": "Next.js / NestJS explicit server entries",
+      "gap": "App handler or controller/decorator request contracts",
+      "reuse": "Reuse SQL/SSRF value tracing; Next internals are a separate contract",
+      "cost": "Medium per framework, separate fixtures required",
+      "risk": "No retained canonical NestJS app was verified; do not claim measured Nest misses."
+    },
+    {
+      "priority": 4,
+      "area": "Flowise static module/lifecycle linkage",
+      "gap": "Workspace main/dist/barrels and proven startup method effects",
+      "reuse": "Monorepo Express applications",
+      "cost": "Medium/high; more than one current gap",
+      "risk": "Conditional deny-list and redirects cannot be declared universally safe."
+    },
+    {
+      "priority": 5,
+      "area": "Ghost Bookshelf/Knex",
+      "gap": "Verified raw receiver and bindings plus API option propagation",
+      "reuse": "Query builders across applications",
+      "cost": "High for full Ghost path; narrow sink evidence may be smaller",
+      "risk": "Do not certify raw SQL from a method name or route recognition."
+    },
+    {
+      "priority": 6,
+      "area": "NodeBB Passport",
+      "gap": "Proven strategy use/dispatch plus prototype-sensitive authorization decisions",
+      "reuse": "Passport applications beyond one CVE",
+      "cost": "High for full boundary; declaration evidence already exists",
+      "risk": "Callback declaration is not HTTP execution or authorization proof."
+    },
+    {
+      "priority": 7,
+      "area": "Strapi Koa dynamic registry",
+      "gap": "Koa route/controller/config hydration and Knex schema effects",
+      "reuse": "Koa/Strapi platforms",
+      "cost": "High, needs versioned framework acceptance fixtures",
+      "risk": "Production-only guard is not development or whole-project safety."
+    }
+  ],
+  "benchmarks": {
+    "pilot": {
+      "rule": {
+        "FN": 1,
+        "TP": 11,
+        "TN": 3,
+        "FP": 9
+      },
+      "filteredRule": {
+        "FN": 1,
+        "TP": 11,
+        "TN": 6,
+        "FP": 6
+      },
+      "ast": {
+        "TP": 3,
+        "UNKNOWN": 9,
+        "NOT_INSPECTED": 10,
+        "TN": 2
+      },
+      "reviewCandidate": {
+        "TP": 1,
+        "UNKNOWN": 9,
+        "MERGED_WITH_LEGACY": 2,
+        "NOT_INSPECTED": 10,
+        "TN": 2
+      },
+      "finalUser": {
+        "TP": 12,
+        "UNKNOWN": 3,
+        "NOT_INSPECTED": 1,
+        "TN": 2,
+        "FP": 6
+      }
+    },
+    "realworld": {
+      "rule": {
+        "NOT_SUPPORTED": 16
+      },
+      "filteredRule": {
+        "NOT_SUPPORTED": 16
+      },
+      "ast": {
+        "NOT_SUPPORTED": 14,
+        "RESOURCE_LIMIT": 2
+      },
+      "reviewCandidate": {
+        "NOT_SUPPORTED": 14,
+        "RESOURCE_LIMIT": 2
+      },
+      "finalUser": {
+        "NOT_SUPPORTED": 14,
+        "RESOURCE_LIMIT": 2
+      }
+    }
+  },
+  "applications": [
+    {
+      "projectId": "spring-projects--spring-petclinic",
+      "sourceCommit": "500158f732419217507c7656904b8e6aa1bcc0d6",
+      "legacyRiskJavaUnchanged": true,
+      "pythonFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "macrozheng--mall-tiny",
+      "sourceCommit": "a81ec4740a0c7c99a06ebffb43a14168beadffc3",
+      "legacyRiskJavaUnchanged": true,
+      "pythonFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "wagtail--bakerydemo",
+      "sourceCommit": "c9b38d7a7170dba8bb84254beb7e5dc5a955e024",
+      "legacyRiskJavaUnchanged": true,
+      "pythonFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "sourceCommit": "fe026711c19ac3ee4589c86a738f59b84e611559",
+      "legacyRiskJavaUnchanged": true,
+      "pythonFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "cloudflare--d1-northwind",
+      "sourceCommit": "766fd0d8b454b6eadd3323f9188a5ac1f8dfab64",
+      "legacyRiskJavaUnchanged": true,
+      "pythonFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "OWASP--NodeGoat",
+      "sourceCommit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "legacyRiskJavaUnchanged": true,
+      "pythonFindings": 0,
+      "typescriptFindings": 4
+    },
+    {
+      "projectId": "netbox-community--netbox",
+      "sourceCommit": "9f8b55c196501a82ea800f8f3d720165db9173a6",
+      "legacyRiskJavaUnchanged": true,
+      "pythonFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "sahat--hackathon-starter",
+      "status": "COLLECTION_FAILED_NOT_SAFE"
+    }
+  ],
+  "runtime": {
+    "pythonProtocol": "py-django-v8",
+    "typescriptProtocol": "ts-server-v11",
+    "restart": "PASS",
+    "protectedConfigurationPreserved": true,
+    "schema": "validate"
+  },
+  "riskFormulaChanged": false,
+  "limitsIncreased": false,
+  "migration": false,
+  "historicalSnapshotsRecomputed": false,
+  "validation": {
+    "backendTotal": 514,
+    "backendPassed": 507,
+    "backendSkipped": 7,
+    "python": 117,
+    "typescript": 172,
+    "frontend": 106,
+    "evaluationTools": 122,
+    "frontendBuild": "PASS",
+    "browserWidths": [
+      1440,
+      390,
+      320
+    ],
+    "commonTransport": "Real ZIP/H2 save/detail/access tests; public/private GitHub acquisition mocked."
+  },
+  "independence": "Validation originates from a different repository, but shares the targeted weakness and is single-curator controlled educational-app variation. Not blind or new actual-CVE detection.",
+  "limitations": [
+    "Unrelated original request bodies retain unsupported framework calls; target sink is inserted before them. Scope is only the controlled sink, not whole app safety.",
+    "No new Grade A pair or whole-project accuracy claim. Metrics on 12 binary cases plus two intended unknowns are not product-wide rates.",
+    "No external target execution/install/build, paid AI, operational attack, OSV/EPSS/KEV lookup or user PostgreSQL write.",
+    "Parent heap samples and short repeated timings are not peak worker RSS or a causal speedup proof."
+  ]
+}
