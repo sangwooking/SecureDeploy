@@ -44,6 +44,11 @@ def inject(source, signature, state, selected, bound):
     return result,line,source_line
 
 
+def source_sites(path, source):
+    return [dict(filePath=path,startLine=i,endLine=i) for i,line in enumerate(source.splitlines(),1)
+            if 'benchmarkRequest.getParameter' in line]
+
+
 def prepare(applications, output):
     applications,output=outside(applications),outside(output)
     plan=read(applications/'application-plan.json')
@@ -77,7 +82,8 @@ def prepare(applications, output):
                 sharedWeaknessFamily='servlet-collection-selection',language='JAVA',framework='Spring annotated controller with controlled Servlet/JDBC parameters',
                 cwe='CWE-89',area='INPUT_INJECTION',license='Apache-2.0',sourceDataset='Grade B application structure, NOT an upstream vulnerability',
                 groundTruthLabel=label,reviewed=True,groundTruthConfidence='CONTROLLED_STATIC_FLOW_REVIEW',evaluationSplit=split,
-                targetSites=[dict(filePath=path,startLine=sink,endLine=sink)],sourceSites=[dict(filePath=path,startLine=origin,endLine=origin)],
+                targetSites=[dict(filePath=path,startLine=sink,endLine=sink)],
+                sourceSites=source_sites(path,source),
                 patternRules=['DANGEROUS_SQL'],flowRules=['JAVA_SQL_INPUT_FLOW'],files=files,
                 labelEvidence=[app['repositoryUrl']+'/tree/'+app['commitSha']],
                 sourceToSinkEvidence='Original mapped method -> inserted Servlet source -> collection selection/mutation -> inserted JDBC execution.',

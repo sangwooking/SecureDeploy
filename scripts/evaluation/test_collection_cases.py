@@ -1,5 +1,5 @@
 import unittest
-from collection_cases import inject, REGRESSION, VALIDATION
+from collection_cases import inject, source_sites, REGRESSION, VALIDATION
 
 
 class CollectionCasesTest(unittest.TestCase):
@@ -26,6 +26,13 @@ class CollectionCasesTest(unittest.TestCase):
         for cases in [REGRESSION,VALIDATION]:
             self.assertEqual({row[1] for row in cases},{'DANGEROUS','SAFE','UNKNOWN'})
         self.assertFalse({row[0] for row in REGRESSION}&{row[0] for row in VALIDATION})
+
+    def test_source_sites_include_actual_map_source_not_just_unused_scalar(self):
+        result,_,origin=inject('void view() {}','void view() {',
+            'var values=benchmarkRequest.getParameterMap();','values.get("label")[0]',False)
+        sites=source_sites('Endpoint.java',result)
+        self.assertEqual([s['startLine'] for s in sites],[origin,origin+1])
+        self.assertTrue(all(s['filePath']=='Endpoint.java' for s in sites))
 
 
 if __name__=='__main__':

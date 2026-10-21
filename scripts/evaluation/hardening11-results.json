@@ -1,0 +1,6160 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "4520d11b4ebf908d2ce30da2ff54c6a3ab0c1cbf",
+  "engineCommit": "cf87e2db9ae398e3027708555154e06ff55950ce",
+  "protocol": "java-sql-v4",
+  "grade": {
+    "A": 0,
+    "B": 14
+  },
+  "controlled": {
+    "regression": {
+      "before": {
+        "engineCommit": "4520d11b4ebf908d2ce30da2ff54c6a3ab0c1cbf",
+        "manifestSha256": "ba94b25ac9e4e74ae5fbd93566bdce8131afbfd0b26bb8268464a9392e0cb335",
+        "accountingVersion": "38f2c8c79f760f3bf0a7015e2674bc335f74c4ecd19122cdee3e0d3a09bda95b",
+        "layers": {
+          "rule": {
+            "TP": 2,
+            "FP": 2,
+            "TN": 1,
+            "UNKNOWN": 1
+          },
+          "filteredRule": {
+            "TP": 2,
+            "FP": 2,
+            "TN": 1,
+            "UNKNOWN": 1
+          },
+          "ast": {
+            "UNKNOWN": 5,
+            "TN": 1
+          },
+          "reviewCandidate": {
+            "UNKNOWN": 5,
+            "TN": 1
+          },
+          "finalUser": {
+            "TP": 2,
+            "FP": 2,
+            "TN": 1,
+            "UNKNOWN": 1
+          }
+        },
+        "elapsedMs": {
+          "median": 178.5,
+          "maximum": 217
+        },
+        "cases": [
+          {
+            "caseId": "mall-selected",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              217,
+              182
+            ],
+            "parentHeapSamples": [
+              59078432,
+              60127008
+            ]
+          },
+          {
+            "caseId": "mall-unused",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "finalUser": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              168,
+              169
+            ],
+            "parentHeapSamples": [
+              61175584,
+              62224160
+            ]
+          },
+          {
+            "caseId": "mall-alias-overwrite",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "finalUser": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              180,
+              180
+            ],
+            "parentHeapSamples": [
+              63272736,
+              64321312
+            ]
+          },
+          {
+            "caseId": "mall-late-input",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              179,
+              179
+            ],
+            "parentHeapSamples": [
+              65369888,
+              65369888
+            ]
+          },
+          {
+            "caseId": "mall-binding",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "PARAMETERIZED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "filteredRule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "ast": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "reviewCandidate": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "finalUser": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              168,
+              167
+            ],
+            "parentHeapSamples": [
+              66418464,
+              67467040
+            ]
+          },
+          {
+            "caseId": "mall-opaque",
+            "truth": "UNKNOWN",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "filteredRule": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "finalUser": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              177,
+              178
+            ],
+            "parentHeapSamples": [
+              68515616,
+              69564192
+            ]
+          }
+        ]
+      },
+      "after": {
+        "engineCommit": "cf87e2db9ae398e3027708555154e06ff55950ce",
+        "manifestSha256": "ba94b25ac9e4e74ae5fbd93566bdce8131afbfd0b26bb8268464a9392e0cb335",
+        "accountingVersion": "38f2c8c79f760f3bf0a7015e2674bc335f74c4ecd19122cdee3e0d3a09bda95b",
+        "layers": {
+          "rule": {
+            "TP": 2,
+            "FP": 2,
+            "TN": 1,
+            "UNKNOWN": 1
+          },
+          "filteredRule": {
+            "TP": 2,
+            "TN": 3,
+            "UNKNOWN": 1
+          },
+          "ast": {
+            "TP": 2,
+            "TN": 3,
+            "UNKNOWN": 1
+          },
+          "reviewCandidate": {
+            "MERGED_WITH_LEGACY": 2,
+            "TN": 3,
+            "UNKNOWN": 1
+          },
+          "finalUser": {
+            "TP": 2,
+            "TN": 3,
+            "UNKNOWN": 1
+          }
+        },
+        "elapsedMs": {
+          "median": 173.5,
+          "maximum": 210
+        },
+        "cases": [
+          {
+            "caseId": "mall-selected",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "INPUT_IN_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "STRUCTURAL_PATH"
+              },
+              "reviewCandidate": {
+                "verdict": "MERGED_WITH_LEGACY",
+                "matches": 0,
+                "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "COLLECTION_READ",
+              "COLLECTION_WRITE",
+              "REQUEST_INPUT",
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              210,
+              189
+            ],
+            "parentHeapSamples": [
+              81303800,
+              82352376
+            ]
+          },
+          {
+            "caseId": "mall-unused",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "STATIC_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "ast": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "reviewCandidate": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "finalUser": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              184,
+              184
+            ],
+            "parentHeapSamples": [
+              82352376,
+              83400952
+            ]
+          },
+          {
+            "caseId": "mall-alias-overwrite",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "STATIC_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "ast": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "reviewCandidate": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "finalUser": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              169,
+              173
+            ],
+            "parentHeapSamples": [
+              84449528,
+              85498104
+            ]
+          },
+          {
+            "caseId": "mall-late-input",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "INPUT_IN_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "STRUCTURAL_PATH"
+              },
+              "reviewCandidate": {
+                "verdict": "MERGED_WITH_LEGACY",
+                "matches": 0,
+                "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "COLLECTION_READ",
+              "COLLECTION_WRITE",
+              "REQUEST_INPUT",
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              180,
+              172
+            ],
+            "parentHeapSamples": [
+              86546680,
+              87595256
+            ]
+          },
+          {
+            "caseId": "mall-binding",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "PARAMETERIZED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "filteredRule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "ast": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "reviewCandidate": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "finalUser": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              172,
+              174
+            ],
+            "parentHeapSamples": [
+              88643832,
+              89692408
+            ]
+          },
+          {
+            "caseId": "mall-opaque",
+            "truth": "UNKNOWN",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "filteredRule": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "finalUser": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              }
+            },
+            "sourceTraceKinds": [
+              "COLLECTION_READ",
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/com/macro/mall/tiny/modules/ums/controller/UmsResourceCategoryController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 4,
+                "functions": 4,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              170,
+              168
+            ],
+            "parentHeapSamples": [
+              90740984,
+              91789560
+            ]
+          }
+        ]
+      }
+    },
+    "validation": {
+      "before": {
+        "engineCommit": "4520d11b4ebf908d2ce30da2ff54c6a3ab0c1cbf",
+        "manifestSha256": "ba94b25ac9e4e74ae5fbd93566bdce8131afbfd0b26bb8268464a9392e0cb335",
+        "accountingVersion": "38f2c8c79f760f3bf0a7015e2674bc335f74c4ecd19122cdee3e0d3a09bda95b",
+        "layers": {
+          "rule": {
+            "TP": 4,
+            "FP": 2,
+            "TN": 1,
+            "UNKNOWN": 1
+          },
+          "filteredRule": {
+            "TP": 4,
+            "FP": 2,
+            "TN": 1,
+            "UNKNOWN": 1
+          },
+          "ast": {
+            "UNKNOWN": 7,
+            "TN": 1
+          },
+          "reviewCandidate": {
+            "UNKNOWN": 7,
+            "TN": 1
+          },
+          "finalUser": {
+            "TP": 4,
+            "FP": 2,
+            "TN": 1,
+            "UNKNOWN": 1
+          }
+        },
+        "elapsedMs": {
+          "median": 162.5,
+          "maximum": 189
+        },
+        "cases": [
+          {
+            "caseId": "clinic-list-selected",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              189,
+              180
+            ],
+            "parentHeapSamples": [
+              64591872,
+              65640448
+            ]
+          },
+          {
+            "caseId": "clinic-list-replaced",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "finalUser": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              159,
+              170
+            ],
+            "parentHeapSamples": [
+              65640448,
+              66689024
+            ]
+          },
+          {
+            "caseId": "clinic-array-alias",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              155,
+              154
+            ],
+            "parentHeapSamples": [
+              67737600,
+              67737600
+            ]
+          },
+          {
+            "caseId": "clinic-array-other",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "finalUser": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              154,
+              156
+            ],
+            "parentHeapSamples": [
+              68786176,
+              69834752
+            ]
+          },
+          {
+            "caseId": "clinic-conditional",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              171,
+              159
+            ],
+            "parentHeapSamples": [
+              69834752,
+              70883328
+            ]
+          },
+          {
+            "caseId": "clinic-bound-map",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "PARAMETERIZED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "filteredRule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "ast": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "reviewCandidate": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "finalUser": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              168,
+              166
+            ],
+            "parentHeapSamples": [
+              71931904,
+              71931904
+            ]
+          },
+          {
+            "caseId": "clinic-dynamic-key",
+            "truth": "UNKNOWN",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "filteredRule": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "finalUser": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              158,
+              170
+            ],
+            "parentHeapSamples": [
+              72980480,
+              72980480
+            ]
+          },
+          {
+            "caseId": "clinic-request-map",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "UNKNOWN"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              167,
+              154
+            ],
+            "parentHeapSamples": [
+              74029056,
+              75077632
+            ]
+          }
+        ]
+      },
+      "after": {
+        "engineCommit": "cf87e2db9ae398e3027708555154e06ff55950ce",
+        "manifestSha256": "ba94b25ac9e4e74ae5fbd93566bdce8131afbfd0b26bb8268464a9392e0cb335",
+        "accountingVersion": "38f2c8c79f760f3bf0a7015e2674bc335f74c4ecd19122cdee3e0d3a09bda95b",
+        "layers": {
+          "rule": {
+            "TP": 4,
+            "FP": 2,
+            "TN": 1,
+            "UNKNOWN": 1
+          },
+          "filteredRule": {
+            "TP": 4,
+            "TN": 3,
+            "UNKNOWN": 1
+          },
+          "ast": {
+            "TP": 4,
+            "TN": 3,
+            "UNKNOWN": 1
+          },
+          "reviewCandidate": {
+            "MERGED_WITH_LEGACY": 4,
+            "TN": 3,
+            "UNKNOWN": 1
+          },
+          "finalUser": {
+            "TP": 4,
+            "TN": 3,
+            "UNKNOWN": 1
+          }
+        },
+        "elapsedMs": {
+          "median": 158.0,
+          "maximum": 176
+        },
+        "cases": [
+          {
+            "caseId": "clinic-list-selected",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "INPUT_IN_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "STRUCTURAL_PATH"
+              },
+              "reviewCandidate": {
+                "verdict": "MERGED_WITH_LEGACY",
+                "matches": 0,
+                "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "COLLECTION_READ",
+              "COLLECTION_WRITE",
+              "REQUEST_INPUT",
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              176,
+              175
+            ],
+            "parentHeapSamples": [
+              66420064,
+              67468640
+            ]
+          },
+          {
+            "caseId": "clinic-list-replaced",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "STATIC_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "ast": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "reviewCandidate": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "finalUser": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": []
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              157,
+              171
+            ],
+            "parentHeapSamples": [
+              68517216,
+              68517216
+            ]
+          },
+          {
+            "caseId": "clinic-array-alias",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "INPUT_IN_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "STRUCTURAL_PATH"
+              },
+              "reviewCandidate": {
+                "verdict": "MERGED_WITH_LEGACY",
+                "matches": 0,
+                "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "COLLECTION_READ",
+              "COLLECTION_WRITE",
+              "REQUEST_INPUT",
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              155,
+              168
+            ],
+            "parentHeapSamples": [
+              69565792,
+              70614368
+            ]
+          },
+          {
+            "caseId": "clinic-array-other",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "STATIC_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "FP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "ast": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "reviewCandidate": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "finalUser": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": []
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              168,
+              158
+            ],
+            "parentHeapSamples": [
+              70614368,
+              71662944
+            ]
+          },
+          {
+            "caseId": "clinic-conditional",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "INPUT_IN_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "STRUCTURAL_PATH"
+              },
+              "reviewCandidate": {
+                "verdict": "MERGED_WITH_LEGACY",
+                "matches": 0,
+                "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "COLLECTION_READ",
+              "COLLECTION_WRITE",
+              "REQUEST_INPUT",
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              158,
+              158
+            ],
+            "parentHeapSamples": [
+              72711520,
+              72711520
+            ]
+          },
+          {
+            "caseId": "clinic-bound-map",
+            "truth": "SAFE",
+            "sqlKinds": [
+              "PARAMETERIZED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "filteredRule": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "ast": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "reviewCandidate": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              },
+              "finalUser": {
+                "verdict": "TN",
+                "matches": 0,
+                "inspection": "INSPECTED"
+              }
+            },
+            "sourceTraceKinds": [
+              "SQL_PREPARATION",
+              "VARIABLE"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": []
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 100,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 1,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              156,
+              165
+            ],
+            "parentHeapSamples": [
+              54246400,
+              54246400
+            ]
+          },
+          {
+            "caseId": "clinic-dynamic-key",
+            "truth": "UNKNOWN",
+            "sqlKinds": [
+              "UNRESOLVED_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "filteredRule": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "ast": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "reviewCandidate": {
+                "verdict": "UNKNOWN",
+                "matches": 0,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              },
+              "finalUser": {
+                "verdict": "UNKNOWN",
+                "matches": 1,
+                "inspection": "GROUND_TRUTH_UNCERTAIN"
+              }
+            },
+            "sourceTraceKinds": [
+              "COLLECTION_READ",
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              173,
+              158
+            ],
+            "parentHeapSamples": [
+              54246400,
+              55294976
+            ]
+          },
+          {
+            "caseId": "clinic-request-map",
+            "truth": "DANGEROUS",
+            "sqlKinds": [
+              "INPUT_IN_QUERY"
+            ],
+            "layers": {
+              "rule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "filteredRule": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              },
+              "ast": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "STRUCTURAL_PATH"
+              },
+              "reviewCandidate": {
+                "verdict": "MERGED_WITH_LEGACY",
+                "matches": 0,
+                "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+              },
+              "finalUser": {
+                "verdict": "TP",
+                "matches": 1,
+                "inspection": "TARGET_LOCATION_MATCH",
+                "evidenceKind": "PATTERN_OR_MIXED"
+              }
+            },
+            "sourceTraceKinds": [
+              "COLLECTION_READ",
+              "REQUEST_INPUT",
+              "SQL_CONSTRUCTION",
+              "SQL_PREPARATION"
+            ],
+            "coverage": "PARTIAL",
+            "javaFiles": [
+              {
+                "filePath": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+                "parseStatus": "PARSED",
+                "entrypoints": 1,
+                "functions": 1,
+                "sqlCallSites": 1,
+                "tracedCallSites": 1,
+                "limitations": [
+                  "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+                ]
+              }
+            ],
+            "limitations": [
+              "BOUNDED_SPRING_AND_SERVLET_ONLY",
+              "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+              "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+            ],
+            "score": 86,
+            "riskPolicy": "risk-v1.2",
+            "priority": {
+              "BLOCKING": 0,
+              "SHOULD_FIX": 0,
+              "REVIEW_REQUIRED": 2,
+              "INFORMATIONAL": 0
+            },
+            "assessment": "REVIEW_REQUIRED",
+            "elapsedMs": [
+              157,
+              155
+            ],
+            "parentHeapSamples": [
+              55294976,
+              55294976
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "pilot": {
+    "before": {
+      "engineCommit": "4520d11b4ebf908d2ce30da2ff54c6a3ab0c1cbf",
+      "manifestSha256": "46eccd825182a3e17d10858d83a0fcde2e4a724e0dd945bcb8ace08a85d6a76a",
+      "accountingVersion": "38f2c8c79f760f3bf0a7015e2674bc335f74c4ecd19122cdee3e0d3a09bda95b",
+      "layers": {
+        "rule": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 3,
+          "FP": 9
+        },
+        "filteredRule": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 6,
+          "FP": 6
+        },
+        "ast": {
+          "TP": 3,
+          "UNKNOWN": 9,
+          "NOT_INSPECTED": 10,
+          "TN": 2
+        },
+        "reviewCandidate": {
+          "TP": 1,
+          "UNKNOWN": 9,
+          "MERGED_WITH_LEGACY": 2,
+          "NOT_INSPECTED": 10,
+          "TN": 2
+        },
+        "finalUser": {
+          "TP": 12,
+          "UNKNOWN": 3,
+          "NOT_INSPECTED": 1,
+          "TN": 2,
+          "FP": 6
+        }
+      },
+      "elapsedMs": {
+        "median": 165.5,
+        "maximum": 207
+      },
+      "cases": [
+        {
+          "caseId": "owasp-BenchmarkTest00008",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "INPUT_IN_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "filteredRule": {
+              "verdict": "FN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            },
+            "reviewCandidate": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "REQUEST_INPUT",
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "URL_DECODE",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00008.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            207,
+            186
+          ],
+          "parentHeapSamples": [
+            67630488,
+            68679064
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00018",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "FUNCTION_ARGUMENT",
+            "SQL_CONSTRUCTION",
+            "URL_DECODE",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00018.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": []
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 72,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 3,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            184,
+            167
+          ],
+          "parentHeapSamples": [
+            69727640,
+            69727640
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00024",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "INPUT_IN_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            },
+            "reviewCandidate": {
+              "verdict": "MERGED_WITH_LEGACY",
+              "matches": 0,
+              "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "REQUEST_INPUT",
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00024.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            169,
+            171
+          ],
+          "parentHeapSamples": [
+            70776216,
+            70776216
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00025",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00025.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            167,
+            178
+          ],
+          "parentHeapSamples": [
+            71824792,
+            72873368
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00026",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00026.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 0,
+              "tracedCallSites": 0,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            183,
+            180
+          ],
+          "parentHeapSamples": [
+            72873368,
+            73921944
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00027",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "INPUT_IN_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            },
+            "reviewCandidate": {
+              "verdict": "MERGED_WITH_LEGACY",
+              "matches": 0,
+              "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "REQUEST_INPUT",
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00027.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            167,
+            163
+          ],
+          "parentHeapSamples": [
+            73921944,
+            74970520
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00052",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00052.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            162,
+            159
+          ],
+          "parentHeapSamples": [
+            74970520,
+            76019096
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00104",
+          "truth": "SAFE",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00104.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            161,
+            157
+          ],
+          "parentHeapSamples": [
+            58103072,
+            58103072
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00105",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "STATIC_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00105.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            158,
+            170
+          ],
+          "parentHeapSamples": [
+            58103072,
+            59151648
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00107",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 3,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 3,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 3,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00107.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 58,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 4,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            161,
+            176
+          ],
+          "parentHeapSamples": [
+            59151648,
+            60200224
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00110",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00110.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 72,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 3,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            161,
+            183
+          ],
+          "parentHeapSamples": [
+            60200224,
+            60200224
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00113",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00113.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 72,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 3,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            177,
+            161
+          ],
+          "parentHeapSamples": [
+            52197592,
+            53246168
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00032",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00032.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            156,
+            173
+          ],
+          "parentHeapSamples": [
+            53246168,
+            53246168
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00033",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00033.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 0,
+              "tracedCallSites": 0,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            171,
+            160
+          ],
+          "parentHeapSamples": [
+            54294744,
+            54294744
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00034",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 3,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 3,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 3,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00034.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 58,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 4,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            162,
+            174
+          ],
+          "parentHeapSamples": [
+            55343320,
+            55343320
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00037",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00037.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            162,
+            163
+          ],
+          "parentHeapSamples": [
+            56391896,
+            56391896
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00038",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00038.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            159,
+            171
+          ],
+          "parentHeapSamples": [
+            56391896,
+            57440472
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00039",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00039.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 0,
+              "tracedCallSites": 0,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            155,
+            157
+          ],
+          "parentHeapSamples": [
+            58489048,
+            58489048
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00114",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "STATIC_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00114.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            162,
+            171
+          ],
+          "parentHeapSamples": [
+            59537624,
+            59537624
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00190",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00190.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            177,
+            164
+          ],
+          "parentHeapSamples": [
+            60586200,
+            60586200
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00191",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00191.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            162,
+            173
+          ],
+          "parentHeapSamples": [
+            60586200,
+            61634776
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00197",
+          "truth": "SAFE",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00197.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            161,
+            174
+          ],
+          "parentHeapSamples": [
+            61634776,
+            62683352
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00200",
+          "truth": "SAFE",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00200.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            174,
+            161
+          ],
+          "parentHeapSamples": [
+            62683352,
+            63731928
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00201",
+          "truth": "SAFE",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00201.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            161,
+            157
+          ],
+          "parentHeapSamples": [
+            63731928,
+            64780504
+          ]
+        }
+      ]
+    },
+    "after": {
+      "engineCommit": "cf87e2db9ae398e3027708555154e06ff55950ce",
+      "manifestSha256": "46eccd825182a3e17d10858d83a0fcde2e4a724e0dd945bcb8ace08a85d6a76a",
+      "accountingVersion": "38f2c8c79f760f3bf0a7015e2674bc335f74c4ecd19122cdee3e0d3a09bda95b",
+      "layers": {
+        "rule": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 3,
+          "FP": 9
+        },
+        "filteredRule": {
+          "FN": 1,
+          "TP": 11,
+          "TN": 6,
+          "FP": 6
+        },
+        "ast": {
+          "TP": 5,
+          "NOT_INSPECTED": 10,
+          "UNKNOWN": 6,
+          "TN": 3
+        },
+        "reviewCandidate": {
+          "TP": 1,
+          "MERGED_WITH_LEGACY": 4,
+          "NOT_INSPECTED": 10,
+          "UNKNOWN": 6,
+          "TN": 3
+        },
+        "finalUser": {
+          "TP": 12,
+          "UNKNOWN": 3,
+          "NOT_INSPECTED": 1,
+          "TN": 2,
+          "FP": 6
+        }
+      },
+      "elapsedMs": {
+        "median": 171.0,
+        "maximum": 195
+      },
+      "cases": [
+        {
+          "caseId": "owasp-BenchmarkTest00008",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "INPUT_IN_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "filteredRule": {
+              "verdict": "FN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            },
+            "reviewCandidate": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "REQUEST_INPUT",
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "URL_DECODE",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00008.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            195,
+            185
+          ],
+          "parentHeapSamples": [
+            55655296,
+            55655296
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00018",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "INPUT_IN_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            },
+            "reviewCandidate": {
+              "verdict": "MERGED_WITH_LEGACY",
+              "matches": 0,
+              "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "COLLECTION_READ",
+            "REQUEST_INPUT",
+            "SQL_CONSTRUCTION",
+            "URL_DECODE",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00018.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            182,
+            181
+          ],
+          "parentHeapSamples": [
+            56703872,
+            57752448
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00024",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "INPUT_IN_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            },
+            "reviewCandidate": {
+              "verdict": "MERGED_WITH_LEGACY",
+              "matches": 0,
+              "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "REQUEST_INPUT",
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00024.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            168,
+            180
+          ],
+          "parentHeapSamples": [
+            57752448,
+            58801024
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00025",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00025.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            177,
+            165
+          ],
+          "parentHeapSamples": [
+            58801024,
+            58801024
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00026",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00026.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 0,
+              "tracedCallSites": 0,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            170,
+            194
+          ],
+          "parentHeapSamples": [
+            59849600,
+            59849600
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00027",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "INPUT_IN_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            },
+            "reviewCandidate": {
+              "verdict": "MERGED_WITH_LEGACY",
+              "matches": 0,
+              "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "REQUEST_INPUT",
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00027.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            176,
+            165
+          ],
+          "parentHeapSamples": [
+            60898176,
+            60898176
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00052",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00052.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            161,
+            163
+          ],
+          "parentHeapSamples": [
+            60898176,
+            61946752
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00104",
+          "truth": "SAFE",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00104.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            159,
+            160
+          ],
+          "parentHeapSamples": [
+            61946752,
+            62995328
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00105",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "STATIC_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00105.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            175,
+            163
+          ],
+          "parentHeapSamples": [
+            62995328,
+            64043904
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00107",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 3,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 3,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 3,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00107.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 58,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 4,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            178,
+            179
+          ],
+          "parentHeapSamples": [
+            64043904,
+            65092480
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00110",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00110.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 72,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 3,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            177,
+            166
+          ],
+          "parentHeapSamples": [
+            65092480,
+            66141056
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00113",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "STATIC_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00113.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            164,
+            177
+          ],
+          "parentHeapSamples": [
+            66141056,
+            67189632
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00032",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00032.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            178,
+            165
+          ],
+          "parentHeapSamples": [
+            67189632,
+            67189632
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00033",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00033.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 0,
+              "tracedCallSites": 0,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            176,
+            166
+          ],
+          "parentHeapSamples": [
+            68238208,
+            68238208
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00034",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "INPUT_IN_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 3,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "STRUCTURAL_PATH"
+            },
+            "reviewCandidate": {
+              "verdict": "MERGED_WITH_LEGACY",
+              "matches": 0,
+              "inspection": "PATH_EVIDENCE_LINKED_TO_EXISTING_WARNING"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "COLLECTION_READ",
+            "REQUEST_INPUT",
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00034.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            165,
+            177
+          ],
+          "parentHeapSamples": [
+            69286784,
+            69286784
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00037",
+          "truth": "DANGEROUS",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00037.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            175,
+            164
+          ],
+          "parentHeapSamples": [
+            69286784,
+            70335360
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00038",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00038.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            176,
+            170
+          ],
+          "parentHeapSamples": [
+            71383936,
+            71383936
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00039",
+          "truth": "DANGEROUS",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00039.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 0,
+              "tracedCallSites": 0,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            180,
+            160
+          ],
+          "parentHeapSamples": [
+            71383936,
+            72432512
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00114",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "STATIC_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 2,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00114.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            163,
+            162
+          ],
+          "parentHeapSamples": [
+            72432512,
+            72432512
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00190",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            }
+          },
+          "sourceTraceKinds": [
+            "ASSIGNMENT",
+            "COLLECTION_READ",
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00190.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            174,
+            162
+          ],
+          "parentHeapSamples": [
+            73481088,
+            73481088
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00191",
+          "truth": "SAFE",
+          "sqlKinds": [
+            "UNRESOLVED_QUERY"
+          ],
+          "layers": {
+            "rule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "filteredRule": {
+              "verdict": "TN",
+              "matches": 0,
+              "inspection": "INSPECTED"
+            },
+            "ast": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "reviewCandidate": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            },
+            "finalUser": {
+              "verdict": "UNKNOWN",
+              "matches": 0,
+              "inspection": "UNKNOWN"
+            }
+          },
+          "sourceTraceKinds": [
+            "SQL_CONSTRUCTION",
+            "SQL_PREPARATION",
+            "VARIABLE"
+          ],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00191.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 1,
+              "limitations": [
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 100,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 1,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            164,
+            164
+          ],
+          "parentHeapSamples": [
+            74529664,
+            74529664
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00197",
+          "truth": "SAFE",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00197.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            172,
+            176
+          ],
+          "parentHeapSamples": [
+            75578240,
+            75578240
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00200",
+          "truth": "SAFE",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00200.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            159,
+            161
+          ],
+          "parentHeapSamples": [
+            54411072,
+            54411072
+          ]
+        },
+        {
+          "caseId": "owasp-BenchmarkTest00201",
+          "truth": "SAFE",
+          "sqlKinds": [],
+          "layers": {
+            "rule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "filteredRule": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            },
+            "ast": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "reviewCandidate": {
+              "verdict": "NOT_INSPECTED",
+              "matches": 0,
+              "inspection": "NOT_INSPECTED"
+            },
+            "finalUser": {
+              "verdict": "FP",
+              "matches": 1,
+              "inspection": "TARGET_LOCATION_MATCH",
+              "evidenceKind": "PATTERN_OR_MIXED"
+            }
+          },
+          "sourceTraceKinds": [],
+          "coverage": "PARTIAL",
+          "javaFiles": [
+            {
+              "filePath": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00201.java",
+              "parseStatus": "PARSED",
+              "entrypoints": 2,
+              "functions": 2,
+              "sqlCallSites": 1,
+              "tracedCallSites": 0,
+              "limitations": [
+                "SQL_CALLS_OUTSIDE_TRACED_FLOW",
+                "UNSUPPORTED_FLOW_OR_UNKNOWN_CALL"
+              ]
+            }
+          ],
+          "limitations": [
+            "BOUNDED_SPRING_AND_SERVLET_ONLY",
+            "API_SHAPES_NO_TYPE_ATTRIBUTION_OR_RUNTIME_PROOF",
+            "NO_TARGET_EXECUTION_OR_ANNOTATION_PROCESSING"
+          ],
+          "score": 86,
+          "riskPolicy": "risk-v1.2",
+          "priority": {
+            "BLOCKING": 0,
+            "SHOULD_FIX": 0,
+            "REVIEW_REQUIRED": 2,
+            "INFORMATIONAL": 0
+          },
+          "assessment": "REVIEW_REQUIRED",
+          "elapsedMs": [
+            176,
+            177
+          ],
+          "parentHeapSamples": [
+            54411072,
+            55459648
+          ]
+        }
+      ]
+    },
+    "selectedFailures": [
+      {
+        "caseId": "owasp-BenchmarkTest00018",
+        "remainingLimitation": "Verified Servlet collection source and selected element now reach JDBC execution; duplicate legacy signals share the same anchor."
+      },
+      {
+        "caseId": "owasp-BenchmarkTest00032",
+        "remainingLimitation": "External helper JdbcTemplate field not supplied/resolved; collection adapter alone does not complete sink linkage."
+      },
+      {
+        "caseId": "owasp-BenchmarkTest00034",
+        "remainingLimitation": "Verified Servlet collection source and selected element now reach JDBC execution; duplicate legacy signals share the same anchor."
+      },
+      {
+        "caseId": "owasp-BenchmarkTest00037",
+        "remainingLimitation": "Nested while/for state remains outside the approved bounded collection contract."
+      },
+      {
+        "caseId": "owasp-BenchmarkTest00113",
+        "remainingLimitation": "Final SQL is static; earlier unsupported cast keeps whole-method proof incomplete, so one declaration warning remains."
+      }
+    ]
+  },
+  "realworld": {
+    "cases": 16,
+    "layersUnchanged": true
+  },
+  "applications": [
+    {
+      "projectId": "spring-projects--spring-petclinic",
+      "sourceCommit": "500158f732419217507c7656904b8e6aa1bcc0d6",
+      "legacyAndRiskUnchanged": true,
+      "javaFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "macrozheng--mall-tiny",
+      "sourceCommit": "a81ec4740a0c7c99a06ebffb43a14168beadffc3",
+      "legacyAndRiskUnchanged": true,
+      "javaFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "wagtail--bakerydemo",
+      "sourceCommit": "c9b38d7a7170dba8bb84254beb7e5dc5a955e024",
+      "legacyAndRiskUnchanged": true,
+      "javaFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "vercel--nextjs-postgres-nextauth-tailwindcss-template",
+      "sourceCommit": "fe026711c19ac3ee4589c86a738f59b84e611559",
+      "legacyAndRiskUnchanged": true,
+      "javaFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "cloudflare--d1-northwind",
+      "sourceCommit": "766fd0d8b454b6eadd3323f9188a5ac1f8dfab64",
+      "legacyAndRiskUnchanged": true,
+      "javaFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "OWASP--NodeGoat",
+      "sourceCommit": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "legacyAndRiskUnchanged": true,
+      "javaFindings": 0,
+      "typescriptFindings": 4
+    },
+    {
+      "projectId": "netbox-community--netbox",
+      "sourceCommit": "9f8b55c196501a82ea800f8f3d720165db9173a6",
+      "legacyAndRiskUnchanged": true,
+      "javaFindings": 0,
+      "typescriptFindings": 0
+    },
+    {
+      "projectId": "sahat--hackathon-starter",
+      "status": "COLLECTION_FAILED_NOT_SAFE"
+    }
+  ],
+  "evaluationCorrection": "v1 omitted an actually used request-map source line, falsely scoring a traced path as FN. v2 changes only sourceSites; both engines rerun with identical source hashes. v1 preserved.",
+  "independence": "Different app repositories, observed originals and single-curator controlled probes; no blind, novel real-CVE or whole-project accuracy claim.",
+  "limits": {
+    "workerHeapMiB": 192,
+    "workerMetaspaceMiB": 96,
+    "parentTimeoutSeconds": 8,
+    "flowSeconds": 5,
+    "flowSteps": 30000,
+    "astNodes": 60000,
+    "sourceFiles": 100,
+    "sourceCharacters": 1000000,
+    "perFileCharacters": 100000,
+    "callDepth": 3,
+    "objectsPerState": 128,
+    "slotsPerObject": 64,
+    "effectiveSlotUpperBoundPerState": 8192,
+    "mutationAndJoinSlotBudget": 2048,
+    "allocationsPerRun": 1024
+  },
+  "memoryMeasurement": "Parent JVM sampled heap only; not worker peak RSS or a measured worker memory delta. Existing JVM caps retained.",
+  "riskAndData": "Risk/score formulas and DB schema unchanged. Safe-warning suppression/dedup can change new Review scores/counts. Old snapshots untouched; version fingerprint prevents false RESOLVED.",
+  "notRun": [
+    "New private project scans",
+    "Target code execution/build/install",
+    "Paid OpenAI",
+    "Production attacks",
+    "Fresh OSV/EPSS/KEV lookup"
+  ],
+  "apiReferences": [
+    "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html",
+    "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html"
+  ],
+  "manifestSha256": "ba94b25ac9e4e74ae5fbd93566bdce8131afbfd0b26bb8268464a9392e0cb335"
+}
