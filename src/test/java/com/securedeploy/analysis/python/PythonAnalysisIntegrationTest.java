@@ -38,6 +38,31 @@ class PythonAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void stringFormatSelectionPersistsAcrossCommonInputsWithoutRiskPromotion() throws Exception {
+        String code=PythonServerAnalyzerTest.UNSAFE.replace("'SELECT * FROM demo WHERE id=' + value", "'SELECT {0}'.format('1', value)");
+        String token=signup();var safe=upload(token,code);
+        assertThat(safe.at("/serverAnalysis/pythonAnalysis/analyzerVersion").asText()).isEqualTo("py-django-v8");
+        assertThat(safe.at("/serverAnalysis/pythonAnalysis/findings")).isEmpty();
+        assertThat(safe.at("/serverAnalysis/pythonAnalysis/sqlUses/0/kind").asText()).isEqualTo("STATIC_QUERY");
+        var risk=upload(token,code.replace("{0}","{1}"));
+        assertThat(risk.at("/serverAnalysis/pythonAnalysis/validatedFindings")).hasSize(1);
+        assertThat(risk.at("/serverAnalysis/pythonAnalysis/validatedFindings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(risk.at("/serverAnalysis/pythonAnalysis/validatedFindings/0/comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        for(String key:List.of("securityScore","vulnerabilityCount","deploymentStatus"))assertThat(safe.path(key)).isEqualTo(risk.path(key));
+        assertThat(safe.at("/riskAssessment/prioritySummary")).isEqualTo(risk.at("/riskAssessment/prioritySummary"));
+        Path pub=source("format-public",code),prv=source("format-private",code);
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/format",pub,pub));
+        var publicResult=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/format\",\"scanMode\":\"STANDARD\"}");
+        var metadata=new GitHubSourceSnapshot("fixture","format","https://github.com/fixture/format","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/format",prv,prv,metadata));
+        var privateResult=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        for(var result:List.of(publicResult,privateResult))assertThat(result.path("serverAnalysis")).isEqualTo(safe.path("serverAnalysis"));
+        assertThat(pub).doesNotExist();assertThat(prv).doesNotExist();
+        long id=safe.path("reviewId").asLong();assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(safe.path("serverAnalysis"));
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+        assertThat(jdbc.queryForObject("select server_analysis_json from reviews where id=?",String.class,id)).doesNotContain("SELECT {0}");
+    }
+
     @Test void zipPublicAndPrivateShareEvidencePersistenceAndCleanupWithoutChangingRisk() throws Exception {
         String token = signup();
         var zip = upload(token, PythonServerAnalyzerTest.UNSAFE);

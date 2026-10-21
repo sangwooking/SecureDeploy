@@ -1,6 +1,6 @@
 # Bounded Python server flow analysis
 
-Trusted CPython standard-library AST worker, version `py-django-v7`.
+Trusted CPython standard-library AST worker, version `py-django-v8`.
 
 Version 7 adds response-return traceback evidence and direct Requests/HTTPX timeout observations.
 format_stack is a known stack source; format_exc requires the supported active exception context.

@@ -6,6 +6,7 @@ import time
 import resource
 import re
 import posixpath
+import string
 from dataclasses import dataclass, replace
 from pathlib import PurePosixPath, Path
 import importlib.util
@@ -32,7 +33,7 @@ _service_module = importlib.util.module_from_spec(_service_spec)
 _service_spec.loader.exec_module(_service_module)
 ServiceEvidence = _service_module.ServiceEvidence
 
-VERSION = "py-django-v7"
+VERSION = "py-django-v8"
 MAX_NODES = 60000
 MAX_STEPS = 30000
 MAX_DEPTH = 5
@@ -939,7 +940,7 @@ class Analyzer:
                     executionObserved=False, executionLocations=[]))
             return self.authorization.query(node, base.symbol[:-8], name, keywords, env=env)
         if name == "format" and base and (isinstance(base.literal, str) or base.trace):
-            return self.step(replace(merge(base, *args, *keywords.values()), literal=UNKNOWN, symbol="", tag=""), node, "SQL_STRING_CONSTRUCTION")
+            return self.string_format(node, base, args, keywords)
         if function.symbol == "str" and len(args) == 1:
             return replace(args[0], literal=UNKNOWN)
         if function.symbol == "int" and len(args) == 1 and not args[0].unknown:
@@ -963,6 +964,48 @@ class Analyzer:
                 if v.tag in {"collection", "token-options"}:
                     env[key] = replace(v, unknown=True, elements=None)
         return replace(value, unknown=True, literal=UNKNOWN, symbol="", tag="")
+
+    def string_format(self, node, base, args, keywords):
+        # Arguments have already been evaluated. Selecting fields must not undo
+        # effects in unused arguments or merge their unused values into output.
+        fallback = replace(merge(base, *args, *keywords.values()), unknown=True, literal=UNKNOWN, symbol="", tag="")
+        selected = [base]
+        automatic, manual, next_index = False, False, 0
+        try:
+            if base.unknown or not isinstance(base.literal, str) or len(base.literal) > 8192:
+                raise ValueError('DYNAMIC_OR_LARGE_FORMAT')
+            for count, (_, field, spec, conversion) in enumerate(string.Formatter().parse(base.literal)):
+                self.tick()
+                if count >= 64 or spec or conversion:
+                    raise ValueError('COMPLEX_FORMAT')
+                if field is None:
+                    continue
+                if field == '':
+                    if manual:
+                        raise ValueError('MIXED_FIELD_NUMBERING')
+                    automatic = True
+                    index = next_index
+                    next_index += 1
+                    if index >= len(args):
+                        raise ValueError('MISSING_ARGUMENT')
+                    selected.append(args[index])
+                elif field.isascii() and field.isdecimal():
+                    if automatic or len(field) > 6:
+                        raise ValueError('MIXED_OR_LARGE_FIELD')
+                    manual = True
+                    index = int(field)
+                    if index >= len(args):
+                        raise ValueError('MISSING_ARGUMENT')
+                    selected.append(args[index])
+                elif field.isidentifier() and field in keywords:
+                    selected.append(keywords[field])
+                else:
+                    raise ValueError('UNSUPPORTED_FIELD')
+            result = replace(merge(*selected), literal=UNKNOWN, symbol="", tag="")
+        except ValueError:
+            self.note('STRING_FORMAT_UNRESOLVED')
+            result = fallback
+        return self.step(result, node, 'SQL_STRING_CONSTRUCTION')
 
     def resource_call(self, node, function, base, name, args, keywords):
         if function.unknown and not (base and base.tag in {"path", "guarded-path", "file-handle", "uploaded-file", "binary-stream"}):

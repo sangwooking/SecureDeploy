@@ -20,7 +20,8 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
           recommendation:'SQL 문법을 고정하고 PreparedStatement의 set 메서드로 값을 분리하세요.',verificationSteps:['로컬 Mock으로 값 바인딩을 확인하고 재검사하세요.']}]};
       result.serverAnalysis.deploymentAnalysis = require('../deployment-fixture.cjs')();
       const python = require('../server-analysis-fixture.cjs')();
-      python.analyzerVersion = 'py-django-v2'; python.parserVersion = 'CPython-3.14.5';
+      python.analyzerVersion = 'py-django-v8'; python.parserVersion = 'CPython-3.14.5';
+      python.files[0].limitations.push('STRING_FORMAT_UNRESOLVED');
       python.selectionCoverage={discoveredFiles:3,submittedFiles:2,omittedFiles:1,omittedDetails:0,submittedCharacters:100,omissionReasons:{FILE_COUNT_LIMIT:1}};
       python.files[0].selectionReason='DJANGO_ENTRY_HINT';
       python.files.push({filePath:'app/registry.py',parseStatus:'PARSED',flowStatus:'NOT_SUPPORTED',entrypoints:0,functionsAnalyzed:0,limitations:['NO_SUPPORTED_SERVER_ENTRY_OR_CALL']},
@@ -126,6 +127,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       if(process.env.SCREENSHOT_DIR) await pythonSection.locator('article').nth(1).screenshot({path:require('node:path').join(process.env.SCREENSHOT_DIR,`file-flow-${width}.png`)});
       assert.ok((await pythonSection.innerText()).includes('execute(sql, params)'));
       assert.ok((await pythonSection.innerText()).includes('전체 Python 코드'));
+      assert.ok((await pythonSection.innerText()).includes('문자열 포맷이 동적이거나 지원 범위를 벗어나'));
       for (const phrase of ['구문 파싱 2개','자원 제한 1개','보안 검사를 모두 마쳤다는 뜻이 아닙니다','미선택 1개'])
         assert.ok((await pythonSection.innerText()).includes(phrase),phrase);
       await pythonSection.getByText('파일별 구문 검사·추적 범위 (3)',{exact:true}).click();

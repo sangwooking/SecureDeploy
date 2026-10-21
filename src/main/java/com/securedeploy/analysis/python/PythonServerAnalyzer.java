@@ -117,7 +117,7 @@ public class PythonServerAnalyzer {
     }
 
     private ServerAnalysisSnapshot unavailable(String status, List<FileCoverage> files, String reason) {
-        return new ServerAnalysisSnapshot(1, "py-django-v7", null, status, files, List.of(), List.of(), List.of(), List.of(reason), List.of(), List.of());
+        return new ServerAnalysisSnapshot(1, "py-django-v8", null, status, files, List.of(), List.of(), List.of(), List.of(reason), List.of(), List.of());
     }
 
     private FileCoverage skipped(String path, String reason) {
@@ -125,7 +125,7 @@ public class PythonServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"py-django-v7".equals(result.analyzerVersion()) || result.parserVersion() == null || !result.parserVersion().matches("CPython-3\\.\\d+\\.\\d+")
+        if (result.schemaVersion() != 1 || !"py-django-v8".equals(result.analyzerVersion()) || result.parserVersion() == null || !result.parserVersion().matches("CPython-3\\.\\d+\\.\\d+")
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.resourceUses() == null || result.resourceUses().size() > 200
