@@ -2,7 +2,7 @@ import {analyzePolicies} from './rls.mjs';
 import {linkSupabaseEvidence} from './supabase-evidence.mjs';
 
 export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies}){
-  const unavailable=reason=>({schemaVersion:1,analyzerVersion:'supabase-rls-v1',status:'PARTIAL',files:(input.policyFiles??[]).slice(0,100).map(f=>({filePath:f.filePath,status:'NOT_RUN',statements:0,limitations:[reason]})),tables:[],clients:[],accesses:[],findings:[],limitations:['DECLARATIONS_NOT_LIVE_DATABASE',reason]});
+  const unavailable=reason=>({schemaVersion:1,analyzerVersion:'supabase-rls-v2',status:'PARTIAL',files:(input.policyFiles??[]).slice(0,100).map(f=>({filePath:f.filePath,status:'NOT_RUN',statements:0,limitations:[reason]})),tables:[],clients:[],accesses:[],findings:[],limitations:['DECLARATIONS_NOT_LIVE_DATABASE',reason]});
   const location=(node,mod,kind)=>{const p=mod.ast.getLineAndCharacterOfPosition(node.getStart(mod.ast));return {filePath:mod.filePath,line:p.line+1,column:p.character+1,functionName:'',kind};};
   const clients=[],accesses=[],limitations=['DECLARATIONS_NOT_LIVE_DATABASE','CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF'];
   let policies;
@@ -97,7 +97,7 @@ export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies}){
       verificationSteps:['격리 테스트 환경에서 사용자 A·B의 조회·수정·삭제와 소유자 변경을 각각 확인하세요.','익명 사용자와 관리자 경로를 따로 검사하고 실제 적용 migration·GRANT·역할을 대조한 뒤 재검사하세요.'],
       limitations:['DECLARATIONS_NOT_LIVE_DATABASE','PUBLIC_OR_SHARED_DATA_INTENT_UNKNOWN','REQUEST_EXECUTION_AND_EXPLOIT_NOT_VERIFIED']});
   }
-  const snapshot={schemaVersion:1,analyzerVersion:'supabase-rls-v1',status:policies.files.length||accesses.length||clients.length?'PARTIAL':'NOT_APPLICABLE',
+  const snapshot={schemaVersion:1,analyzerVersion:'supabase-rls-v2',status:policies.files.length||accesses.length||clients.length?'PARTIAL':'NOT_APPLICABLE',
     ...policies,clients,accesses,findings,limitations:[...policies.limitations,...limitations]};
   linkSupabaseEvidence({ts,modules,snapshot,tick});
   return Buffer.byteLength(JSON.stringify(snapshot))>300000?unavailable('SUPABASE_OUTPUT_LIMIT'):snapshot;

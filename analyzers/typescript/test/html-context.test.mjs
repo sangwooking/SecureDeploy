@@ -4,6 +4,21 @@ import {classify} from '../url-context.mjs';
 
 const scan = content => classify([{filePath:'app/page.tsx', content}]).files[0];
 const view = value => `const View=()=> <div dangerouslySetInnerHTML={{__html:${value}}}/>;`;
+test('closed static HTTPS anchors accept only an inert quoted href contract', () => {
+  for(const html of ['<a href="https://docs.example.invalid/help">Help</a>',
+    "<p>Read <a href='https://support.example.invalid/terms?q=public'>terms</a>.</p>"]) {
+    assert.deepEqual(scan(view(JSON.stringify(html))).excludedHtmlLines,[1]);
+  }
+  for(const html of ['<a href="javascript:alert(1)">x</a>', '<a href="//host.invalid">x</a>',
+    '<a href="https://host.invalid" onclick="alert(1)">x</a>',
+    '<a href="https://host.invalid" target="_blank">x</a>',
+    '<a href="https://user:pass@host.invalid">x</a>', '<a href="https://host.invalid/&#34;">x</a>',
+    '<a href="https://host.invalid/\\evil">x</a>', '<a href="https://host.invalid"><img src=x onerror=alert(1)></a>',
+    '<a href="https://host.invalid"><a href="https://other.invalid">x</a></a>']) {
+    assert.deepEqual(scan(view(JSON.stringify(html))).excludedHtmlLines,[]);
+  }
+  assert.deepEqual(scan(view('`<a href="https://host.invalid/${input}">x</a>`')).excludedHtmlLines,[]);
+});
 test('fixed active markup is never negative XSS evidence', () => {
   for (const value of ['<img src=x onerror=alert(1)>','<script>alert(1)</script>',
     '<a href="javascript:alert(1)">open</a>','<svg onload=alert(1)>',

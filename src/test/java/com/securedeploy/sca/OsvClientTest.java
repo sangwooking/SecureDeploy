@@ -89,6 +89,17 @@ class OsvClientTest {
         assertThat(result.warnings()).isNotEmpty();
         server.verify();
     }
+    @Test void connectionFailureAndInvalidQueryAreNotEmptySuccessfulResults() {
+        server.expect(requestTo("https://api.osv.dev/v1/querybatch"))
+                .andRespond(withException(new java.net.ConnectException()));
+        var disconnected=client.lookup(List.of(dependency(ScaEcosystem.NPM,"example","1.0.0","package.json")));
+        assertThat(disconnected.incomplete()).isTrue();assertThat(disconnected.analyzedIdentities()).isEmpty();
+        server.verify();server.reset();
+        server.expect(requestTo("https://api.osv.dev/v1/querybatch")).andRespond(withStatus(HttpStatus.BAD_REQUEST));
+        var invalid=client.lookup(List.of(dependency(ScaEcosystem.NPM,"example","1.0.0","package.json")));
+        assertThat(invalid.incomplete()).isTrue();assertThat(invalid.analyzedIdentities()).isEmpty();
+        server.verify();
+    }
     @Test void pypiUsesNormalizedNameExactPinsAndPreservesSeparateFixRanges() {
         var declared = dependency(ScaEcosystem.PYPI, "Example_Package", "1.0.0", "requirements.txt");
         server.expect(requestTo("https://api.osv.dev/v1/querybatch"))

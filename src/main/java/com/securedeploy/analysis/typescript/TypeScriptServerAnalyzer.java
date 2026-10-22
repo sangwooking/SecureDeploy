@@ -25,7 +25,7 @@ public class TypeScriptServerAnalyzer {
         var sql=project.analysisFiles().stream().filter(f->f.type()==com.securedeploy.project.model.ProjectFileType.SUPABASE_SQL)
                 .sorted(Comparator.comparing(f->f.relativePath())).limit(100)
                 .map(f->new SupabaseSnapshot.SqlFile(CoverageRecorder.safePath(f.relativePath()),"NOT_RUN",0,List.of("ANALYZER_NOT_AVAILABLE"))).toList();
-        return result.withSupabaseAnalysis(new SupabaseSnapshot(1,"supabase-rls-v1",sql.isEmpty()&&"NOT_APPLICABLE".equals(result.status())?"NOT_APPLICABLE":"PARTIAL",
+        return result.withSupabaseAnalysis(new SupabaseSnapshot(1,"supabase-rls-v2",sql.isEmpty()&&"NOT_APPLICABLE".equals(result.status())?"NOT_APPLICABLE":"PARTIAL",
                 sql,List.of(),List.of(),List.of(),List.of(),List.of("DECLARATIONS_NOT_LIVE_DATABASE","ANALYZER_NOT_AVAILABLE")));
     }
     private ServerAnalysisSnapshot analyzeInternal(ProjectStructure project,TypeScriptSourceSelector.Plan selection) {
@@ -153,7 +153,7 @@ public class TypeScriptServerAnalyzer {
 
     private void validateSupabase(SupabaseSnapshot snapshot,Map<String,Integer> files){
         if(snapshot==null)return; // Older fixture workers have no RLS snapshot.
-        if(snapshot.schemaVersion()!=1||!"supabase-rls-v1".equals(snapshot.analyzerVersion())||snapshot.files().size()>100
+        if(snapshot.schemaVersion()!=1||!"supabase-rls-v2".equals(snapshot.analyzerVersion())||snapshot.files().size()>100
                 ||snapshot.tables().size()>200||snapshot.clients().size()>100||snapshot.accesses().size()>200||snapshot.findings().size()>200)throw new IllegalArgumentException("INVALID_RLS_RESPONSE");
         var locations=new ArrayList<ServerAnalysisSnapshot.Location>();
         snapshot.tables().forEach(t->{locations.add(t.location());locations.addAll(t.grantLocations());if(t.policies().size()>500||t.operations().size()>8)throw new IllegalArgumentException("INVALID_RLS_LIMIT");t.policies().forEach(p->locations.add(p.location()));});

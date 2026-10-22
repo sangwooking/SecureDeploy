@@ -1,9 +1,11 @@
 """Pre-labelled v1 freeze controls on licensed app trees; target code is never run."""
 import argparse
+import subprocess
 from collections import Counter, defaultdict
 import copy
 import hashlib
 import json
+import re
 from pathlib import Path
 import shutil
 
@@ -207,10 +209,14 @@ def prepare(original_root,destination):
     print(json.dumps({'projects':4,'gradeBCases':60,'truth':frozen['truthCounts'],'groundTruthSha256':result['frozenGroundTruthSha256']}))
 
 
-def report(root,raw_file,output):
+def report(root,raw_file,output,comparison_engine=None):
     root=outside(root);plan=read(root/'application-plan.json');truth=read(root/'frozen-ground-truth.json');raw=read(raw_file)
-    if raw['engineCommit']!=ENGINE or truth['engineCommit']!=ENGINE:raise ValueError('ENGINE_CHANGED')
-    if truth['evaluatorSha256']!=digest(Path(__file__).read_bytes()):raise ValueError('EVALUATOR_CHANGED_AFTER_FREEZE')
+    if truth['engineCommit']!=ENGINE or raw['engineCommit']!=(comparison_engine or ENGINE):raise ValueError('ENGINE_CHANGED')
+    if comparison_engine:
+        if not re.fullmatch('[0-9a-f]{40}',comparison_engine):raise ValueError('EXACT_COMPARISON_ENGINE_REQUIRED')
+        original=subprocess.check_output(['git','show','c492568b501473acf1eef31f53e0879c2a7bd462:scripts/evaluation/freeze_evaluation.py'],cwd=Path(__file__).resolve().parents[2])
+        if digest(original)!=truth['evaluatorSha256']:raise ValueError('BASELINE_EVALUATOR_MISMATCH')
+    elif truth['evaluatorSha256']!=digest(Path(__file__).read_bytes()):raise ValueError('EVALUATOR_CHANGED_AFTER_FREEZE')
     if truth['runnerSourceSha256']!=digest((Path(__file__).resolve().parents[2]/'src/test/java/com/securedeploy/evaluation/ApplicationEvaluationRunner.java').read_bytes()):raise ValueError('RUNNER_CHANGED_AFTER_FREEZE')
     if digest((root/'application-plan.json').read_bytes())!=raw['planSha256']or digest((root/'frozen-ground-truth.json').read_bytes())!=plan['frozenGroundTruthSha256']:raise ValueError('FROZEN_INPUT_CHANGED')
     by_project={p['projectId']:p for p in raw['projects']};rows=[];counts=Counter();areas=defaultdict(Counter);frameworks=defaultdict(Counter)
@@ -256,7 +262,8 @@ def report(root,raw_file,output):
             elif c['area']=='SSRF':uncertainty_ok=any(u.get('kind')=='UNRESOLVED_DESTINATION'for u in uses)and not found
             elif c['area']=='HTML':uncertainty_ok=any(e['filePath']==path and e['line']==line and 'HTML_CONTEXT=UNRESOLVED_HTML' in e['analysisNote']for e in r.get('htmlContextEvidence',[]))
             elif c.get('uncertaintyDimension')=='AUTH_SESSION':
-                access=next((a for a in ts['supabaseAnalysis'].get('accesses',[])if a.get('table')==c['table']and 'freeze-policy-links' in a['location']['filePath']),{})
+                session_path='supabase/functions/freeze-policy-links/index.ts'if c['framework']=='EDGE'else'app/api/freeze/policy-links/route.ts'
+                access=next((a for a in ts['supabaseAnalysis'].get('accesses',[])if a.get('table')==c['table']and a['location']['filePath']==session_path),{})
                 e=access.get('authorizationEvidence')or{}
                 dimensions={'policyState':(operation or {}).get('state'),'authStatus':e.get('authStatus'),'effectiveRole':e.get('effectiveRole')}
                 uncertainty_ok=exact_policy and dimensions=={'policyState':'UID_COLUMN_EQUALITY','authStatus':'SESSION_READ_UNVERIFIED','effectiveRole':'UNKNOWN'}
@@ -272,7 +279,7 @@ def report(root,raw_file,output):
             'uncertainReviewSignal':c['truth']=='UNKNOWN'and found})
     denominator=sum(counts[k]for k in ['TP','FP','FN','TN'])
     risk_count=sum(c['truth']=='RISK'for c in truth['cases'])
-    result=dict(schemaVersion=1,engineCommit=ENGINE,planSha256=raw['planSha256'],groundTruthSha256=plan['frozenGroundTruthSha256'],
+    result=dict(schemaVersion=1,engineCommit=raw['engineCommit'],baselineEngineCommit=ENGINE,comparisonPhase=bool(comparison_engine),planSha256=raw['planSha256'],groundTruthSha256=plan['frozenGroundTruthSha256'],
         evaluatorSha256=digest(Path(__file__).read_bytes()),counts=dict(counts),byArea={k:dict(v)for k,v in areas.items()},
         precision=counts['TP']/(counts['TP']+counts['FP'])if counts['TP']+counts['FP']else None,
         supportedInspectedRecall=counts['TP']/(counts['TP']+counts['FN'])if counts['TP']+counts['FN']else None,
@@ -288,6 +295,9 @@ def report(root,raw_file,output):
         limitations=[truth['independence'],truth['scaScope'],'Parent heap samples are not child peak RSS',
             'Finding candidates are the product projection, not persisted user Reviews or runtime exploit results',
             'Grade A real vulnerable/fixed app pairs not added; source-free controlled study only'])
+    if comparison_engine:
+        result['baselineEvaluatorSha256']=truth['evaluatorSha256']
+        result['scoringChange']='Exact framework-specific AUTH_SESSION evidence path lookup only; original labels, named targets and outcome rules retained. First report is not rewritten.'
     result['acceptanceChecks']={'precisionThresholdPassed':result['precision']is not None and result['precision']>=truth['acceptance']['precisionTarget'],
         'recallThresholdPassed':result['supportedInspectedRecall']is not None and result['supportedInspectedRecall']>=truth['acceptance']['recallTarget'],
         'noSupportedExposureSsrfFN':not any(r['area']in {'EXPOSURE','SSRF'}and r['outcome']=='FN'for r in rows),
@@ -302,4 +312,5 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser();sub=parser.add_subparsers(dest='cmd',required=True)
     p=sub.add_parser('prepare');p.add_argument('original_root',type=Path);p.add_argument('destination',type=Path)
     p=sub.add_parser('report');p.add_argument('root',type=Path);p.add_argument('raw_file',type=Path);p.add_argument('output',type=Path)
-    args=vars(parser.parse_args());cmd=args.pop('cmd');globals()[cmd](**args)
+    p=sub.add_parser('compare');p.add_argument('root',type=Path);p.add_argument('raw_file',type=Path);p.add_argument('output',type=Path);p.add_argument('comparison_engine')
+    args=vars(parser.parse_args());cmd=args.pop('cmd');globals()['report'if cmd=='compare'else cmd](**args)

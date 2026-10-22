@@ -46,11 +46,16 @@ class DisplayContextIntegrationTest {
             var result=scan("const View=()=> <div dangerouslySetInnerHTML={{__html:"+value+"}}/>;","",true);
             assertThat(result).hasSize(1);
             assertThat(result.get(0).analysisNote()).contains("HTML_CONTEXT=");
+            assertThat(result.get(0).analysisNote()).contains("CONFIDENCE_SCOPE=SINK_PATTERN","SOURCE_LINK=NOT_ESTABLISHED","DEFENSE=NOT_VERIFIED","RUNTIME=NOT_VERIFIED");
             var file=new ProjectFile(Path.of("View.tsx"),"View.tsx",ProjectFileType.REACT,List.of(""));
             var filtered=new com.securedeploy.rule.filter.FalsePositiveAnalyzer().analyze(new ProjectStructure(Path.of("/unreadable-target"),List.of(file)),result);
             assertThat(filtered).hasSize(1);
             assertThat(filtered.get(0).analysisNote()).contains("HTML_CONTEXT=", "외부 입력 연결");
             assertThat(filtered.get(0).confidence()).isEqualTo(com.securedeploy.rule.model.DetectionConfidence.HIGH);
         }
+    }
+    @Test void fixedHttpsLinkIsReconciledButActiveAttributesAndUnknownValuesRemain() {
+        assertThat(scan("const html='<a href=\"https://guide.example.invalid/path\">Help</a>';const View=()=> <div dangerouslySetInnerHTML={{__html:html}}/>;","",true)).isEmpty();
+        assertThat(scan("const html='<a href=\"https://guide.example.invalid\" onclick=\"act()\">Help</a>';const View=()=> <div dangerouslySetInnerHTML={{__html:html}}/>;","",true)).hasSize(1);
     }
 }

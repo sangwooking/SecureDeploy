@@ -9,7 +9,8 @@ const member=(object,key)=>{
 };
 
 // Negative proof accepts a deliberately small grammar, not an HTML sanitizer.
-// No attributes, comments, foreign content, raw-text elements or browser repair.
+// Only a fixed HTTPS anchor's quoted href is accepted as an attribute.
+// No comments, foreign content, raw-text elements or browser repair.
 function passiveHtml(text, tick) {
   if(typeof text!=='string'||text.length>250000)return false;
   const stack=[],tags=new Set(['b','strong','i','em','p','span','div','ul','ol','li','small','br']);
@@ -17,7 +18,16 @@ function passiveHtml(text, tick) {
   while(offset<text.length){
     tick();const start=text.indexOf('<',offset);if(start<0)break;
     const end=text.indexOf('>',start);if(end<0)return false;
-    const tag=text.slice(start,end+1).match(/^<(\/)?([a-z]+)>$/);
+    const fragment=text.slice(start,end+1);
+    const anchor=fragment.match(/^<a href=(?:"([^"<>]*)"|'([^'<>]*)')>$/);
+    if(anchor){
+      const href=anchor[1]??anchor[2];
+      if(!/^https:\/\/[\x21-\x7e]+$/.test(href)||/[&\\"'<>`]/.test(href)||stack.includes('a')||stack.length>=20)return false;
+      try{const url=new URL(href);if(url.protocol!=='https:'||!url.hostname||url.username||url.password)return false;}catch{return false;}
+      stack.push('a');offset=end+1;continue;
+    }
+    const tag=fragment.match(/^<(\/)?([a-z]+)>$/);
+    if(tag?.[1]&&tag[2]==='a'){if(stack.pop()!=='a')return false;offset=end+1;continue;}
     if(!tag||!tags.has(tag[2]))return false;
     if(tag[2]==='br'){if(tag[1])return false;}
     else if(tag[1]){if(stack.pop()!==tag[2])return false;}

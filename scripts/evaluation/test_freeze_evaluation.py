@@ -1,9 +1,17 @@
 from collections import Counter
 import unittest
-from freeze_evaluation import controls
+from unittest.mock import patch
+from pathlib import Path
+from freeze_evaluation import controls,report,ENGINE
 
 
 class FreezeControlsTest(unittest.TestCase):
+    def test_comparison_rejects_a_different_raw_engine_before_scoring(self):
+        with patch('freeze_evaluation.outside',return_value=Path('/private/tmp/frozen')),\
+             patch('freeze_evaluation.read',side_effect=[{}, {'engineCommit':ENGINE},{'engineCommit':ENGINE}]):
+            with self.assertRaisesRegex(ValueError,'ENGINE_CHANGED'):
+                report(Path('/private/tmp/frozen'),Path('/private/tmp/raw'),Path('/private/tmp/new'),'0'*40)
+
     def test_truth_and_support_are_declared_before_execution(self):
         rows=[]
         for kind in ('EDGE','NEXT'):

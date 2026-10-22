@@ -84,25 +84,29 @@ class Cursor {
 }
 
 export function analyzePolicies(files,tick,workTick=tick){
-  const tables=new Map(),results=[],limits=new Set(['DECLARATIONS_NOT_LIVE_DATABASE','ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN']);
+  const tables=new Map(),results=[],limits=new Set(['DECLARATIONS_NOT_LIVE_DATABASE','ROLE_INHERITANCE_AND_ADMIN_BYPASS_UNKNOWN','CLI_NUMERIC_VERSION_LEXICAL_ORDER_NOT_DEPLOYMENT_PROOF']);
   const scopes=new Map();
   const migrationRoots=new Set(files.map(f=>f.filePath.match(/^(.*)supabase\/migrations\/[^/]+\.sql$/)?.[1]).filter(v=>v!==undefined));
   const ambiguousRoots=new Set(files.filter(f=>!f.filePath.includes('/migrations/')).map(f=>f.filePath.match(/^(.*)supabase\/(?:schemas\/|policies\/)?[^/]+\.sql$/)?.[1]??(f.filePath==='schema.sql'?'':null)).filter(v=>v!==null&&migrationRoots.has(v)));
   function table(scope,name,location){const key=scope+'|'+name;if(!tables.has(key)){if(tables.size>=200)throw Error('SQL_TABLE_LIMIT');tables.set(key,{scope,table:name,rls:'UNKNOWN',force:'UNKNOWN',location,policies:new Map(),grants:new Map(),grantLocations:[],uncertain:false});}return tables.get(key);}
   let statements=0,workExhausted=false;
-  for(const file of [...files].sort((a,b)=>a.filePath.localeCompare(b.filePath,'en'))){
-    tick();const path=file.filePath,match=path.match(/^(.*)supabase\/migrations\/(\d{14})_[^/]+\.sql$/);
+  // CLI ListLocalMigrations uses directory lexical order and accepts numeric
+  // version strings, not just generated 14-digit timestamps. Never run scripts.
+  for(const file of [...files].sort((a,b)=>a.filePath<b.filePath?-1:a.filePath>b.filePath?1:0)){
+    tick();const path=file.filePath,match=path.match(/^(.*)supabase\/migrations\/(\d+)_[^/]*\.sql$/);
     const migration=path.match(/^(.*)supabase\/migrations\/[^/]+\.sql$/);
     const scope=migration?migration[1]:'standalone:'+path;
-    const state=scopes.get(scope)??{unknown:false,versions:new Set()};scopes.set(scope,state);
-    if(ambiguousRoots.has(scope)||!migration&&ambiguousRoots.size)state.unknown=true;
-    if(migration&&!match)state.unknown=true;
+    const state=scopes.get(scope)??{unknown:false,versions:new Set(),reasons:new Set()};scopes.set(scope,state);
+    const uncertain=reason=>{state.unknown=true;state.reasons.add(reason);};
+    if(ambiguousRoots.has(scope)||!migration&&ambiguousRoots.size)uncertain('MIGRATION_ORDER_MULTIPLE_SQL_SOURCES');
+    if(migration&&!match)uncertain('MIGRATION_ORDER_UNSUPPORTED_FILENAME');
+    if(match&&match[2].length===14&&path.endsWith('_init.sql')&&match[2]<'20211209000000')uncertain('MIGRATION_ORDER_LEGACY_INIT_SKIP_UNKNOWN');
     const location=line=>({filePath:path,line,column:1,functionName:'',kind:'RLS_DECLARATION'});
     if(file.status!=='SELECTED'){
-      state.unknown=true;results.push({filePath:path,status:file.status,statements:0,limitations:['SQL_SOURCE_NOT_INSPECTED',...(file.reason?[file.reason]:[])]});continue;
+      uncertain('MIGRATION_SOURCE_NOT_INSPECTED');results.push({filePath:path,status:file.status,statements:0,limitations:['SQL_SOURCE_NOT_INSPECTED',...(file.reason?[file.reason]:[])]});continue;
     }
-    if(workExhausted){state.unknown=true;results.push({filePath:path,status:'NOT_RUN',statements:0,limitations:['POLICY_STEP_BUDGET']});continue;}
-    if(match&&state.versions.has(match[2]))state.unknown=true;
+    if(workExhausted){uncertain('MIGRATION_SOURCE_POLICY_BUDGET');results.push({filePath:path,status:'NOT_RUN',statements:0,limitations:['POLICY_STEP_BUDGET']});continue;}
+    if(match&&state.versions.has(match[2]))uncertain('MIGRATION_VERSION_DUPLICATE');
     if(match)state.versions.add(match[2]);
     const row={filePath:path,status:'PARSED',statements:0,limitations:[]};results.push(row);
     try{
@@ -160,10 +164,10 @@ export function analyzePolicies(files,tick,workTick=tick){
           }else if(c.eat('begin')||c.eat('commit'))c.end();
           else if(c.eat('do')||c.eat('set')||c.eat('reset')||c.eat('rollback'))throw Error('DYNAMIC_OR_TRANSACTION_STATE_UNKNOWN');
           else {row.status='PARTIAL';row.limitations.push('OTHER_SQL_NOT_INTERPRETED');}
-        }catch{row.status='PARTIAL';row.limitations.push('UNSUPPORTED_SQL_DECLARATION');if(target)target.uncertain=true;else state.unknown=true;}
+        }catch{row.status='PARTIAL';row.limitations.push('UNSUPPORTED_SQL_DECLARATION');if(target)target.uncertain=true;else uncertain('MIGRATION_SQL_EFFECT_UNKNOWN');}
       }
     }catch(error){
-      state.unknown=true;
+      uncertain('MIGRATION_SOURCE_PARSE_OR_BUDGET_FAILURE');
       if(error?.message==='POLICY_STEP_BUDGET'){
         row.status='LIMIT_EXCEEDED';row.limitations.push('POLICY_STEP_BUDGET');
         workExhausted=true;limits.add('POLICY_STEP_BUDGET');
@@ -189,7 +193,7 @@ export function analyzePolicies(files,tick,workTick=tick){
         policyLocations:applicable.map(p=>p.location)});
     }
     output.push({scope:t.scope,table:t.table,rls:uncertain?'UNKNOWN':t.rls,force:t.force,location:t.location,grantLocations:t.grantLocations,policies,operations,
-      limitations:['DECLARATIONS_NOT_LIVE_DATABASE',...(uncertain?['MIGRATION_OR_SQL_CONTEXT_UNKNOWN']:[])]});
+      limitations:['DECLARATIONS_NOT_LIVE_DATABASE',...(uncertain?['MIGRATION_OR_SQL_CONTEXT_UNKNOWN',...scopes.get(t.scope).reasons]:[])]});
   }
   return {files:results,tables:output,limitations:[...limits]};
 }

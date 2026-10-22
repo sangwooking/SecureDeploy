@@ -7,6 +7,24 @@ const grant='GRANT SELECT,INSERT,UPDATE,DELETE ON public.notes TO authenticated;
 const owner='CREATE POLICY own ON public.notes FOR ALL TO authenticated USING (auth.uid()=user_id) WITH CHECK(user_id=(select auth.uid()));';
 const run=(sql,files=[])=>analyze({files,policyFiles:Array.isArray(sql)?sql:[source(sql)]}).supabaseAnalysis;
 const op=(r,operation,role='authenticated')=>r.tables[0].operations.find(o=>o.operation===operation&&o.role===role);
+test('CLI-compatible numeric versions follow lexical file order, not supplied or numeric order',()=>{
+  const r=run([source('ALTER POLICY open ON public.notes USING(auth.uid()=user_id) WITH CHECK(auth.uid()=user_id);','002_guard.sql'),
+    source(table+grant+'CREATE POLICY open ON public.notes FOR ALL TO authenticated USING(true);','001_base.sql')]);
+  assert.equal(op(r,'UPDATE').state,'UID_COLUMN_EQUALITY');assert.equal(r.findings.length,0);
+  const broad=run([source(table+grant+'CREATE POLICY open ON public.notes FOR ALL TO authenticated USING(true);','001_base.sql')]);
+  assert.equal(broad.findings.length,1);
+  const dropped=run([source(table+grant+'CREATE POLICY open ON public.notes USING(true);','001_base.sql'),
+    source('DROP POLICY open ON public.notes;','002_drop.sql')]);
+  assert.equal(dropped.findings.length,0);assert.equal(op(dropped,'UPDATE').state,'DENY');
+});
+test('unproven order, duplicate versions and omitted SQL explain uncertainty without final findings',()=>{
+  for(const tail of [source('SELECT 1;','manual.sql'),source('SELECT 1;','001_duplicate.sql'),
+    {filePath:'supabase/migrations/002_missing.sql',status:'LIMIT_EXCEEDED'}]) {
+    const r=run([source(table+grant+'CREATE POLICY open ON public.notes USING(true);','001_base.sql'),tail]);
+    assert.equal(op(r,'UPDATE').state,'UNKNOWN');assert.equal(r.findings.length,0);
+    assert.ok(r.tables[0].limitations.some(x=>/^MIGRATION_(?:ORDER|VERSION|SOURCE)/.test(x)));
+  }
+});
 
 test('shared execution pressure preserves client declarations alongside server and policy evidence',()=>{
   const r=analyze({files:[

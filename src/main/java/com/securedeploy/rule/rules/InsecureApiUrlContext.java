@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 /** Shared bounded string-context reconciliation; missing evidence never removes a warning. */
 @Component
 public final class InsecureApiUrlContext {
-    private static final String VERSION = "string-context-v5";
+    private static final String VERSION = "string-context-v6";
     private final TypeScriptAnalysisProperties properties;
     private final Semaphore capacity = new Semaphore(2);
     private final ObjectMapper mapper = new ObjectMapper();
@@ -104,7 +104,8 @@ public final class InsecureApiUrlContext {
             if(match.ruleId().equals("UNVALIDATED_REDIRECT")&&redirects.getOrDefault(match.filePath(),Set.of()).contains(match.line()))continue;
             if(match.ruleId().equals("REACT_DANGEROUS_HTML")&&html.getOrDefault(match.filePath(),Set.of()).contains(match.line()))continue;
             if(match.ruleId().equals("REACT_DANGEROUS_HTML")) {
-                String note=htmlNotes.getOrDefault(match.filePath(),Map.of()).getOrDefault(match.line(),"HTML_CONTEXT=NOT_INSPECTED");
+                String note=htmlNotes.getOrDefault(match.filePath(),Map.of()).getOrDefault(match.line(),"HTML_CONTEXT=NOT_INSPECTED")
+                        +"; CONFIDENCE_SCOPE=SINK_PATTERN; SOURCE_LINK=NOT_ESTABLISHED; DEFENSE=NOT_VERIFIED; RUNTIME=NOT_VERIFIED";
                 result.add(match.withFalsePositiveAnalysis(match.severity(),match.falsePositiveRisk(),match.confidence(),note));
                 continue;
             }
