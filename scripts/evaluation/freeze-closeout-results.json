@@ -1,0 +1,2743 @@
+{
+  "schemaVersion": 1,
+  "engineCommit": "046d4c9905a7a83cc742ff70dc2a5bbafb0fcaf7",
+  "baselineEngineCommit": "fb6bb350a8097601f8e5b5a0fd862dfba7c5cae4",
+  "primaryReportSha256": "26a4589d5d4cb3cdec3cfd03c2570ca2085ded95f56f0ca5d969e8735afa4bb4",
+  "groundTruthSha256": "95f5dea77be00f36601cfe0fa90645f8b03c216559e891a2660001132d592542",
+  "planSha256": "c3e2f18c00b2d17b1ab4e4dc49a9614a4304bc0fbeb462ca2ceb06eee193b8a2",
+  "comparisonReport": {
+    "schemaVersion": 1,
+    "engineCommit": "046d4c9905a7a83cc742ff70dc2a5bbafb0fcaf7",
+    "baselineEngineCommit": "fb6bb350a8097601f8e5b5a0fd862dfba7c5cae4",
+    "comparisonPhase": true,
+    "planSha256": "c3e2f18c00b2d17b1ab4e4dc49a9614a4304bc0fbeb462ca2ceb06eee193b8a2",
+    "groundTruthSha256": "95f5dea77be00f36601cfe0fa90645f8b03c216559e891a2660001132d592542",
+    "evaluatorSha256": "e5c572d4c4aaffd30feba102b33b474b12920045b79e455e142d1ead8c547629",
+    "counts": {
+      "TP": 20,
+      "TN": 18,
+      "NOT_INSPECTED": 10,
+      "UNKNOWN": 10,
+      "NOT_SUPPORTED": 2
+    },
+    "byArea": {
+      "EXPOSURE": {
+        "TP": 6,
+        "TN": 2,
+        "NOT_INSPECTED": 4,
+        "UNKNOWN": 2
+      },
+      "SSRF": {
+        "TP": 6,
+        "TN": 6,
+        "UNKNOWN": 2
+      },
+      "HTML": {
+        "TP": 2,
+        "NOT_SUPPORTED": 2,
+        "TN": 4,
+        "UNKNOWN": 2
+      },
+      "RLS": {
+        "TP": 4,
+        "TN": 4,
+        "UNKNOWN": 4
+      },
+      "DEPLOYMENT": {
+        "TP": 2,
+        "TN": 2
+      },
+      "SCA": {
+        "NOT_INSPECTED": 6
+      }
+    },
+    "precision": 1.0,
+    "supportedInspectedRecall": 1.0,
+    "allRiskDetectionFraction": 0.8333333333333334,
+    "binaryInspectionFraction": 0.7916666666666666,
+    "allCaseInspectionFraction": 0.8,
+    "caseResults": [
+      {
+        "caseId": "edge-secret-envelope",
+        "framework": "EDGE",
+        "area": "EXPOSURE",
+        "truth": "RISK",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "supabase/functions/freeze-secret-envelope/index.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Private server configuration returned inside a nested response object.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "ea689698b4c02a2979822a71efc6567422d92d516da2531a060af424efe07844",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "secret-envelope",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "supabase/functions/freeze-secret-envelope/index.ts",
+                "line": 3,
+                "column": 18,
+                "functionName": "handler",
+                "kind": "SERVER_SECRET_ENVIRONMENT_VALUE"
+              },
+              {
+                "filePath": "supabase/functions/freeze-secret-envelope/index.ts",
+                "line": 3,
+                "column": 7,
+                "functionName": "handler",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "supabase/functions/freeze-secret-envelope/index.ts",
+                "line": 4,
+                "column": 8,
+                "functionName": "handler",
+                "kind": "HTTP_RESPONSE"
+              }
+            ],
+            "ruleId": "TS_SENSITIVE_DATA_EXPOSURE",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "supabase/functions/freeze-secret-envelope/index.ts",
+              "line": 4,
+              "column": 8,
+              "functionName": "handler",
+              "kind": "HTTP_RESPONSE"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-secret-helper",
+        "framework": "EDGE",
+        "area": "EXPOSURE",
+        "truth": "RISK",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "supabase/functions/freeze-secret-helper/index.ts",
+        "targetLine": 1,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Local function parameter reaches a serialized HTTP response.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "4c130d953e7b1d0a4a35d03dd8209d499c8036ef4409daa84a6a334381b44f6d",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "secret-helper",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "supabase/functions/freeze-secret-helper/index.ts",
+                "line": 3,
+                "column": 21,
+                "functionName": "handler",
+                "kind": "SERVER_SECRET_ENVIRONMENT_VALUE"
+              },
+              {
+                "filePath": "supabase/functions/freeze-secret-helper/index.ts",
+                "line": 3,
+                "column": 8,
+                "functionName": "handler",
+                "kind": "FUNCTION_ARGUMENT"
+              },
+              {
+                "filePath": "supabase/functions/freeze-secret-helper/index.ts",
+                "line": 1,
+                "column": 37,
+                "functionName": "packageReply",
+                "kind": "HTTP_RESPONSE"
+              }
+            ],
+            "ruleId": "TS_SENSITIVE_DATA_EXPOSURE",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "supabase/functions/freeze-secret-helper/index.ts",
+              "line": 1,
+              "column": 37,
+              "functionName": "packageReply",
+              "kind": "HTTP_RESPONSE"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-auth-log",
+        "framework": "EDGE",
+        "area": "EXPOSURE",
+        "truth": "RISK",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "supabase/functions/freeze-auth-log/index.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Authorization header value is logged; actual log access is not proved.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "8cb1de5a8ff96c3c8ebeda559c9a95cddc606334218f746c058bb8735647afdb",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "auth-log",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "supabase/functions/freeze-auth-log/index.ts",
+                "line": 3,
+                "column": 16,
+                "functionName": "handler",
+                "kind": "AUTHENTICATION_HEADER"
+              },
+              {
+                "filePath": "supabase/functions/freeze-auth-log/index.ts",
+                "line": 3,
+                "column": 7,
+                "functionName": "handler",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "supabase/functions/freeze-auth-log/index.ts",
+                "line": 4,
+                "column": 1,
+                "functionName": "handler",
+                "kind": "LOG_ARGUMENT"
+              }
+            ],
+            "ruleId": "TS_SENSITIVE_DATA_EXPOSURE",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "supabase/functions/freeze-auth-log/index.ts",
+              "line": 4,
+              "column": 1,
+              "functionName": "handler",
+              "kind": "LOG_ARGUMENT"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-public-key",
+        "framework": "EDGE",
+        "area": "EXPOSURE",
+        "truth": "NORMAL",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "supabase/functions/freeze-public-key/index.ts",
+        "targetLine": 3,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Explicitly public/anonymous configuration is not a private-server-secret leak.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "2ed52d2767cdbc43ada6f3ee1305a809c496e019cbc2aa732e83218bd4041544",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "public-key",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-private-internal",
+        "framework": "EDGE",
+        "area": "EXPOSURE",
+        "truth": "NORMAL",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "supabase/functions/freeze-private-internal/index.ts",
+        "targetLine": 5,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Private value stays in a fixed outbound service header, not the returned response.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "df43d09fbb13fc0ce1c531ebd5d8e2521dcfacfe5ffdfd599768c1ceec0f8180",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "private-internal",
+        "outcome": "NOT_INSPECTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [
+          "NO_EXACT_SINK_NEGATIVE_OR_UNCERTAIN_EVIDENCE"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-presence-only",
+        "framework": "EDGE",
+        "area": "EXPOSURE",
+        "truth": "NORMAL",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "supabase/functions/freeze-presence-only/index.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Boolean presence information does not reveal the secret value.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "93e95287df7ea8183830d47a65e451914a6288392a93077a6c59743c07cc44c4",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "presence-only",
+        "outcome": "NOT_INSPECTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [
+          "NO_EXACT_SINK_NEGATIVE_OR_UNCERTAIN_EVIDENCE"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-opaque-mask",
+        "framework": "EDGE",
+        "area": "EXPOSURE",
+        "truth": "UNKNOWN",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "supabase/functions/freeze-opaque-mask/index.ts",
+        "targetLine": 3,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Unprovided transform may remove or retain sensitive information.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "f9b343864c6bd13028aa536ca8da9125868cdb0056a9c9f426ae41ed4c7ec4ab",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "opaque-mask",
+        "outcome": "UNKNOWN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": true,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-body-relay",
+        "framework": "EDGE",
+        "area": "SSRF",
+        "truth": "RISK",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "supabase/functions/freeze-body-relay/index.ts",
+        "targetLine": 1,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Request body controls a URL passed through a local function to fetch.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "a6eebc99fe05d7fbbf8a96a1671056e82c4c333adee49b0719ef0b327729e453",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "body-relay",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "supabase/functions/freeze-body-relay/index.ts",
+                "line": 3,
+                "column": 20,
+                "functionName": "handler",
+                "kind": "REQUEST_BODY"
+              },
+              {
+                "filePath": "supabase/functions/freeze-body-relay/index.ts",
+                "line": 3,
+                "column": 7,
+                "functionName": "handler",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "supabase/functions/freeze-body-relay/index.ts",
+                "line": 4,
+                "column": 7,
+                "functionName": "handler",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "supabase/functions/freeze-body-relay/index.ts",
+                "line": 5,
+                "column": 8,
+                "functionName": "handler",
+                "kind": "FUNCTION_ARGUMENT"
+              }
+            ],
+            "ruleId": "TS_SSRF_INPUT_FLOW",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "supabase/functions/freeze-body-relay/index.ts",
+              "line": 1,
+              "column": 36,
+              "functionName": "relay",
+              "kind": "HTTP_REQUEST_CALL"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-request-wrapper",
+        "framework": "EDGE",
+        "area": "SSRF",
+        "truth": "RISK",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "supabase/functions/freeze-request-wrapper/index.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Query parameter controls the Request destination passed to fetch.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "e3c603a3051feedc01a24ca33d09a2fa2ba05717002ce0609cf9f80ea6426182",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "request-wrapper",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "supabase/functions/freeze-request-wrapper/index.ts",
+                "line": 3,
+                "column": 15,
+                "functionName": "handler",
+                "kind": "QUERY_PARAMETER"
+              },
+              {
+                "filePath": "supabase/functions/freeze-request-wrapper/index.ts",
+                "line": 3,
+                "column": 7,
+                "functionName": "handler",
+                "kind": "VARIABLE"
+              }
+            ],
+            "ruleId": "TS_SSRF_INPUT_FLOW",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "supabase/functions/freeze-request-wrapper/index.ts",
+              "line": 4,
+              "column": 8,
+              "functionName": "handler",
+              "kind": "HTTP_REQUEST_CALL"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-header-relay",
+        "framework": "EDGE",
+        "area": "SSRF",
+        "truth": "RISK",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "supabase/functions/freeze-header-relay/index.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Caller-controlled request header determines the outbound destination.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "544a32dd4480397ac40782b3f92ca4f401f7d9d427b1750a0fa4ec3e5dde0757",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "header-relay",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "supabase/functions/freeze-header-relay/index.ts",
+                "line": 3,
+                "column": 19,
+                "functionName": "handler",
+                "kind": "REQUEST_HEADER"
+              },
+              {
+                "filePath": "supabase/functions/freeze-header-relay/index.ts",
+                "line": 3,
+                "column": 7,
+                "functionName": "handler",
+                "kind": "VARIABLE"
+              }
+            ],
+            "ruleId": "TS_SSRF_INPUT_FLOW",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "supabase/functions/freeze-header-relay/index.ts",
+              "line": 4,
+              "column": 8,
+              "functionName": "handler",
+              "kind": "HTTP_REQUEST_CALL"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-fixed-query",
+        "framework": "EDGE",
+        "area": "SSRF",
+        "truth": "NORMAL",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "supabase/functions/freeze-fixed-query/index.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Request data changes query data only, not the fixed authority.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "4c4ad30f2171517fb763b64bc10098afd7e127e9a70a41c91af56f5acbfdddb7",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "fixed-query",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-url-query",
+        "framework": "EDGE",
+        "area": "SSRF",
+        "truth": "NORMAL",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "supabase/functions/freeze-url-query/index.ts",
+        "targetLine": 5,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Parsed fixed URL is modified only through searchParams.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "219054be940be498893b7e1b5c2ccf68d5b849d8eabd10a222d10bccda43cf85",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "url-query",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-fixed-choice",
+        "framework": "EDGE",
+        "area": "SSRF",
+        "truth": "NORMAL",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "supabase/functions/freeze-fixed-choice/index.ts",
+        "targetLine": 5,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Either branch selects a fixed server-owned destination.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "d4a3d7794c647594f76c5243d24e0de5517eae935cedf8564fdfc3efbd496321",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "fixed-choice",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-opaque-address",
+        "framework": "EDGE",
+        "area": "SSRF",
+        "truth": "UNKNOWN",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "supabase/functions/freeze-opaque-address/index.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Unprovided transform could validate or retain an arbitrary destination.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "385d57c7aa2a69bc0aa35e2e2c012baceb8a18e267a15aaaebe84a9714be440d",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "opaque-address",
+        "outcome": "UNKNOWN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": true,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-react-raw-query",
+        "framework": "EDGE",
+        "area": "HTML",
+        "truth": "RISK",
+        "grade": "B",
+        "targetRule": "REACT_DANGEROUS_HTML",
+        "targetFile": "src/freeze-evaluation/HtmlCases.tsx",
+        "targetLine": 2,
+        "support": "SUPPORTED",
+        "rationale": "Decoded URL query value enters the React raw-HTML property directly on a rendered panel route.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "e093e1abaf1f5d25466003afcd37930f4be9c172c4ad78a20eeb97b8d769bc62",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "react-raw-query",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 2,
+            "filePath": "src/freeze-evaluation/HtmlCases.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-dom-insert",
+        "framework": "EDGE",
+        "area": "HTML",
+        "truth": "RISK",
+        "grade": "B",
+        "targetRule": "REACT_DANGEROUS_HTML",
+        "targetFile": "src/freeze-evaluation/HtmlCases.tsx",
+        "targetLine": 3,
+        "support": "NOT_SUPPORTED",
+        "rationale": "Raw DOM innerHTML input; current React rule is not general DOM taint support.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "e093e1abaf1f5d25466003afcd37930f4be9c172c4ad78a20eeb97b8d769bc62",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "dom-insert",
+        "outcome": "NOT_SUPPORTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [
+          "GENERAL_DOM_FLOW_NOT_SUPPORTED"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-react-escaped",
+        "framework": "EDGE",
+        "area": "HTML",
+        "truth": "NORMAL",
+        "grade": "B",
+        "targetRule": "REACT_DANGEROUS_HTML",
+        "targetFile": "src/freeze-evaluation/HtmlCases.tsx",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "rationale": "React ordinary string child, not raw HTML insertion.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "e093e1abaf1f5d25466003afcd37930f4be9c172c4ad78a20eeb97b8d769bc62",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "react-escaped",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-react-link",
+        "framework": "EDGE",
+        "area": "HTML",
+        "truth": "NORMAL",
+        "grade": "B",
+        "targetRule": "REACT_DANGEROUS_HTML",
+        "targetFile": "src/freeze-evaluation/HtmlCases.tsx",
+        "targetLine": 5,
+        "support": "SUPPORTED",
+        "rationale": "Known fixed HTTPS link with no active attributes; do not relabel normal as UNKNOWN.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "e093e1abaf1f5d25466003afcd37930f4be9c172c4ad78a20eeb97b8d769bc62",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "react-link",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-react-opaque",
+        "framework": "EDGE",
+        "area": "HTML",
+        "truth": "UNKNOWN",
+        "grade": "B",
+        "targetRule": "REACT_DANGEROUS_HTML",
+        "targetFile": "src/freeze-evaluation/HtmlCases.tsx",
+        "targetLine": 6,
+        "support": "SUPPORTED",
+        "rationale": "Sanitizer contract is absent; sink review is not confirmed XSS.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "e093e1abaf1f5d25466003afcd37930f4be9c172c4ad78a20eeb97b8d769bc62",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "react-opaque",
+        "outcome": "UNKNOWN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 6,
+            "filePath": "src/freeze-evaluation/HtmlCases.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": true,
+        "uncertainReviewSignal": true
+      },
+      {
+        "caseId": "edge-wide-update",
+        "framework": "EDGE",
+        "area": "RLS",
+        "truth": "RISK",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 4,
+        "table": "public.freeze_edge_wide_update",
+        "role": "authenticated",
+        "operation": "UPDATE",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": null,
+        "rationale": "Repository policy declaration only; private-row intent for write controls, deliberately public SELECT for public-read.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "52c436e09b9efef4903a28d5eb660e10d615c2b2b4c426477cde156a54207cb7",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "wide-update",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 4,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              },
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 2,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              },
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 3,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              }
+            ],
+            "ruleId": "SUPABASE_BROAD_WRITE_DECLARATION",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+              "line": 4,
+              "column": 1,
+              "functionName": "",
+              "kind": "RLS_DECLARATION"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-wide-insert",
+        "framework": "EDGE",
+        "area": "RLS",
+        "truth": "RISK",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 8,
+        "table": "public.freeze_edge_wide_insert",
+        "role": "authenticated",
+        "operation": "INSERT",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": null,
+        "rationale": "Repository policy declaration only; private-row intent for write controls, deliberately public SELECT for public-read.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "52c436e09b9efef4903a28d5eb660e10d615c2b2b4c426477cde156a54207cb7",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "wide-insert",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 8,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              },
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 6,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              },
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 7,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              }
+            ],
+            "ruleId": "SUPABASE_BROAD_WRITE_DECLARATION",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+              "line": 8,
+              "column": 1,
+              "functionName": "",
+              "kind": "RLS_DECLARATION"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-owner-update",
+        "framework": "EDGE",
+        "area": "RLS",
+        "truth": "NORMAL",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 12,
+        "table": "public.freeze_edge_owner_update",
+        "role": "authenticated",
+        "operation": "UPDATE",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": null,
+        "rationale": "Repository policy declaration only; private-row intent for write controls, deliberately public SELECT for public-read.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "52c436e09b9efef4903a28d5eb660e10d615c2b2b4c426477cde156a54207cb7",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "owner-update",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-public-read",
+        "framework": "EDGE",
+        "area": "RLS",
+        "truth": "NORMAL",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 16,
+        "table": "public.freeze_edge_public_read",
+        "role": "anon",
+        "operation": "SELECT",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": null,
+        "rationale": "Repository policy declaration only; private-row intent for write controls, deliberately public SELECT for public-read.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "52c436e09b9efef4903a28d5eb660e10d615c2b2b4c426477cde156a54207cb7",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "public-read",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-custom-owner",
+        "framework": "EDGE",
+        "area": "RLS",
+        "truth": "UNKNOWN",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 20,
+        "table": "public.freeze_edge_custom_owner",
+        "role": "authenticated",
+        "operation": "UPDATE",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": "POLICY_FUNCTION",
+        "rationale": "Custom policy function unavailable.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "52c436e09b9efef4903a28d5eb660e10d615c2b2b4c426477cde156a54207cb7",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "custom-owner",
+        "outcome": "UNKNOWN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": true,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-session-only",
+        "framework": "EDGE",
+        "area": "RLS",
+        "truth": "UNKNOWN",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 24,
+        "table": "public.freeze_edge_session_only",
+        "role": "authenticated",
+        "operation": "SELECT",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": "AUTH_SESSION",
+        "rationale": "Session read does not prove authentication success or object permission.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "52c436e09b9efef4903a28d5eb660e10d615c2b2b4c426477cde156a54207cb7",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "session-only",
+        "outcome": "UNKNOWN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {
+          "policyState": "UID_COLUMN_EQUALITY",
+          "authStatus": "SESSION_READ_UNVERIFIED",
+          "effectiveRole": "UNKNOWN"
+        },
+        "uncertaintyCheckPassed": true,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-runtime-root",
+        "framework": "EDGE",
+        "area": "DEPLOYMENT",
+        "truth": "RISK",
+        "targetRule": "DOCKER_ROOT_USER",
+        "targetFile": "freeze-config/runtime-root/Dockerfile",
+        "targetLine": 2,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Explicit default final-stage USER declaration; no image or deployment execution.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "703251a47c1f1cba2ceed90b3e0bc69fa7e300d4d90c2e4073c4dad7b5ca3dba",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "runtime-root",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "DOCKER_ROOT_USER",
+            "line": 2,
+            "filePath": "freeze-config/runtime-root/Dockerfile",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-runtime-user",
+        "framework": "EDGE",
+        "area": "DEPLOYMENT",
+        "truth": "NORMAL",
+        "targetRule": "DOCKER_ROOT_USER",
+        "targetFile": "freeze-config/runtime-user/Dockerfile",
+        "targetLine": 2,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Explicit default final-stage USER declaration; no image or deployment execution.",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "f4b53ce88c7c10c920e81d8c31e4e41abde433a9d7bdf21d10960fd10a5e2881",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "runtime-user",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-sca-affected",
+        "framework": "EDGE",
+        "area": "SCA",
+        "truth": "RISK",
+        "targetRule": "VULNERABLE_NPM_DEPENDENCY",
+        "targetFile": "freeze-packages/sca-affected/package.json",
+        "targetLine": 4,
+        "support": "LOOKUP_REQUIRED",
+        "grade": "B",
+        "rationale": "Declared package version against this advisory only; not installed-version, reachability or all-advisory safety.",
+        "advisory": "GHSA-35jh-r3h4-6jhm",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "a64afb6e5bd705e595204a1994eaaa4d3de14770ba82ac4983724895dba4f2a1",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "sca-affected",
+        "outcome": "NOT_INSPECTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "VULNERABLE_NPM_DEPENDENCY",
+            "line": 4,
+            "filePath": "freeze-packages/sca-affected/package.json",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "structuralCandidates": [],
+        "limitations": [
+          "LIVE_ADVISORY_LOOKUP_NOT_RUN"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-sca-fixed",
+        "framework": "EDGE",
+        "area": "SCA",
+        "truth": "NORMAL",
+        "targetRule": "VULNERABLE_NPM_DEPENDENCY",
+        "targetFile": "freeze-packages/sca-fixed/package.json",
+        "targetLine": 4,
+        "support": "LOOKUP_REQUIRED",
+        "grade": "B",
+        "rationale": "Declared package version against this advisory only; not installed-version, reachability or all-advisory safety.",
+        "advisory": "GHSA-35jh-r3h4-6jhm",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "300fcc1ebdb19a4d6369f4351606aaa86ab7b3c16f90e12c05b04bbee32b1e9a",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "sca-fixed",
+        "outcome": "NOT_INSPECTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [
+          "LIVE_ADVISORY_LOOKUP_NOT_RUN"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "edge-sca-range",
+        "framework": "EDGE",
+        "area": "SCA",
+        "truth": "UNKNOWN",
+        "targetRule": "VULNERABLE_NPM_DEPENDENCY",
+        "targetFile": "freeze-packages/sca-range/package.json",
+        "targetLine": 4,
+        "support": "LOOKUP_REQUIRED",
+        "grade": "B",
+        "rationale": "Declared package version against this advisory only; not installed-version, reachability or all-advisory safety.",
+        "advisory": "GHSA-35jh-r3h4-6jhm",
+        "projectId": "freeze-controls-edge",
+        "baseRepository": "https://github.com/JorgenBy/supabase-pwa-boilerplate",
+        "baseCommit": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "fileSha256": "75d6f37f304c8e9ae6aa8472df1deef412525b66a6a8b5ea748111ed7ead9d23",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "sca-range",
+        "outcome": "NOT_INSPECTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "VULNERABLE_NPM_DEPENDENCY",
+            "line": 4,
+            "filePath": "freeze-packages/sca-range/package.json",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "structuralCandidates": [],
+        "limitations": [
+          "LIVE_ADVISORY_LOOKUP_NOT_RUN"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": true
+      },
+      {
+        "caseId": "next-secret-envelope",
+        "framework": "NEXT",
+        "area": "EXPOSURE",
+        "truth": "RISK",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "app/api/freeze/secret-envelope/route.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Private server configuration returned inside a nested response object.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "086fcde164ea0541bc064a5f473f9ccf7d7aaf0fce9a9697aaac2862a0dc0684",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "secret-envelope",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "app/api/freeze/secret-envelope/route.ts",
+                "line": 3,
+                "column": 18,
+                "functionName": "POST",
+                "kind": "SERVER_SECRET_ENVIRONMENT_VALUE"
+              },
+              {
+                "filePath": "app/api/freeze/secret-envelope/route.ts",
+                "line": 3,
+                "column": 7,
+                "functionName": "POST",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "app/api/freeze/secret-envelope/route.ts",
+                "line": 4,
+                "column": 8,
+                "functionName": "POST",
+                "kind": "HTTP_RESPONSE"
+              }
+            ],
+            "ruleId": "TS_SENSITIVE_DATA_EXPOSURE",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "app/api/freeze/secret-envelope/route.ts",
+              "line": 4,
+              "column": 8,
+              "functionName": "POST",
+              "kind": "HTTP_RESPONSE"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-secret-helper",
+        "framework": "NEXT",
+        "area": "EXPOSURE",
+        "truth": "RISK",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "app/api/freeze/secret-helper/route.ts",
+        "targetLine": 1,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Local function parameter reaches a serialized HTTP response.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "9064820eecfa91ec2b281ffec91f58de040d86e9f68e5c43cd57c90edff593cf",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "secret-helper",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "app/api/freeze/secret-helper/route.ts",
+                "line": 3,
+                "column": 21,
+                "functionName": "POST",
+                "kind": "SERVER_SECRET_ENVIRONMENT_VALUE"
+              },
+              {
+                "filePath": "app/api/freeze/secret-helper/route.ts",
+                "line": 3,
+                "column": 8,
+                "functionName": "POST",
+                "kind": "FUNCTION_ARGUMENT"
+              },
+              {
+                "filePath": "app/api/freeze/secret-helper/route.ts",
+                "line": 1,
+                "column": 37,
+                "functionName": "packageReply",
+                "kind": "HTTP_RESPONSE"
+              }
+            ],
+            "ruleId": "TS_SENSITIVE_DATA_EXPOSURE",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "app/api/freeze/secret-helper/route.ts",
+              "line": 1,
+              "column": 37,
+              "functionName": "packageReply",
+              "kind": "HTTP_RESPONSE"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-auth-log",
+        "framework": "NEXT",
+        "area": "EXPOSURE",
+        "truth": "RISK",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "app/api/freeze/auth-log/route.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Authorization header value is logged; actual log access is not proved.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "d404750dec419aaf4ffa138fb80153c5e42f5d1ece1eb676bebcfce99896d3c6",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "auth-log",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "app/api/freeze/auth-log/route.ts",
+                "line": 3,
+                "column": 16,
+                "functionName": "POST",
+                "kind": "AUTHENTICATION_HEADER"
+              },
+              {
+                "filePath": "app/api/freeze/auth-log/route.ts",
+                "line": 3,
+                "column": 7,
+                "functionName": "POST",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "app/api/freeze/auth-log/route.ts",
+                "line": 4,
+                "column": 1,
+                "functionName": "POST",
+                "kind": "LOG_ARGUMENT"
+              }
+            ],
+            "ruleId": "TS_SENSITIVE_DATA_EXPOSURE",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "app/api/freeze/auth-log/route.ts",
+              "line": 4,
+              "column": 1,
+              "functionName": "POST",
+              "kind": "LOG_ARGUMENT"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-public-key",
+        "framework": "NEXT",
+        "area": "EXPOSURE",
+        "truth": "NORMAL",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "app/api/freeze/public-key/route.ts",
+        "targetLine": 3,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Explicitly public/anonymous configuration is not a private-server-secret leak.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "09873a29799736ac785a51e37afb3c3166d20fb2fc80548f9a59c06f20c9cc86",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "public-key",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-private-internal",
+        "framework": "NEXT",
+        "area": "EXPOSURE",
+        "truth": "NORMAL",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "app/api/freeze/private-internal/route.ts",
+        "targetLine": 5,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Private value stays in a fixed outbound service header, not the returned response.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "b4dc53a384bd33482b1f2233f968ed941b62916fcb36dbc8a7b912d373040d9f",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "private-internal",
+        "outcome": "NOT_INSPECTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [
+          "NO_EXACT_SINK_NEGATIVE_OR_UNCERTAIN_EVIDENCE"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-presence-only",
+        "framework": "NEXT",
+        "area": "EXPOSURE",
+        "truth": "NORMAL",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "app/api/freeze/presence-only/route.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Boolean presence information does not reveal the secret value.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "c5d0fc9b0d82a9534085d89cc4d52ae9c6234a9d7052e7034c1b216d313ee127",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "presence-only",
+        "outcome": "NOT_INSPECTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [
+          "NO_EXACT_SINK_NEGATIVE_OR_UNCERTAIN_EVIDENCE"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-opaque-mask",
+        "framework": "NEXT",
+        "area": "EXPOSURE",
+        "truth": "UNKNOWN",
+        "targetRule": "TS_SENSITIVE_DATA_EXPOSURE",
+        "targetFile": "app/api/freeze/opaque-mask/route.ts",
+        "targetLine": 3,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Unprovided transform may remove or retain sensitive information.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "f0737bb5b15f63e64b1e60955544dfdd365b2eb158c63eaa4337c94b4af957fb",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "opaque-mask",
+        "outcome": "UNKNOWN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": true,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-body-relay",
+        "framework": "NEXT",
+        "area": "SSRF",
+        "truth": "RISK",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "app/api/freeze/body-relay/route.ts",
+        "targetLine": 1,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Request body controls a URL passed through a local function to fetch.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "0c0cc642715713dd9c9857916df0eacf969d35895e29dd406ffaa9be48fbd925",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "body-relay",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "app/api/freeze/body-relay/route.ts",
+                "line": 3,
+                "column": 20,
+                "functionName": "POST",
+                "kind": "REQUEST_BODY"
+              },
+              {
+                "filePath": "app/api/freeze/body-relay/route.ts",
+                "line": 3,
+                "column": 7,
+                "functionName": "POST",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "app/api/freeze/body-relay/route.ts",
+                "line": 4,
+                "column": 7,
+                "functionName": "POST",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "app/api/freeze/body-relay/route.ts",
+                "line": 5,
+                "column": 8,
+                "functionName": "POST",
+                "kind": "FUNCTION_ARGUMENT"
+              }
+            ],
+            "ruleId": "TS_SSRF_INPUT_FLOW",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "app/api/freeze/body-relay/route.ts",
+              "line": 1,
+              "column": 36,
+              "functionName": "relay",
+              "kind": "HTTP_REQUEST_CALL"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-request-wrapper",
+        "framework": "NEXT",
+        "area": "SSRF",
+        "truth": "RISK",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "app/api/freeze/request-wrapper/route.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Query parameter controls the Request destination passed to fetch.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "3ffe5d37eebca4741af1de0467ab617384089f95692780c8c04b3dfbfdcb8d87",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "request-wrapper",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "app/api/freeze/request-wrapper/route.ts",
+                "line": 3,
+                "column": 15,
+                "functionName": "POST",
+                "kind": "QUERY_PARAMETER"
+              },
+              {
+                "filePath": "app/api/freeze/request-wrapper/route.ts",
+                "line": 3,
+                "column": 7,
+                "functionName": "POST",
+                "kind": "VARIABLE"
+              }
+            ],
+            "ruleId": "TS_SSRF_INPUT_FLOW",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "app/api/freeze/request-wrapper/route.ts",
+              "line": 4,
+              "column": 8,
+              "functionName": "POST",
+              "kind": "HTTP_REQUEST_CALL"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-header-relay",
+        "framework": "NEXT",
+        "area": "SSRF",
+        "truth": "RISK",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "app/api/freeze/header-relay/route.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Caller-controlled request header determines the outbound destination.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "561f6832cff156908828334c78abe83f871c292b99b28bd17913679f48fb7de0",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "header-relay",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "app/api/freeze/header-relay/route.ts",
+                "line": 3,
+                "column": 19,
+                "functionName": "POST",
+                "kind": "REQUEST_HEADER"
+              },
+              {
+                "filePath": "app/api/freeze/header-relay/route.ts",
+                "line": 3,
+                "column": 7,
+                "functionName": "POST",
+                "kind": "VARIABLE"
+              }
+            ],
+            "ruleId": "TS_SSRF_INPUT_FLOW",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "app/api/freeze/header-relay/route.ts",
+              "line": 4,
+              "column": 8,
+              "functionName": "POST",
+              "kind": "HTTP_REQUEST_CALL"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-fixed-query",
+        "framework": "NEXT",
+        "area": "SSRF",
+        "truth": "NORMAL",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "app/api/freeze/fixed-query/route.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Request data changes query data only, not the fixed authority.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "d134e4585b30363b28d1a17d6b640950f6e9400973c08e5605487b01fb272a6c",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "fixed-query",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-url-query",
+        "framework": "NEXT",
+        "area": "SSRF",
+        "truth": "NORMAL",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "app/api/freeze/url-query/route.ts",
+        "targetLine": 5,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Parsed fixed URL is modified only through searchParams.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "926cc25e17f631ab797663523ed36eb980b40b53a32632fb8fa44426ba8eb17f",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "url-query",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-fixed-choice",
+        "framework": "NEXT",
+        "area": "SSRF",
+        "truth": "NORMAL",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "app/api/freeze/fixed-choice/route.ts",
+        "targetLine": 5,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Either branch selects a fixed server-owned destination.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "c152ac3e75fc5c715e3518e89991f5f5b39d22ce09979b8d5ae908ea6917385d",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "fixed-choice",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-opaque-address",
+        "framework": "NEXT",
+        "area": "SSRF",
+        "truth": "UNKNOWN",
+        "targetRule": "TS_SSRF_INPUT_FLOW",
+        "targetFile": "app/api/freeze/opaque-address/route.ts",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Unprovided transform could validate or retain an arbitrary destination.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "c5947a76bb8a94f6c9c5b14148db6d3a47879f85df51926004646071e06fd5fd",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "opaque-address",
+        "outcome": "UNKNOWN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": true,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-react-raw-query",
+        "framework": "NEXT",
+        "area": "HTML",
+        "truth": "RISK",
+        "grade": "B",
+        "targetRule": "REACT_DANGEROUS_HTML",
+        "targetFile": "app/freeze-evaluation/page.tsx",
+        "targetLine": 2,
+        "support": "SUPPORTED",
+        "rationale": "Decoded URL query value enters the React raw-HTML property directly on a rendered panel route.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "833551843c972a790cbbbf9308cc57640d1dcd89889d4a3fb6c0276858c84ebe",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "react-raw-query",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 2,
+            "filePath": "app/freeze-evaluation/page.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-dom-insert",
+        "framework": "NEXT",
+        "area": "HTML",
+        "truth": "RISK",
+        "grade": "B",
+        "targetRule": "REACT_DANGEROUS_HTML",
+        "targetFile": "app/freeze-evaluation/page.tsx",
+        "targetLine": 3,
+        "support": "NOT_SUPPORTED",
+        "rationale": "Raw DOM innerHTML input; current React rule is not general DOM taint support.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "833551843c972a790cbbbf9308cc57640d1dcd89889d4a3fb6c0276858c84ebe",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "dom-insert",
+        "outcome": "NOT_SUPPORTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [
+          "GENERAL_DOM_FLOW_NOT_SUPPORTED"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-react-escaped",
+        "framework": "NEXT",
+        "area": "HTML",
+        "truth": "NORMAL",
+        "grade": "B",
+        "targetRule": "REACT_DANGEROUS_HTML",
+        "targetFile": "app/freeze-evaluation/page.tsx",
+        "targetLine": 4,
+        "support": "SUPPORTED",
+        "rationale": "React ordinary string child, not raw HTML insertion.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "833551843c972a790cbbbf9308cc57640d1dcd89889d4a3fb6c0276858c84ebe",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "react-escaped",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-react-link",
+        "framework": "NEXT",
+        "area": "HTML",
+        "truth": "NORMAL",
+        "grade": "B",
+        "targetRule": "REACT_DANGEROUS_HTML",
+        "targetFile": "app/freeze-evaluation/page.tsx",
+        "targetLine": 5,
+        "support": "SUPPORTED",
+        "rationale": "Known fixed HTTPS link with no active attributes; do not relabel normal as UNKNOWN.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "833551843c972a790cbbbf9308cc57640d1dcd89889d4a3fb6c0276858c84ebe",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "react-link",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-react-opaque",
+        "framework": "NEXT",
+        "area": "HTML",
+        "truth": "UNKNOWN",
+        "grade": "B",
+        "targetRule": "REACT_DANGEROUS_HTML",
+        "targetFile": "app/freeze-evaluation/page.tsx",
+        "targetLine": 6,
+        "support": "SUPPORTED",
+        "rationale": "Sanitizer contract is absent; sink review is not confirmed XSS.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "833551843c972a790cbbbf9308cc57640d1dcd89889d4a3fb6c0276858c84ebe",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "react-opaque",
+        "outcome": "UNKNOWN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "REACT_DANGEROUS_HTML",
+            "line": 6,
+            "filePath": "app/freeze-evaluation/page.tsx",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": true,
+        "uncertainReviewSignal": true
+      },
+      {
+        "caseId": "next-wide-update",
+        "framework": "NEXT",
+        "area": "RLS",
+        "truth": "RISK",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 4,
+        "table": "public.freeze_next_wide_update",
+        "role": "authenticated",
+        "operation": "UPDATE",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": null,
+        "rationale": "Repository policy declaration only; private-row intent for write controls, deliberately public SELECT for public-read.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "2a2f0455d3c36195af9f83f2b43515b79ac44c386779f12f1b3dcfa16cb0fb3a",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "wide-update",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 4,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              },
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 2,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              },
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 3,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              }
+            ],
+            "ruleId": "SUPABASE_BROAD_WRITE_DECLARATION",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+              "line": 4,
+              "column": 1,
+              "functionName": "",
+              "kind": "RLS_DECLARATION"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-wide-insert",
+        "framework": "NEXT",
+        "area": "RLS",
+        "truth": "RISK",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 8,
+        "table": "public.freeze_next_wide_insert",
+        "role": "authenticated",
+        "operation": "INSERT",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": null,
+        "rationale": "Repository policy declaration only; private-row intent for write controls, deliberately public SELECT for public-read.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "2a2f0455d3c36195af9f83f2b43515b79ac44c386779f12f1b3dcfa16cb0fb3a",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "wide-insert",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [
+          {
+            "trace": [
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 8,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              },
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 6,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              },
+              {
+                "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+                "line": 7,
+                "column": 1,
+                "functionName": "",
+                "kind": "RLS_DECLARATION"
+              }
+            ],
+            "ruleId": "SUPABASE_BROAD_WRITE_DECLARATION",
+            "priority": "REVIEW_REQUIRED",
+            "location": {
+              "filePath": "supabase/migrations/20261022000000_freeze_controls.sql",
+              "line": 8,
+              "column": 1,
+              "functionName": "",
+              "kind": "RLS_DECLARATION"
+            }
+          }
+        ],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-owner-update",
+        "framework": "NEXT",
+        "area": "RLS",
+        "truth": "NORMAL",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 12,
+        "table": "public.freeze_next_owner_update",
+        "role": "authenticated",
+        "operation": "UPDATE",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": null,
+        "rationale": "Repository policy declaration only; private-row intent for write controls, deliberately public SELECT for public-read.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "2a2f0455d3c36195af9f83f2b43515b79ac44c386779f12f1b3dcfa16cb0fb3a",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "owner-update",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-public-read",
+        "framework": "NEXT",
+        "area": "RLS",
+        "truth": "NORMAL",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 16,
+        "table": "public.freeze_next_public_read",
+        "role": "anon",
+        "operation": "SELECT",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": null,
+        "rationale": "Repository policy declaration only; private-row intent for write controls, deliberately public SELECT for public-read.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "2a2f0455d3c36195af9f83f2b43515b79ac44c386779f12f1b3dcfa16cb0fb3a",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "public-read",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-custom-owner",
+        "framework": "NEXT",
+        "area": "RLS",
+        "truth": "UNKNOWN",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 20,
+        "table": "public.freeze_next_custom_owner",
+        "role": "authenticated",
+        "operation": "UPDATE",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": "POLICY_FUNCTION",
+        "rationale": "Custom policy function unavailable.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "2a2f0455d3c36195af9f83f2b43515b79ac44c386779f12f1b3dcfa16cb0fb3a",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "custom-owner",
+        "outcome": "UNKNOWN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": true,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-session-only",
+        "framework": "NEXT",
+        "area": "RLS",
+        "truth": "UNKNOWN",
+        "grade": "B",
+        "targetRule": "SUPABASE_BROAD_WRITE_DECLARATION",
+        "targetFile": "supabase/migrations/20261022000000_freeze_controls.sql",
+        "targetLine": 24,
+        "table": "public.freeze_next_session_only",
+        "role": "authenticated",
+        "operation": "SELECT",
+        "support": "SUPPORTED",
+        "uncertaintyDimension": "AUTH_SESSION",
+        "rationale": "Session read does not prove authentication success or object permission.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "2a2f0455d3c36195af9f83f2b43515b79ac44c386779f12f1b3dcfa16cb0fb3a",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "session-only",
+        "outcome": "UNKNOWN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {
+          "policyState": "UID_COLUMN_EQUALITY",
+          "authStatus": "SESSION_READ_UNVERIFIED",
+          "effectiveRole": "UNKNOWN"
+        },
+        "uncertaintyCheckPassed": true,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-runtime-root",
+        "framework": "NEXT",
+        "area": "DEPLOYMENT",
+        "truth": "RISK",
+        "targetRule": "DOCKER_ROOT_USER",
+        "targetFile": "freeze-config/runtime-root/Dockerfile",
+        "targetLine": 2,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Explicit default final-stage USER declaration; no image or deployment execution.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "703251a47c1f1cba2ceed90b3e0bc69fa7e300d4d90c2e4073c4dad7b5ca3dba",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "runtime-root",
+        "outcome": "TP",
+        "inspectionConfirmed": true,
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "DOCKER_ROOT_USER",
+            "line": 2,
+            "filePath": "freeze-config/runtime-root/Dockerfile",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-runtime-user",
+        "framework": "NEXT",
+        "area": "DEPLOYMENT",
+        "truth": "NORMAL",
+        "targetRule": "DOCKER_ROOT_USER",
+        "targetFile": "freeze-config/runtime-user/Dockerfile",
+        "targetLine": 2,
+        "support": "SUPPORTED",
+        "grade": "B",
+        "rationale": "Explicit default final-stage USER declaration; no image or deployment execution.",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "f4b53ce88c7c10c920e81d8c31e4e41abde433a9d7bdf21d10960fd10a5e2881",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "runtime-user",
+        "outcome": "TN",
+        "inspectionConfirmed": true,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-sca-affected",
+        "framework": "NEXT",
+        "area": "SCA",
+        "truth": "RISK",
+        "targetRule": "VULNERABLE_NPM_DEPENDENCY",
+        "targetFile": "freeze-packages/sca-affected/package.json",
+        "targetLine": 4,
+        "support": "LOOKUP_REQUIRED",
+        "grade": "B",
+        "rationale": "Declared package version against this advisory only; not installed-version, reachability or all-advisory safety.",
+        "advisory": "GHSA-35jh-r3h4-6jhm",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "a64afb6e5bd705e595204a1994eaaa4d3de14770ba82ac4983724895dba4f2a1",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "sca-affected",
+        "outcome": "NOT_INSPECTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "VULNERABLE_NPM_DEPENDENCY",
+            "line": 4,
+            "filePath": "freeze-packages/sca-affected/package.json",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "structuralCandidates": [],
+        "limitations": [
+          "LIVE_ADVISORY_LOOKUP_NOT_RUN"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-sca-fixed",
+        "framework": "NEXT",
+        "area": "SCA",
+        "truth": "NORMAL",
+        "targetRule": "VULNERABLE_NPM_DEPENDENCY",
+        "targetFile": "freeze-packages/sca-fixed/package.json",
+        "targetLine": 4,
+        "support": "LOOKUP_REQUIRED",
+        "grade": "B",
+        "rationale": "Declared package version against this advisory only; not installed-version, reachability or all-advisory safety.",
+        "advisory": "GHSA-35jh-r3h4-6jhm",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "300fcc1ebdb19a4d6369f4351606aaa86ab7b3c16f90e12c05b04bbee32b1e9a",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "sca-fixed",
+        "outcome": "NOT_INSPECTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [],
+        "structuralCandidates": [],
+        "limitations": [
+          "LIVE_ADVISORY_LOOKUP_NOT_RUN"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": false
+      },
+      {
+        "caseId": "next-sca-range",
+        "framework": "NEXT",
+        "area": "SCA",
+        "truth": "UNKNOWN",
+        "targetRule": "VULNERABLE_NPM_DEPENDENCY",
+        "targetFile": "freeze-packages/sca-range/package.json",
+        "targetLine": 4,
+        "support": "LOOKUP_REQUIRED",
+        "grade": "B",
+        "rationale": "Declared package version against this advisory only; not installed-version, reachability or all-advisory safety.",
+        "advisory": "GHSA-35jh-r3h4-6jhm",
+        "projectId": "freeze-controls-next",
+        "baseRepository": "https://github.com/raj-khan/nextjs-supabase-saas-boilerplate",
+        "baseCommit": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "fileSha256": "75d6f37f304c8e9ae6aa8472df1deef412525b66a6a8b5ea748111ed7ead9d23",
+        "linePolicy": "EXACT_TARGET_SINK_OR_POLICY_NOT_UNRELATED_FINDINGS",
+        "pairedTemplateId": "sca-range",
+        "outcome": "NOT_INSPECTED",
+        "inspectionConfirmed": false,
+        "ruleSignals": [
+          {
+            "severity": "HIGH",
+            "ruleId": "VULNERABLE_NPM_DEPENDENCY",
+            "line": 4,
+            "filePath": "freeze-packages/sca-range/package.json",
+            "confidence": "HIGH",
+            "falsePositiveRisk": "LOW"
+          }
+        ],
+        "structuralCandidates": [],
+        "limitations": [
+          "LIVE_ADVISORY_LOOKUP_NOT_RUN"
+        ],
+        "observedDimensions": {},
+        "uncertaintyCheckPassed": null,
+        "uncertainReviewSignal": true
+      }
+    ],
+    "caseGradeCounts": {
+      "A": 0,
+      "B": 60
+    },
+    "applicationContextGradeCounts": {
+      "C": 2
+    },
+    "pairedSemanticTemplates": 30,
+    "byFramework": {
+      "EDGE": {
+        "TP": 10,
+        "TN": 9,
+        "NOT_INSPECTED": 5,
+        "UNKNOWN": 5,
+        "NOT_SUPPORTED": 1
+      },
+      "NEXT": {
+        "TP": 10,
+        "TN": 9,
+        "NOT_INSPECTED": 5,
+        "UNKNOWN": 5,
+        "NOT_SUPPORTED": 1
+      }
+    },
+    "acceptance": {
+      "precisionTarget": 0.9,
+      "recallTarget": 0.85,
+      "noSilentSupportedExposureOrSsrfMiss": true,
+      "repeatConsistencyRequired": true,
+      "independentExternalReviewRequiredForGeneralAccuracyClaim": true
+    },
+    "applicationRuns": [
+      {
+        "projectId": "freeze-original-edge",
+        "commitSha": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "status": "ANALYZED_WITH_SCOPE_LIMITS_NOT_SAFETY_CERTIFICATION",
+        "elapsedMs": [
+          375,
+          250
+        ],
+        "parentHeapUsedBytes": [
+          79344128,
+          61001912
+        ],
+        "score": 100,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "coverageStatus": "PARTIAL",
+        "selection": {
+          "discoveredFiles": 36,
+          "submittedFiles": 36,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 62482,
+          "omissionReasons": {}
+        }
+      },
+      {
+        "projectId": "freeze-controls-edge",
+        "commitSha": "39d2a213082b13a8ec86ff0ae38da16c12bc3dd1",
+        "status": "ANALYZED_WITH_SCOPE_LIMITS_NOT_SAFETY_CERTIFICATION",
+        "elapsedMs": [
+          434,
+          413
+        ],
+        "parentHeapUsedBytes": [
+          85402096,
+          65643792
+        ],
+        "score": 30,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 4,
+          "INFORMATIONAL": 0
+        },
+        "coverageStatus": "PARTIAL",
+        "selection": {
+          "discoveredFiles": 53,
+          "submittedFiles": 53,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 68357,
+          "omissionReasons": {}
+        }
+      },
+      {
+        "projectId": "freeze-original-next",
+        "commitSha": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "status": "ANALYZED_WITH_SCOPE_LIMITS_NOT_SAFETY_CERTIFICATION",
+        "elapsedMs": [
+          188,
+          189
+        ],
+        "parentHeapUsedBytes": [
+          69838096,
+          74032400
+        ],
+        "score": 100,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 0,
+          "REVIEW_REQUIRED": 1,
+          "INFORMATIONAL": 0
+        },
+        "coverageStatus": "PARTIAL",
+        "selection": {
+          "discoveredFiles": 18,
+          "submittedFiles": 18,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 16095,
+          "omissionReasons": {}
+        }
+      },
+      {
+        "projectId": "freeze-controls-next",
+        "commitSha": "0736172a7ba65f2cf4635d7dd2a222b66858c70c",
+        "status": "ANALYZED_WITH_SCOPE_LIMITS_NOT_SAFETY_CERTIFICATION",
+        "elapsedMs": [
+          359,
+          359
+        ],
+        "parentHeapUsedBytes": [
+          80323856,
+          87663888
+        ],
+        "score": 30,
+        "risk": {
+          "BLOCKING": 0,
+          "SHOULD_FIX": 1,
+          "REVIEW_REQUIRED": 4,
+          "INFORMATIONAL": 0
+        },
+        "coverageStatus": "PARTIAL",
+        "selection": {
+          "discoveredFiles": 35,
+          "submittedFiles": 35,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 22051,
+          "omissionReasons": {}
+        }
+      }
+    ],
+    "limitations": [
+      "60 instances of 30 paired semantic templates on two new source repositories; same curator, not external independent/blind. No AI-generation provenance assumed.",
+      "Live OSV/TI disabled consistently with application runner; SCA controls count NOT_INSPECTED, never TN/TP.",
+      "Parent heap samples are not child peak RSS",
+      "Finding candidates are the product projection, not persisted user Reviews or runtime exploit results",
+      "Grade A real vulnerable/fixed app pairs not added; source-free controlled study only"
+    ],
+    "baselineEvaluatorSha256": "dc95e5d1549a884d1ff3c266b707b63e13f95de6375bc55ded238629fb73b233",
+    "scoringChange": "Exact framework-specific AUTH_SESSION evidence path lookup only; original labels, named targets and outcome rules retained. First report is not rewritten.",
+    "acceptanceChecks": {
+      "precisionThresholdPassed": true,
+      "recallThresholdPassed": true,
+      "noSupportedExposureSsrfFN": true,
+      "everySupportedCoreRiskDetected": true,
+      "allUncertaintyChecksPassed": true,
+      "repeatConsistencyPassed": true,
+      "independentExternalReview": false
+    }
+  },
+  "originalCounts": {
+    "TP": 18,
+    "TN": 14,
+    "NOT_INSPECTED": 12,
+    "UNKNOWN": 9,
+    "NOT_SUPPORTED": 2,
+    "FP": 2,
+    "FN": 2,
+    "UNCERTAINTY_CHECK_FAILED": 1
+  },
+  "changes": [
+    {
+      "caseId": "edge-react-link",
+      "before": "FP",
+      "after": "TN"
+    },
+    {
+      "caseId": "next-react-link",
+      "before": "FP",
+      "after": "TN"
+    },
+    {
+      "caseId": "next-wide-update",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "caseId": "next-wide-insert",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "caseId": "next-owner-update",
+      "before": "NOT_INSPECTED",
+      "after": "TN"
+    },
+    {
+      "caseId": "next-public-read",
+      "before": "NOT_INSPECTED",
+      "after": "TN"
+    },
+    {
+      "caseId": "next-session-only",
+      "before": "UNCERTAINTY_CHECK_FAILED",
+      "after": "UNKNOWN"
+    }
+  ],
+  "applicationRegressions": [
+    {
+      "projectId": "nglguarino--echoverse-11labs",
+      "commitSha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "reviewCandidates": true,
+        "securityScore": true,
+        "sca": true,
+        "riskPriorities": true
+      },
+      "elapsedMs": [
+        697,
+        490
+      ],
+      "parentHeapUsedBytes": [
+        108349928,
+        101853904
+      ],
+      "sqlStatusCounts": {},
+      "clients": 0,
+      "accesses": 0,
+      "coverage": "PARTIAL"
+    },
+    {
+      "projectId": "LellaSriHarsha--power-platform-hub",
+      "commitSha": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "reviewCandidates": true,
+        "securityScore": true,
+        "sca": true,
+        "riskPriorities": true
+      },
+      "elapsedMs": [
+        460,
+        424
+      ],
+      "parentHeapUsedBytes": [
+        121776848,
+        64277216
+      ],
+      "sqlStatusCounts": {},
+      "clients": 0,
+      "accesses": 0,
+      "coverage": "PARTIAL"
+    },
+    {
+      "projectId": "TinyikoMamban--workflowai-pro",
+      "commitSha": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "reviewCandidates": true,
+        "securityScore": true,
+        "sca": true,
+        "riskPriorities": true
+      },
+      "elapsedMs": [
+        540,
+        525
+      ],
+      "parentHeapUsedBytes": [
+        123726272,
+        119115272
+      ],
+      "sqlStatusCounts": {
+        "PARTIAL": 2
+      },
+      "clients": 3,
+      "accesses": 42,
+      "coverage": "PARTIAL"
+    },
+    {
+      "projectId": "Adriano-Digital2024--CopyMonster",
+      "commitSha": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "reviewCandidates": true,
+        "securityScore": true,
+        "sca": true,
+        "riskPriorities": true
+      },
+      "elapsedMs": [
+        778,
+        760
+      ],
+      "parentHeapUsedBytes": [
+        128260736,
+        83435680
+      ],
+      "sqlStatusCounts": {
+        "LIMIT_EXCEEDED": 1,
+        "NOT_RUN": 62,
+        "PARTIAL": 4
+      },
+      "clients": 29,
+      "accesses": 75,
+      "coverage": "PARTIAL"
+    }
+  ],
+  "originalRawSha256": "e066926529560385ee577f902c874f754d320c1de7e7ac2a3612bb4281680eda",
+  "comparisonRawSha256": "f188cfd8733180e864247a7a46b2e1eb5735426621565a2ce1fe15e2c8977412",
+  "contractSources": [
+    "https://supabase.com/docs/guides/deployment/database-migrations",
+    "https://github.com/supabase/cli/blob/7e3035c644f4528833dd7a6a992535ded7158a8f/apps/cli-go/pkg/migration/file.go",
+    "https://github.com/supabase/cli/blob/7e3035c644f4528833dd7a6a992535ded7158a8f/apps/cli-go/pkg/migration/list.go",
+    "https://google.github.io/osv.dev/api/"
+  ],
+  "migrationContract": {
+    "generatedTimestamp": "14 digits recommended by CLI generation",
+    "acceptedStaticOrder": "Numeric version prefix, lexical directory order, unique version; repository declarations only",
+    "customManifestOrScriptOrder": "NOT_INTERPRETED; no script execution or inferred custom application order",
+    "unknown": "Unrecognized filenames, duplicate versions, omitted SQL, dynamic effects, legacy init skip or ambiguous sources",
+    "declarationEvidence": "Parsed policy bodies/locations retained under UNKNOWN, no final broad-write candidate. DROP/ALTER/revoke evaluated only within the accepted bounded order.",
+    "liveDatabase": "NOT_VERIFIED; no migration execution, role inheritance or effective user proof"
+  },
+  "htmlContract": "Closed static HTML only, intrinsic passive container, quoted absolute HTTPS href only; no other anchor attributes, entities, backslashes, credentials, nested anchors or dynamic input. Not a general sanitizer.",
+  "confidenceContract": {
+    "confidenceScope": "SINK_PATTERN",
+    "sourceLink": "NOT_ESTABLISHED",
+    "defense": "NOT_VERIFIED",
+    "runtime": "NOT_VERIFIED",
+    "uiRequirement": "HIGH/LOW describes pattern confidence and FPR, not proven exploitability or verified absence of defense."
+  },
+  "liveOsvReceipt": {
+    "executed": true,
+    "requests": 6,
+    "identities": 3,
+    "advisories": 5,
+    "evidenceSource": "Recorded opt-in FreezeOsvSmokeTest run on 2026-10-22, not a network call by this audit tool",
+    "packages": [
+      "npm:lodash@4.17.20",
+      "npm:is-number@7.0.0",
+      "npm:securedeploy-nonexistent-smoke-package-20261022@1.0.0"
+    ],
+    "assertions": [
+      "Named lodash advisory returned",
+      "is-number empty response",
+      "nonexistent identity empty response does not validate package existence",
+      "ScaResult JSON snapshot round-trip",
+      "Captured responses replayed with identical status, summary and advisories"
+    ],
+    "failureValidation": "Mock socket timeout, connection failure, HTTP400, invalid JSON and unavailable detail; no network fault injection",
+    "persistence": "Live result JSON round-trip in memory; existing H2 integration covers saved Review/SCA snapshots with Mock provider, not live database persistence",
+    "scope": "Separate from 60-case study: its six SCA cases remain NOT_INSPECTED; no SCA-wide accuracy claim"
+  },
+  "additionalVariants": {
+    "risk": 3,
+    "normal": 4,
+    "unknown": 6,
+    "unexpectedWarningsOrMissedDeclaredCandidates": 0,
+    "independence": "Same-curator follow-up regression variants, not external validation or blind holdout"
+  },
+  "riskUiHandoff": [
+    "Display legacy rule score separately from structural review candidates and coverage.",
+    "Score 100, READY and Risk calculation COMPLETE never certify uninspected code, RLS or SCA.",
+    "Separate source/sink proof, pattern confidence, verified defense, unknown auth/ownership and runtime verification.",
+    "Show resource/unsupported/external failure states; keep version changes NOT_COMPARED, never auto-RESOLVED.",
+    "Before edits: exact revision, raw-byte file hash, range/context/semantic anchor, stale-source rejection and source recovery consent."
+  ],
+  "engineScopeChecks": {
+    "noScoredFalsePositive": true,
+    "noScoredFalseNegative": true,
+    "coreRisksDetected": true,
+    "uncertaintyPreserved": true,
+    "repeatsConsistent": true
+  },
+  "recommendation": "GO_FOR_ENGINE_SCOPE_FREEZE",
+  "decisionScope": "Bounded React/Vite + Supabase Edge core; Next App Router + Supabase Preview; legacy bounded contracts retained. Not public release approval, whole-app safety or externally independent accuracy.",
+  "remaining": [
+    "CopyMonster Auth.tsx:241 retained, not proven safe",
+    "CopyMonster SQL 62 NOT_RUN retained",
+    "Four exposure normal targets lack exact persisted negative evidence",
+    "General DOM/file upload/ORM and live Supabase authorization unsupported or unverified",
+    "No new Grade A vulnerable/fixed pair; the 60 observed cases are Regression from now on",
+    "Live product ZIP/GitHub E2E not performed; common pipeline/API tests and browser Mock only",
+    "Parent heap samples are not worker peak RSS; existing 192 MiB Node cap and other limits unchanged"
+  ],
+  "policyChanges": false,
+  "userPostgresModified": false,
+  "dbMigration": false
+}
