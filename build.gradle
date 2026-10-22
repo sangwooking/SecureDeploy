@@ -84,3 +84,11 @@ tasks.register('applicationEvaluation', JavaExec) {
         if (project.hasProperty('applicationProjectId')) args project.property('applicationProjectId')
     }
 }
+
+tasks.register('summaryBrowserServer', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.securedeploy.evaluation.SummaryBrowserServer'
+    maxHeapSize = '512m'
+    environment = System.getenv().findAll { key, value -> key in ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'JAVA_HOME'] }
+}

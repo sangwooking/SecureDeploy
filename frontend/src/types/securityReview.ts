@@ -69,6 +69,7 @@ import type { ProgressAssessment, ReviewProgressSnapshot } from './reviewProgres
 import type { GitHubSourceMetadata } from './githubSource';
 
 export interface SecurityReviewResponse {
+  resultSummary?: ReviewResultSummary | null;
   coverage?: import('./analysisCoverage').CoverageLedger | null;
   serverAnalysis?: import('./serverAnalysis').ServerAnalysisSnapshot | null;
   sourceType?: 'ZIP' | 'GITHUB' | null;
@@ -98,6 +99,20 @@ export interface SecurityReviewResponse {
     securityScoreDeterminesDeployment: false;
     message: string;
   };
+}
+
+export interface ReviewResultSummary {
+  schemaVersion: number; interpretationVersion: string; guidance: string; title: string; reason: string;
+  referenceScore: number; scoreScope: string; legacyDeploymentStatus: string;
+  policyAssessment: string; policyVersion: string | null; riskCalculationStatus: string;
+  blockingCount: number; importantRuleSignals: number;
+  flowCandidates: number | null; declarationCandidates: number | null; aiCandidates: number | null;
+  structuralComparison: string; coverageStatus: string; discoveredFiles: number | null;
+  patternInputFiles: number | null; inventoryComplete: boolean | null;
+  analyzers: { analyzer: string; status: string; observations: Record<string, number> }[];
+  scaStatus: string; dependenciesAnalyzed: number | null; unresolvedDependencies: number | null;
+  semanticStatus: string; authContextObserved: boolean; rlsDeclarationsObserved: boolean;
+  runtimeVerification: string; limitations: string[];
 }
 
 export type ScanMode = 'STANDARD' | 'AI_ENHANCED';

@@ -19,6 +19,7 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
   const before = snapshot.assessmentBefore, after = snapshot.assessmentAfter;
   return <section className="security-progress" aria-label="보안 상태 변화">
     <h2>보안 상태 변화</h2>
+    <p className="review-caution">비교는 저장된 분석 계약과 확인한 범위에 한정됩니다. 구조 분석 후보의 NOT_COMPARED와 미검사·버전 차이로 인한 확인 불가는 RESOLVED가 아닙니다.</p>
     <p>{snapshot.message}</p>
     <GitHubCommitComparison before={snapshot.sourceBefore} after={snapshot.sourceAfter} />
     <div className="progress-assessments">

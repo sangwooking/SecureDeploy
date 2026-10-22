@@ -12,7 +12,7 @@ export const priorityLabels: Record<RiskPriority, string> = {
 };
 export const deploymentLabels: Record<RiskAssessment['prioritizedDeploymentAssessment'], string> = {
   BLOCKED: '배포 전 수정 필요', REVIEW_REQUIRED: '확인 후 배포 판단 필요',
-  READY_WITH_WARNINGS: '배포 가능하지만 수정 권장', READY: '현재 분석 범위에서는 배포 가능',
+  READY_WITH_WARNINGS: '정책상 수정 권장 항목 있음', READY: '정책상 필수 처리 항목 없음',
 };
 
 export function allRiskFindings(result: SecurityReviewResponse): RiskFinding[] {

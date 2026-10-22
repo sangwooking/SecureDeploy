@@ -21,6 +21,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     page.on('pageerror', error => errors.push(error.message));
+    page.on('console', message => { if(message.type()==='error')errors.push(message.text()); });
     await page.route('**/*', async route => {
       const request = route.request(), parsed = new URL(request.url()), path = parsed.pathname;
       if (!path.startsWith('/api/')) {
@@ -80,7 +81,8 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
         if (section === '반드시 처리') {
           const card = page.locator('.action-finding').first();
           assert.ok(!(await visible()).includes('Confidence'));
-          assert.ok(!(await visible()).includes('Config.java'));
+          assert.ok((await visible()).includes('Config.java'));
+          assert.ok((await visible()).includes('확인할 파일'));
           await card.locator('.finding-remediation > summary').click();
           for (const text of ['템플릿 가이드', '어떤 일이 생길 수 있나요?', '비용 발생', '무엇을 수정해야 하나요?', '수정 후 무엇을 확인하나요?']) assert.ok((await visible()).includes(text), text);
           assert.ok(!(await visible()).includes('fixture-model'));

@@ -13,12 +13,13 @@ const render = (result, view = 'SUMMARY') => renderToStaticMarkup(React.createEl
   result, view, onViewChange() {}, statusActions: actions, reportActions: null, progress: null,
 }));
 
-test('summary prioritizes deployment assessment over a perfect legacy score, hides technical details', () => {
+test('summary qualifies the visible legacy score and prioritizes deployment assessment over it', () => {
   const result = fixture(), before = JSON.stringify(result);
   const html = render(result);
   for (const text of ['프로젝트 보안 요약', '배포 전 수정 필요', '반드시 처리', 'AI 추가 후보 1건은 별도 확인', '가장 먼저 해야 할 일']) assert.ok(html.includes(text), text);
   assert.match(html, /배포 전 직접 확인<\/span><strong>1<\/strong>/);
-  for (const text of ['CVE-2099', 'HARDCODED_SECRET', 'fixture-model', 'Confidence', '100 / 100', 'AI_SECURITY_CANDIDATE']) assert.ok(!html.includes(text), text);
+  for (const text of ['CVE-2099', 'HARDCODED_SECRET', 'fixture-model', 'Confidence', 'AI_SECURITY_CANDIDATE']) assert.ok(!html.includes(text), text);
+  assert.ok(html.includes('100 / 100'));assert.ok(html.includes('전체 안전 점수가 아닙니다'));
   assert.deepEqual(reviewCounts(result), { blocking: 1, review: 1, recommended: 1, candidates: 1 });
   assert.equal(JSON.stringify(result), before);
 });
@@ -54,7 +55,7 @@ test('legacy results do not invent a readiness, priority, metadata, or zero coun
   const result = { ...fixture(), riskAssessment: null, semanticReview: null, sca: null, remediation: null, scanMode: null };
   const html = render(result);
   assert.ok(html.includes('미평가'));
-  assert.ok(html.includes('재분석 후 배포 여부'));
+  assert.ok(html.includes('새 요약 기록이 없는 이력'));
   assert.ok(!html.includes('현재 분석 범위에서는 배포 가능'));
   assert.ok(render(result, 'REVIEW_REQUIRED').includes('우선순위가 저장되지 않은 코드 문제'));
   const v = { ...result.vulnerabilities[0], confidence: undefined, falsePositiveRisk: undefined, analysisNote: null };
@@ -107,7 +108,7 @@ test('ambiguous legacy joins do not attach another finding remediation to a loca
 test('technical screen retains reference score and original snapshots without changing assessment', () => {
   const result = fixture();
   const html = render(result, 'TECHNICAL');
-  for (const text of ['100 / 100', '참고 점수는 배포 허가가 아닙니다', 'BLOCKED', 'HARDCODED_SECRET', 'CVE-2099-0001']) assert.ok(html.includes(text));
+  for (const text of ['100 / 100', '기존 정책 판단은 배포 허가가 아닙니다', 'BLOCKED', 'HARDCODED_SECRET', 'CVE-2099-0001']) assert.ok(html.includes(text));
 });
 
 test('repeated storage locations retain findings but are not presented as independent fixes', () => {

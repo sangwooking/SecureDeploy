@@ -56,6 +56,10 @@ class ServerAnalysisIntegrationTest {
         assertThat(snapshot.toString()).doesNotContain("SYNTHETIC_API_KEY_NAME","process.env");
         assertThat(zip.path("securityScore").asInt()).isEqualTo(100);
         assertThat(zip.path("vulnerabilityCount").asInt()).isZero();
+        assertThat(zip.at("/resultSummary/guidance").asText()).isEqualTo("REVIEW_NEEDED");
+        assertThat(zip.at("/resultSummary/referenceScore").asInt()).isEqualTo(100);
+        assertThat(zip.at("/resultSummary/flowCandidates").asInt()).isEqualTo(2);
+        assertThat(zip.at("/resultSummary/coverageStatus").asText()).isEqualTo("PARTIAL");
         var roots=new ArrayList<Path>();
         for(String name:List.of("next-public","next-private")) {
             Path root=Files.createDirectory(temp.resolve(name));roots.add(root);
@@ -69,12 +73,14 @@ class ServerAnalysisIntegrationTest {
         when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/next",roots.get(1),roots.get(1),metadata));
         var prv=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
         for(var response:List.of(pub,prv)) {
+            assertThat(response.path("resultSummary")).isEqualTo(zip.path("resultSummary"));
             assertThat(response.path("serverAnalysis")).isEqualTo(snapshot);
             assertThat(response.path("securityScore")).isEqualTo(zip.path("securityScore"));
             assertThat(response.at("/riskAssessment/prioritySummary")).isEqualTo(zip.at("/riskAssessment/prioritySummary"));
         }
         for(var root:roots)assertThat(root).doesNotExist();
         long id=zip.path("reviewId").asLong();assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(snapshot);
+        assertThat(detail(token,id).path("resultSummary")).isEqualTo(zip.path("resultSummary"));
         mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
     }
 

@@ -55,7 +55,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       const nav = page.getByRole('navigation', { name: '분석 결과 메뉴' });
       await nav.getByRole('button', { name: '결과 요약', exact: true }).click();
       const boundary = page.getByLabel('배포 판단의 검사 범위 한계');
-      assert.ok((await page.getByLabel('지금 배포해도 될까요?').innerText()).includes('배포 가능하지만 수정 권장'));
+      assert.ok((await page.getByLabel('저장된 결과와 추가 확인 사항').innerText()).includes('정책상 수정 권장 항목 있음'));
       assert.ok((await boundary.innerText()).includes('Python 코드'));
       assert.ok((await boundary.innerText()).includes('전체 프로젝트 검사 완료를 뜻하지 않습니다'));
       const coverage = page.getByRole('region', { name: '검사 범위' });

@@ -27,6 +27,11 @@ public record SecurityReviewResponse(
         com.securedeploy.project.coverage.CoverageLedger coverage,
         com.securedeploy.analysis.typescript.ServerAnalysisSnapshot serverAnalysis
 ) {
+    @JsonProperty(value="resultSummary", access=JsonProperty.Access.READ_ONLY)
+    public ReviewResultSummary resultSummary() {
+        return ReviewResultSummary.from(this);
+    }
+
     public SecurityReviewResponse(Long reviewId, Long projectId, String projectName, int scannedFileCount,
             int vulnerabilityCount, int securityScore, String deploymentStatus, List<VulnerabilityResultResponse> vulnerabilities,
             ScaResult sca, RiskAssessment riskAssessment, com.securedeploy.ai.remediation.RemediationSnapshot remediation,

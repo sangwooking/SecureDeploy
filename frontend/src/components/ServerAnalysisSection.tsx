@@ -237,6 +237,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
       <ul>{finding.evidence.map((e, i) => <li key={i}>{text(e.source.kind)} · <code className="finding-location">{location(e.source)}</code></li>)}</ul>
       <h4>왜 확인해야 하나요?</h4><p>{finding.riskExplanation}</p>
       <h4>어떻게 수정하나요?</h4><p>{finding.recommendedAction}</p>
+      <p>정적 근거 기반 수정 방향입니다. 저장된 AI 해결 가이드 연결은 미기록이며, 실제 코드 변경은 수행하지 않았습니다.</p>
       <h4>수정 후 확인</h4><ol>{finding.verificationSteps.map(step => <li key={step}>{step}</li>)}</ol>
       <details className="technical-details"><summary>Finding 기술 근거와 한계</summary>
         <p className="finding-location">{finding.findingId}</p><p>{finding.sourceType} · {finding.ruleId} · {finding.priority} · {finding.analyzerVersion}</p>

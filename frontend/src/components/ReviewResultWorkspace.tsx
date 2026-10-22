@@ -11,6 +11,7 @@ import { RiskAssessmentSection } from './RiskAssessmentSection';
 import { SemanticReviewSection } from './SemanticReviewSection';
 import { ReviewProgressPanel } from './ReviewProgressPanel';
 import { GitHubSourceInfo } from './GitHubSourceInfo';
+import { ReviewSummaryPanel } from './ReviewSummaryPanel';
 import { findingGuidance } from './findingGuidance';
 import { incompleteDependency, dependencyText } from './dependencyGuidance';
 import { IncompleteDependencyCard } from './IncompleteDependencyCard';
@@ -47,11 +48,14 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
   return <section ref={root} className="result-area result-workspace" aria-label="프로젝트 분석 결과">
     <header className="result-workspace-header">
       <div><p className="eyebrow">프로젝트 보안 상태</p><h2>{result.projectName}</h2>
-        <p>{result.reviewId ? `분석 #${result.reviewId}` : '현재 분석'} · {result.scannedFileCount}개 파일 패턴 검사</p></div>
+        <p>{result.reviewId ? `분석 #${result.reviewId}` : '현재 분석'} · {result.scannedFileCount}개 파일 패턴 검사
+          {result.createdAt&&<> · <time dateTime={result.createdAt}>{new Date(result.createdAt).toLocaleString('ko-KR')}</time></>}</p></div>
       <details className="report-menu"><summary>리포트 다운로드</summary><div className="result-actions">{reportActions}</div></details>
     </header>
     {result.sourceType === 'GITHUB' && <GitHubSourceInfo source={result.sourceMetadata} compact />}
     {rescanActions}
+    {assessment?.prioritizedDeploymentAssessment==='BLOCKED'&&<p role="alert" className="policy-blocked-notice">저장된 정책: 배포 전 수정 필요.
+      <button type="button" className="secondary-button" onClick={()=>navigate('BLOCKING')}>반드시 처리할 문제 확인</button></p>}
     <nav className="result-navigation" aria-label="분석 결과 메뉴">
       {resultViews.map(item => <button key={item.id} type="button" aria-current={view === item.id ? 'page' : undefined}
         aria-controls="result-content" onClick={() => navigate(item.id)}>{item.label}</button>)}
@@ -60,10 +64,8 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
       <p className="result-breadcrumb">분석 결과 / {resultViews.find(item => item.id === view)?.label}</p>
       {view === 'SUMMARY' && <>
         <h2>프로젝트 보안 요약</h2>
-        <section className={`readiness-band assessment-${assessment?.prioritizedDeploymentAssessment.toLowerCase() ?? 'unknown'}`} aria-label="지금 배포해도 될까요?">
-          <p>지금 배포해도 될까요?</p>
-          <h2>{assessment ? deploymentLabels[assessment.prioritizedDeploymentAssessment] : '재분석 후 배포 여부를 확인하세요'}</h2>
-          <p>{assessment ? '지원하는 코드·라이브러리 위험 자료로 계산한 저장 결과입니다. 프로젝트 전체의 검사 범위와는 다릅니다.' : '이 이력에는 위험 기반 배포 평가가 없습니다. 기존 점수만으로 배포 가능 여부를 판단하지 않습니다.'}</p>
+        <section className={`readiness-band assessment-${assessment?.prioritizedDeploymentAssessment==='BLOCKED'?'blocked':'review'}`} aria-label="저장된 결과와 추가 확인 사항">
+          <ReviewSummaryPanel result={result}/>
           <InspectionBoundaryNotice coverage={result.coverage} />
           <div className="decision-counts">
             <button type="button" onClick={() => navigate('BLOCKING')}><span>반드시 처리</span><strong>{counts.blocking ?? '미평가'}</strong></button>
@@ -135,7 +137,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
         <dl className="reference-score"><div><dt>보안 점수 · 룰 기반 참고값</dt><dd>{result.securityScore} / 100</dd></div>
           <div><dt>기존 판정 · 참고용</dt><dd>{result.deploymentStatus}</dd></div>
           <div><dt>원본 룰 탐지 수</dt><dd>{result.vulnerabilityCount}</dd></div></dl>
-        <p>참고 점수는 배포 허가가 아닙니다. 배포 여부는 ‘결과 요약’의 판단을 우선 확인하세요.</p>
+        <p>참고 점수와 기존 정책 판단은 배포 허가가 아닙니다. ‘결과 요약’의 구조 후보와 검사하지 못한 범위를 함께 확인하세요.</p>
         <AnalysisCoverageSection coverage={result.coverage} sca={result.sca} semantic={result.semanticReview} />
         <details><summary>저장된 배포 평가와 분석 범위</summary><RiskAssessmentSection assessment={assessment} /></details>
         <details><summary>코드에서 발견된 문제 · 원본과 판단 근거</summary><LegacyCodeList result={result} statusActions={statusActions} /></details>

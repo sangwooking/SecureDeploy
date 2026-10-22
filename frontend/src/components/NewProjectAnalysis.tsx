@@ -47,9 +47,9 @@ export function NewProjectAnalysis({ policy, policyError, retryPolicy, onComplet
           <button type="button" className={`mode-button ${mode === 'GITHUB' ? 'mode-button-active' : ''}`} onClick={() => { setMode('GITHUB'); setError(''); }}>GitHub URL 입력</button>
           <button type="button" className={`mode-button ${mode === 'CONNECTED' ? 'mode-button-active' : ''}`} onClick={() => { setMode('CONNECTED'); setRepository(null); setError(''); }}>연결된 GitHub 저장소</button>
         </div>
-        {mode === 'ZIP' ? <label className="file-drop">ZIP 파일 선택<input type="file" accept=".zip,application/zip" onChange={event => {
+        {mode === 'ZIP' ? <label key="zip-file" className="file-drop">ZIP 파일 선택<input type="file" accept=".zip,application/zip" onChange={event => {
           const selected = event.target.files?.[0] ?? null; setFile(selected); setError(selected ? validateZipUpload(selected, policy) : '');
-        }} />{file?.name}</label> : mode === 'GITHUB' ? <label className="github-input-wrap">Repository URL<input type="url" value={url} onChange={event => { setUrl(event.target.value); setError(''); }} required /></label>
+        }} />{file?.name}</label> : mode === 'GITHUB' ? <label key="github-url" className="github-input-wrap">Repository URL<input type="url" value={url} onChange={event => { setUrl(event.target.value); setError(''); }} required /></label>
           : <GitHubConnectionPanel onSelect={setRepository} />}
         <label className="semantic-opt-in"><input type="checkbox" checked={enhanced} onChange={event => setEnhanced(event.target.checked)} />AI 강화 분석</label>
         {enhanced && <p>선별·마스킹된 코드 일부가 외부 AI에 전달될 수 있으며 API 비용이 발생할 수 있습니다.</p>}
