@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AiProvider {
+    default com.securedeploy.editing.WorkspacePatch.Output generateWorkspacePatch(com.securedeploy.editing.WorkspacePatch.Prompt prompt) {
+        throw new UnsupportedOperationException("Workspace patch generation is unavailable");
+    }
 
     default List<com.securedeploy.ai.semantic.SemanticCandidate.Proposal> generateSemanticReview(
             List<com.securedeploy.ai.semantic.SecuritySlice> slices, com.securedeploy.ai.semantic.SemanticPrompt prompt) {

@@ -1,0 +1,18 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),React=require('react');
+const {renderToStaticMarkup}=require('react-dom/server');
+const {AiPatchPanel}=require('./load-component.cjs')('AiPatchPanel');
+const base={workspace:{id:'w',identityStatus:'UNVERIFIED_REUPLOAD',revision:1},file:{id:'f',path:'application.properties'},content:{currentHash:'hash'},findings:[],dirty:false,disabled:false,onApplied(){}};
+test('unverified ZIP and unsupported code stay manual, never a confirmed source association',()=>{
+ const html=renderToStaticMarkup(React.createElement(AiPatchPanel,base));
+ assert.ok(html.includes('ZIP 원본 미검증'));assert.ok(html.includes('생성은 파일을 바꾸지 않습니다'));assert.ok(!html.includes('동의한 코드로 AI 수정안 생성'));
+});
+test('unavailable Provider cannot masquerade as a generated patch',()=>{
+ const html=renderToStaticMarkup(React.createElement(AiPatchPanel,{...base,workspace:{...base.workspace,identityStatus:'EXACT_GIT_COMMIT'}}));
+ assert.ok(html.includes('AI 수정 Provider가 준비되지 않았습니다'));assert.ok(html.includes('수동 편집'));
+});
+test('separate consent and acceptance gates retain uncertainty and never execute model code',()=>{
+ const source=fs.readFileSync('src/components/AiPatchPanel.tsx','utf8');
+ for(const value of ['!consented','!accepted','dirty','생성 취소·거절','STALE','해결 미검증','검토한 AI 수정안 적용'])assert.ok(source.includes(value),value);
+ for(const denied of ['dangerouslySetInnerHTML','eval(','iframe','srcDoc'])assert.ok(!source.includes(denied));
+ const api=fs.readFileSync('src/api/editingApi.ts','utf8');assert.ok(api.includes('consented: true'));assert.ok(api.includes('approved: true'));assert.ok(api.includes('currentHash: p.currentHash'));
+});

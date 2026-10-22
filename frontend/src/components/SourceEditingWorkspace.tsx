@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createEditingWorkspace, deleteEditingWorkspace, exportEditingWorkspace, loadEditingDiff, loadEditingFile, loadEditingWorkspace, saveEditingFile } from '../api/editingApi';
 import type { EditingContent, EditingDiff, EditingFile, EditingWorkspace } from '../api/editingApi';
 import type { SecurityReviewResponse } from '../types/securityReview';
+import { AiPatchPanel } from './AiPatchPanel';
 
 interface TreeNode { name: string; children: Map<string, TreeNode>; file?: EditingFile }
 function FileTree({ files, selected, disabled, onSelect }: { files: EditingFile[]; selected?: string; disabled: boolean; onSelect: (file: EditingFile) => void }) {
@@ -131,6 +132,9 @@ export function SourceEditingWorkspace({ result, onBack }: { result: SecurityRev
                 <textarea id="source-code" className="source-code" value={text} spellCheck={false} autoCapitalize="off" autoComplete="off" autoCorrect="off" disabled={busy} onChange={e => { setText(e.target.value); setApproved(false); setDiffs(null); }} />
                 <div className="source-editor-actions"><button type="button" className="primary-button" disabled={busy || !dirty} onClick={() => save(false)}>변경 저장</button>
                   <button type="button" className="secondary-button" disabled={busy || (!selected.changed && !dirty)} onClick={() => save(true)}>원본으로 되돌리기</button></div></>}
+              {selected.editable && content && <AiPatchPanel key={selected.id} workspace={workspace} file={selected} content={content} findings={findings} dirty={dirty} disabled={busy}
+                onApplied={async next => { setWorkspace(next);setDiffs(null);setApproved(false);setSelected(next.files.find(f => f.id === selected.id) ?? null);
+                  const value=await loadEditingFile(next.id,selected.id);setContent(value);setText(value.text.replace(/\r\n/g,'\n')); }} />}
               {(findings.length > 0 || flowFindings.length > 0) && <aside aria-label="기준 분석 근거"><h3>기준 commit의 경고 위치</h3>
                 {findings.map((v, i) => <div key={`rule-${i}`}><p>{v.ruleId} · 원본 {v.line}행 · {v.message}</p><p>{v.recommendation}</p></div>)}
                 {flowFindings.map(f => <details key={f.findingId}><summary>{f.title} · 원본 {f.location.line}행</summary><p>{f.riskExplanation}</p><p>{f.recommendedAction}</p>

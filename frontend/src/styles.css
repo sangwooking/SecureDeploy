@@ -2191,3 +2191,9 @@ h1 {
   .source-editor-actions > button { max-width: 100%; white-space: normal; }
   .source-code { height: 330px; }
 }
+.source-ai-patch { margin-top: 24px; padding-top: 16px; border-top: 1px solid #d9dce0; min-width: 0; }
+.source-ai-patch h4 { font-size: 14px; overflow-wrap: anywhere; }
+.source-ai-patch select { display: block; width: 100%; max-width: 100%; margin: 8px 0 12px; padding: 8px; }
+.source-ai-patch button { margin: 6px 8px 6px 0; max-width: 100%; white-space: normal; }
+.source-ai-patch ul { padding-left: 18px; overflow-wrap: anywhere; }
+.source-ai-code { padding: 12px; background: #f3f6f4; overflow: auto; font-size: 12px; }
