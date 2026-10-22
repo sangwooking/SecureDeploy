@@ -53,6 +53,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
       <details className="report-menu"><summary>리포트 다운로드</summary><div className="result-actions">{reportActions}</div></details>
     </header>
     {result.sourceType === 'GITHUB' && <GitHubSourceInfo source={result.sourceMetadata} compact />}
+    {result.sourceType === 'WORKSPACE' && <p role="note">작업 공간 수정본 검사 · revision {result.workspaceScan?.revision ?? '미기록'} · 원본 Review {result.workspaceScan?.originalReviewId ?? '미기록'}. GitHub 원본 commit 자체의 분석 결과가 아니며 변경 내용은 원격 저장소에 반영되지 않았습니다.</p>}
     {rescanActions}
     {assessment?.prioritizedDeploymentAssessment==='BLOCKED'&&<p role="alert" className="policy-blocked-notice">저장된 정책: 배포 전 수정 필요.
       <button type="button" className="secondary-button" onClick={()=>navigate('BLOCKING')}>반드시 처리할 문제 확인</button></p>}

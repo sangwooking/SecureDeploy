@@ -14,6 +14,7 @@ export interface ProgressEntry {
   currentVersions: string[]; note: string;
 }
 export interface ReviewProgressSnapshot {
+  workspaceScan?: WorkspaceScanSnapshot | null;
   sourceBefore?: GitHubSourceMetadata | null;
   sourceAfter?: GitHubSourceMetadata | null;
   comparisonSchemaVersion: number; projectId: number; baselineReviewId: number | null; currentReviewId: number;
@@ -24,4 +25,11 @@ export interface ReviewProgressSnapshot {
   aiChanges: { fingerprint: string; status: 'REMAINING' | 'NEW' | 'NOT_REOBSERVED' | 'UNAVAILABLE';
     before: SemanticCandidate | null; after: SemanticCandidate | null; note: string }[];
   notices: string[];
+}
+export interface WorkspaceScanSnapshot {
+  schemaVersion: number; workspaceId: string; userId: number; originalReviewId: number; revision: number;
+  sourceRevision: string; identityStatus: string; inputHash: string; capturedAt: string;
+  analyzerVersion: string | null; baselineVerified: boolean;
+  analysisRoot?: string | null;
+  files: { fileId: string; path: string; originalHash: string; currentHash: string; changed: boolean; changeOrigin: string }[];
 }

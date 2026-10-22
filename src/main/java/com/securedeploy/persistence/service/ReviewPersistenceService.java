@@ -87,9 +87,12 @@ public class ReviewPersistenceService {
             managedProject.touch();
             review.assignProject(managedProject);
             if (context != null) {
-                Long baseline = reviewRepository.findTopByProjectIdOrderByCreatedAtDescIdDesc(project.getId())
-                        .map(ReviewEntity::getId).orElse(null);
-                review.attachComparisonContext(context.withBaseline(baseline));
+                if (context.workspaceScan() != null) review.attachComparisonContext(context);
+                else {
+                    Long baseline = reviewRepository.findTopByProjectIdOrderByCreatedAtDescIdDesc(project.getId())
+                            .map(ReviewEntity::getId).orElse(null);
+                    review.attachComparisonContext(context.withBaseline(baseline));
+                }
             }
         }
 

@@ -45,3 +45,9 @@ export const rejectAiPatch = (id: string, proposal: string) => call<AiPatch>(`/$
 export const applyAiPatch = (id: string, p: AiPatch) => call<EditingWorkspace>(`/${encodeURIComponent(id)}/patches/${encodeURIComponent(p.id)}/apply`, {
   method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ revision: p.revision, currentHash: p.currentHash, approved: true }),
 });
+export interface WorkspaceScan { id: string; state: 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'TIMED_OUT'; workspaceId: string;
+  revision: number; inputHash: string; reviewId: number | null; message: string; capturedAt: string }
+export const startWorkspaceScan = (w: EditingWorkspace) => call<WorkspaceScan>(`/${encodeURIComponent(w.id)}/scans`, {
+  method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ revision: w.revision, changedFileIds: w.changedFileIds, approved: true, externalLookupAcknowledged: true }),
+});
+export const loadWorkspaceScan = (id: string) => call<WorkspaceScan>(`/scans/${encodeURIComponent(id)}`);

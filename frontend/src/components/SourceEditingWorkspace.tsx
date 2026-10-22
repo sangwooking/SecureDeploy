@@ -3,6 +3,7 @@ import { createEditingWorkspace, deleteEditingWorkspace, exportEditingWorkspace,
 import type { EditingContent, EditingDiff, EditingFile, EditingWorkspace } from '../api/editingApi';
 import type { SecurityReviewResponse } from '../types/securityReview';
 import { AiPatchPanel } from './AiPatchPanel';
+import { WorkspaceScanPanel } from './WorkspaceScanPanel';
 
 interface TreeNode { name: string; children: Map<string, TreeNode>; file?: EditingFile }
 function FileTree({ files, selected, disabled, onSelect }: { files: EditingFile[]; selected?: string; disabled: boolean; onSelect: (file: EditingFile) => void }) {
@@ -115,7 +116,8 @@ export function SourceEditingWorkspace({ result, onBack }: { result: SecurityRev
       {result.sourceType === 'ZIP' ? <><p role="note">과거 ZIP과 일치하는지 검증할 기록이 없습니다. 과거 경고 위치를 확정 연결하지 않으며 다운로드 후 새로 분석해야 합니다.</p>
         <label>원본 ZIP <input type="file" accept=".zip,application/zip" disabled={busy} onChange={e => setZip(e.target.files?.[0] ?? null)} /></label></>
         : <p>현재 읽기 권한을 확인하고 분석 당시 commit만 가져옵니다. 해당 commit을 확보하지 못하면 작업을 중단합니다.</p>}
-      <button className="primary-button" type="button" disabled={busy || !result.reviewId || !result.sourceType || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 후 작업 공간 시작'}</button>
+      {result.sourceType === 'WORKSPACE' && <p role="note">수정본 Review에는 전체 소스를 보관하지 않습니다. 기존 작업 공간을 이용하거나 다운로드한 ZIP으로 새 분석을 시작해 주세요.</p>}
+      <button className="primary-button" type="button" disabled={busy || !result.reviewId || !result.sourceType || result.sourceType === 'WORKSPACE' || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 후 작업 공간 시작'}</button>
     </div> : <>
       <div className="source-editor-status"><p><strong>revision {workspace.revision}</strong> · 만료 {new Date(workspace.expiresAt).toLocaleTimeString()} · 변경 {workspace.changedFileIds.length}개</p>
         <p className="source-revision">원본: {workspace.sourceRevision}</p>
@@ -123,6 +125,7 @@ export function SourceEditingWorkspace({ result, onBack }: { result: SecurityRev
         {expired && <p role="alert">작업 공간이 만료되었습니다. 원본을 다시 확보해 주세요.</p>}
         <button type="button" className="secondary-button" disabled={busy} onClick={clear}>작업 공간 삭제</button>
       </div>
+      <WorkspaceScanPanel workspace={workspace} original={result} disabled={busy || dirty || expired} />
       {!expired && <>
         <div className="source-editor-layout">
           <nav className="source-file-tree" aria-label="프로젝트 파일"><FileTree files={workspace.files} selected={selected?.id} disabled={busy} onSelect={select} /></nav>

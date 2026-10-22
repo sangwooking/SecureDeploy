@@ -268,7 +268,18 @@ public class SecurityReviewFacade {
                 comparisonCollector.collect(projectStructure));
     }
 
-    private record AnalysisOutcome(SecurityReviewResponse response, SnippetGroup snippetGroup, ThreatIntelligenceSnapshot intelligence,
+    public AnalysisOutcome analyzeWorkspace(String name, Path root) {
+        return reviewProject(name, root, ScanMode.STANDARD, null);
+    }
+
+    public SecurityReviewResponse saveWorkspace(ProjectEntity project, AnalysisOutcome outcome,
+            com.securedeploy.editing.WorkspaceScanSnapshot source) {
+        var pinned = new AnalysisOutcome(outcome.response(), outcome.snippetGroup(), outcome.intelligence(),
+                outcome.slices(), outcome.comparisonContext().forWorkspace(source));
+        return saveWithRemediation(project, pinned, ReviewSourceType.WORKSPACE, null, ScanMode.STANDARD);
+    }
+
+    public record AnalysisOutcome(SecurityReviewResponse response, SnippetGroup snippetGroup, ThreatIntelligenceSnapshot intelligence,
                                    SecuritySliceCollector.Collection slices,
                                    com.securedeploy.project.progress.ComparisonContext comparisonContext) {
     }

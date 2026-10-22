@@ -139,7 +139,7 @@ public class ZipExtractService {
         return policy.reject(reason, status, message, count.compressedBytes, count.expandedBytes, count.entries);
     }
 
-    private Path findProjectRoot(Path root) throws IOException {
+    public static Path findProjectRoot(Path root) throws IOException {
         try (var children = Files.list(root)) {
             var entries = children.toList();
             // A root manifest beside a source directory must remain inside the scan root.

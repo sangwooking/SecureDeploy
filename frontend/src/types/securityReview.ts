@@ -31,7 +31,7 @@ export type RuleCategory =
   | 'CI_CD_SECURITY'
   | 'KUBERNETES_SECURITY';
 
-export type ReviewSourceType = 'ZIP' | 'GITHUB';
+export type ReviewSourceType = 'ZIP' | 'GITHUB' | 'WORKSPACE';
 
 export interface DeleteResponse {
   message: string;
@@ -72,7 +72,8 @@ export interface SecurityReviewResponse {
   resultSummary?: ReviewResultSummary | null;
   coverage?: import('./analysisCoverage').CoverageLedger | null;
   serverAnalysis?: import('./serverAnalysis').ServerAnalysisSnapshot | null;
-  sourceType?: 'ZIP' | 'GITHUB' | null;
+  sourceType?: ReviewSourceType | null;
+  workspaceScan?: import('./reviewProgress').WorkspaceScanSnapshot | null;
   sourceMetadata?: GitHubSourceMetadata | null;
   repositoryUrl?: string | null;
   createdAt?: string | null;

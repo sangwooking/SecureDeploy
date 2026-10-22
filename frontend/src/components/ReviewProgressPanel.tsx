@@ -19,6 +19,14 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
   const before = snapshot.assessmentBefore, after = snapshot.assessmentAfter;
   return <section className="security-progress" aria-label="보안 상태 변화">
     <h2>보안 상태 변화</h2>
+    {snapshot.workspaceScan && <div className="workspace-scan-provenance"><p>수정본 revision {snapshot.workspaceScan.revision} · 원본 Review {snapshot.workspaceScan.originalReviewId} · GitHub 반영 안 함</p>
+      <p>RESOLVED는 비교 가능한 검사에서 해당 경고가 재탐지되지 않았다는 뜻입니다. 실제 취약점 해결이나 전체 안전성의 증명이 아닙니다.</p>
+      {!snapshot.workspaceScan.baselineVerified && <p>원본 동일성 미확인: 과거 Review와 자동 해결 비교를 하지 않습니다.</p>}
+      <details><summary>수정본 파일·해시 근거</summary><p className="source-revision">원본: {snapshot.workspaceScan.sourceRevision}<br />입력: {snapshot.workspaceScan.inputHash}</p>
+        <p className="source-revision">분석기: {snapshot.workspaceScan.analyzerVersion}</p>
+        {snapshot.workspaceScan.analysisRoot && <p>분석 위치는 ZIP의 {snapshot.workspaceScan.analysisRoot}/ 폴더 기준입니다. 아래 변경 파일·해시는 전체 원본 경로 기준입니다.</p>}
+        <ul>{snapshot.workspaceScan.files.filter(f => f.changed).map(f => <li key={f.fileId}>{f.path} · {f.changeOrigin === 'AI_APPROVED' ? '승인된 AI 수정' : f.changeOrigin === 'MANUAL_AFTER_AI' ? 'AI 적용 후 수동 변경' : '수동 수정'}<br />
+          <span className="source-revision">{f.originalHash} → {f.currentHash}</span></li>)}</ul></details></div>}
     <p className="review-caution">비교는 저장된 분석 계약과 확인한 범위에 한정됩니다. 구조 분석 후보의 NOT_COMPARED와 미검사·버전 차이로 인한 확인 불가는 RESOLVED가 아닙니다.</p>
     <p>{snapshot.message}</p>
     <GitHubCommitComparison before={snapshot.sourceBefore} after={snapshot.sourceAfter} />

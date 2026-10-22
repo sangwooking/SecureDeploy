@@ -59,13 +59,22 @@ public final class EditingBrowserServer {
             if (!connection.getMetaData().getURL().startsWith("jdbc:h2:mem:editing_browser")) { context.close(); throw new IllegalStateException("H2_ONLY"); }
         }
         var users=context.getBean(UserRepository.class);
-        var user=users.saveAndFlush(new UserEntity("editing-browser@example.invalid",context.getBean(org.springframework.security.crypto.password.PasswordEncoder.class).encode("Synthetic-Local-813!"),"Editing fixture"));
+        for (String email : List.of("editing-browser@example.invalid", "scan-1440@example.invalid", "scan-390@example.invalid", "scan-320@example.invalid")) {
+        var user=users.saveAndFlush(new UserEntity(email,context.getBean(org.springframework.security.crypto.password.PasswordEncoder.class).encode("Synthetic-Local-813!"),"Editing fixture"));
         var project=new ProjectEntity("GitHub fixture",ReviewSourceType.GITHUB,"https://github.com/fixture/editing"); project.assignUser(user); context.getBean(ProjectRepository.class).saveAndFlush(project);
-        var review=new ReviewEntity("GitHub fixture",ReviewSourceType.GITHUB,"https://github.com/fixture/editing",2,0,100,"READY"); review.assignProject(project);
-        review.attachSourceMetadata(new GitHubSourceSnapshot("fixture","editing","https://github.com/fixture/editing","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(3L,2L,true));
-        review.addVulnerability(new VulnerabilityEntity("DEBUG_ENABLED",com.securedeploy.rule.model.RuleCategory.CONFIGURATION,com.securedeploy.rule.model.Severity.MEDIUM,"application.properties",1,"debug 설정 선언","운영 설정 검토","debug=true"));
-        review.addVulnerability(new VulnerabilityEntity("STACKTRACE_EXPOSURE",com.securedeploy.rule.model.RuleCategory.CONFIGURATION,com.securedeploy.rule.model.Severity.MEDIUM,"application.properties",2,"상세 오류 설정 선언","운영 설정 검토","server.error.include-stacktrace=always"));
-        context.getBean(ReviewRepository.class).saveAndFlush(review);
+        var root=java.nio.file.Files.createTempDirectory("securedeploy-editing-fixture-");
+        try {
+            java.nio.file.Files.writeString(root.resolve("application.properties"),"debug=true\nserver.error.include-stacktrace=always\n");
+            java.nio.file.Files.createDirectories(root.resolve("src"));java.nio.file.Files.writeString(root.resolve("src/example.ts"),"export const value = 'original';\n");
+            java.nio.file.Files.createDirectories(root.resolve("assets"));java.nio.file.Files.write(root.resolve("assets/example.bin"),new byte[]{0,-1,2});
+            var outcome=context.getBean(com.securedeploy.review.service.SecurityReviewFacade.class).analyzeWorkspace("GitHub fixture",root);
+            var metadata=new GitHubSourceSnapshot("fixture","editing",project.getRepositoryUrl(),"main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(3L,2L,true);
+            var saved=context.getBean(com.securedeploy.persistence.service.ReviewPersistenceService.class).saveReview(project,
+                    outcome.response().withSourceMetadata(metadata),ReviewSourceType.GITHUB,project.getRepositoryUrl(),outcome.snippetGroup(),outcome.intelligence(),
+                    com.securedeploy.review.model.ScanMode.STANDARD,outcome.comparisonContext());
+            context.getBean(com.securedeploy.project.progress.ReviewProgressService.class).complete(saved);
+        } finally {com.securedeploy.global.util.FileUtils.deleteRecursively(root);}
+        }
         System.out.println("EDITING_BROWSER_READY H2_ONLY GITHUB_SOURCE_MOCK port=8085");
     }
 }

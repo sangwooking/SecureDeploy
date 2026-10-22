@@ -16,7 +16,19 @@ public record ReviewProgressSnapshot(int comparisonSchemaVersion, Long projectId
         Assessment assessmentAfter, Map<Change, Long> counts, List<Entry> findings,
         List<AiEntry> aiChanges, List<String> notices,
         com.securedeploy.github.model.GitHubSourceSnapshot sourceBefore,
-        com.securedeploy.github.model.GitHubSourceSnapshot sourceAfter) {
+        com.securedeploy.github.model.GitHubSourceSnapshot sourceAfter,
+        com.securedeploy.editing.WorkspaceScanSnapshot workspaceScan) {
+    public ReviewProgressSnapshot(int comparisonSchemaVersion, Long projectId, Long baselineReviewId,
+            Long currentReviewId, LocalDateTime baselineAnalyzedAt, LocalDateTime currentAnalyzedAt,
+            Instant generatedAt, Status status, String message, Assessment assessmentBefore,
+            Assessment assessmentAfter, Map<Change, Long> counts, List<Entry> findings,
+            List<AiEntry> aiChanges, List<String> notices,
+            com.securedeploy.github.model.GitHubSourceSnapshot sourceBefore,
+            com.securedeploy.github.model.GitHubSourceSnapshot sourceAfter) {
+        this(comparisonSchemaVersion, projectId, baselineReviewId, currentReviewId, baselineAnalyzedAt,
+                currentAnalyzedAt, generatedAt, status, message, assessmentBefore, assessmentAfter, counts,
+                findings, aiChanges, notices, sourceBefore, sourceAfter, null);
+    }
     public enum Status { COMPLETE, PARTIAL, UNAVAILABLE, NO_BASELINE }
     public enum Change { RESOLVED, REMAINING, NEW, CHANGED, UNAVAILABLE }
     public enum AiChange { REMAINING, NEW, NOT_REOBSERVED, UNAVAILABLE }

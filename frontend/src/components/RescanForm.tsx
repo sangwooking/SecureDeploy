@@ -12,6 +12,7 @@ export function RescanForm({ result, onScan, onCancel, uploadPolicy = null, poli
   const [file, setFile] = useState<File | null>(null);
   const [mode, setMode] = useState<ScanMode>('STANDARD');
   const [error, setError] = useState('');
+  if (result.sourceType === 'WORKSPACE') return <section><h3>수정본 검사 이력</h3><p>이 결과는 GitHub의 원본 commit이 아닌 작업 공간 수정본 검사입니다. 기존 작업 공간에서 다시 검사하거나 다운로드한 ZIP을 새로 분석해 주세요.</p><button type="button" onClick={onCancel}>결과로 돌아가기</button></section>;
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (result.sourceType === 'ZIP') {

@@ -32,6 +32,7 @@ public class EditingWorkspaceService {
         final SourceArchive.Entry original;
         final String hash;
         byte[] edit;
+        String changeOrigin = "UNCHANGED";
         StoredFile(SourceArchive.Entry entry) { original = entry; hash = SourceArchive.hash(entry.bytes()); }
         byte[] current() { return edit == null ? original.bytes() : edit; }
         boolean editable() { return !original.directory() && SourceArchive.text(original.bytes()) != null; }
@@ -72,6 +73,8 @@ public class EditingWorkspaceService {
     public Workspace create(long reviewId, MultipartFile zip) throws IOException {
         long user = users.currentUserId();
         var review = reviews.findAccessibleReviewWithVulnerabilities(reviewId, "분석 결과에 접근할 수 없습니다.");
+        if (review.getSourceType() == ReviewSourceType.WORKSPACE)
+            throw fail(HttpStatus.CONFLICT, "수정본 Review에는 원본 전체가 보관되지 않습니다. 기존 작업 공간을 이용하거나 다운로드한 ZIP으로 새 분석을 시작해 주세요.");
         synchronized (this) {
             expire();
             if (creating.contains(user) || states.values().stream().anyMatch(s -> s.user == user))
@@ -129,6 +132,8 @@ public class EditingWorkspaceService {
         if (size > SourceArchive.MAX_BYTES) throw SourceArchive.limit();
         if (file.edit != null) Arrays.fill(file.edit, (byte) 0);
         file.edit = bytes; state.revision++;
+        file.changeOrigin = bytes == null ? "UNCHANGED" : state.patches.values().stream()
+                .anyMatch(p -> p.fileId.equals(file.id) && "ACCEPTED".equals(p.state)) ? "MANUAL_AFTER_AI" : "MANUAL";
         return describe(state);
     }
     public synchronized Difference diff(String id, String fileId) throws IOException {
@@ -202,7 +207,7 @@ public class EditingWorkspaceService {
         if(!current.regionMatches(session.offset,session.before,0,session.before.length()))throw fail(HttpStatus.CONFLICT,"예상한 변경 위치가 다릅니다.");
         String updated=current.substring(0,session.offset)+session.after+current.substring(session.offset+session.before.length());
         var next=save(id,file.id,new Change(state.revision,file.hash,updated),false);
-        session.state="ACCEPTED";return next;
+        session.state="ACCEPTED";file.changeOrigin="AI_APPROVED";return next;
     }
     private WorkspacePatch.Session patchOwned(State state,String id) {
         var session=state.patches.get(id);if(session==null)throw fail(HttpStatus.NOT_FOUND,"수정 제안에 접근할 수 없습니다.");
@@ -226,8 +231,7 @@ public class EditingWorkspaceService {
                 || !changed.equals(approval.changedFileIds())) throw fail(HttpStatus.CONFLICT, "현재 revision과 변경 목록을 확인하고 다시 승인해 주세요.");
         if (changed.isEmpty()) throw fail(HttpStatus.CONFLICT, "다운로드할 변경 사항이 없습니다.");
         if ("zip".equals(format)) {
-            var entries = state.files.stream().map(f -> new SourceArchive.Entry(f.original.path(), f.current(), f.original.directory(), f.original.mode())).toList();
-            return new Download(SourceArchive.zip(entries), "securedeploy-edited-r" + state.revision + ".zip", "application/zip");
+            return new Download(SourceArchive.zip(currentEntries(state, false)), "securedeploy-edited-r" + state.revision + ".zip", "application/zip");
         }
         if ("patch".equals(format)) {
             var output = new ByteArrayOutputStream();
@@ -235,6 +239,28 @@ public class EditingWorkspaceService {
             return new Download(output.toByteArray(), "securedeploy-edited-r" + state.revision + ".patch", "text/x-diff;charset=UTF-8");
         }
         throw fail(HttpStatus.BAD_REQUEST, "지원하지 않는 내보내기 형식입니다.");
+    }
+    record ScanInput(long userId, String name, WorkspaceScanSnapshot provenance, List<SourceArchive.Entry> entries) implements AutoCloseable {
+        @Override public void close() { entries.forEach(e -> Arrays.fill(e.bytes(), (byte) 0)); }
+    }
+    synchronized ScanInput captureScan(String id, long revision) {
+        var state = owned(id);
+        if (state.revision != revision) throw fail(HttpStatus.CONFLICT, "저장된 revision이 변경되었습니다. 최신 변경을 확인해 주세요.");
+        var review = reviews.findAccessibleReviewWithVulnerabilities(state.review, "분석 결과에 접근할 수 없습니다.");
+        var entries = currentEntries(state, true);
+        var facts = state.files.stream().map(f -> new WorkspaceScanSnapshot.File(f.id, f.original.path(), f.hash,
+                SourceArchive.hash(f.current()), f.edit != null, f.changeOrigin)).toList();
+        var source = new WorkspaceScanSnapshot(1, id, state.user, state.review, revision, state.source, state.identity,
+                manifest(entries), Instant.now(clock), null, "EXACT_GIT_COMMIT".equals(state.identity), facts, "");
+        return new ScanInput(state.user, review.getProjectName(), source, entries);
+    }
+    synchronized <T> T whileScanLive(String id, java.util.function.Supplier<T> action) {
+        owned(id);
+        return action.get();
+    }
+    private List<SourceArchive.Entry> currentEntries(State state, boolean copy) {
+        return state.files.stream().map(f -> new SourceArchive.Entry(f.original.path(), copy ? f.current().clone() : f.current(),
+                f.original.directory(), f.original.mode())).toList();
     }
     public synchronized void delete(String id) {
         expire(); var state = states.get(id);
@@ -289,7 +315,7 @@ public class EditingWorkspaceService {
     private String manifest(List<SourceArchive.Entry> entries) {
         StringBuilder value = new StringBuilder();
         entries.stream().sorted(Comparator.comparing(SourceArchive.Entry::path)).forEach(e -> value.append(e.path()).append('\0')
-                .append(e.directory()).append('\0').append(SourceArchive.hash(e.bytes())).append('\n'));
+                .append(e.directory()).append('\0').append(e.mode()).append('\0').append(SourceArchive.hash(e.bytes())).append('\n'));
         return SourceArchive.hash(value.toString().getBytes(StandardCharsets.UTF_8));
     }
     private synchronized void expire() {

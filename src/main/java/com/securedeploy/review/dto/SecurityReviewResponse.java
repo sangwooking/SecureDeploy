@@ -27,6 +27,10 @@ public record SecurityReviewResponse(
         com.securedeploy.project.coverage.CoverageLedger coverage,
         com.securedeploy.analysis.typescript.ServerAnalysisSnapshot serverAnalysis
 ) {
+    @JsonProperty(value="workspaceScan", access=JsonProperty.Access.READ_ONLY)
+    public com.securedeploy.editing.WorkspaceScanSnapshot workspaceScan() {
+        return comparison == null ? null : comparison.workspaceScan();
+    }
     @JsonProperty(value="resultSummary", access=JsonProperty.Access.READ_ONLY)
     public ReviewResultSummary resultSummary() {
         return ReviewResultSummary.from(this);

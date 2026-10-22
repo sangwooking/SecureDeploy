@@ -2197,3 +2197,7 @@ h1 {
 .source-ai-patch button { margin: 6px 8px 6px 0; max-width: 100%; white-space: normal; }
 .source-ai-patch ul { padding-left: 18px; overflow-wrap: anywhere; }
 .source-ai-code { padding: 12px; background: #f3f6f4; overflow: auto; font-size: 12px; }
+.workspace-scan { margin-block: 20px; padding-block: 16px; border-block: 1px solid #d1d5db; min-width: 0; }
+.workspace-scan > label { display: flex; align-items: flex-start; gap: 8px; margin-block: 12px; }
+.workspace-scan input[type="checkbox"] { flex-shrink: 0; }
+.workspace-scan, .workspace-scan-provenance { overflow-wrap: anywhere; }

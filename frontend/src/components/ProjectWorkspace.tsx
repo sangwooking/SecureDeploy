@@ -109,7 +109,7 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
     {route.tab === 'history' && <section className="workspace-section history-panel"><h2>분석 이력 ({history.length})</h2>
       {!history.length && <p>저장된 분석 결과가 없습니다.</p>}
       <div className="history-list">{history.map(item => <article className="workspace-history-row" key={item.reviewId}>
-        <h3>분석 #{item.reviewId} · {dateLabel(item.createdAt)}</h3><p>{item.sourceType} · {reviewStatus(item)}</p>
+        <h3>분석 #{item.reviewId} · {dateLabel(item.createdAt)}</h3><p>{item.sourceType === 'WORKSPACE' ? '작업 공간 수정본' : item.sourceType} · {reviewStatus(item)}</p>
         {item.sourceType === 'GITHUB' && <GitHubSourceInfo source={item.sourceMetadata} compact />}
         <PriorityCounts assessment={item.riskSummary} />
         <p>위험 평가 항목 {item.findingCount ?? '미평가'}건 · AI 추가 후보 {item.riskSummary?.semanticCandidateCount ?? '미평가'}건 (별도)</p>
