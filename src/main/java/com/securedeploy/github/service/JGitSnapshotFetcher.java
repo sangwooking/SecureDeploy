@@ -20,6 +20,28 @@ public class JGitSnapshotFetcher implements GitHubSnapshotFetcher {
     }
     public Revision fetchAuthenticated(GitHubRepositoryUrl url, Path gitDirectory, CloneBudget budget,
             GitHubReadCredential credential) throws Exception { return fetch(url, gitDirectory, budget, credential); }
+    public Revision fetchExact(GitHubRepositoryUrl url, Path gitDirectory, CloneBudget budget,
+            GitHubReadCredential credential, String sha) throws Exception {
+        if (sha == null || !sha.matches("[0-9a-f]{40}")) throw new IOException("Exact revision required");
+        try (Git git = Git.init().setBare(true).setDirectory(gitDirectory.toFile()).call()) {
+            var repository = git.getRepository();
+            repository.getConfig().setBoolean("http", null, "followRedirects", false);
+            repository.getConfig().setBoolean("http", null, "sslVerify", true);
+            git.fetch().setRemote(url.cloneUrl()).setDepth(1).setTagOpt(TagOpt.NO_TAGS)
+                    .setRecurseSubmodules(SubmoduleConfig.FetchRecurseSubmodulesMode.NO)
+                    .setRefSpecs(new RefSpec(sha + ":refs/editing/source"))
+                    .setTimeout(30).setProgressMonitor(budget)
+                    .setTransportConfigCallback(transport -> configure(transport, url, budget, credential)).call();
+            budget.check();
+            // JGit's object-ID fetch does not guarantee a destination ref update.
+            // Validate the requested object itself; never resolve HEAD as a fallback.
+            try (var revisions = new org.eclipse.jgit.revwalk.RevWalk(repository)) {
+                var commit = revisions.parseCommit(ObjectId.fromString(sha));
+                if (!commit.name().equals(sha)) throw new IOException("Exact revision unavailable");
+            }
+            return new Revision(null, sha);
+        }
+    }
     private Revision fetch(GitHubRepositoryUrl url, Path gitDirectory, CloneBudget budget, GitHubReadCredential credential) throws Exception {
         try (Git git = Git.init().setBare(true).setDirectory(gitDirectory.toFile()).call()) {
             Repository repository = git.getRepository();

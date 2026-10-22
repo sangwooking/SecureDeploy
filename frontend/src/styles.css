@@ -2157,3 +2157,37 @@ h1 {
 @media (max-width: 480px) {
   .incomplete-dependency .dependency-versions { grid-template-columns: 1fr; }
 }
+/* Source is rendered only as inert text; project HTML/JS is never previewed. */
+.source-editor { min-width: 0; width: 100%; color: #20242a; }
+.source-editor h2 { font-size: 22px; margin: 0; }
+.source-editor h3 { font-size: 16px; overflow-wrap: anywhere; }
+.source-editor-header, .source-editor-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.source-editor-header { padding: 16px 0; border-bottom: 1px solid #d9dce0; }
+.source-editor-actions { justify-content: flex-start; margin: 12px 0; }
+.source-editor-acquire, .source-editor-status, .source-export { padding: 18px 0; border-bottom: 1px solid #d9dce0; }
+.source-editor-acquire label { display: block; margin: 16px 0; }
+.source-editor input[type=file] { display: block; max-width: 100%; margin-top: 8px; }
+.source-revision { overflow-wrap: anywhere; font-family: monospace; font-size: 12px; }
+.source-editor-layout { display: grid; grid-template-columns: minmax(160px, 25%) minmax(0, 1fr); min-height: 400px; border-bottom: 1px solid #d9dce0; }
+.source-file-tree { max-height: 650px; overflow: auto; padding: 12px 8px 12px 0; border-right: 1px solid #d9dce0; min-width: 0; }
+.source-file-tree ul { list-style: none; margin: 0; padding-left: 12px; }
+.source-file-tree > ul { padding-left: 0; }
+.source-file-tree li, .source-file-tree summary { overflow-wrap: anywhere; }
+.source-file-tree button { border: 0; background: transparent; text-align: left; color: inherit; font-size: 13px; padding: 7px 4px; max-width: 100%; overflow-wrap: anywhere; border-radius: 3px; }
+.source-file-tree button[aria-current=true] { background: #e2f1e8; font-weight: 700; }
+.source-edit-pane { min-width: 0; padding: 12px 0 12px 18px; }
+.source-code-label { display: block; font-size: 13px; margin-bottom: 8px; }
+.source-code { display: block; box-sizing: border-box; width: 100%; height: 390px; min-height: 220px; resize: vertical; white-space: pre; overflow: auto; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0; tab-size: 2; color: #20242a; background: #fafbfc; border: 1px solid #b9c0c7; border-radius: 4px; padding: 12px; }
+.source-diff { min-width: 0; margin-top: 16px; }
+.source-diff h4 { font-size: 14px; overflow-wrap: anywhere; }
+.source-diff pre { overflow: auto; max-height: 420px; padding: 12px; background: #f3f6f4; font-size: 12px; border-left: 3px solid #50956b; }
+.source-export ul { padding-left: 20px; overflow-wrap: anywhere; }
+.source-export-approval { display: flex; align-items: flex-start; gap: 8px; margin: 16px 0; }
+.source-editor p { overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .source-editor-layout { grid-template-columns: minmax(0, 1fr); }
+  .source-file-tree { max-height: 190px; border-right: 0; border-bottom: 1px solid #d9dce0; }
+  .source-edit-pane { padding-left: 0; }
+  .source-editor-actions > button { max-width: 100%; white-space: normal; }
+  .source-code { height: 330px; }
+}

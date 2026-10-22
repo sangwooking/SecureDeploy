@@ -17,6 +17,7 @@ public class ReviewAccessService {
         this.currentUserService = currentUserService;
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ReviewEntity findAccessibleReviewWithVulnerabilities(Long reviewId, String notFoundMessage) {
         ReviewEntity review = reviewRepository.findByIdWithVulnerabilities(reviewId)
                 .orElseThrow(() -> new SecureDeployException(HttpStatus.NOT_FOUND, notFoundMessage));

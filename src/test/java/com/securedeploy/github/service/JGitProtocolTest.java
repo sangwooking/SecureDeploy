@@ -19,11 +19,27 @@ import static org.mockito.Mockito.*;
 class JGitProtocolTest {
     @TempDir Path temp;
     @Test void fullSmartHttpProtocolFetchesDefaultBranchAndShallowCommitOffline() throws Exception {
+        exercise(false, false);
+    }
+    @Test void fullSmartHttpProtocolFetchesExactTipOffline() throws Exception {
+        exercise(true, false);
+    }
+    @Test void fullSmartHttpProtocolFetchesExactOlderCommitOffline() throws Exception {
+        exercise(true, true);
+    }
+    @Test void unavailableExactCommitFailsWithoutUsingAdvertisedTip() throws Exception {
+        exercise(true, false, true);
+    }
+    private void exercise(boolean exact, boolean older) throws Exception {
+        exercise(exact, older, false);
+    }
+    private void exercise(boolean exact, boolean older, boolean missing) throws Exception {
         Path remote = temp.resolve("remote");
-        GitSourceFixture.create(remote);
+        String firstSha = GitSourceFixture.create(remote);
         try (Git git = Git.open(remote.toFile())) {
             java.nio.file.Files.writeString(remote.resolve("README.md"), "Second offline commit\n");
-            String sha = GitSourceFixture.commit(git);
+            String tip = GitSourceFixture.commit(git);
+            String sha = missing ? "0".repeat(40) : older ? firstSha : tip;
             HttpClient client = mock(HttpClient.class);
             var requests = new ArrayList<HttpRequest>();
             when(client.sendAsync(any(), org.mockito.ArgumentMatchers.<HttpResponse.BodyHandler<InputStream>>any())).thenAnswer(inv -> {
@@ -32,6 +48,7 @@ class JGitProtocolTest {
                 boolean advertise = request.uri().getPath().endsWith("/info/refs");
                 try (UploadPack pack = new UploadPack(git.getRepository())) {
                     pack.setBiDirectionalPipe(false);
+                    pack.setRequestPolicy(UploadPack.RequestPolicy.REACHABLE_COMMIT);
                     pack.setExtraParameters(List.of(request.headers().firstValue("git-protocol").orElse("").split(":")));
                     if (advertise) {
                         var lines = new PacketLineOut(output);
@@ -51,13 +68,28 @@ class JGitProtocolTest {
                 return CompletableFuture.completedFuture(response);
             });
             try (var budget = new CloneBudget(new GitHubSourceProperties())) {
-                var revision = new JGitSnapshotFetcher(client).fetch(GitHubRepositoryUrl.parse("https://github.com/fixture/protocol"), temp.resolve("clone.git"), budget);
-                assertThat(revision.branch()).isEqualTo("develop");
+                var fetcher = new JGitSnapshotFetcher(client);
+                var url = GitHubRepositoryUrl.parse("https://github.com/fixture/protocol");
+                if (missing) {
+                    assertThatThrownBy(() -> fetcher.fetchExact(url, temp.resolve("clone.git"), budget, null, sha)).isInstanceOf(Exception.class);
+                    try (Git clone = Git.open(temp.resolve("clone.git").toFile())) {
+                        assertThat(clone.getRepository().hasObject(org.eclipse.jgit.lib.ObjectId.fromString(tip))).isFalse();
+                    }
+                    return;
+                }
+                var revision = exact ? fetcher.fetchExact(url, temp.resolve("clone.git"), budget, null, sha)
+                        : fetcher.fetch(url, temp.resolve("clone.git"), budget);
+                if (!exact) assertThat(revision.branch()).isEqualTo("develop");
                 assertThat(revision.commitSha()).isEqualTo(sha);
             }
             assertThat(requests.size()).isBetween(2, 12);
             try (Git clone = Git.open(temp.resolve("clone.git").toFile())) {
                 assertThat(clone.getRepository().getObjectDatabase().getShallowCommits()).hasSize(1);
+                if (exact) {
+                    assertThat(clone.getRepository().resolve("refs/editing/source")).isNull();
+                    assertThat(clone.getRepository().resolve(sha + "^{commit}").name()).isEqualTo(sha);
+                    if (older) assertThat(sha).isNotEqualTo(tip);
+                }
             }
         }
     }

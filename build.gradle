@@ -20,6 +20,7 @@ dependencies {
     implementation 'org.eclipse.jgit:org.eclipse.jgit:6.10.0.202406032230-r'
     implementation 'com.github.librepdf:openpdf:1.3.39'
     implementation 'org.tomlj:tomlj:1.1.1'
+    implementation 'org.apache.commons:commons-compress:1.28.0'
     implementation 'org.yaml:snakeyaml'
 
     runtimeOnly 'org.postgresql:postgresql'
@@ -89,6 +90,14 @@ tasks.register('summaryBrowserServer', JavaExec) {
     dependsOn tasks.named('testClasses')
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'com.securedeploy.evaluation.SummaryBrowserServer'
+    maxHeapSize = '512m'
+    environment = System.getenv().findAll { key, value -> key in ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'JAVA_HOME'] }
+}
+
+tasks.register('editingBrowserServer', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.securedeploy.editing.EditingBrowserServer'
     maxHeapSize = '512m'
     environment = System.getenv().findAll { key, value -> key in ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'JAVA_HOME'] }
 }
