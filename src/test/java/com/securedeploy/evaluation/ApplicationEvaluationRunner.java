@@ -78,6 +78,9 @@ public final class ApplicationEvaluationRunner {
                         for(var f:deployment.findings())candidates.add(Map.of("ruleId",f.ruleId(),"location",Map.of("filePath",f.filePath(),"line",f.line()),"trace",List.of(),"priority",f.priority()));
                         var row=new LinkedHashMap<String,Object>();
                         row.put("raw",BenchmarkEngineRunner.signals(raw));row.put("filtered",BenchmarkEngineRunner.signals(filtered));
+                        row.put("ruleInputs",project.analysisFiles().stream().map(f->Map.of("filePath",f.relativePath(),"fileType",f.type().name(),"lineCount",f.lines().size())).toList());
+                        row.put("htmlContextEvidence",filtered.stream().filter(f->f.ruleId().equals("REACT_DANGEROUS_HTML"))
+                                .map(f->Map.of("filePath",f.filePath(),"line",f.line(),"analysisNote",f.analysisNote()==null?"NOT_RECORDED":f.analysisNote())).toList());
                         row.put("reviewCandidates",candidates);row.put("filterAudit",BenchmarkEngineRunner.filterAudit(java.matches(),filtered));
                         row.put("java",java.snapshot());row.put("python",py);row.put("typescript",ts);row.put("deployment",deployment);row.put("coverage",coverage);
                         row.put("sca",Map.of("status","EXTERNAL_LOOKUP_NOT_RUN","componentCount",sca.components().size(),"observationCount",sca.observations().size()));
