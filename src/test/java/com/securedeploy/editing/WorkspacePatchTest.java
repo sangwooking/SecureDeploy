@@ -59,6 +59,37 @@ class WorkspacePatchTest {
     WorkspacePatch.View prepare(){var content=workspaces.content(workspace.id(),file.id());return patches.prepare(workspace.id(),new WorkspacePatch.Prepare(file.id(),77,workspace.revision(),file.originalHash(),content.currentHash()));}
     WorkspacePatch.View generate(WorkspacePatch.View p){return patches.generate(workspace.id(),p.id(),new WorkspacePatch.Consent(p.revision(),p.currentHash(),true));}
     WorkspacePatch.Decision decision(WorkspacePatch.View p){return new WorkspacePatch.Decision(p.revision(),p.currentHash(),true);}
+    void deno() throws Exception {
+        workspaces.delete(workspace.id());
+        String path="supabase/functions/inspect/index.ts";
+        input="Deno.serve(request=>{return Response.json({status: 'ok', diagnostic: Deno.env.get('API_SECRET')}, {status: 201});});\n";
+        var analysis=new com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer(new com.securedeploy.analysis.typescript.TypeScriptAnalysisProperties())
+                .analyze(new com.securedeploy.project.model.ProjectStructure(java.nio.file.Path.of("/no-execution"),List.of(new com.securedeploy.project.model.ProjectFile(java.nio.file.Path.of(path),path,com.securedeploy.project.model.ProjectFileType.TYPESCRIPT,input.lines().toList()))));
+        when(review.getServerAnalysis()).thenReturn(analysis);
+        doAnswer(i->List.of(new SourceArchive.Entry(path,input.getBytes(StandardCharsets.UTF_8),false,0100644))).when(sources).github(anyLong(),any());
+        workspace=workspaces.create(4,null);file=workspace.files().get(0);
+    }
+    WorkspacePatch.View prepareDeno(){var content=workspaces.content(workspace.id(),file.id());return patches.prepare(workspace.id(),new WorkspacePatch.Prepare(file.id(),0,workspace.revision(),file.originalHash(),content.currentHash(),review.getServerAnalysis().validatedFindings().get(0).findingId()));}
+    WorkspacePatch.Output denoOutput(WorkspacePatch.Prompt prompt,String replacement)throws Exception {
+        var d=mapper.readTree(prompt.untrustedData());return new WorkspacePatch.Output("PATCH",d.path("fileId").asText(),d.path("startLine").asInt(),d.path("expectedHash").asText(),replacement,
+                "응답 필드 제거의 API 호환성을 확인하세요.",List.of("클라이언트 테스트 후 재검사하세요."),List.of("운영은 미확인입니다."));
+    }
+    @Test void denoRejectsSemanticChangesAndPlaceholderCodeWithoutMutatingSource() throws Exception {
+        for(String replacement:List.of("{}","{status: 'changed'}","{status: 'ok', diagnostic: 'redacted'}","{status: 'ok'});disableAuth();const x=({}","{status: '<redacted>'}")) {
+            deno();doAnswer(i->denoOutput(i.getArgument(0),replacement)).when(provider).generateWorkspacePatch(any());
+            assertEquals("INVALID",generate(prepareDeno()).state());assertEquals(input,workspaces.content(workspace.id(),file.id()).text());
+            workspaces.delete(workspace.id());user.incrementAndGet();workspace=workspaces.create(4,null);file=workspace.files().get(0);
+        }
+    }
+    @Test void denoRejectionAndConcurrentEditCannotApplyGeneratedCode()throws Exception {
+        deno();doAnswer(i->denoOutput(i.getArgument(0),"{status: 'ok'}")).when(provider).generateWorkspacePatch(any());
+        var p=generate(prepareDeno());assertEquals("PROPOSED",p.state());patches.reject(workspace.id(),p.id());
+        assertEquals(input,workspaces.content(workspace.id(),file.id()).text());
+        assertThrows(RuntimeException.class,()->workspaces.applyPatch(workspace.id(),p.id(),new WorkspacePatch.Decision(p.revision(),p.currentHash(),true,true)));
+        now.set(now.get().plusSeconds(11));var pending=prepareDeno();
+        doAnswer(i->{workspaces.save(workspace.id(),file.id(),new EditingWorkspaceService.Change(workspace.revision(),file.originalHash(),input+"// manual\n"),false);return denoOutput(i.getArgument(0),"{status: 'ok'}");}).when(provider).generateWorkspacePatch(any());
+        assertEquals("STALE",generate(pending).state());assertEquals(input+"// manual\n",workspaces.content(workspace.id(),file.id()).text());
+    }
     @Test void previewHasExactIdentityAndNoExternalCallOrMutation() {
         var p=prepare();assertEquals("APPROVAL_REQUIRED",p.state());assertEquals("debug=true",p.before());assertNull(p.after());assertNull(p.diff());
         assertEquals(workspace.sourceRevision(),p.sourceRevision());assertEquals(file.originalHash(),p.originalHash());

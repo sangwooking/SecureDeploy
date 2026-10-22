@@ -16,3 +16,8 @@ test('separate consent and acceptance gates retain uncertainty and never execute
  for(const denied of ['dangerouslySetInnerHTML','eval(','iframe','srcDoc'])assert.ok(!source.includes(denied));
  const api=fs.readFileSync('src/api/editingApi.ts','utf8');assert.ok(api.includes('consented: true'));assert.ok(api.includes('approved: true'));assert.ok(api.includes('currentHash: p.currentHash'));
 });
+test('Deno response patches require a structural identity and separate API impact acknowledgement',()=>{
+ const source=fs.readFileSync('src/components/AiPatchPanel.tsx','utf8'),api=fs.readFileSync('src/api/editingApi.ts','utf8');
+ for(const value of ['TS_SENSITIVE_DATA_EXPOSURE','HTTP_RESPONSE','compatibilityAccepted','API 호환성','객체 응답 코드','파일 전체가 아닙니다'])assert.ok(source.includes(value),value);
+ assert.ok(api.includes('flowFindingId'));assert.ok(api.includes('responseContractAcknowledged: !!p.flowFindingId'));
+});

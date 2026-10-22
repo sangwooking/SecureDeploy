@@ -154,7 +154,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath }: { result
           </div>
           <aside className="source-evidence-pane" aria-label="선택 파일의 수정 근거">
             {selected ? <>
-              {selected.editable && content && <AiPatchPanel key={selected.id} workspace={workspace} file={selected} content={content} findings={findings} dirty={dirty} disabled={busy}
+              {selected.editable && content && <AiPatchPanel key={selected.id} workspace={workspace} file={selected} content={content} findings={findings} flowFindings={flowFindings} dirty={dirty} disabled={busy}
                 onApplied={async next => { setWorkspace(next);setDiffs(null);setApproved(false);setSelected(next.files.find(f => f.id === selected.id) ?? null);
                   const value=await loadEditingFile(next.id,selected.id);setContent(value);setText(value.text.replace(/\r\n/g,'\n')); }} />}
               {(findings.length > 0 || flowFindings.length > 0) && <aside aria-label="기준 분석 근거"><h3>기준 commit의 경고 위치</h3>

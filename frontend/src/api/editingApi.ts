@@ -32,18 +32,18 @@ export interface PatchProvider { name: string; model: string; available: boolean
 export interface AiPatch { id: string; state: string; fileId: string; findingId: number; ruleId: string; reviewId: number;
   sourceRevision: string; revision: number; originalHash: string; currentHash: string; startLine: number;
   before: string; after: string | null; diff: string | null; provider: PatchProvider; explanation: string;
-  verificationSteps: string[]; limitations: string[] }
+  verificationSteps: string[]; limitations: string[]; flowFindingId?: string | null }
 export const patchProvider = () => call<PatchProvider>('/patch-provider');
 export const listAiPatches = (id: string) => call<AiPatch[]>(`/${encodeURIComponent(id)}/patches`);
-export const prepareAiPatch = (w: EditingWorkspace, file: EditingFile, content: EditingContent, findingId: number) => call<AiPatch>(`/${encodeURIComponent(w.id)}/patches`, {
-  method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ fileId: file.id, findingId, revision: w.revision, originalHash: file.originalHash, currentHash: content.currentHash }),
+export const prepareAiPatch = (w: EditingWorkspace, file: EditingFile, content: EditingContent, findingId: number, flowFindingId?: string) => call<AiPatch>(`/${encodeURIComponent(w.id)}/patches`, {
+  method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ fileId: file.id, findingId, flowFindingId, revision: w.revision, originalHash: file.originalHash, currentHash: content.currentHash }),
 });
 export const generateAiPatch = (id: string, p: AiPatch) => call<AiPatch>(`/${encodeURIComponent(id)}/patches/${encodeURIComponent(p.id)}/generate`, {
   method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ revision: p.revision, currentHash: p.currentHash, consented: true }),
 });
 export const rejectAiPatch = (id: string, proposal: string) => call<AiPatch>(`/${encodeURIComponent(id)}/patches/${encodeURIComponent(proposal)}/reject`, { method: 'POST' });
 export const applyAiPatch = (id: string, p: AiPatch) => call<EditingWorkspace>(`/${encodeURIComponent(id)}/patches/${encodeURIComponent(p.id)}/apply`, {
-  method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ revision: p.revision, currentHash: p.currentHash, approved: true }),
+  method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ revision: p.revision, currentHash: p.currentHash, approved: true, responseContractAcknowledged: !!p.flowFindingId }),
 });
 export interface WorkspaceScan { id: string; state: 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'TIMED_OUT'; workspaceId: string;
   revision: number; inputHash: string; reviewId: number | null; message: string; capturedAt: string }

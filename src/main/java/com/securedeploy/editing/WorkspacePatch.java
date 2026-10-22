@@ -5,23 +5,30 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 
-/** A closed, single-line patch contract, not a general-purpose code transformation engine. */
+/** Closed properties and statically verified response-object patch contracts. */
 public final class WorkspacePatch {
     private WorkspacePatch() { }
     public record Provider(String name, String model, boolean available) { }
-    public record Prepare(String fileId, long findingId, long revision, String originalHash, String currentHash) { }
+    public record Prepare(String fileId, long findingId, long revision, String originalHash, String currentHash,String flowFindingId) {
+        public Prepare(String fileId,long findingId,long revision,String originalHash,String currentHash){this(fileId,findingId,revision,originalHash,currentHash,null);}
+    }
     public record Consent(long revision, String currentHash, boolean consented) { }
-    public record Decision(long revision, String currentHash, boolean approved) { }
+    public record Decision(long revision, String currentHash, boolean approved,boolean responseContractAcknowledged) {
+        public Decision(long revision,String currentHash,boolean approved){this(revision,currentHash,approved,false);}
+    }
     public record Prompt(String instructions, String untrustedData, Map<String,Object> schema) { }
     public record Output(String decision, String fileId, int startLine, String expectedHash, String replacement,
                          String explanation, List<String> verificationSteps, List<String> limitations) { }
     public record View(String id, String state, String fileId, long findingId, String ruleId, long reviewId,
                        String sourceRevision, long revision, String originalHash, String currentHash,
                        int startLine, String before, String after, String diff, Provider provider,
-                       String explanation, List<String> verificationSteps, List<String> limitations) { }
+                       String explanation, List<String> verificationSteps, List<String> limitations,String flowFindingId) { }
     static final class Session {
         final String id = UUID.randomUUID().toString();
-        final String fileId, rule, source, originalHash, currentHash, before, after, diff;
+        final String fileId, rule, source, originalHash, currentHash, before;
+        String after,diff;
+        ResponsePatchValidator.Contract responseContract;
+        final String flowFindingId;
         final long findingId, revision;
         final int line, offset;
         final Provider provider;
@@ -31,6 +38,7 @@ public final class WorkspacePatch {
                 String before, String after, String diff, Provider provider) {
             this.fileId=request.fileId();this.findingId=request.findingId();this.revision=request.revision();
             this.originalHash=request.originalHash();this.currentHash=currentHash;this.rule=rule;this.source=source;
+            this.flowFindingId=request.flowFindingId();
             this.line=line;this.offset=offset;this.before=before;this.after=after;this.diff=diff;this.provider=provider;
         }
     }
@@ -76,8 +84,13 @@ public final class WorkspacePatch {
                 || output.limitations()==null || output.limitations().size()>6)throw new IllegalArgumentException();
         for(String text:java.util.stream.Stream.concat(output.verificationSteps().stream(),output.limitations().stream()).toList())
             if(text==null||text.isBlank()||text.length()>400||!text.equals(sanitizer.text(text,400)))throw new IllegalArgumentException();
-        // Expected 'after' is server-derived and only changes the vulnerable constant, never guards or unrelated code.
-        if("PATCH".equals(output.decision())&&!Objects.equals(expected.after(),output.replacement()))throw new IllegalArgumentException();
+        // Properties keep the server-derived constant; TypeScript also needs the separate AST contract check.
+        if("PATCH".equals(output.decision())) {
+            if(expected.flowFindingId()==null&&!Objects.equals(expected.after(),output.replacement()))throw new IllegalArgumentException();
+            if(expected.flowFindingId()!=null&&(output.replacement()==null||output.replacement().isBlank()||output.replacement().length()>4096
+                    ||!output.replacement().equals(sanitizer.text(output.replacement(),4096))
+                    ||output.replacement().contains("<redacted>")||output.replacement().contains("[omitted]")))throw new IllegalArgumentException();
+        }
         if("NEEDS_REVIEW".equals(output.decision())&&!"".equals(output.replacement()))throw new IllegalArgumentException();
     }
     public static Map<String,Object> schema() {
@@ -91,7 +104,7 @@ public final class WorkspacePatch {
     public static Output parse(com.fasterxml.jackson.databind.JsonNode root) {
         if(root==null||!root.isObject()||root.size()!=8||!root.path("startLine").isIntegralNumber()||!root.path("startLine").canConvertToInt())throw new IllegalArgumentException();
         for(String field:List.of("decision","fileId","expectedHash","replacement","explanation"))
-            if(!root.path(field).isTextual()||root.path(field).textValue().length()>1024)throw new IllegalArgumentException();
+            if(!root.path(field).isTextual()||root.path(field).textValue().length()>(field.equals("replacement")?4096:1024))throw new IllegalArgumentException();
         var lists=new ArrayList<List<String>>();
         for(String field:List.of("verificationSteps","limitations")) {
             var array=root.path(field);if(!array.isArray()||array.size()>6)throw new IllegalArgumentException();
