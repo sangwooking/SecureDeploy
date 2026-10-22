@@ -39,13 +39,13 @@ export function NewProjectAnalysis({ policy, policyError, retryPolicy, onComplet
     finally { if (active.current) setBusy(false); }
   };
   return <section className="workspace-section analysis-entry"><h2>새 프로젝트 분석</h2>
-    <p>내 계정의 ZIP 프로젝트 이름 또는 GitHub 저장소 URL이 같으면 기존 프로젝트에 새 분석으로 연결됩니다. 다른 사용자의 프로젝트와 합치지 않습니다.</p>
+    <details className="analysis-identity"><summary>기존 프로젝트와 연결되는 기준</summary><p>내 계정의 ZIP 프로젝트 이름 또는 GitHub 저장소 URL이 같으면 기존 프로젝트에 새 분석으로 연결됩니다. 다른 사용자의 프로젝트와 합치지 않습니다.</p></details>
     <form className="upload-panel review-panel" onSubmit={submit}>
       <fieldset disabled={busy}>
         <div className="mode-switch" aria-label="분석 방식 선택">
-          <button type="button" className={`mode-button ${mode === 'ZIP' ? 'mode-button-active' : ''}`} onClick={() => { setMode('ZIP'); setError(''); }}>ZIP 업로드</button>
-          <button type="button" className={`mode-button ${mode === 'GITHUB' ? 'mode-button-active' : ''}`} onClick={() => { setMode('GITHUB'); setError(''); }}>GitHub URL 입력</button>
-          <button type="button" className={`mode-button ${mode === 'CONNECTED' ? 'mode-button-active' : ''}`} onClick={() => { setMode('CONNECTED'); setRepository(null); setError(''); }}>연결된 GitHub 저장소</button>
+          <button type="button" aria-pressed={mode==='ZIP'} className={`mode-button ${mode === 'ZIP' ? 'mode-button-active' : ''}`} onClick={() => { setMode('ZIP'); setError(''); }}>ZIP 업로드</button>
+          <button type="button" aria-pressed={mode==='GITHUB'} className={`mode-button ${mode === 'GITHUB' ? 'mode-button-active' : ''}`} onClick={() => { setMode('GITHUB'); setError(''); }}>GitHub URL 입력</button>
+          <button type="button" aria-pressed={mode==='CONNECTED'} className={`mode-button ${mode === 'CONNECTED' ? 'mode-button-active' : ''}`} onClick={() => { setMode('CONNECTED'); setRepository(null); setError(''); }}>연결된 GitHub 저장소</button>
         </div>
         {mode === 'ZIP' ? <label key="zip-file" className="file-drop">ZIP 파일 선택<input type="file" accept=".zip,application/zip" onChange={event => {
           const selected = event.target.files?.[0] ?? null; setFile(selected); setError(selected ? validateZipUpload(selected, policy) : '');
@@ -59,7 +59,7 @@ export function NewProjectAnalysis({ policy, policyError, retryPolicy, onComplet
         <p>기본 분석에서도 패키지 이름·생태계·확정 버전은 OSV에, 공개 취약점 식별자는 EPSS/KEV 조회에 사용됩니다. 비공개 패키지 이름도 포함될 수 있습니다.</p>
         <button className="primary-button" type="submit" disabled={busy || (mode === 'ZIP' && !policy) || (mode === 'CONNECTED' && !repository)}>{busy ? '분석 중...' : '분석 시작'}</button>
       </fieldset>
-      {busy && <p role="status">프로젝트를 분석하고 저장하고 있습니다. 완료될 때까지 기다려 주세요.</p>}
+      {busy && <div className="analysis-progress" role="status"><span className="spinner" aria-hidden="true" /><div><strong>프로젝트를 분석하고 있습니다</strong><p>수집·검사·결과 저장이 끝나면 결과로 이동합니다. 세부 단계의 완료 여부는 아직 확인되지 않았습니다.</p></div></div>}
       {error && <p role="alert" className="error-message">{error}</p>}
     </form>
   </section>;

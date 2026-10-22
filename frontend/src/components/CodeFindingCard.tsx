@@ -13,9 +13,10 @@ export interface FindingStatusActions {
   onStatus: (vulnerability: Vulnerability, status: VulnerabilityStatus) => void;
 }
 
-export function CodeFindingCard({ vulnerability: v, finding, remediation, statusActions }: {
+export function CodeFindingCard({ vulnerability: v, finding, remediation, statusActions, onEditFile }: {
   vulnerability: Vulnerability; finding?: RiskFinding; remediation?: RemediationSnapshot | null;
   statusActions: FindingStatusActions;
+  onEditFile?: (path: string) => void;
 }) {
   const id = v.vulnerabilityId;
   const status = v.status ?? 'UNCHECKED';
@@ -35,6 +36,7 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
     {needsReview && <p className="review-caution">실제 사용 방식과 주변 코드에 따라 위험이 달라질 수 있습니다. 먼저 해당 상황인지 확인하세요.</p>}
     <h4>{needsReview ? '내가 확인할 일' : '내가 해야 할 일'}</h4>
     <p>{needsReview ? guidance.steps[0] : guidance.action}</p>
+    {onEditFile && <button className="secondary-button" type="button" onClick={()=>onEditFile(v.filePath)}>이 파일 수정하기</button>}
     <FindingRemediation finding={finding} snapshot={remediation} vulnerability={v} />
     <details className="action-details"><summary>진행 상태와 메모</summary>
       <div className="status-manager">

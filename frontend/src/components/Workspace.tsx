@@ -19,7 +19,12 @@ export function Workspace({ session, onLogout }: { session: AuthResponse; onLogo
   const [policyError, setPolicyError] = useState('');
   const [policyRetry, setPolicyRetry] = useState(0);
   useEffect(() => {
-    const change = () => { setRoute(parseWorkspaceRoute(window.location.hash)); window.scrollTo(0, 0); };
+    let accepted=window.location.hash;
+    const change = () => {
+      const event=new Event('securedeploy:before-navigate',{cancelable:true});window.dispatchEvent(event);
+      if(event.defaultPrevented){window.history.replaceState(null,'',accepted);return;}
+      accepted=window.location.hash;setRoute(parseWorkspaceRoute(accepted));window.scrollTo(0, 0);
+    };
     window.addEventListener('hashchange', change);
     return () => window.removeEventListener('hashchange', change);
   }, []);
@@ -43,7 +48,7 @@ export function Workspace({ session, onLogout }: { session: AuthResponse; onLogo
   const currentPage = route.page === 'project' ? 'projects' : route.page;
   return <main className="app-shell"><section className="workspace">
     <header className="masthead"><div><p className="eyebrow">프로젝트 보안 관리</p><h1>SecureDeploy</h1></div>
-      <div className="session-box"><span>{session.user.name}</span><button className="secondary-button" onClick={onLogout}>로그아웃</button></div></header>
+      <div className="session-box"><span>{session.user.name}</span><button className="secondary-button" onClick={()=>{const e=new Event('securedeploy:before-navigate',{cancelable:true});window.dispatchEvent(e);if(!e.defaultPrevented)onLogout();}}>로그아웃</button></div></header>
     <nav className="workspace-navigation" aria-label="앱 메뉴">{[
       ['dashboard', '대시보드'], ['projects', '내 프로젝트'], ['new', '새 프로젝트'], ['account', '계정'],
     ].map(([id, label]) => <a key={id} href={`#/${id}`} aria-current={currentPage === id ? 'page' : undefined}>{label}</a>)}</nav>

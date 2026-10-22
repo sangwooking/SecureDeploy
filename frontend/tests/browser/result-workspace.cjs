@@ -61,7 +61,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
     await page.getByRole('link', { name: '프로젝트 열기', exact: true }).click();
     await page.getByRole('navigation', { name: '프로젝트 메뉴' }).getByRole('link', { name: '발견된 문제', exact: true }).click();
     const navigate = async name => {
-      await page.getByRole('navigation', { name: '분석 결과 메뉴' }).getByRole('button', { name, exact: true }).click();
+      await require('./editor-navigation.cjs').resultView(page,name);
       await page.waitForTimeout(60);
     };
     const visible = () => page.locator('#result-content').innerText();

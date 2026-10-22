@@ -1,6 +1,7 @@
 const {chromium,request}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict');
 const {execFileSync}=require('node:child_process');
+const {stage,pane}=require('./editor-navigation.cjs');
 const fs=require('node:fs');const os=require('node:os');const path=require('node:path');
 const origin=process.env.FRONTEND_URL||'http://localhost:5173',api='http://127.0.0.1:8085';
 const original="export const value = 'original';\n";
@@ -39,9 +40,9 @@ sys.stdout.buffer.write(b.getvalue())`]);
    await page.getByRole('button',{name:'example.ts',exact:true}).click();
    const editor=page.getByLabel('파일 내용',{exact:true});await editor.waitFor();assert.equal(await editor.inputValue(),original);
    if(kind==='ZIP')assert.ok(await page.getByText('원본 일치 미검증 · 기존 Finding 위치 연결 안 함 · 수정 후 새 분석 필요').isVisible());
-   assert.ok(await page.getByRole('button',{name:'수정본 ZIP 다운로드',exact:true}).isDisabled());
+   await stage(page,'변경 검토 · 다운로드');assert.ok(await page.getByRole('button',{name:'수정본 ZIP 다운로드',exact:true}).isDisabled());await stage(page,'코드 편집');
    await editor.fill(modified);await page.getByRole('button',{name:'변경 저장',exact:true}).click();
-   await page.getByRole('button',{name:'전체 변경 Diff 확인',exact:true}).click();
+   await stage(page,'변경 검토 · 다운로드');await page.getByRole('button',{name:'전체 변경 Diff 확인',exact:true}).click();
    await page.locator('.source-diff pre').waitFor();const diff=await page.locator('.source-diff pre').innerText();
    assert.ok(diff.includes("-export const value = 'original';"));assert.ok(diff.includes("+export const value = 'edited';"));
    await page.locator('.source-export-approval input').check();
@@ -58,7 +59,7 @@ print('MATCH')`,zipPath],{encoding:'utf8'});assert.equal(check.trim(),'MATCH');
    fs.mkdirSync(path.join(temp,'src'),{recursive:true});fs.writeFileSync(path.join(temp,'src/example.ts'),original);
    execFileSync('git',['apply','--check',patchPath],{cwd:temp,stdio:'pipe'});
    if(kind==='ZIP'){
-    await page.getByRole('button',{name:'example.html',exact:true}).click();assert.equal(await page.locator('#source-code').inputValue(),malicious);
+    await stage(page,'코드 편집');await pane(page,'파일');await page.getByRole('button',{name:'example.html',exact:true}).click();await page.locator('#source-code').waitFor();assert.equal(await page.locator('#source-code').inputValue(),malicious);
     assert.equal(await page.evaluate(()=>window.__sourceExecuted),undefined);
    }
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));

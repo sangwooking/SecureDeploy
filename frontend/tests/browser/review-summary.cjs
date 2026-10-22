@@ -6,7 +6,7 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173';
 (async()=>{
   const browser=await chromium.launch({headless:true});
   try{
-    for(const width of [1440,390,320])for(const scenario of scenarios){
+    for(const width of [1440,1024,768,390,320])for(const scenario of scenarios){
       const page=await browser.newPage({viewport:{width,height:1000}}),errors=[],blocked=[];
       page.on('pageerror',e=>errors.push(e.message));
       await page.addInitScript(()=>{
@@ -24,7 +24,7 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173';
       });
       await page.goto(`${origin}/#/projects/7/findings`);
       const labels={SUMMARY:'결과 요약',REVIEW_REQUIRED:'배포 전 직접 확인할 부분',PROGRESS:'변화 보기'};
-      await page.getByRole('navigation',{name:'분석 결과 메뉴'}).getByRole('button',{name:labels[scenario.view],exact:true}).click();
+      await require('./editor-navigation.cjs').resultView(page,labels[scenario.view]);
       await page.locator('#result-content').waitFor();
       if(scenario.id==='html-confidence')await page.locator('.action-finding > .technical-details > summary').first().click();
       await page.waitForFunction(text=>document.querySelector('#result-content')?.innerText.includes(text),scenario.expected[0]);
@@ -35,6 +35,6 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173';
       if(scenario.id==='perfect-partial-flow')await page.screenshot({path:`/private/tmp/securedeploy-risk-summary-${width}.png`,fullPage:true});
       await page.close();
     }
-    console.log(JSON.stringify({passed:true,scenarios:scenarios.length,widths:[1440,390,320],api:'MOCK_ONLY',externalCalls:0}));
+    console.log(JSON.stringify({passed:true,scenarios:scenarios.length,widths:[1440,1024,768,390,320],api:'MOCK_ONLY',externalCalls:0}));
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

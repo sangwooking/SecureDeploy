@@ -14,6 +14,7 @@ export function ProjectReviewResult({ result, view, onView, onRescan }: {
   const [report, setReport] = useState<'basic' | 'ai' | null>(null);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
+  const [editingPath, setEditingPath] = useState<string>();
   const active = useRef(true);
   useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   const update = async (v: Vulnerability, status: VulnerabilityStatus) => {
@@ -39,12 +40,13 @@ export function ProjectReviewResult({ result, view, onView, onRescan }: {
     } catch (e) { if (active.current) setError(e instanceof Error ? e.message : '리포트를 다운로드하지 못했습니다.'); }
     finally { if (active.current) setReport(null); }
   };
-  if (editing) return <SourceEditingWorkspace key={current.reviewId} result={current} onBack={() => setEditing(false)} />;
+  if (editing) return <SourceEditingWorkspace key={current.reviewId} result={current} initialPath={editingPath} onBack={() => setEditing(false)} />;
   return <>
     {error && <p role="alert" className="error-message">{error}</p>}
     <ReviewResultWorkspace result={current} view={view} onViewChange={onView} progress={null}
-      rescanActions={<><button className="secondary-button" type="button" onClick={onRescan}>다시 검사하기</button>
-        <button className="secondary-button" type="button" disabled={!current.reviewId} onClick={() => setEditing(true)}>수정 작업 공간 열기</button></>}
+      onEditFile={current.sourceType==='WORKSPACE'?undefined:path=>{setEditingPath(path);setEditing(true);}}
+      rescanActions={<><button className="primary-button" type="button" disabled={!current.reviewId || current.sourceType==='WORKSPACE'} onClick={() => {setEditingPath(undefined);setEditing(true);}}>수정 작업 공간 열기</button>
+        <button className="secondary-button" type="button" onClick={onRescan}>다시 검사하기</button></>}
       statusActions={{ updatingId: updating, comments, onComment: (id, comment) => setComments(previous => ({ ...previous, [id]: comment })), onStatus: (v, status) => void update(v, status) }}
       reportActions={<>
         <button type="button" className="secondary-button" disabled={!!report} onClick={() => void download(false)}>{report === 'basic' ? 'PDF 생성 중...' : '기본 리포트 다운로드'}</button>

@@ -19,7 +19,7 @@ export function parseWorkspaceRoute(hash: string): WorkspaceRoute {
   if (review !== null && (!/^\d+$/.test(review) || !Number.isSafeInteger(Number(review)) || Number(review) < 1)) return { page: 'not-found' };
   return { page: 'project', projectId: Number(match[1]), tab: (match[2] ?? 'overview') as ProjectTab,
     reviewId: match[2] === 'findings' && review ? Number(review) : undefined,
-    view: resultViews.some(v => v.id === view) ? view as ResultView : 'BLOCKING' };
+    view: resultViews.some(v => v.id === view) ? view as ResultView : 'SUMMARY' };
 }
 
 export function projectLink(projectId: number, tab: ProjectTab = 'overview', reviewId?: number, view?: ResultView): string {

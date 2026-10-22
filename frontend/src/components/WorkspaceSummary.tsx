@@ -39,7 +39,7 @@ export function ProjectList({ projects }: { projects: WorkspaceProject[] }) {
 
 export function WorkspaceSummary({ data, name }: { data: WorkspaceResponse; name: string }) {
   return <>
-    <header className="section-heading"><h2>{name}님의 SecureDeploy</h2><a className="secondary-button" href="#/new">+ 새 프로젝트 분석</a></header>
+    <header className="section-heading"><h2>{name}님의 프로젝트</h2><a className="primary-button" href="#/new">+ 새 프로젝트 분석</a></header>
     <dl className="workspace-counts dashboard-counts">
       <div><dt>관리 중인 프로젝트</dt><dd>{data.projectCount}</dd></div>
       <div><dt>배포 전 수정 필요</dt><dd>{data.blockedProjectCount}</dd></div>

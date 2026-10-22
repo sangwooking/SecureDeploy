@@ -2,6 +2,7 @@
 const {chromium,request}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {execFileSync}=require('node:child_process');
+const {stage,pane}=require('./editor-navigation.cjs');
 const origin=process.env.FRONTEND_URL||'http://localhost:5173',api='http://127.0.0.1:8085';
 (async()=>{
  const http=await request.newContext({baseURL:api}),browser=await chromium.launch({headless:true});let temp;
@@ -18,7 +19,7 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173',api='http://127.0
    await page.route('**/*',route=>{const url=new URL(route.request().url());if(url.pathname.startsWith('/api/'))return route.continue({url:api+url.pathname+url.search});if(url.origin===new URL(origin).origin)return route.continue();outbound.push(url.origin);return route.abort();});
    await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);
    await page.getByRole('button',{name:'수정 작업 공간 열기',exact:true}).click();await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).click();
-   await page.getByRole('button',{name:'application.properties',exact:true}).click();const panel=page.getByLabel('AI 보안 수정안',{exact:true});
+   await page.getByRole('button',{name:'application.properties',exact:true}).click();await pane(page,'수정 근거 · AI');const panel=page.getByLabel('AI 보안 수정안',{exact:true});
    await panel.getByLabel('수정할 분석 항목').selectOption({label:'DEBUG_ENABLED · 원본 1행'});
    await panel.getByRole('button',{name:'AI 수정안 전송 범위 확인'}).click();await panel.getByText('코드 전송 동의 대기',{exact:true}).waitFor();
    assert.ok(await panel.getByRole('button',{name:'동의한 코드로 AI 수정안 생성'}).isDisabled());
@@ -26,17 +27,17 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173',api='http://127.0
    await panel.getByLabel('이 코드 범위의 외부 전송과 유료 호출 가능성에 동의합니다.').check();
    await panel.getByRole('button',{name:'동의한 코드로 AI 수정안 생성'}).click();await panel.getByText('제안 · 미적용',{exact:true}).waitFor();
    assert.equal(await page.locator('#source-code').inputValue(),'debug=true\nserver.error.include-stacktrace=always\n');
-   assert.ok(await page.getByRole('button',{name:'수정본 ZIP 다운로드',exact:true}).isDisabled());
+   await stage(page,'변경 검토 · 다운로드');assert.ok(await page.getByRole('button',{name:'수정본 ZIP 다운로드',exact:true}).isDisabled());await stage(page,'코드 편집');
    await panel.getByLabel('Diff와 미확인 조건을 검토했고 현재 작업 공간에만 적용하도록 승인합니다.').check();
    await panel.getByRole('button',{name:'검토한 AI 수정안 적용'}).click();await panel.getByText('작업 공간 적용됨 · 해결 미검증',{exact:true}).waitFor();
    await page.waitForFunction(()=>document.querySelector('#source-code')?.value.startsWith('debug=false'));
-   await page.locator('#source-code').fill('debug=false\nserver.error.include-stacktrace=always\n# manual\n');await page.getByRole('button',{name:'변경 저장',exact:true}).click();
+   await pane(page,'코드');await page.locator('#source-code').fill('debug=false\nserver.error.include-stacktrace=always\n# manual\n');await page.getByRole('button',{name:'변경 저장',exact:true}).click();await pane(page,'수정 근거 · AI');
    await panel.getByLabel('수정할 분석 항목').selectOption({label:'STACKTRACE_EXPOSURE · 원본 2행'});
    await panel.getByRole('button',{name:'AI 수정안 전송 범위 확인'}).click();await panel.getByText('코드 전송 동의 대기',{exact:true}).waitFor();
    await panel.getByLabel('이 코드 범위의 외부 전송과 유료 호출 가능성에 동의합니다.').check();await panel.getByRole('button',{name:'동의한 코드로 AI 수정안 생성'}).click();
    await panel.getByText('제안 · 미적용',{exact:true}).waitFor();await panel.getByRole('button',{name:'제안 거절',exact:true}).click();await panel.getByText('거절됨 · 변경 없음',{exact:true}).waitFor();
    assert.ok((await page.locator('#source-code').inputValue()).includes('include-stacktrace=always'));
-   await page.getByRole('button',{name:'전체 변경 Diff 확인'}).click();await page.locator('.source-export-approval').last().locator('input').check();
+   await stage(page,'변경 검토 · 다운로드');await page.getByRole('button',{name:'전체 변경 Diff 확인'}).click();await page.locator('.source-export-approval').last().locator('input').check();
    const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'수정본 ZIP 다운로드',exact:true}).click();
    const download=await downloadPromise,zip=path.join(temp,'edited.zip');await download.saveAs(zip);
    const result=execFileSync('python3',['-c',`import sys,zipfile

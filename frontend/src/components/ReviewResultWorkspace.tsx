@@ -28,9 +28,10 @@ interface Props {
   reportActions: ReactNode;
   progress: ReactNode;
   rescanActions?: ReactNode;
+  onEditFile?: (path: string) => void;
 }
 
-export function ReviewResultWorkspace({ result, view, onViewChange, statusActions, reportActions, progress, rescanActions }: Props) {
+export function ReviewResultWorkspace({ result, view, onViewChange, statusActions, reportActions, progress, rescanActions, onEditFile }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLElement>(null);
   useEffect(() => { root.current?.scrollIntoView({ block: 'start' }); }, []);
@@ -54,17 +55,23 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
     </header>
     {result.sourceType === 'GITHUB' && <GitHubSourceInfo source={result.sourceMetadata} compact />}
     {result.sourceType === 'WORKSPACE' && <p role="note">작업 공간 수정본 검사 · revision {result.workspaceScan?.revision ?? '미기록'} · 원본 Review {result.workspaceScan?.originalReviewId ?? '미기록'}. GitHub 원본 commit 자체의 분석 결과가 아니며 변경 내용은 원격 저장소에 반영되지 않았습니다.</p>}
-    {rescanActions}
+    <div className="result-primary-actions">{rescanActions}</div>
     {assessment?.prioritizedDeploymentAssessment==='BLOCKED'&&<p role="alert" className="policy-blocked-notice">저장된 정책: 배포 전 수정 필요.
       <button type="button" className="secondary-button" onClick={()=>navigate('BLOCKING')}>반드시 처리할 문제 확인</button></p>}
     <nav className="result-navigation" aria-label="분석 결과 메뉴">
-      {resultViews.map(item => <button key={item.id} type="button" aria-current={view === item.id ? 'page' : undefined}
-        aria-controls="result-content" onClick={() => navigate(item.id)}>{item.label}</button>)}
+      <button type="button" aria-current={view === 'SUMMARY' ? 'page' : undefined} onClick={() => navigate('SUMMARY')}>결과 요약</button>
+      <button type="button" aria-current={['BLOCKING','REVIEW_REQUIRED','SHOULD_FIX'].includes(view) ? 'page' : undefined}
+        onClick={() => navigate((counts.blocking ?? 0)>0?'BLOCKING':(counts.review ?? 0)>0?'REVIEW_REQUIRED':'SHOULD_FIX')}>문제 목록</button>
+      <button type="button" aria-current={view === 'PROGRESS' ? 'page' : undefined} onClick={() => navigate('PROGRESS')}>변화 보기</button>
+      <details className="result-more"><summary>분석 상세</summary>
+        {resultViews.filter(i=>['GUIDANCE','TECHNICAL'].includes(i.id)).map(item=><button key={item.id} type="button"
+          aria-current={view === item.id?'page':undefined} onClick={e=>{e.currentTarget.closest('details')?.removeAttribute('open');navigate(item.id);}}>{item.label}</button>)}
+      </details>
     </nav>
     <div id="result-content" className="result-content" tabIndex={-1} ref={panel}>
       <p className="result-breadcrumb">분석 결과 / {resultViews.find(item => item.id === view)?.label}</p>
       {view === 'SUMMARY' && <>
-        <h2>프로젝트 보안 요약</h2>
+        <h2 className="visually-hidden">프로젝트 보안 요약</h2>
         <section className={`readiness-band assessment-${assessment?.prioritizedDeploymentAssessment==='BLOCKED'?'blocked':'review'}`} aria-label="저장된 결과와 추가 확인 사항">
           <ReviewSummaryPanel result={result}/>
           <InspectionBoundaryNotice coverage={result.coverage} />
@@ -77,9 +84,11 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
           </div>
           <p className="decision-disclaimer">분석 당시의 판단입니다. 미발견이 완전한 안전을 뜻하지 않으며, AI 추가 후보와 서버 코드 흐름 검토 항목은 배포 판단에 합산하지 않습니다.</p>
         </section>
-        <AnalysisCoverageSection coverage={result.coverage} sca={result.sca} semantic={result.semanticReview} />
-        <DependencyActionGroups sca={result.sca} />
-        <ServerAnalysisSection snapshot={result.serverAnalysis} compact />
+        <details className="summary-scope"><summary>파일별 검사 범위와 라이브러리 수정 위치</summary>
+          <AnalysisCoverageSection coverage={result.coverage} sca={result.sca} semantic={result.semanticReview} />
+          <DependencyActionGroups sca={result.sca} />
+        </details>
+        <details className="summary-scope"><summary>별도 코드·설정 검토 후보 ({flowCount + configCount}건)</summary><ServerAnalysisSection snapshot={result.serverAnalysis} compact /></details>
         <section className="next-actions"><h3>가장 먼저 해야 할 일</h3>
           {assessment ? <>
             <ol>{(['BLOCKING', 'REVIEW_REQUIRED', 'SHOULD_FIX'] as const).filter(priority => assessment.prioritySummary[priority] > 0).map(priority => {
@@ -106,11 +115,12 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
         </section>
       </>}
       {(view === 'BLOCKING' || view === 'REVIEW_REQUIRED' || view === 'SHOULD_FIX') && <>
+        <nav className="finding-priorities" aria-label="문제 우선순위">{resultViews.filter(i=>['BLOCKING','REVIEW_REQUIRED','SHOULD_FIX'].includes(i.id)).map(item=><button key={item.id} type="button" aria-current={view===item.id?'page':undefined} onClick={()=>navigate(item.id)}>{item.label} {item.id==='BLOCKING'?counts.blocking??'미평가':item.id==='REVIEW_REQUIRED'?counts.review??'미평가':counts.recommended??'미평가'}</button>)}</nav>
         <h2>{priorityLabels[view]}</h2>
         <p>{view === 'BLOCKING' ? '저장된 위험 평가에서 배포 전 처리가 필요하다고 판단한 문제입니다.'
           : view === 'REVIEW_REQUIRED' ? '위험 가능성 또는 분석 정보의 부족이 발견된 상태입니다. 아무것도 발견하지 못했다는 뜻이 아니며, 추가 확인 전에는 안전으로 간주하지 않습니다.'
           : '저장된 위험 평가에서 수정을 권장하는 문제입니다.'}</p>
-        {assessment ? <FindingCollection key={view} result={result} findings={findings.filter(f => f.priority === view)} statusActions={statusActions} />
+        {assessment ? <FindingCollection key={view} result={result} findings={findings.filter(f => f.priority === view)} statusActions={statusActions} onEditFile={onEditFile} />
           : <p className="review-caution">이전 이력에는 우선순위 평가가 없습니다. 심각도만으로 필수 처리 여부를 정하지 않습니다.</p>}
         {view === 'REVIEW_REQUIRED' && <>
           {!assessment && <details open><summary>우선순위가 저장되지 않은 코드 문제</summary>
@@ -151,8 +161,9 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
   </section>;
 }
 
-function FindingCollection({ result, findings, statusActions }: {
+function FindingCollection({ result, findings, statusActions, onEditFile }: {
   result: SecurityReviewResponse; findings: RiskFinding[]; statusActions: FindingStatusActions;
+  onEditFile?: (path: string) => void;
 }) {
   const [severity, setSeverity] = useState<Severity | 'ALL'>('ALL');
   const [page, setPage] = useState(0);
@@ -172,7 +183,7 @@ function FindingCollection({ result, findings, statusActions }: {
         finding={finding} reviewId={result.reviewId} />;
       const vulnerability = vulnerabilityForFinding(result, finding);
       if (finding.source === 'CODE' && vulnerability) return <CodeFindingCard key={finding.findingId} vulnerability={vulnerability}
-        finding={finding} remediation={result.remediation} statusActions={statusActions} />;
+        finding={finding} remediation={result.remediation} statusActions={statusActions} onEditFile={onEditFile} />;
       if (finding.dependency) return <DependencyFindingCard key={finding.findingId} dependency={finding.dependency}
         finding={finding} remediation={result.remediation} intelligence={result.riskAssessment?.threatIntelligence} components={result.sca?.components} />;
       const guide = findingGuidance(finding);

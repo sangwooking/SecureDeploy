@@ -89,17 +89,16 @@ function AuthScreen({
     <main className="app-shell auth-shell">
       <section className="auth-panel">
         <div className="auth-copy">
-          <p className="eyebrow">SecureDeploy</p>
+          <p className="auth-brand">SecureDeploy</p>
           <h1>{isSignup ? '계정 생성' : '로그인'}</h1>
-          <p>프로젝트별 보안 분석 이력, 취약점 상태, AI 리뷰를 사용자 계정 기준으로 관리합니다.</p>
         </div>
 
-        <form className="auth-form" onSubmit={onSubmit}>
+        <form className="auth-form" onSubmit={onSubmit} aria-busy={isLoading}>
           <div className="mode-switch auth-mode-switch" aria-label="인증 방식 선택">
-            <button className={mode === 'LOGIN' ? 'mode-button mode-button-active' : 'mode-button'} type="button" disabled={isLoading} onClick={() => onModeChange('LOGIN')}>
+            <button className={mode === 'LOGIN' ? 'mode-button mode-button-active' : 'mode-button'} aria-pressed={mode==='LOGIN'} type="button" disabled={isLoading} onClick={() => onModeChange('LOGIN')}>
               로그인
             </button>
-            <button className={mode === 'SIGNUP' ? 'mode-button mode-button-active' : 'mode-button'} type="button" disabled={isLoading} onClick={() => onModeChange('SIGNUP')}>
+            <button className={mode === 'SIGNUP' ? 'mode-button mode-button-active' : 'mode-button'} aria-pressed={mode==='SIGNUP'} type="button" disabled={isLoading} onClick={() => onModeChange('SIGNUP')}>
               회원가입
             </button>
           </div>
@@ -107,21 +106,21 @@ function AuthScreen({
           {isSignup && (
             <label>
               <span>이름</span>
-              <input type="text" value={name} placeholder="이름" onChange={(event) => onNameChange(event.target.value)} disabled={isLoading} required />
+              <input type="text" autoComplete="name" value={name} placeholder="이름" onChange={(event) => onNameChange(event.target.value)} disabled={isLoading} required />
             </label>
           )}
 
           <label>
             <span>이메일</span>
-            <input type="email" value={email} placeholder="user@test.com" onChange={(event) => onEmailChange(event.target.value)} disabled={isLoading} required />
+            <input type="email" autoComplete="email" value={email} placeholder="user@test.com" onChange={(event) => onEmailChange(event.target.value)} disabled={isLoading} required />
           </label>
 
           <label>
             <span>비밀번호</span>
-            <input type="password" value={password} placeholder="비밀번호" onChange={(event) => onPasswordChange(event.target.value)} disabled={isLoading} minLength={8} required />
+            <input type="password" autoComplete={isSignup?'new-password':'current-password'} value={password} placeholder="비밀번호" onChange={(event) => onPasswordChange(event.target.value)} disabled={isLoading} minLength={8} required />
           </label>
 
-          {errorMessage && <div className="feedback-message feedback-error">{errorMessage}</div>}
+          {errorMessage && <div role="alert" className="feedback-message feedback-error">{errorMessage}</div>}
 
           <button className="primary-button auth-submit" type="submit" disabled={isLoading}>
             {isLoading ? '처리 중...' : isSignup ? '회원가입' : '로그인'}
