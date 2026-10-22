@@ -29,7 +29,9 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
           <span className="source-revision">{f.originalHash} → {f.currentHash}</span></li>)}</ul></details></div>}
     <p className="review-caution">비교는 저장된 분석 계약과 확인한 범위에 한정됩니다. 구조 분석 후보의 NOT_COMPARED와 미검사·버전 차이로 인한 확인 불가는 RESOLVED가 아닙니다.</p>
     <p>{snapshot.message}</p>
-    <GitHubCommitComparison before={snapshot.sourceBefore} after={snapshot.sourceAfter} />
+    {snapshot.workspaceScan
+      ? <p>수정본은 새 GitHub commit이 아닙니다. 원본 버전과 수정 revision·입력 해시로 구분합니다.</p>
+      : <GitHubCommitComparison before={snapshot.sourceBefore} after={snapshot.sourceAfter} />}
     <div className="progress-assessments">
       {[{ label: '이전', value: before, id: snapshot.baselineReviewId, date: snapshot.baselineAnalyzedAt },
         { label: '현재', value: after, id: snapshot.currentReviewId, date: snapshot.currentAnalyzedAt }].map(item =>

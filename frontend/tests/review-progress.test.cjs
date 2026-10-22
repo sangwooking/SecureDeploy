@@ -8,6 +8,12 @@ const { ReviewProgressPanel } = load('ReviewProgressPanel');
 const { RescanForm } = load('RescanForm');
 const { codeExplanation } = load('reviewPresentation');
 const render = result => renderToStaticMarkup(React.createElement(ReviewProgressPanel, { result }));
+test('workspace comparison identifies a revision, not a missing or newly pushed Git commit',()=>{
+  const result=fixture();result.comparison.workspaceScan={revision:2,originalReviewId:1,baselineVerified:true,sourceRevision:'a'.repeat(40),inputHash:'b'.repeat(64),analyzerVersion:'fixture',files:[]};
+  const before=JSON.stringify(result),html=render(result);
+  assert.ok(html.includes('수정본은 새 GitHub commit이 아닙니다'));assert.ok(html.includes('원본 버전과 수정 revision·입력 해시'));
+  assert.ok(!html.includes('현재 commit 정보 없음'));assert.ok(html.includes('NOT_COMPARED'));assert.equal(JSON.stringify(result),before);
+});
 
 test('saved deployment assessments precede reference score and resolved entries have no remediation', () => {
   const result = fixture(), previous = JSON.stringify(result), html = render(result);

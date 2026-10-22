@@ -142,4 +142,40 @@ class WorkspaceScanApiTest {
         postJson(path+"/reject",Map.of(),owner,200);
         var duplicate=postJson(base+"/scans",scanRequest(created),owner,202);assertEquals(result.path("reviewId").asLong(),duplicate.path("reviewId").asLong());
     }
+    @Test void denoResponseRemovalIsObservedWithoutResolvingStructuralFindings() throws Exception {
+        String path="supabase/functions/inspect/index.ts";
+        entries=List.of(new SourceArchive.Entry(path,("Deno.serve(async request => {\n  return Response.json(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));\n});\n").getBytes(StandardCharsets.UTF_8),false,0100644));
+        acquire(true);var before=getJson("/api/reviews/"+originalId,owner);
+        var finding=before.at("/serverAnalysis/validatedFindings/0");
+        assertEquals("TS_SENSITIVE_DATA_EXPOSURE",finding.path("ruleId").asText());
+        assertFalse(finding.path("evidence").isEmpty());assertFalse(finding.path("executionLocations").isEmpty());
+        assertEquals("NOT_COMPARED",finding.path("comparisonPolicy").asText());
+        var changed=save("Deno.serve(async request => {\n  return Response.json({status: 'ok'});\n});\n",1);
+        var result=scan(changed);
+        assertTrue(result.at("/serverAnalysis/validatedFindings").isEmpty());
+        assertEquals("NOT_COMPARED",result.at("/resultSummary/structuralComparison").asText());
+        assertEquals(0,result.at("/comparison/counts/RESOLVED").asInt());
+        assertEquals(before.path("securityScore"),result.path("securityScore"));
+        assertEquals(before.at("/riskAssessment/prioritySummary"),result.at("/riskAssessment/prioritySummary"));
+        var exported=mvc.perform(post(base+"/export/zip").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON)
+                .content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",List.of(file),"approved",true))))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
+        var bytes=SourceArchive.read(new java.io.ByteArrayInputStream(exported)).get(0).bytes();
+        assertEquals(result.at("/workspaceScan/files/0/currentHash").asText(),SourceArchive.hash(bytes));
+        assertEquals("Deno.serve(async request => {\n  return Response.json({status: 'ok'});\n});\n",new String(bytes,StandardCharsets.UTF_8));
+        assertEquals(before,getJson("/api/reviews/"+originalId,owner));
+    }
+    @Test void generatedProposalCannotApplyAfterManualSourceChange() throws Exception {
+        acquire(true);var before=getJson("/api/reviews/"+originalId,owner);
+        long finding=java.util.stream.StreamSupport.stream(before.path("vulnerabilities").spliterator(),false)
+                .filter(n->n.path("ruleId").asText().equals("DEBUG_ENABLED")).findFirst().orElseThrow().path("vulnerabilityId").asLong();
+        var content=getJson(base+"/files/"+file,owner);
+        var proposal=postJson(base+"/patches",Map.of("fileId",file,"findingId",finding,"revision",1,"originalHash",hash,"currentHash",content.path("currentHash").asText()),owner,200);
+        String p=base+"/patches/"+proposal.path("id").asText(),current=proposal.path("currentHash").asText();
+        postJson(p+"/generate",Map.of("revision",1,"currentHash",current,"consented",true),owner,200);
+        save("debug=true\nserver.error.include-stacktrace=always\n# manual after proposal\n",1);
+        postJson(p+"/apply",Map.of("revision",1,"currentHash",current,"approved",true),owner,409);
+        assertEquals("STALE",getJson(p,owner).path("state").asText());
+        assertTrue(getJson(base+"/files/"+file,owner).path("text").asText().startsWith("debug=true"));
+    }
 }

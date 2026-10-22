@@ -183,18 +183,18 @@ const labels: Record<string, string> = {
 const text = (value: string) => labels[value] ?? (/^[A-Z_]+$/.test(value) ? '지원 범위 밖이거나 추가 확인이 필요한 처리' : value);
 const location = (value: AnalysisLocation) => `${value.filePath}:${value.line} · ${value.functionName}`;
 
-export function ServerAnalysisSection({ snapshot, compact = false }: { snapshot?: ServerAnalysisSnapshot | null; compact?: boolean }) {
+export function ServerAnalysisSection({ snapshot, compact = false, onEditFile }: { snapshot?: ServerAnalysisSnapshot | null; compact?: boolean; onEditFile?: (path: string) => void }) {
   return <>
     <SupabaseAnalysisSection snapshot={snapshot?.supabaseAnalysis} compact={compact} />
     <JavaSqlAnalysisSection snapshot={snapshot?.javaAnalysis} compact={compact} />
     <DeploymentAnalysisSection snapshot={snapshot?.deploymentAnalysis} compact={compact} />
-    <LanguageAnalysisSection snapshot={snapshot} compact={compact} />
+    <LanguageAnalysisSection snapshot={snapshot} compact={compact} onEditFile={onEditFile} />
     {snapshot?.pythonAnalysis && snapshot.pythonAnalysis.status !== 'NOT_APPLICABLE' &&
-      <LanguageAnalysisSection snapshot={snapshot.pythonAnalysis} compact={compact} python />}
+      <LanguageAnalysisSection snapshot={snapshot.pythonAnalysis} compact={compact} python onEditFile={onEditFile} />}
   </>;
 }
 
-function LanguageAnalysisSection({ snapshot, compact = false, python = false }: { snapshot?: ServerAnalysisSnapshot | null; compact?: boolean; python?: boolean }) {
+function LanguageAnalysisSection({ snapshot, compact = false, python = false, onEditFile }: { snapshot?: ServerAnalysisSnapshot | null; compact?: boolean; python?: boolean; onEditFile?: (path: string) => void }) {
   const [page, setPage] = useState(0);
   if (!snapshot) return compact ? null : <section className="analysis-coverage-brief"><h3>서버 코드 흐름 검사</h3>
     <p>이 이력에는 서버 코드 흐름 기록이 없습니다. 과거 분석을 추측하여 채우지 않습니다.</p></section>;
@@ -233,6 +233,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false }: 
       <span className="risk-badge risk-review_required">코드 흐름 · 추가 확인 필요</span>
       <h4>{finding.title}</h4>
       <p className="finding-location"><strong>확인할 파일</strong> {location(finding.location)}</p>
+      {onEditFile && <button type="button" className="secondary-button" onClick={() => onEditFile(finding.location.filePath)}>이 파일 수정하기</button>}
       <h4>어떤 입력인가요?</h4>
       <ul>{finding.evidence.map((e, i) => <li key={i}>{text(e.source.kind)} · <code className="finding-location">{location(e.source)}</code></li>)}</ul>
       <h4>왜 확인해야 하나요?</h4><p>{finding.riskExplanation}</p>

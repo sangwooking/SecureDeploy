@@ -14,6 +14,14 @@ import static org.mockito.Mockito.*;
 
 /** Isolated test-only source provider; no outbound GitHub or AI access. */
 public final class EditingBrowserServer {
+    static List<SourceArchive.Entry> fixtureEntries(boolean flow) {
+        if (flow) return List.of(new SourceArchive.Entry("supabase/functions/inspect/index.ts",
+                "Deno.serve(async request => {\n  return Response.json(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));\n});\n".getBytes(StandardCharsets.UTF_8),false,0100644));
+        return List.of(
+                new SourceArchive.Entry("src/example.ts", "export const value = 'original';\n".getBytes(StandardCharsets.UTF_8), false,0100644),
+                new SourceArchive.Entry("assets/example.bin",new byte[]{0,-1,2},false,0100644),
+                new SourceArchive.Entry("application.properties","debug=true\nserver.error.include-stacktrace=always\n".getBytes(StandardCharsets.UTF_8),false,0100644));
+    }
     @TestConfiguration
     public static class Fixture {
         @Bean @Primary com.securedeploy.ai.service.AiProviderResolver fixturePatchProvider(com.securedeploy.ai.config.AiProperties properties,com.fasterxml.jackson.databind.ObjectMapper mapper) {
@@ -37,10 +45,7 @@ public final class EditingBrowserServer {
         }
         @Bean @Primary EditingSourceService fixtureSources() {
             var sources = mock(EditingSourceService.class);
-            when(sources.github(anyLong(),any())).thenAnswer(i -> List.of(
-                    new SourceArchive.Entry("src/example.ts", "export const value = 'original';\n".getBytes(StandardCharsets.UTF_8), false,0100644),
-                    new SourceArchive.Entry("assets/example.bin",new byte[]{0,-1,2},false,0100644),
-                    new SourceArchive.Entry("application.properties","debug=true\nserver.error.include-stacktrace=always\n".getBytes(StandardCharsets.UTF_8),false,0100644)));
+            when(sources.github(anyLong(),any())).thenAnswer(i -> fixtureEntries(((GitHubSourceSnapshot)i.getArgument(1)).repository().equals("flow")));
             return sources;
         }
     }
@@ -59,16 +64,17 @@ public final class EditingBrowserServer {
             if (!connection.getMetaData().getURL().startsWith("jdbc:h2:mem:editing_browser")) { context.close(); throw new IllegalStateException("H2_ONLY"); }
         }
         var users=context.getBean(UserRepository.class);
-        for (String email : List.of("editing-browser@example.invalid", "scan-1440@example.invalid", "scan-390@example.invalid", "scan-320@example.invalid")) {
+        var emails=new ArrayList<>(List.of("editing-browser@example.invalid", "scan-1440@example.invalid", "scan-390@example.invalid", "scan-320@example.invalid"));
+        for(int width:List.of(1440,1024,768,390,320))for(String kind:List.of("rule","flow"))emails.add("repair-"+kind+"-"+width+"@example.invalid");
+        for (String email : emails) {
+        boolean flow=email.startsWith("repair-flow-");String repository=flow?"flow":"editing";
         var user=users.saveAndFlush(new UserEntity(email,context.getBean(org.springframework.security.crypto.password.PasswordEncoder.class).encode("Synthetic-Local-813!"),"Editing fixture"));
-        var project=new ProjectEntity("GitHub fixture",ReviewSourceType.GITHUB,"https://github.com/fixture/editing"); project.assignUser(user); context.getBean(ProjectRepository.class).saveAndFlush(project);
+        var project=new ProjectEntity(flow?"Grade B Deno response":"GitHub fixture",ReviewSourceType.GITHUB,"https://github.com/fixture/"+repository); project.assignUser(user); context.getBean(ProjectRepository.class).saveAndFlush(project);
         var root=java.nio.file.Files.createTempDirectory("securedeploy-editing-fixture-");
         try {
-            java.nio.file.Files.writeString(root.resolve("application.properties"),"debug=true\nserver.error.include-stacktrace=always\n");
-            java.nio.file.Files.createDirectories(root.resolve("src"));java.nio.file.Files.writeString(root.resolve("src/example.ts"),"export const value = 'original';\n");
-            java.nio.file.Files.createDirectories(root.resolve("assets"));java.nio.file.Files.write(root.resolve("assets/example.bin"),new byte[]{0,-1,2});
+            for(var entry:fixtureEntries(flow)){var file=root.resolve(entry.path());java.nio.file.Files.createDirectories(file.getParent());java.nio.file.Files.write(file,entry.bytes());}
             var outcome=context.getBean(com.securedeploy.review.service.SecurityReviewFacade.class).analyzeWorkspace("GitHub fixture",root);
-            var metadata=new GitHubSourceSnapshot("fixture","editing",project.getRepositoryUrl(),"main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(3L,2L,true);
+            var metadata=new GitHubSourceSnapshot("fixture",repository,project.getRepositoryUrl(),"main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(3L,2L,true);
             var saved=context.getBean(com.securedeploy.persistence.service.ReviewPersistenceService.class).saveReview(project,
                     outcome.response().withSourceMetadata(metadata),ReviewSourceType.GITHUB,project.getRepositoryUrl(),outcome.snippetGroup(),outcome.intelligence(),
                     com.securedeploy.review.model.ScanMode.STANDARD,outcome.comparisonContext());

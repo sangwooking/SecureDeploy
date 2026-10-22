@@ -5,6 +5,11 @@ const { renderToStaticMarkup } = require('react-dom/server');
 const { ServerAnalysisSection } = require('./load-component.cjs')('ServerAnalysisSection');
 const fixture = require('./server-analysis-fixture.cjs');
 const render = snapshot => renderToStaticMarkup(React.createElement(ServerAnalysisSection, { snapshot }));
+test('structural finding file navigation is opt-in and absent for read-only results',()=>{
+  assert.ok(!render(fixture()).includes('이 파일 수정하기'));
+  const html=renderToStaticMarkup(React.createElement(ServerAnalysisSection,{snapshot:fixture(),onEditFile:()=>{}}));
+  assert.ok(html.includes('이 파일 수정하기'));assert.ok(html.includes('NOT_COMPARED'));
+});
 test('combined code and SQL selection is not confused with parsing or verified flows',()=>{
   const data=fixture();data.analyzerVersion='ts-server-v16';data.nodeUses=[];
   data.selectionCoverage={discoveredFiles:249,submittedFiles:100,omittedFiles:149,omittedDetails:49,submittedCharacters:450000,omissionReasons:{SOURCE_FILE_COUNT_LIMIT:149}};
