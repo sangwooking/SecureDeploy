@@ -14,6 +14,7 @@ final class TypeScriptSourceSelector {
     private static final Pattern IMPORT=Pattern.compile("(?:\\bfrom\\s*|\\bimport\\s*|\\brequire\\s*\\(\\s*)['\"](\\.[^'\"\\r\\n]{1,240})['\"]");
     private static final Pattern HTTP_EXPORT=Pattern.compile("\\bexport\\s+(?:async\\s+)?function\\s+(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b|\\bexport\\s+const\\s+(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b");
     private static final Pattern SERVER_USE=Pattern.compile("\\b(?:fetch|eval|exec|execSync)\\s*\\(|\\.\\s*(?:query|prepare)\\s*\\(|child_process|process\\.env|Deno\\.env");
+    private static final Pattern EXPRESS_RUNTIME=Pattern.compile("\\brequire\\s*\\(\\s*['\"]express['\"]\\s*\\)|\\bimport\\s+(?:(?!type\\b)[A-Za-z_$][\\w$]*(?:\\s*,[^;\\r\\n]+)?|\\*\\s+as\\s+[A-Za-z_$][\\w$]*|\\{\\s*Router\\b[^}\\r\\n]*\\})\\s+from\\s*['\"]express['\"]");
     record Choice(ProjectFile file,String reason,int priority,int characters,boolean sql) { }
     record Plan(List<Choice> selected,List<Choice> omitted,Map<String,String> omissions,boolean hintsComplete) {
         ServerAnalysisSnapshot.SelectionCoverage coverage() {
@@ -122,7 +123,7 @@ final class TypeScriptSourceSelector {
     private static String hint(String p,String text) {
         if(text.contains("Deno.serve")||text.contains("deno.land/std@")&&text.contains("/http/server"))return "TS_DENO_REGISTRATION_HINT";
         if(p.matches("(?:.*/)?(?:src/)?app/(?:[^/]+/)*route\\.[jt]s")&&HTTP_EXPORT.matcher(text).find())return "TS_NEXT_ROUTE_EXPORT_HINT";
-        if((text.contains("'express'")||text.contains("\"express\""))&&(text.contains("require")||text.contains("import")))return "TS_EXPRESS_MODULE_HINT";
+        if(EXPRESS_RUNTIME.matcher(text).find())return "TS_EXPRESS_MODULE_HINT";
         if(text.contains("@supabase/")&&(text.contains("import")||text.contains("require")))return "TS_SUPABASE_CLIENT_MODULE_HINT";
         if(p.matches("(?:.*/)?supabase/functions/[^/]+/index\\.[jt]s"))return "TS_EDGE_FUNCTION_CONVENTION_HINT";
         if(text.stripLeading().startsWith("'use server'")||text.stripLeading().startsWith("\"use server\""))return "TS_SERVER_DIRECTIVE_HINT";

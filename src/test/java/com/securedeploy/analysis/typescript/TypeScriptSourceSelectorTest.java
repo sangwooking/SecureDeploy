@@ -7,6 +7,17 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TypeScriptSourceSelectorTest {
+    @Test void typeReferencesAreNotRuntimeSeedsAndEducationalMarkersDoNotExcludeLiveCode(){
+        var plan=TypeScriptSourceSelector.select(List.of(
+                js("checks/example.ts","import type { Express } from 'express';export const example=1;"),
+                js("checks/notice.ts","import {type Request,type Response} from 'express';export const label=1;"),
+                js("data/sample.ts","// educational example, vuln-code-snippet\nimport server from 'express';const app=server();app.get('/',(req,res)=>eval(req.query.value));"),
+                js("factory.ts","import {Router as build} from 'express';const router=build();")));
+        assertThat(plan.selected()).filteredOn(c->c.file().relativePath().startsWith("checks/"))
+                .allSatisfy(c->assertThat(c.reason()).isEqualTo("TS_DETERMINISTIC_FALLBACK"));
+        assertThat(plan.selected()).filteredOn(c->c.file().relativePath().equals("data/sample.ts")||c.file().relativePath().equals("factory.ts"))
+                .allSatisfy(c->assertThat(c.reason()).isEqualTo("TS_EXPRESS_MODULE_HINT"));
+    }
     @Test void boundedBroadDiscoveryFindsLateServerImportsBeforeEarlierLargeGeneralModulesConsumeHints(){
         var files=new ArrayList<ProjectFile>();
         for(int i=0;i<230;i++)files.add(js("aaa/Module%03d.ts".formatted(i),"export const text='"+"x".repeat(5000)+"';"));
