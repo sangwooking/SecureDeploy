@@ -1,0 +1,173 @@
+{
+  "scope": "SELECTED_STATIC_WORKER_NOT_BACKEND_RSS",
+  "projects": [
+    {
+      "project": "goof-validation",
+      "inputSha256": "f12c646396603e5db6d1ca36ee7a9f6cb85f24b4de631aca7b8fbe7af06d3277",
+      "runs": [
+        {
+          "wallMs": 204,
+          "maxRssBytes": 146833408,
+          "version": "ts-server-v21",
+          "budget": {
+            "AST_NODES_INDEXED": 3435,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 25865,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 6517,
+            "STEPS_FLOW": 19348,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "candidates": 1
+        },
+        {
+          "wallMs": 204,
+          "maxRssBytes": 147111936,
+          "version": "ts-server-v21",
+          "budget": {
+            "AST_NODES_INDEXED": 3435,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 25865,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 6517,
+            "STEPS_FLOW": 19348,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "candidates": 1
+        }
+      ]
+    },
+    {
+      "project": "dvna-vulnerable",
+      "inputSha256": "85b3d68c326f781111e83b6e624532ceb2921c6e22e360df4cc8cf896c7569b3",
+      "runs": [
+        {
+          "wallMs": 252,
+          "maxRssBytes": 197017600,
+          "version": "ts-server-v21",
+          "budget": {
+            "AST_NODES_INDEXED": 53184,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 35093,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 8399,
+            "STEPS_FLOW": 26694,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "candidates": 2
+        },
+        {
+          "wallMs": 254,
+          "maxRssBytes": 194969600,
+          "version": "ts-server-v21",
+          "budget": {
+            "AST_NODES_INDEXED": 53184,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 35093,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 8399,
+            "STEPS_FLOW": 26694,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "candidates": 2
+        }
+      ]
+    },
+    {
+      "project": "dvna-remediated",
+      "inputSha256": "1c43cfda938c693979910ad9448ddefc6480754cf7a9e8e87e3bb3c4979c9cee",
+      "runs": [
+        {
+          "wallMs": 260,
+          "maxRssBytes": 197591040,
+          "version": "ts-server-v21",
+          "budget": {
+            "AST_NODES_INDEXED": 54052,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 51825,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 10048,
+            "STEPS_FLOW": 41777,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "candidates": 0
+        },
+        {
+          "wallMs": 256,
+          "maxRssBytes": 194035712,
+          "version": "ts-server-v21",
+          "budget": {
+            "AST_NODES_INDEXED": 54052,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 51825,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 10048,
+            "STEPS_FLOW": 41777,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "candidates": 0
+        }
+      ]
+    },
+    {
+      "project": "juice-shop",
+      "inputSha256": "abcafa44e1f0fd1521c3a093b9d6b4117e0b0a4fd86637939e3907773d20a375",
+      "runs": [
+        {
+          "wallMs": 278,
+          "maxRssBytes": 203833344,
+          "version": "ts-server-v21",
+          "budget": {
+            "AST_NODES_INDEXED": 48700,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 86413,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 533,
+            "STEPS_ENTRY_DISCOVERY": 85880,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "candidates": 0
+        },
+        {
+          "wallMs": 281,
+          "maxRssBytes": 197279744,
+          "version": "ts-server-v21",
+          "budget": {
+            "AST_NODES_INDEXED": 48700,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 86413,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 533,
+            "STEPS_ENTRY_DISCOVERY": 85880,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "candidates": 0
+        }
+      ]
+    }
+  ]
+}

@@ -4,12 +4,14 @@ const assert=require('node:assert/strict'),{execFileSync}=require('node:child_pr
 const {resultView}=require('./editor-navigation.cjs');
 const origin=process.env.FRONTEND_ORIGIN||'http://127.0.0.1:5174',api='http://127.0.0.1:8085';
 const sql=process.env.FLOW_KIND==='sequelize';
+const regex=process.env.FLOW_KIND==='regex';
 (async()=>{const browser=await chromium.launch(),http=await request.newContext({baseURL:api});
 try{
  const signup=await http.post('/api/auth/signup',{data:{email:`shell-${Date.now()}@example.invalid`,name:'synthetic',password:'Synthetic-Local-813!'}});
  assert.equal(signup.status(),200);const user=await signup.json(),headers={Authorization:`Bearer ${user.accessToken}`};
  const reports=[];
  const cases=sql?[['input',"db.query('SELECT value FROM records WHERE id='+req.body.value)",1],['binding',"db.query('SELECT value FROM records WHERE id=$1',{bind:[req.body.value]})",0]]
+   :regex?[['capture',"const text=req.body.value;const re=/(.*)/;if(typeof text==='string'&&text.match(re)){cp.exec('fixed '+text.match(re)[1]);}",1],['argv',"const m=req.body.value.match(/(.*)/);if(m)cp.execFile('fixed',['arg',m[1]])",0]]
    :[['input',"cp.exec('fixed '+req.body.value)",1],['argv',"cp.execFile('fixed',['arg',req.body.value])",0]];
  for(const [name,body,count]of cases){
   const files={'package.json':JSON.stringify({dependencies:{express:'4.21.2',...(sql?{sequelize:'4.13.10'}:{})}}),'server.cjs':`const express=require('express');const app=express();${sql?"const db=require('./store').sequelize;":"const cp=require('node:child_process');"}app.set('port',process.env.PORT||3001);app.post('/work',(req,res)=>{${body};});app.get('env');`};
@@ -40,6 +42,7 @@ try{
    const details=section.locator('.flow-action-details > summary').first();await details.focus();await page.keyboard.press('Enter');
    assert.ok(await section.getByLabel('기록된 코드 전달 경로').first().isVisible());
    assert.ok((await section.innerText()).includes('요청 본문'));assert.ok((await section.innerText()).includes(sql?'CWE-89':'CWE-78'));
+   if(regex)assert.ok((await section.innerText()).includes('캡처한 값'));
    assert.ok(await section.getByRole('button',{name:'이 파일 수정하기',exact:true}).isVisible());
    assert.equal(await page.getByRole('button',{name:'자동 수정안 만들기',exact:true}).count(),0);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);assert.deepEqual(outbound,[]);
