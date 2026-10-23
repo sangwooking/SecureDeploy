@@ -159,8 +159,9 @@ export function sequelizeContracts(api) {
     }
     if(!exported||!registry)return;
     if(!version(mod)||Number(version(mod))>5){note(mod,'SEQUELIZE_IMPORT_API_UNSUPPORTED');return;}
-    if(!input.nodeSourceInventoryComplete||!Array.isArray(input.nodeSourceInventory)||input.nodeSourceInventory.length>1000){note(mod,'SEQUELIZE_MODEL_INVENTORY_INCOMPLETE');return;}
     const directory=path.posix.dirname(mod.filePath),prefix=directory==='.'?'':directory+'/';
+    const scopedComplete=Array.isArray(input.nodeEnumeratedDirectories)&&input.nodeEnumeratedDirectories.length<=1000&&input.nodeEnumeratedDirectories.includes(directory);
+    if(!(input.nodeSourceInventoryComplete||scopedComplete)||!Array.isArray(input.nodeSourceInventory)||input.nodeSourceInventory.length>1000){note(mod,'SEQUELIZE_MODEL_INVENTORY_INCOMPLETE');return;}
     const inventory=input.nodeSourceInventory.filter(p=>typeof p==='string'&&path.posix.dirname(p)===directory&&path.posix.basename(p)[0]!=='.'&&p!==mod.filePath);
     if(!inventory.length||inventory.length>api.limits.maxFiles)return;
     const names=new Set();

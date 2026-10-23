@@ -101,12 +101,14 @@ public class TypeScriptServerAnalyzer {
                 denoConfigs.add(Map.of("filePath",path,"status",status,"verifyJwt",settings));
             }
             var ledger=project.coverage();
-            var inventory=ledger==null?List.<String>of():ledger.entries().stream().filter(e->"FILE".equals(e.kind()))
-                    .map(e->CoverageRecorder.safePath(e.filePath())).distinct().sorted().limit(1001).toList();
-            boolean inventoryComplete=ledger!=null&&ledger.inventoryComplete()&&ledger.omittedEntries()==0
-                    &&inventory.size()<=1000&&!inventory.contains("[redacted-path]");
+            var inventory=ledger==null?List.<String>of():java.util.stream.Stream.concat(ledger.entries().stream()
+                    .map(e->e.filePath()),project.enumeratedDirectories().stream()).filter(p->!p.equals("."))
+                    .map(CoverageRecorder::safePath).distinct().sorted().limit(1001).toList();
+            boolean metadataComplete=ledger!=null&&ledger.omittedEntries()==0&&inventory.size()<=1000&&!inventory.contains("[redacted-path]");
+            boolean inventoryComplete=metadataComplete&&ledger.inventoryComplete();
             byte[] input = mapper.writeValueAsBytes(Map.of("files", sources,"nodeManifests",manifests,"denoConfigs",denoConfigs,"policyFiles",policyFiles,"policyInventoryComplete",sqlCandidates.size()<=100,
-                    "nodeSourceInventory",inventory.stream().limit(1000).toList(),"nodeSourceInventoryComplete",inventoryComplete));
+                    "nodeSourceInventory",inventory.stream().limit(1000).toList(),"nodeSourceInventoryComplete",inventoryComplete,
+                    "nodeEnumeratedDirectories",metadataComplete?project.enumeratedDirectories().stream().sorted().toList():List.of()));
             var builder = new ProcessBuilder(properties.getNodeExecutable(), "--permission", "--no-addons",
                     "--max-old-space-size=192", "--allow-fs-read=" + directory,
                     directory.resolve("worker.mjs").toString());

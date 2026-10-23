@@ -53,7 +53,8 @@ function registry(options={}){
   if(options.change)files[1].content=options.change(files[1].content);
   const inventory=files.map(f=>f.filePath);if(options.missing)inventory.push('records/missing.js');
   return analyze({files,nodeManifests:[{filePath:'package.json',express:'^4.16.2',sequelize:options.version??'^4.13.10'}],
-    nodeSourceInventory:inventory,nodeSourceInventoryComplete:options.complete!==false});
+    nodeSourceInventory:inventory,nodeSourceInventoryComplete:options.complete!==false,
+    nodeEnumeratedDirectories:options.scoped?['records']:[]});
 }
 test('bounded registry initialization connects a branch-created instance after reviewed model definitions',()=>{
   const r=registry();assert.equal(strong(r).length,1,JSON.stringify(r.files));
@@ -85,4 +86,9 @@ test('ESM constructor import, a separate instance export and imported helper pre
 test('constructor hooks cannot become a confirmed unmodified query contract',()=>{
   const r=analyze({files:[{filePath:'server.cjs',content:`const E=require('sequelize');const db=new E('unused',{hooks:{beforeQuery:external}});const express=require('express');const app=express();app.post('/',(req,res)=>db.query(req.body.value));`}],nodeManifests:[{filePath:'package.json',sequelize:'6.37.5',express:'4.21.2'}]});
   assert.equal(strong(r).length,0);
+});
+
+test('only a completed containing-directory inventory can replace an unrelated global exclusion',()=>{
+  assert.equal(strong(registry({complete:false,scoped:true})).length,1);
+  assert.equal(strong(registry({complete:false,scoped:true,missing:true})).length,0);
 });

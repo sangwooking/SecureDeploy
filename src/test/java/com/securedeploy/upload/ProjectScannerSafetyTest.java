@@ -47,4 +47,24 @@ class ProjectScannerSafetyTest {
         limits.setMaxAnalysisLines(2);
         assertThatThrownBy(() -> scanner.scan(temp)).isInstanceOf(SecureDeployException.class);
     }
+
+    @Test void scopedInventoryDoesNotPromoteIgnoredOrSymlinkedDirectories() throws Exception {
+        Files.createDirectories(temp.resolve("models"));Files.writeString(temp.resolve("models/item.js"),"module.exports={};");
+        Files.createDirectories(temp.resolve(".git"));Files.createSymbolicLink(temp.resolve("models/outside"),temp);
+        var project=scanner.scan(temp);
+        assertThat(project.coverage().inventoryComplete()).isFalse();
+        assertThat(project.enumeratedDirectories()).contains("models",".").doesNotContain(".git","models/outside");
+        assertThat(project.coverage().entries()).anyMatch(e->e.filePath().equals("models/outside")&&e.reason().equals("SYMLINK"));
+    }
+
+    @Test void incompleteUpstreamCollectionCannotAcquireACompleteDirectoryClaim() throws Exception {
+        Files.createDirectories(temp.resolve("models"));
+        var omissions=new com.securedeploy.project.coverage.CoverageRecorder();omissions.incomplete();
+        assertThat(scanner.scan(temp,omissions.snapshot()).enumeratedDirectories()).isEmpty();
+    }
+
+    @Test void directoryMetadataBudgetDoesNotLeaveOrderDependentPartialClaims() throws Exception {
+        for(int i=0;i<1001;i++)Files.createDirectory(temp.resolve("directory"+i));
+        assertThat(scanner.scan(temp).enumeratedDirectories()).isEmpty();
+    }
 }

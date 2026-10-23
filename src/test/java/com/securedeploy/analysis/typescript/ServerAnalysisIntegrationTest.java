@@ -58,6 +58,8 @@ class ServerAnalysisIntegrationTest {
         for(String name:List.of("sql-public","sql-private")) {
             Path root=Files.createDirectory(temp.resolve(name));roots.add(root);
             for(var source:sources.entrySet()){Path file=root.resolve(source.getKey());Files.createDirectories(file.getParent());Files.writeString(file,source.getValue());}
+            Files.createDirectories(root.resolve(".git"));
+            Files.writeString(root.resolve(".git/HEAD"),"ref: refs/heads/main");
         }
         when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/sql",roots.get(0),roots.get(0)));
         var pub=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/sql\",\"scanMode\":\"STANDARD\"}");

@@ -38,6 +38,8 @@ public class ProjectScanner {
         ScanBudget budget = new ScanBudget();
         CoverageRecorder ledger = new CoverageRecorder();
         ledger.merge(sourceExclusions);
+        var enumeratedDirectories=new java.util.TreeSet<String>();
+        boolean sourceInventoryComplete=sourceExclusions==null||sourceExclusions.inventoryComplete()&&sourceExclusions.omittedEntries()==0;
         try {
             Files.walkFileTree(projectRoot, new SimpleFileVisitor<>() {
                 @Override
@@ -82,13 +84,21 @@ public class ProjectScanner {
                     } else ledger.record(relative, "FILE", null, "UNSUPPORTED", "NO_SUPPORTED_ANALYZER");
                     return FileVisitResult.CONTINUE;
                 }
+                @Override public FileVisitResult postVisitDirectory(Path dir, IOException failure) {
+                    if(failure!=null){ledger.incomplete();throw new CoverageException(HttpStatus.BAD_REQUEST,"디렉터리 목록을 확인하지 못했습니다.",ledger.snapshot());}
+                    if(sourceInventoryComplete&&enumeratedDirectories.size()<1001){
+                        String relative=projectRoot.relativize(dir).toString().replace('\\','/');
+                        enumeratedDirectories.add(relative.isEmpty()?".":relative);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
                 @Override public FileVisitResult visitFileFailed(Path path, IOException failure) {
                     ledger.record(projectRoot.relativize(path).toString(), "FILE", null, "FAILED", "FILE_READ");
                     ledger.incomplete();
                     throw new CoverageException(HttpStatus.BAD_REQUEST, "파일을 읽지 못해 분석을 중단했습니다.", ledger.snapshot());
                 }
             });
-            return new ProjectStructure(projectRoot, files, ledger.snapshot());
+            return new ProjectStructure(projectRoot, files, ledger.snapshot(), enumeratedDirectories.size()>1000?java.util.Set.of():java.util.Set.copyOf(enumeratedDirectories));
         } catch (IOException exception) {
             ledger.incomplete();
             throw new CoverageException(HttpStatus.BAD_REQUEST,
