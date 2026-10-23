@@ -157,7 +157,7 @@ export function sequelizeContracts(api) {
       if(match(s,'module.exports=$db;',new Map(bindings),mod)){if(!registry||!instanceExport)return;exported=true;continue;}
       return;
     }
-    if(!exported||!registry||!version(mod)||!input.nodeSourceInventoryComplete||!Array.isArray(input.nodeSourceInventory)||input.nodeSourceInventory.length>1000)return;
+    if(!exported||!registry||!version(mod)||Number(version(mod))>5||!input.nodeSourceInventoryComplete||!Array.isArray(input.nodeSourceInventory)||input.nodeSourceInventory.length>1000)return;
     const directory=path.posix.dirname(mod.filePath),prefix=directory==='.'?'':directory+'/';
     const inventory=input.nodeSourceInventory.filter(p=>typeof p==='string'&&path.posix.dirname(p)===directory&&path.posix.basename(p)[0]!=='.'&&p!==mod.filePath);
     if(!inventory.length||inventory.length>api.limits.maxFiles)return;

@@ -40,8 +40,10 @@ class ServerAnalysisIntegrationTest {
 
     @Test void sequelizeRawQueryPersistsWithSourceAndSinkAcrossAllIntakes() throws Exception {
         String token=signup();
-        var sources=Map.of("package.json","{\"dependencies\":{\"express\":\"4.21.2\",\"sequelize\":\"6.37.5\"}}", "server.cjs",
-                "const express=require('express');const Engine=require('sequelize');const db=new Engine('unused');const app=express();app.post('/search',(req,res)=>{const sql='SELECT value FROM records WHERE id='+req.body.id;db.query(sql);});");
+        var sources=Map.of("package.json","{\"dependencies\":{\"express\":\"4.21.2\",\"sequelize\":\"4.13.10\"}}", "server.cjs",
+                "const express=require('express');const db=require('./store').sequelize;const app=express();app.post('/search',(req,res)=>{const sql='SELECT value FROM records WHERE id='+req.body.id;db.query(sql);});",
+                "store/index.js","const fs=require('fs');const path=require('path');const Engine=require('sequelize');const connection=new Engine('unused');const db={};fs.readdirSync(__dirname).filter(function(file){return(file.indexOf('.')!==0)&&(file!=='index.js');}).forEach(function(file){var model=connection.import(path.join(__dirname,file));db[model.name]=model;});db.sequelize=connection;module.exports=db;",
+                "store/record.js","module.exports=function(client,Types){return client.define('Record',{id:{type:Types.INTEGER}});};");
         var zip=uploadSources(token,sources);var snapshot=zip.path("serverAnalysis");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
@@ -55,7 +57,7 @@ class ServerAnalysisIntegrationTest {
         var roots=new ArrayList<Path>();
         for(String name:List.of("sql-public","sql-private")) {
             Path root=Files.createDirectory(temp.resolve(name));roots.add(root);
-            for(var source:sources.entrySet())Files.writeString(root.resolve(source.getKey()),source.getValue());
+            for(var source:sources.entrySet()){Path file=root.resolve(source.getKey());Files.createDirectories(file.getParent());Files.writeString(file,source.getValue());}
         }
         when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/sql",roots.get(0),roots.get(0)));
         var pub=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/sql\",\"scanMode\":\"STANDARD\"}");
@@ -66,9 +68,13 @@ class ServerAnalysisIntegrationTest {
         for(var root:roots)assertThat(root).doesNotExist();
         long id=zip.path("reviewId").asLong();assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(snapshot);
         mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
-        var bound=uploadSources(token,Map.of("package.json",sources.get("package.json"),"server.cjs",sources.get("server.cjs")
-                .replace("const sql='SELECT value FROM records WHERE id='+req.body.id;db.query(sql);","db.query('SELECT value FROM records WHERE id=$1',{bind:[req.body.id]});")));
+        var safeSources=new HashMap<>(sources);safeSources.put("server.cjs",sources.get("server.cjs")
+                .replace("const sql='SELECT value FROM records WHERE id='+req.body.id;db.query(sql);","db.query('SELECT value FROM records WHERE id=$1',{bind:[req.body.id]});"));
+        var bound=uploadSources(token,safeSources);
         assertThat(bound.at("/serverAnalysis/validatedFindings")).isEmpty();
+        assertThat(bound.at("/serverAnalysis/nodeUses").findValuesAsText("kind")).contains("STATIC_OR_DATA_ONLY");
+        var incomplete=new HashMap<>(sources);incomplete.put("store/unparsed-model.txt","not a supported static model");
+        assertThat(uploadSources(token,incomplete).at("/serverAnalysis/validatedFindings")).isEmpty();
     }
 
     @Test void shellEvidencePersistsAcrossZipAndPublicAndPrivateInputsWithoutLegacyRiskPromotion() throws Exception {

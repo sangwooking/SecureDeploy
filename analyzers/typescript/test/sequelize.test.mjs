@@ -52,7 +52,7 @@ function registry(options={}){
   if(options.model)files[2].content=options.model;
   if(options.change)files[1].content=options.change(files[1].content);
   const inventory=files.map(f=>f.filePath);if(options.missing)inventory.push('records/missing.js');
-  return analyze({files,nodeManifests:[{filePath:'package.json',express:'^4.16.2',sequelize:'^4.13.10'}],
+  return analyze({files,nodeManifests:[{filePath:'package.json',express:'^4.16.2',sequelize:options.version??'^4.13.10'}],
     nodeSourceInventory:inventory,nodeSourceInventoryComplete:options.complete!==false});
 }
 test('bounded registry initialization connects a branch-created instance after reviewed model definitions',()=>{
@@ -61,6 +61,7 @@ test('bounded registry initialization connects a branch-created instance after r
 });
 for(const [name,options] of [
   ['omitted model',{missing:true}],['incomplete inventory',{complete:false}],
+  ['removed v6 import API',{version:'6.37.5'}],
   ['custom associate',{model:`module.exports=function(c,T){var M=c.define('Item',{id:{type:T.INTEGER}});M.associate=function(db){db.sequelize.query=other};return M;}`}],
   ['model hook',{model:`module.exports=function(c,T){return c.define('Item',{}, {hooks:{beforeFind:external}});}`}],
   ['extra initialization mutation',{change:s=>s.replace('module.exports=registry;','external(registry);module.exports=registry;')}],
