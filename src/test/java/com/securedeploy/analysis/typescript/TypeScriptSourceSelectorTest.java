@@ -7,6 +7,16 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TypeScriptSourceSelectorTest {
+    @Test void boundedBroadDiscoveryFindsLateServerImportsBeforeEarlierLargeGeneralModulesConsumeHints(){
+        var files=new ArrayList<ProjectFile>();
+        for(int i=0;i<230;i++)files.add(js("aaa/Module%03d.ts".formatted(i),"export const text='"+"x".repeat(5000)+"';"));
+        files.add(js("zzz/transport.ts","import express from 'express';import {handle} from './business';const app=express();app.post('/work',handle);\n"+" ".repeat(15_000)));
+        files.add(js("zzz/business.ts","export function handle(req,res){return fetch(req.body.target);}"));
+        var plan=TypeScriptSourceSelector.select(files);
+        assertThat(plan.selected()).extracting(c->c.file().relativePath()).contains("zzz/transport.ts","zzz/business.ts");
+        assertThat(plan.selected()).hasSize(100);
+        Collections.shuffle(files,new Random(104));assertThat(TypeScriptSourceSelector.select(files)).isEqualTo(plan);
+    }
     ProjectFile file(String path,String code,ProjectFileType type){return new ProjectFile(Path.of("/unreadable").resolve(path),path,type,code.lines().toList());}
     ProjectFile js(String p,String s){return file(p,s,ProjectFileType.TYPESCRIPT);}
     List<ProjectFile> fixture(){

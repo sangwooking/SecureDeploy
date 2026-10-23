@@ -13,6 +13,7 @@ final class TypeScriptSourceSelector {
     private static final int HINT_FILES=1000, HINT_CHARS=1_000_000, PREFIX_CHARS=16_000;
     private static final Pattern IMPORT=Pattern.compile("(?:\\bfrom\\s*|\\bimport\\s*|\\brequire\\s*\\(\\s*)['\"](\\.[^'\"\\r\\n]{1,240})['\"]");
     private static final Pattern HTTP_EXPORT=Pattern.compile("\\bexport\\s+(?:async\\s+)?function\\s+(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b|\\bexport\\s+const\\s+(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b");
+    private static final Pattern SERVER_USE=Pattern.compile("\\b(?:fetch|eval|exec|execSync)\\s*\\(|\\.\\s*(?:query|prepare)\\s*\\(|child_process|process\\.env|Deno\\.env");
     record Choice(ProjectFile file,String reason,int priority,int characters,boolean sql) { }
     record Plan(List<Choice> selected,List<Choice> omitted,Map<String,String> omissions,boolean hintsComplete) {
         ServerAnalysisSnapshot.SelectionCoverage coverage() {
@@ -37,48 +38,51 @@ final class TypeScriptSourceSelector {
         }
         ambiguous.forEach(specs::remove);
         int hints=0,characters=0;boolean complete=true;
+        var texts=new HashMap<String,String>();
         var hintOrder=js.stream().sorted(Comparator.comparingInt((ProjectFile f)->convention(f.relativePath()))
                 .thenComparing(ProjectFile::relativePath)).toList();
+        int probe=Math.min(1024,Math.max(1,HINT_CHARS/2/Math.max(1,Math.min(js.size(),HINT_FILES))));
         for(var f:hintOrder) {
             String p=f.relativePath();int size=length(f);String reason="TS_DETERMINISTIC_FALLBACK";int priority=90;
             var refs=new TreeSet<String>();edges.put(p,refs);
-            if(size<=MAX_FILE_CHARS&&hints<HINT_FILES&&characters+Math.min(size,PREFIX_CHARS)<=HINT_CHARS) {
-                String text=prefix(f,PREFIX_CHARS);hints++;characters+=text.length();
-                if(size>PREFIX_CHARS)complete=false;
-                boolean deno=text.contains("Deno.serve")||text.contains("deno.land/std@")&&text.contains("/http/server");
-                boolean route=p.matches("(?:.*/)?(?:src/)?app/(?:[^/]+/)*route\\.[jt]s")&&HTTP_EXPORT.matcher(text).find();
-                boolean express=(text.contains("'express'")||text.contains("\"express\""))
-                        &&(text.contains("require")||text.contains("import"));
-                if(deno){reason="TS_DENO_REGISTRATION_HINT";priority=0;}
-                else if(route){reason="TS_NEXT_ROUTE_EXPORT_HINT";priority=0;}
-                else if(express){reason="TS_EXPRESS_MODULE_HINT";priority=0;}
-                else if(text.contains("@supabase/")&&(text.contains("import")||text.contains("require"))){reason="TS_SUPABASE_CLIENT_MODULE_HINT";priority=1;}
-                else if(p.matches("(?:.*/)?supabase/functions/[^/]+/index\\.[jt]s")){reason="TS_EDGE_FUNCTION_CONVENTION_HINT";priority=1;}
-                else if(text.stripLeading().startsWith("'use server'")||text.stripLeading().startsWith("\"use server\"")) {
-                    reason="TS_SERVER_DIRECTIVE_HINT";priority=1;
-                }
-                var m=IMPORT.matcher(text);
-                while(m.find()) {
-                    String base=Path.of(p).getParent()==null?m.group(1):Path.of(p).getParent().resolve(m.group(1)).toString();
-                    base=Path.of(base).normalize().toString().replace('\\','/');
-                    if(base.startsWith("../")||base.startsWith("/"))continue;
-                    for(String key:List.of(base,base.replaceFirst("\\.js$",".ts"),base+"/index")) {
-                        String target=specs.get(key);if(target!=null){refs.add(target);break;}
-                    }
-                }
+            if(size<=MAX_FILE_CHARS&&hints<HINT_FILES&&characters+Math.min(size,probe)<=HINT_CHARS) {
+                String text=prefix(f,probe);hints++;characters+=text.length();texts.put(p,text);
+                reason=hint(p,text);priority=priority(reason);
             } else if(size<=MAX_FILE_CHARS){complete=false;reason="TS_SELECTION_HINT_LIMIT";}
             choices.put(p,new Choice(f,reason,priority,size,false));
         }
-        // Imports are scheduling edges only; the trusted AST worker resolves them again.
-        for(int depth=1;depth<=3;depth++) {
-            int previous=depth-1;
-            var parents=choices.values().stream().filter(c->c.priority()<=previous).toList();
-            for(var parent:parents)for(String target:edges.getOrDefault(parent.file().relativePath(),Set.of())) {
-                var old=choices.get(target);
-                if(old.priority()>depth)choices.put(target,new Choice(old.file(),"TS_RELATED_IMPORT_HINT",depth,old.characters(),false));
+        // Probe broadly before expanding relevant modules. Reuse one global hint
+        // budget; imports and sink-shaped uses remain scheduling hints, never proof.
+        var queue=new PriorityQueue<Choice>(Comparator.comparingInt(Choice::priority).thenComparing(c->c.file().relativePath()));
+        queue.addAll(choices.values());var expanded=new HashSet<String>();
+        while(!queue.isEmpty()) {
+            var queued=queue.remove();String p=queued.file().relativePath();var current=choices.get(p);
+            if(!texts.containsKey(p)||!expanded.add(p))continue;
+            String text=texts.get(p);int cap=current.priority()<90?MAX_FILE_CHARS:PREFIX_CHARS;
+            int available=Math.min(cap,text.length()+HINT_CHARS-characters);
+            if(available>text.length()) {
+                String next=prefix(current.file(),available);characters+=next.length()-text.length();text=next;texts.put(p,text);
             }
+            String own=hint(p,text);
+            if(priority(own)<current.priority()) {
+                current=new Choice(current.file(),own,priority(own),current.characters(),false);choices.put(p,current);
+            }
+            var refs=references(p,text,specs);edges.put(p,refs);
+            if(current.priority()<3)for(String target:refs) {
+                var old=choices.get(target);int depth=current.priority()+1;
+                if(old.priority()>depth) {
+                    var related=new Choice(old.file(),"TS_RELATED_IMPORT_HINT",depth,old.characters(),false);
+                    choices.put(target,related);queue.add(related);
+                }
+            }
+            if(text.length()<current.characters())complete=false;
         }
+        boolean express=choices.values().stream().anyMatch(c->c.reason().equals("TS_EXPRESS_MODULE_HINT"));
+        if(express)for(var c:List.copyOf(choices.values()))if(c.reason().equals("TS_RELATED_IMPORT_HINT")
+                &&SERVER_USE.matcher(texts.getOrDefault(c.file().relativePath(),"")).find())
+            choices.put(c.file().relativePath(),new Choice(c.file(),"TS_SERVER_USE_IMPORT_HINT",c.priority(),c.characters(),false));
         var ordered=choices.values().stream().sorted(Comparator.comparingInt(Choice::priority)
+                .thenComparingInt(c->c.reason().equals("TS_SERVER_USE_IMPORT_HINT")?0:1)
                 .thenComparing(c->c.file().relativePath())).toList();
         var policies=sql.stream().map(f->new Choice(f,"TS_POLICY_SQL_INPUT",0,length(f),true)).toList();
         var selected=new LinkedHashMap<String,Choice>();
@@ -111,6 +115,31 @@ final class TypeScriptSourceSelector {
         }
     }
     private static List<Choice> concat(List<Choice> a,List<Choice> b){var all=new ArrayList<>(a);all.addAll(b);return all;}
+    private static int priority(String reason){return switch(reason){
+        case "TS_DENO_REGISTRATION_HINT","TS_NEXT_ROUTE_EXPORT_HINT","TS_EXPRESS_MODULE_HINT" -> 0;
+        case "TS_SUPABASE_CLIENT_MODULE_HINT","TS_EDGE_FUNCTION_CONVENTION_HINT","TS_SERVER_DIRECTIVE_HINT" -> 1;
+        default -> 90;};}
+    private static String hint(String p,String text) {
+        if(text.contains("Deno.serve")||text.contains("deno.land/std@")&&text.contains("/http/server"))return "TS_DENO_REGISTRATION_HINT";
+        if(p.matches("(?:.*/)?(?:src/)?app/(?:[^/]+/)*route\\.[jt]s")&&HTTP_EXPORT.matcher(text).find())return "TS_NEXT_ROUTE_EXPORT_HINT";
+        if((text.contains("'express'")||text.contains("\"express\""))&&(text.contains("require")||text.contains("import")))return "TS_EXPRESS_MODULE_HINT";
+        if(text.contains("@supabase/")&&(text.contains("import")||text.contains("require")))return "TS_SUPABASE_CLIENT_MODULE_HINT";
+        if(p.matches("(?:.*/)?supabase/functions/[^/]+/index\\.[jt]s"))return "TS_EDGE_FUNCTION_CONVENTION_HINT";
+        if(text.stripLeading().startsWith("'use server'")||text.stripLeading().startsWith("\"use server\""))return "TS_SERVER_DIRECTIVE_HINT";
+        return "TS_DETERMINISTIC_FALLBACK";
+    }
+    private static Set<String> references(String p,String text,Map<String,String> specs) {
+        var refs=new TreeSet<String>();var m=IMPORT.matcher(text);
+        while(m.find()) {
+            String base=Path.of(p).getParent()==null?m.group(1):Path.of(p).getParent().resolve(m.group(1)).toString();
+            base=Path.of(base).normalize().toString().replace('\\','/');
+            if(base.startsWith("../")||base.startsWith("/"))continue;
+            for(String key:List.of(base,base.replaceFirst("\\.js$",".ts"),base+"/index")) {
+                String target=specs.get(key);if(target!=null){refs.add(target);break;}
+            }
+        }
+        return refs;
+    }
     private static int convention(String p){return p.matches("(?:.*/)?supabase/functions/.*|(?:.*/)?app/(?:[^/]+/)*route\\.[jt]s")?0:1;}
     private static int length(ProjectFile f){long n=f.lines().stream().mapToLong(l->l.length()+1L).sum();return (int)Math.min(n,Integer.MAX_VALUE);}
     private static String prefix(ProjectFile f,int max){var b=new StringBuilder();for(String line:f.lines()){if(b.length()>=max)break;int n=Math.min(line.length(),max-b.length());b.append(line,0,n);if(b.length()<max)b.append('\n');}return b.toString();}

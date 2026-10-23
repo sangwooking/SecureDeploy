@@ -20,6 +20,8 @@ const labels: Record<string, string> = {
   TS_NEXT_ROUTE_EXPORT_HINT:'Next.js 요청 export 후보로 선택',TS_EXPRESS_MODULE_HINT:'Express import 모듈 후보로 선택',
   TS_EDGE_FUNCTION_CONVENTION_HINT:'Edge Function 폴더 규약 후보 · 진입점 확정 아님',
   TS_SERVER_DIRECTIVE_HINT:'서버 지시어 후보로 선택',TS_RELATED_IMPORT_HINT:'서버 후보의 제한된 상대 import 관계',
+  TS_SERVER_USE_IMPORT_HINT:'상대 import 연결과 서버 작업 구문 후보 · 실행 근거는 별도 확인',
+  EXPRESS_SETTING_READ_NOT_ROUTE:'Express 설정값 조회 · 요청 등록이나 설정값 확인은 아님',
   TS_SUPABASE_CLIENT_MODULE_HINT:'Supabase SDK import 모듈 후보 · Client 의미 연결의 증명 아님',
   TS_POLICY_SQL_INPUT:'저장소 정책 SQL 입력',TS_DETERMINISTIC_FALLBACK:'일반 코드 예약·남은 예산으로 선택',
   TS_SELECTION_HINT_LIMIT:'파일 선택용 힌트 탐색 상한 · 일부 관계 미확인',

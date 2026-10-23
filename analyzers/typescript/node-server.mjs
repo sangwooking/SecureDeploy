@@ -180,6 +180,10 @@ export function nodeServer(api) {
     }
     if(receiver?.tag==='express-router') {
       if(receiver.unknown||receiver.ref.unknown){note(state.mod,'EXPRESS_RECEIVER_MUTATION_UNKNOWN');return {value:unknown()};}
+      // app.get(setting) reads configuration; it is not a route or an unknown mutator.
+      if(receiver.app&&method==='get'&&args.length===1&&literal(args[0])&&typeof args[0].constant==='string') {
+        note(state.mod,'EXPRESS_SETTING_READ_NOT_ROUTE');return {value:unknown()};
+      }
       if(['get','post','put','patch','delete','head','options','all'].includes(method)&&args.length>=2) {
         if(!literal(args[0])||typeof args[0].constant!=='string'){note(state.mod,'DYNAMIC_EXPRESS_ROUTE_UNKNOWN');return {value:receiver};}
         const handler=args.at(-1);
