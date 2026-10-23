@@ -82,13 +82,14 @@ class ServerAnalysisIntegrationTest {
     @Test void shellEvidencePersistsAcrossZipAndPublicAndPrivateInputsWithoutLegacyRiskPromotion() throws Exception {
         String token=signup();
         var sources=Map.of("package.json","{\"dependencies\":{\"express\":\"4.21.2\"}}", "server.cjs",
-                "const express=require('express');const app=express();const {exec}=require('node:child_process');app.set('port',process.env.PORT||3001);app.post('/work',(req,res)=>exec('fixed '+req.body.value));app.get('env');");
+                "const express=require('express');const app=express();const {exec}=require('node:child_process');app.set('port',process.env.PORT||3001);app.post('/work',(req,res)=>{const text=req.body.value;const pattern=/(.*)/;if(typeof text==='string'&&text.match(pattern)){exec('fixed '+text.match(pattern)[1]);}});app.get('env');");
         var zip=uploadSources(token,sources);var snapshot=zip.path("serverAnalysis");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
         assertThat(finding.path("ruleId").asText()).isEqualTo("JS_SHELL_COMMAND_INPUT_FLOW");
         assertThat(finding.path("priority").asText()).isEqualTo("REVIEW_REQUIRED");
         assertThat(finding.path("comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        assertThat(finding.at("/evidence/0/flow").findValuesAsText("kind")).contains("REGEX_CAPTURE");
         assertThat(zip.path("securityScore").asInt()).isEqualTo(100);
         assertThat(zip.path("vulnerabilityCount").asInt()).isZero();
         assertThat(zip.at("/resultSummary/flowCandidates").asInt()).isEqualTo(1);

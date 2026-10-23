@@ -190,7 +190,7 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v20".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v21".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200

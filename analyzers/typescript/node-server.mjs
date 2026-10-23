@@ -56,7 +56,14 @@ export function nodeServer(api) {
     if(['child_process','node:child_process'].includes(spec))return native('node-child-process',mod);
     if(['http','node:http','https','node:https'].includes(spec))return native('node-http',mod);
     const target=findModule(mod,spec);
-    if(!target){note(mod,'NODE_MODULE_RESOLUTION_UNKNOWN');if(!spec.startsWith('.'))note(mod,'EXTERNAL_IMPLEMENTATION_UNKNOWN');return unknown();}
+    if(!target){
+      note(mod,'NODE_MODULE_RESOLUTION_UNKNOWN');
+      if(!spec.startsWith('.')){
+        note(mod,'EXTERNAL_IMPLEMENTATION_UNKNOWN');
+        if(/^(?:@[A-Za-z0-9_-]+\/)?[A-Za-z0-9_-]+$/.test(spec))return {...unknown(),externalObject:{unverified:true}};
+      }
+      return unknown();
+    }
     return load(target);
   }
   function load(mod) {
@@ -126,6 +133,10 @@ export function nodeServer(api) {
   function observe(v,node,state,ruleId,kind,operation) {
     if(state.context.setup)return;
     const sink=loc(node,state.mod,operation,state.fn), uncertain=v.unknown||v.ref?.unknown||state.uncertain;
+    if(ruleId==='JS_SHELL_COMMAND_INPUT_FLOW'&&v.shellRestricted&&v.fixedShellCommandPrefix&&!uncertain){
+      append(result.nodeUses,{ruleId,kind:'RESTRICTED_SHELL_TOKEN',operation,location:sink,trace:v.trace,
+        limitations:['ASCII_CAPTURE_ALPHABET_ONLY','ARGUMENT_INJECTION_AND_RUNTIME_NOT_VERIFIED']},state.mod);return;
+    }
     const status=v.trace.length?(uncertain?'FLOW_UNRESOLVED':'INPUT_TO_EXECUTION'):uncertain?'UNKNOWN':'STATIC_OR_DATA_ONLY';
     append(result.nodeUses,{ruleId,kind:status,operation,location:sink,trace:v.trace,limitations:['STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF',...(uncertain?['NODE_FLOW_UNRESOLVED']:[])]},state.mod);
     state.context.resources.push(sink);

@@ -10,8 +10,9 @@ import { supabaseAnalysis } from './supabase.mjs';
 import { nextEntries } from './next.mjs';
 import { analyzePolicies } from './rls.mjs';
 import { syntaxIndex, indexSyntax } from './syntax-index.mjs';
+import { regexFlow } from './regex-flow.mjs';
 
-export const VERSION = 'ts-server-v20';
+export const VERSION = 'ts-server-v21';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -19,7 +20,7 @@ const unknown = () => ({ unknown: true, trace: [] });
 const value = (tag, trace = [], extra = {}) => ({ tag, trace, ...extra });
 const constant = text => value('constant', [], { constant: text });
 const hasConstant = v => v.tag === 'constant' && Object.hasOwn(v, 'constant') && !v.unknown;
-const truth = v => hasConstant(v) ? Boolean(v.constant) : v.ref || v.tag === 'function' ? true : undefined;
+const truth = v => v.tag==='regex-match' ? v.regexMatch?.nonNull&&!v.unknown?true:undefined : hasConstant(v) ? Boolean(v.constant) : v.ref || v.tag === 'function' ? true : undefined;
 const nullish = v => hasConstant(v) ? v.constant == null : v.ref || ['function', 'numeric', 'boolean', 'allowlistedIdentifier'].includes(v.tag) ? false : undefined;
 function addition(left, right) {
   if (hasConstant(left) && hasConstant(right)) {
@@ -28,7 +29,9 @@ function addition(left, right) {
   }
   const combined = union(left, right);
   const { constant: ignored, ...withoutConstant } = combined;
-  return { ...withoutConstant, responseLocations:undefined, environmentResponses:undefined, ...concatenatedDestination(left, right) };
+  return { ...withoutConstant, responseLocations:undefined, environmentResponses:undefined,
+    fixedShellCommandPrefix:hasConstant(left)&&typeof left.constant==='string'&&/^[A-Za-z][A-Za-z0-9_./-]* +$/.test(left.constant)&&right.shellRestricted,
+    ...concatenatedDestination(left, right) };
 }
 function union(...values) {
   if (!values.length) return unknown();
@@ -51,6 +54,7 @@ function union(...values) {
       .map(key => [key, union(...refs.map(r => r.properties.get(key) ?? unknown()))]));
   }
   const merged = { trace, unknown: allTrace.length > 20 || values.some(v => v?.unknown) || Boolean(mixedRefs),
+    shellRestricted: values.some(v=>v?.trace?.length)&&values.filter(v=>v?.trace?.length).every(v=>v.shellRestricted),
     exposures: values.flatMap(v => exposureSources(v)).slice(0, 20),
     exposureTrail: values.flatMap(v => exposureTrails(v)).slice(0, 10),
     responseLocations: values.flatMap(v => v?.responseLocations ?? []).slice(0, 20),
@@ -98,6 +102,7 @@ export function analyze(input, overrides = {}) {
     line: mod.ast.getLineAndCharacterOfPosition(node.getStart(mod.ast)).line + 1,
     column: mod.ast.getLineAndCharacterOfPosition(node.getStart(mod.ast)).character + 1,
     functionName: safeName(fn?.name ?? 'module'), kind });
+  const regexSupport=regexFlow({ts,unwrap,expr,note,tick,loc,step,constant,unknown});
   function tick(mod) {
     try { charged(); } catch {
       mod.record.limitations.add(steps >= limits.maxSteps ? 'ANALYSIS_STEP_BUDGET_EXCEEDED' : 'ANALYSIS_TIME_BUDGET_EXCEEDED');
@@ -304,6 +309,7 @@ export function analyze(input, overrides = {}) {
   }
   function property(base, key, node, state) {
     const { mod, fn } = state;
+    if(state.nodeMode){const supported=regexSupport.property(base,key,node,state);if(supported)return supported;}
     if(state.nodeMode){const supported=nodeSupport.property(base,key,node,state);if(supported)return supported;}
     if(['error-object','caught-error'].includes(base.tag) && key==='stack'){
       const unresolved=base.unknown||base.ref?.unknown;
@@ -398,6 +404,13 @@ export function analyze(input, overrides = {}) {
             note(mod, 'URL_MUTATION_UNRESOLVED'); return;
           }
           note(mod, 'PROPERTY_WRITE_UNRESOLVED');
+          if(target.nodeMode&&target.context.setup&&receiver.externalObject&&hasConstant(key)
+              &&!['__proto__','prototype','constructor'].includes(String(key.constant))&&!v.ref&&!v.target&&!v.native&&!v.trace.length){
+            // Unknown external data stays unknown. This is not a proof of setter
+            // behavior; it must not erase an unrelated, observed request path.
+            receiver.externalObject.unverified=true;
+            note(mod,'EXTERNAL_PROPERTY_WRITE_SCOPED_UNKNOWN');return;
+          }
           const ref = target.forkRefs?.get(receiver.ref) ?? receiver.ref;
           if(target.nodeMode&&ref){invalidateNodeReference(ref,target,v);return;}
           if (ref) { ref.unknown = true; ref.trace = union({ trace: ref.trace }, v).trace; ref.properties.clear(); }
@@ -463,6 +476,8 @@ export function analyze(input, overrides = {}) {
     }
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return literal(node.text, node, mod, fn);
     if (ts.isNumericLiteral(node)) return constant(Number(node.text));
+    if(state.nodeMode&&ts.isRegularExpressionLiteral(node))return regexSupport.pattern(node,state);
+    if(state.nodeMode&&ts.isTypeOfExpression(node)){expr(node.expression,state);return value('type-name');}
     if(node.kind===ts.SyntaxKind.ThisKeyword&&state.nodeMode)return state.thisValue??unknown();
     if (ts.isIdentifier(node)) {
       const found = state.vars.get(node.text) ?? mod.constants.get(node.text);
@@ -513,6 +528,14 @@ export function analyze(input, overrides = {}) {
           const right = expr(node.right, state); if (assignment) reference.write(right, state); return right;
         }
         const fallback=unwrap(node.right);
+        if(state.nodeMode&&!assignment&&regexSupport.pureMatch(node.right,state)){
+          // A supported literal match has no mutable lastIndex or target-code effects.
+          // Preserve the heap rather than merging unrelated cloned capabilities.
+          const evaluated={...state,vars:new Map(state.vars)};
+          if(logical!=='NULLISH')regexSupport.refine(node.left,logical==='AND',evaluated);
+          const right=expr(node.right,evaluated);
+          return union(left,right);
+        }
         if(state.nodeMode&&!assignment&&(ts.isStringLiteral(fallback)||ts.isNumericLiteral(fallback)
             ||ts.isNoSubstitutionTemplateLiteral(fallback)||[ts.SyntaxKind.TrueKeyword,ts.SyntaxKind.FalseKeyword,ts.SyntaxKind.NullKeyword].includes(fallback.kind))) {
           // A primitive RHS cannot mutate state. Keep the uncertain result,
@@ -582,6 +605,8 @@ export function analyze(input, overrides = {}) {
       const callable = receiverInput ? undefined : expr(callee, state);
       const global = ts.isIdentifier(callee) && !state.vars.has(callee.text) && !mod.imports.has(callee.text) && !mod.declared.has(callee.text);
       const args = (node.arguments ?? []).map(a => expr(a, state));
+      const regexResult=regexSupport.call(node,callee,receiverInput,args,state);
+      if(regexResult)return regexResult;
       const globalObject = name => ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) && callee.expression.text === name
         && !state.vars.has(name) && !mod.imports.has(name) && !mod.declared.has(name);
       if(state.nodeMode) {
@@ -799,6 +824,7 @@ export function analyze(input, overrides = {}) {
         branch.vars.set(name, { ...v, unknown: true });
     }
     refineAllowlist(node, true, yes); refineAllowlist(node, false, no);
+    regexSupport.refine(node,true,yes);regexSupport.refine(node,false,no);
     refineUrlAllowlist(node, true, yes); refineUrlAllowlist(node, false, no);
   }
   function refineUrlAllowlist(original, accepted, state, depth = 0) {

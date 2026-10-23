@@ -27,7 +27,7 @@ test('structural finding file navigation is opt-in and absent for read-only resu
   assert.ok(html.includes('이 파일 수정하기'));assert.ok(html.includes('NOT_COMPARED'));
 });
 test('Sequelize evidence identifies initialization separately and never advertises automatic patches',()=>{
-  const data=fixture();data.analyzerVersion='ts-server-v20';const f=data.findings[0];
+  const data=fixture();data.analyzerVersion='ts-server-v21';const f=data.findings[0];
   f.ruleId='JS_SEQUELIZE_SQL_INPUT_FLOW';f.kind='CWE-89';f.source.kind='EXPRESS_BODY';f.sink.kind='SEQUELIZE_RAW_QUERY';
   data.validatedFindings[0]={...data.validatedFindings[0],ruleId:f.ruleId,title:'SQL 입력 경로',riskExplanation:'입력값이 Sequelize Raw SQL 실행 호출(CWE-89)에 전달됩니다.',evidence:[f]};
   data.nodeUses=[{ruleId:'JS_CONSTRUCTOR_EFFECT',kind:'INITIALIZATION_SUMMARY_MUST',operation:'SEQUELIZE_REGISTRY_SUMMARY',location:f.sink,trace:[],limitations:['DECLARED_VERSION_NOT_INSTALLED_VERSION']}];
