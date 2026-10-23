@@ -201,6 +201,9 @@ readdir/filter/import scaffold with define-only model files and pure configurati
 All non-hidden directory entries must be inventoried and parsed. Missing inventory,
 custom association/model effects, prototype writes and v6's removed import API
 reject the summary. Source inventory is not proof of the deployed directory.
+The scanner supplies bounded completion evidence for individual directories, so
+an ignored sibling such as .git does not make a completed model directory unknown.
+Incomplete upstream collection or directory-metadata truncation grants no such proof.
 No target initialization is executed. Model.find and general ORM authorization
 are not proven by this summary. New findings remain REVIEW_REQUIRED/NOT_COMPARED.
 

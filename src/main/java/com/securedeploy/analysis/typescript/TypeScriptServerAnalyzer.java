@@ -104,7 +104,8 @@ public class TypeScriptServerAnalyzer {
             var inventory=ledger==null?List.<String>of():java.util.stream.Stream.concat(ledger.entries().stream()
                     .map(e->e.filePath()),project.enumeratedDirectories().stream()).filter(p->!p.equals("."))
                     .map(CoverageRecorder::safePath).distinct().sorted().limit(1001).toList();
-            boolean metadataComplete=ledger!=null&&ledger.omittedEntries()==0&&inventory.size()<=1000&&!inventory.contains("[redacted-path]");
+            boolean metadataComplete=ledger!=null&&ledger.omittedEntries()==0&&project.enumeratedDirectories().contains(".")
+                    &&inventory.size()<=1000&&!inventory.contains("[redacted-path]");
             boolean inventoryComplete=metadataComplete&&ledger.inventoryComplete();
             byte[] input = mapper.writeValueAsBytes(Map.of("files", sources,"nodeManifests",manifests,"denoConfigs",denoConfigs,"policyFiles",policyFiles,"policyInventoryComplete",sqlCandidates.size()<=100,
                     "nodeSourceInventory",inventory.stream().limit(1000).toList(),"nodeSourceInventoryComplete",inventoryComplete,
