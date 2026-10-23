@@ -69,6 +69,11 @@ const labels: Record<string, string> = {
   PRINCIPAL_CONTEXT_UNVERIFIED:'요청 사용자·세션 참조 · 인증·권한 검증의 증명은 아님',EVAL_CALL:'서버 코드 실행 호출',
   FUNCTION_RETURN:'함수 반환으로 전달',NODE_FLOW_UNRESOLVED:'Node.js 값 전달 또는 제어 흐름 미확인',
   MONGODB_RECEIVER_OR_OBJECT_FLOW_UNRESOLVED:'MongoDB 객체 출처 또는 객체 전달을 확인하지 못함',
+  NODE_EXEC_SHELL:'Node.js shell 명령 호출',NODE_EXECSYNC_SHELL:'Node.js 동기 shell 명령 호출',NODE_PROCESS_ARGUMENTS:'프로세스 인자 전달 위치',
+  NODE_PROCESS_API_ORIGIN_UNKNOWN:'프로세스 API가 변경되어 실제 호출 대상을 확인하지 못함',NODE_PROCESS_OPTIONS_UNVERIFIED:'프로세스 호출 옵션의 의미 미확인',
+  NODE_PROCESS_ARGV_NOT_WHOLE_OPERATION_SAFETY:'shell 미사용 기본 계약 관찰 · 실행 파일·인자·플랫폼 전체 안전 미검증',
+  NODE_PROCESS_ARGV_AND_OPTIONS_NOT_MODELED:'프로세스 인자·shell 옵션 문맥 미지원',EXECUTABLE_ARGUMENT_INJECTION_AND_PLATFORM_NOT_VERIFIED:'실행 파일 선택·인자 주입·플랫폼 동작 미검증',
+  ARGV_WITHOUT_SHELL_DECLARED:'고정 실행 파일·인자 배열의 shell 미사용 기본 계약 관찰',PROCESS_CONTRACT_UNKNOWN:'프로세스 실행 계약 미확인',
   STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF:'정적 경로이며 실제 공격 성공은 미검증',
   MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED:'미들웨어의 입력 검증과 실제 실행 환경은 미확인',
   MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED:'각 요청은 초기화 상태에서 따로 검사합니다. 여러 요청 사이의 전역 상태 변화는 미검증입니다.',
@@ -261,6 +266,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false, on
       <span className="risk-badge risk-review_required">코드 흐름 · 추가 확인 필요</span>
       <h4>{finding.ruleId === 'TS_SSRF_INPUT_FLOW' ? '서버 요청 주소의 처리 과정을 확인해 주세요'
         : finding.ruleId === 'JS_EVAL_INPUT_FLOW' ? '입력값을 코드로 실행하는지 확인해 주세요'
+        : finding.ruleId === 'JS_SHELL_COMMAND_INPUT_FLOW' ? '입력값이 서버의 명령 문자열에 전달되는지 확인해 주세요'
         : finding.ruleId === 'JS_MONGO_WHERE_INPUT_FLOW' ? '입력값이 데이터베이스 실행 문자열에 들어가는지 확인해 주세요'
         : finding.ruleId === 'PY_FILE_PATH_INPUT_FLOW' ? '입력된 파일 경로의 제한을 확인해 주세요'
         : finding.ruleId === 'PY_UNSAFE_DESERIALIZATION_INPUT_FLOW' ? '외부 데이터의 복원 방식을 확인해 주세요'

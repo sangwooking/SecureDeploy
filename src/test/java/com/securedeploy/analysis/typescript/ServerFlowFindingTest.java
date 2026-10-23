@@ -8,6 +8,26 @@ import static com.securedeploy.analysis.typescript.TypeScriptServerAnalyzerTest.
 class ServerFlowFindingTest {
     final TypeScriptServerAnalyzer analyzer = new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties());
 
+    @Test void provenShellInputReachesSupplementalFindingButUnknownOptionsAndArgvDoNot() {
+        String start="const express=require('express');const app=express();const cp=require('node:child_process');app.post('/work',(req,res)=>{";
+        var snapshot=analyzer.analyze(project(start+"const input=req.body.value;cp.exec('fixed '+input);});"));
+        assertThat(snapshot.validatedFindings()).hasSize(1);
+        var finding=snapshot.validatedFindings().get(0);
+        assertThat(finding.ruleId()).isEqualTo("JS_SHELL_COMMAND_INPUT_FLOW");
+        assertThat(finding.priority().name()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(finding.comparisonPolicy()).isEqualTo("NOT_COMPARED");
+        assertThat(finding.title()).contains("명령 문자열");
+        assertThat(finding.evidence().get(0).kind()).isEqualTo("CWE-78");
+        assertThat(finding.evidence().get(0).source().kind()).isEqualTo("EXPRESS_BODY");
+        assertThat(finding.executionLocations().get(0).kind()).isEqualTo("NODE_EXEC_SHELL");
+        assertThat(finding.recommendedAction()).contains("인자 주입");
+        var converter=new ServerAnalysisConverter();
+        assertThat(converter.convertToEntityAttribute(converter.convertToDatabaseColumn(snapshot))).isEqualTo(snapshot);
+        for(String body:new String[]{"cp.exec('fixed');", "cp.exec(transform(req.body.value));", "cp.exec(req.body.value,options);",
+                "cp.execSync(req.body.value,()=>{});", "cp.execFile('fixed',['arg',req.body.value]);"})
+            assertThat(analyzer.analyze(project(start+body+"});")).validatedFindings()).isEmpty();
+    }
+
     @Test void ssrfConnectsOnlyKnownDestinationFlowsAndPreservesSqlPolicy() {
         String start = "export default {fetch(request,env){const url=new URL(request.url).searchParams.get('url'); ";
         var snapshot = analyzer.analyze(project(start + "env.DB.prepare(url).all(); return fetch(new Request(url));}}"));
@@ -37,7 +57,7 @@ class ServerFlowFindingTest {
         String start = "export default { fetch(request,env) { let id = new URL(request.url).searchParams.get('id'); ";
         var unsafe = analyzer.analyze(project(start + "return env.DB.prepare(id + (id = '0')).all(); }}"));
         var safe = analyzer.analyze(project(start + "return env.DB.prepare((id = '0') + id).all(); }}"));
-        assertThat(unsafe.analyzerVersion()).isEqualTo("ts-server-v17");
+        assertThat(unsafe.analyzerVersion()).isEqualTo("ts-server-v18");
         assertThat(unsafe.validatedFindings()).hasSize(1).allSatisfy(f -> {
             assertThat(f.priority().name()).isEqualTo("REVIEW_REQUIRED");
             assertThat(f.comparisonPolicy()).isEqualTo("NOT_COMPARED");
@@ -48,7 +68,7 @@ class ServerFlowFindingTest {
     @Test void v2SnapshotsRemainImmutableAndAreNotReconnectedByTheNewAnalyzer() {
         var converter = new ServerAnalysisConverter();
         var snapshot = analyzer.analyze(project(UNSAFE));
-        String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v17", "ts-server-v2");
+        String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v18", "ts-server-v2");
         var old = converter.convertToEntityAttribute(previous);
         assertThat(old.analyzerVersion()).isEqualTo("ts-server-v2");
         assertThat(converter.convertToDatabaseColumn(old)).isEqualTo(previous);

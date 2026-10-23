@@ -50,6 +50,7 @@ export function nodeServer(api) {
   function dependency(mod,spec) {
     if(spec==='express')return native('express',mod);
     if(spec==='mongodb')return native('mongodb',mod);
+    if(['child_process','node:child_process'].includes(spec))return native('node-child-process',mod);
     if(['http','node:http','https','node:https'].includes(spec))return native('node-http',mod);
     const target=findModule(mod,spec);
     if(!target){note(mod,'NODE_MODULE_RESOLUTION_UNKNOWN');if(!spec.startsWith('.'))note(mod,'EXTERNAL_IMPLEMENTATION_UNKNOWN');return unknown();}
@@ -91,6 +92,7 @@ export function nodeServer(api) {
     if(base.tag==='function')return base.ref?.properties.get(key)??unknown();
     if(base.native==='mongodb'&&key==='MongoClient')return native('mongo-client',base.nativeMod,base.ref);
     if(base.native==='express'&&key==='Router')return native('router',base.nativeMod,base.ref);
+    if(base.native==='node-child-process'&&['exec','execSync','execFile','execFileSync','spawn','spawnSync'].includes(key))return native('node-child-'+key,base.nativeMod,base.ref);
     if(base.tag==='express-router'&&key==='locals'){
       if(!base.ref.properties.has(key))base.ref.properties.set(key,object('express-locals'));
       return base.ref.properties.get(key);
@@ -124,8 +126,8 @@ export function nodeServer(api) {
     if(!v.trace.length)return;
     append(result.findings,{ruleId,kind,confidence:uncertain?'MEDIUM':'HIGH',disposition:'REVIEW_REQUIRED',source:v.trace[0],sink,flow:v.trace,
       defenses:state.context.defenses.slice(0,20),limitations:['STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF','MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED',...(uncertain?['NODE_FLOW_UNRESOLVED']:[])],
-      message:ruleId==='JS_EVAL_INPUT_FLOW'?'사용자가 보낸 값이 서버의 코드 실행에 전달될 수 있습니다.':'사용자가 보낸 값이 데이터베이스의 실행 문자열에 들어갈 수 있습니다.',
-      recommendation:ruleId==='JS_EVAL_INPUT_FLOW'?'입력값을 코드로 실행하지 말고 필요한 숫자 변환이나 스키마 검증을 사용하세요.':'$where 문자열 결합을 피하고 일반적인 값 비교 쿼리와 입력 타입 검증을 사용하세요.'},state.mod);
+      message:ruleId==='JS_SHELL_COMMAND_INPUT_FLOW'?'사용자가 보낸 값이 서버의 shell 명령 문자열에 전달됩니다.':ruleId==='JS_EVAL_INPUT_FLOW'?'사용자가 보낸 값이 서버의 코드 실행에 전달될 수 있습니다.':'사용자가 보낸 값이 데이터베이스의 실행 문자열에 들어갈 수 있습니다.',
+      recommendation:ruleId==='JS_SHELL_COMMAND_INPUT_FLOW'?'요청값을 shell 명령에 결합하지 마세요. 필요한 작업만 서버의 고정된 실행 파일과 shell을 사용하지 않는 인자 배열로 제공하고 입력 형식·허용 작업·실행 권한을 검증하세요. 인자 주입과 운영 환경은 별도 확인이 필요합니다.':ruleId==='JS_EVAL_INPUT_FLOW'?'입력값을 코드로 실행하지 말고 필요한 숫자 변환이나 스키마 검증을 사용하세요.':'$where 문자열 결합을 피하고 일반적인 값 비교 쿼리와 입력 타입 검증을 사용하세요.'},state.mod);
   }
   function queryExecution(queries,origin,node,state,operation,createdAt) {
     for(const query of queries){
@@ -147,6 +149,31 @@ export function nodeServer(api) {
     if(global&&ts.isIdentifier(callee)&&callee.text==='require'&&ts.isCallExpression(node))
       return {value:args.length===1&&literal(args[0])&&typeof args[0].constant==='string'
         ? (state.context.isolate??(v=>v))(dependency(state.mod,args[0].constant)):unknown()};
+    if(callable?.native?.startsWith('node-child-')&&ts.isCallExpression(node)) {
+      const operation=callable.native.slice('node-child-'.length);
+      if(callable.unknown||callable.ref?.unknown){note(state.mod,'NODE_PROCESS_API_ORIGIN_UNKNOWN');return {value:unknown()};}
+      if(['exec','execSync'].includes(operation)) {
+        const option=args[1], callback=operation==='exec'&&option?.tag==='function';
+        const optionsKnown=!option||callback||option.tag==='object'&&!option.unknown&&!option.ref?.unknown;
+        const shell=option?.ref?.properties.get('shell');
+        const contractKnown=optionsKnown&&(!shell||literal(shell)&&typeof shell.constant==='string')&&args.length<=(operation==='exec'?3:2);
+        const command=args[0]??unknown();
+        if(!contractKnown)note(state.mod,'NODE_PROCESS_OPTIONS_UNVERIFIED');
+        observe({...command,unknown:command.unknown||!contractKnown},node,state,'JS_SHELL_COMMAND_INPUT_FLOW','CWE-78','NODE_'+operation.toUpperCase()+'_SHELL');
+      }else{
+        const directArray=node.arguments?.[1]&&ts.isArrayLiteralExpression(node.arguments[1]);
+        const option=args[2];
+        const noShellDefault=directArray&&literal(args[0])&&typeof args[0].constant==='string'
+          &&(!option||operation==='execFile'&&option.tag==='function')&&args.length<=(operation==='execFile'?3:2)
+          &&['execFile','execFileSync'].includes(operation);
+        const location=loc(node,state.mod,'NODE_PROCESS_ARGUMENTS',state.fn);
+        if(!state.context.setup)append(result.nodeUses,{ruleId:'JS_SHELL_COMMAND_INPUT_FLOW',
+          kind:noShellDefault?'ARGV_WITHOUT_SHELL_DECLARED':'PROCESS_CONTRACT_UNKNOWN',operation,location,trace:args[1]?.trace??[],
+          limitations:['EXECUTABLE_ARGUMENT_INJECTION_AND_PLATFORM_NOT_VERIFIED']},state.mod);
+        note(state.mod,noShellDefault?'NODE_PROCESS_ARGV_NOT_WHOLE_OPERATION_SAFETY':'NODE_PROCESS_ARGV_AND_OPTIONS_NOT_MODELED');
+      }
+      return {value:unknown()};
+    }
     if(!callable?.unknown&&!callable?.ref?.unknown&&(callable?.native==='express'||callable?.native==='router')) {
       if(apps.length>=limits.maxResults){note(state.mod,'EXPRESS_APP_LIMIT');return {value:unknown()};}
       const app=object('express-router');app.app=callable.native==='express';app.routes=[];app.mounts=[];if(app.app)apps.push(app);return {value:app};

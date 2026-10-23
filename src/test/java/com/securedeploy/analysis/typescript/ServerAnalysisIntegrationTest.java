@@ -38,6 +38,39 @@ class ServerAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void shellEvidencePersistsAcrossZipAndPublicAndPrivateInputsWithoutLegacyRiskPromotion() throws Exception {
+        String token=signup();
+        var sources=Map.of("package.json","{\"dependencies\":{\"express\":\"4.21.2\"}}", "server.cjs",
+                "const express=require('express');const app=express();const {exec}=require('node:child_process');app.post('/work',(req,res)=>exec('fixed '+req.body.value));");
+        var zip=uploadSources(token,sources);var snapshot=zip.path("serverAnalysis");
+        assertThat(snapshot.path("validatedFindings")).hasSize(1);
+        var finding=snapshot.at("/validatedFindings/0");
+        assertThat(finding.path("ruleId").asText()).isEqualTo("JS_SHELL_COMMAND_INPUT_FLOW");
+        assertThat(finding.path("priority").asText()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(finding.path("comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        assertThat(zip.path("securityScore").asInt()).isEqualTo(100);
+        assertThat(zip.path("vulnerabilityCount").asInt()).isZero();
+        assertThat(zip.at("/resultSummary/flowCandidates").asInt()).isEqualTo(1);
+        var roots=new ArrayList<Path>();
+        for(String name:List.of("shell-public","shell-private")) {
+            Path root=Files.createDirectory(temp.resolve(name));roots.add(root);
+            for(var source:sources.entrySet())Files.writeString(root.resolve(source.getKey()),source.getValue());
+        }
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/shell",roots.get(0),roots.get(0)));
+        var pub=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/shell\",\"scanMode\":\"STANDARD\"}");
+        var metadata=new GitHubSourceSnapshot("fixture","shell","https://github.com/fixture/shell","main","a".repeat(40),"aaaaaaa",null,null,null,null,2,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/shell",roots.get(1),roots.get(1),metadata));
+        var prv=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        for(var response:List.of(pub,prv)) {
+            assertThat(response.path("serverAnalysis")).isEqualTo(snapshot);
+            assertThat(response.path("resultSummary")).isEqualTo(zip.path("resultSummary"));
+            assertThat(response.at("/riskAssessment/prioritySummary")).isEqualTo(zip.at("/riskAssessment/prioritySummary"));
+        }
+        for(var root:roots)assertThat(root).doesNotExist();
+        long id=zip.path("reviewId").asLong();assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(snapshot);
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+    }
+
     @Test void nextBoundariesPersistIdenticallyAcrossZipPublicAndPrivateInputs() throws Exception {
         String token=signup();
         var sources=new LinkedHashMap<>(Map.of("package.json","{\"dependencies\":{\"next\":\"15.3.0\"}}",

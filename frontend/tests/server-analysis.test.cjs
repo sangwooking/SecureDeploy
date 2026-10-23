@@ -5,6 +5,16 @@ const { renderToStaticMarkup } = require('react-dom/server');
 const { ServerAnalysisSection } = require('./load-component.cjs')('ServerAnalysisSection');
 const fixture = require('./server-analysis-fixture.cjs');
 const render = snapshot => renderToStaticMarkup(React.createElement(ServerAnalysisSection, { snapshot }));
+test('shell evidence keeps execution and argv limits separate and offers only manual file navigation',()=>{
+  const data=fixture();data.analyzerVersion='ts-server-v18';
+  const f=data.findings[0];f.ruleId='JS_SHELL_COMMAND_INPUT_FLOW';f.kind='CWE-78';f.source.kind='EXPRESS_BODY';f.sink.kind='NODE_EXEC_SHELL';
+  data.validatedFindings[0]={...data.validatedFindings[0],ruleId:f.ruleId,title:'사용자가 보낸 값이 서버의 명령 문자열에 전달됩니다',evidence:[f]};
+  data.nodeUses=[{ruleId:f.ruleId,kind:'ARGV_WITHOUT_SHELL_DECLARED',operation:'execFile',location:f.sink,trace:[],limitations:['EXECUTABLE_ARGUMENT_INJECTION_AND_PLATFORM_NOT_VERIFIED']}];
+  const html=renderToStaticMarkup(React.createElement(ServerAnalysisSection,{snapshot:data,onEditFile:()=>{}}));
+  for(const text of ['명령 문자열','요청 본문','NOT_COMPARED','이 파일 수정하기'])assert.ok(html.includes(text),text);
+  assert.ok(!html.includes('자동 수정안 만들기'));assert.ok(!html.includes('AI 수정안 만들기'));
+  data.validatedFindings=[];assert.ok(render(data).includes('입력값이 서버의 명령 문자열에 전달되는지'));
+});
 test('structural finding file navigation is opt-in and absent for read-only results',()=>{
   assert.ok(!render(fixture()).includes('이 파일 수정하기'));
   const html=renderToStaticMarkup(React.createElement(ServerAnalysisSection,{snapshot:fixture(),onEditFile:()=>{}}));
