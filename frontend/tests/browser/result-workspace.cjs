@@ -58,7 +58,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
     await page.getByLabel('이메일', { exact: true }).fill('ui@example.invalid');
     await page.getByLabel('비밀번호', { exact: true }).fill('fake-ui-test-password');
     await page.locator('.auth-submit').click();
-    await page.getByRole('link', { name: '프로젝트 열기', exact: true }).click();
+    await page.locator('.workspace-project-row').getByRole('link', { name: result.projectName, exact: true }).click();
     await page.getByRole('navigation', { name: '프로젝트 메뉴' }).getByRole('link', { name: '발견된 문제', exact: true }).click();
     const navigate = async name => {
       await require('./editor-navigation.cjs').resultView(page,name);

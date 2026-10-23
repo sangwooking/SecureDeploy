@@ -35,6 +35,25 @@ test('missing reviews or assessment never become READY or zero assessed risk', (
   assert.ok(render(PriorityCounts, {}).includes('미평가'));
   assert.ok(render(ProjectList, { projects: [] }).includes('새 프로젝트 분석'));
 });
+test('project list contains only linked names and compact saved counts, never duplicate open links or history',()=>{
+  const saved=JSON.stringify(project),html=render(ProjectList,{projects:[project]});
+  assert.equal((html.match(/<a /g)||[]).length,1);
+  assert.ok(html.includes('href="#/projects/7/overview"'));
+  assert.ok(html.includes('&lt;script&gt;private&lt;/script&gt;'));
+  for(const [label,key] of [['반드시 처리','BLOCKING'],['배포 전 확인','REVIEW_REQUIRED'],['수정 권장','SHOULD_FIX']])
+    assert.ok(html.includes(`<dt>${label}</dt><dd>${riskSummary.prioritySummary[key]}</dd>`));
+  for(const removed of ['프로젝트 열기','최근 분석:','총 분석:','배포 전 수정 필요','비교할 이전 분석','참고 점수'])assert.ok(!html.includes(removed),removed);
+  assert.equal(JSON.stringify(project),saved);
+});
+test('compact project counts distinguish zero from absent reviews, absent assessment and partial counts',()=>{
+  for(const latestReview of [null,{...project.latestReview,riskSummary:null}]){
+    const html=render(ProjectList,{projects:[{...project,latestReview}]});
+    assert.equal((html.match(/<dd>미평가<\/dd>/g)||[]).length,3);assert.ok(!html.includes('<dd>0</dd>'));
+  }
+  const html=render(PriorityCounts,{compact:true,assessment:{...riskSummary,prioritySummary:{BLOCKING:0}}});
+  assert.ok(html.includes('<dd>0</dd>'));assert.equal((html.match(/<dd>미평가<\/dd>/g)||[]).length,2);
+  assert.ok(render(PriorityCounts,{assessment:riskSummary}).includes('배포 전 직접 확인'));
+});
 test('progress respects all five saved states and unavailable never masquerades as resolved', () => {
   const counts = { RESOLVED: 3, REMAINING: 2, NEW: 1, CHANGED: 4, UNAVAILABLE: 5 };
   const html = render(ProgressBrief, { progress: { status: 'PARTIAL', baselineReviewId: 1, counts, message: 'fixture' } });

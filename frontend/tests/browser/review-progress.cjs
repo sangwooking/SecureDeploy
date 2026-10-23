@@ -36,7 +36,7 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
     await page.getByLabel('이메일', { exact: true }).fill('test@example.invalid');
     await page.getByLabel('비밀번호', { exact: true }).fill('fake-password-for-browser-test');
     await page.locator('.auth-submit').click();
-    await page.getByRole('link', { name: '프로젝트 열기', exact: true }).click();
+    await page.locator('.workspace-project-row').getByRole('link', { name: current.projectName, exact: true }).click();
     await page.getByRole('navigation', { name: '프로젝트 메뉴' }).getByRole('link', { name: '분석 이력', exact: true }).click();
     await page.getByRole('link', { name: '변화 보기', exact: true }).click();
     const nav = () => page.getByRole('navigation', { name: '분석 결과 메뉴' });

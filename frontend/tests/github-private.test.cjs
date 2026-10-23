@@ -21,10 +21,11 @@ test('new analysis preserves ZIP/public URL and offers connected repositories wi
   for (const text of ['ZIP 업로드', 'GitHub URL 입력', '연결된 GitHub 저장소', '패키지 이름', 'OSV', '비공개 패키지']) assert.ok(html.includes(text));
   assert.ok(!html.includes('checked=""'));
 });
-test('workspace visibility is metadata, never inferred from missing credentials or a failed scan', () => {
+test('compact project list does not infer safety from missing analysis or expose source metadata', () => {
   const project = { projectId: 1, name: 'private-fixture', sourceType: 'GITHUB', githubRepositoryId: 20,
     privateRepository: true, latestReview: null, latestProgress: null, reviewCount: 0 };
   const html = render(ProjectList, { projects: [project] });
-  assert.ok(html.includes('비공개')); assert.ok(html.includes('분석 결과 없음'));
+  assert.ok(!html.includes('비공개'));assert.ok(html.includes('private-fixture'));
+  assert.equal((html.match(/<dd>미평가<\/dd>/g)||[]).length,3);
   assert.ok(!html.includes('배포 가능'));
 });

@@ -48,12 +48,12 @@ const empty = { projectCount: 0, analyzedProjectCount: 0, blockedProjectCount: 0
       assert.equal(await page.getByText('Private fixture A', { exact: true }).count(), 0);
       unavailable = false;
       await page.getByRole('button', { name: '다시 불러오기', exact: true }).click();
-      await page.getByRole('link', { name: '프로젝트 열기', exact: true }).waitFor();
+      await page.locator('.workspace-project-row').getByRole('link', { name: 'Private fixture A', exact: true }).waitFor();
       const nav = page.getByRole('navigation', { name: '앱 메뉴' });
       await nav.getByRole('link', { name: '내 프로젝트', exact: true }).click();
       await page.getByRole('heading', { name: '내 프로젝트 (1)', exact: true }).waitFor();
       noReviews = true;
-      await page.getByRole('link', { name: '프로젝트 열기', exact: true }).click();
+      await page.locator('.workspace-project-row').getByRole('link', { name: 'Private fixture A', exact: true }).click();
       await page.getByText('아직 분석 결과가 없습니다.', { exact: true }).waitFor();
       const projectNav = page.getByRole('navigation', { name: '프로젝트 메뉴' });
       await projectNav.getByRole('link', { name: '분석 이력', exact: true }).click();
@@ -77,7 +77,7 @@ const empty = { projectCount: 0, analyzedProjectCount: 0, blockedProjectCount: 0
       await page.getByLabel('이메일', { exact: true }).fill('b@workspace.test.invalid');
       await page.getByLabel('비밀번호', { exact: true }).fill('Synthetic-workspace-fixture');
       await page.locator('.auth-submit').click();
-      await page.getByRole('heading', { name: 'Fixture B님의 SecureDeploy', exact: true }).waitFor();
+      await page.getByRole('heading', { name: 'Fixture B님의 프로젝트', exact: true }).waitFor();
       release(); await page.waitForTimeout(100);
       assert.equal(await page.getByText('Private fixture A', { exact: true }).count(), 0);
       await page.evaluate(() => { location.hash = '#/projects/7/findings'; });

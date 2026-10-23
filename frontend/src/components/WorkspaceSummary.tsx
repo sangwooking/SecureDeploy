@@ -8,11 +8,11 @@ export function reviewStatus(review?: ReviewHistoryResponse | null): string {
 }
 export function dateLabel(date?: string | null) { return date ? new Date(date).toLocaleString('ko-KR') : '아직 분석하지 않음'; }
 
-export function PriorityCounts({ assessment }: { assessment?: ProgressAssessment | null }) {
-  return <dl className="workspace-counts">
-    <div><dt>반드시 처리</dt><dd>{assessment?.prioritySummary.BLOCKING ?? '미평가'}</dd></div>
-    <div><dt>배포 전 직접 확인</dt><dd>{assessment?.prioritySummary.REVIEW_REQUIRED ?? '미평가'}</dd></div>
-    <div><dt>수정 권장</dt><dd>{assessment?.prioritySummary.SHOULD_FIX ?? '미평가'}</dd></div>
+export function PriorityCounts({ assessment, compact = false }: { assessment?: ProgressAssessment | null; compact?: boolean }) {
+  return <dl className={`workspace-counts${compact ? ' compact-priority-counts' : ''}`}>
+    <div><dt>반드시 처리</dt><dd>{assessment?.prioritySummary?.BLOCKING ?? '미평가'}</dd></div>
+    <div><dt>{compact ? '배포 전 확인' : '배포 전 직접 확인'}</dt><dd>{assessment?.prioritySummary?.REVIEW_REQUIRED ?? '미평가'}</dd></div>
+    <div><dt>수정 권장</dt><dd>{assessment?.prioritySummary?.SHOULD_FIX ?? '미평가'}</dd></div>
   </dl>;
 }
 
@@ -28,12 +28,8 @@ export function ProgressBrief({ progress }: { progress: WorkspaceProject['latest
 export function ProjectList({ projects }: { projects: WorkspaceProject[] }) {
   if (!projects.length) return <div className="empty-state"><p>아직 관리 중인 프로젝트가 없습니다.</p><a href="#/new">새 프로젝트 분석</a></div>;
   return <div className="workspace-project-list">{projects.map(project => <article className="workspace-project-row" key={project.projectId}>
-    <div className="section-heading"><div><h3><a href={projectLink(project.projectId)}>{project.name}</a></h3>
-      <span>{project.sourceType === 'GITHUB' ? 'GitHub' : 'ZIP'}{project.githubRepositoryId != null ? ` · ${project.privateRepository ? '비공개' : '공개'} · 읽기 전용` : ''}</span></div><strong>{reviewStatus(project.latestReview)}</strong></div>
-    <PriorityCounts assessment={project.latestReview?.riskSummary} />
-    <p>최근 분석: {dateLabel(project.latestReview?.createdAt)} · 총 분석: {project.reviewCount}회</p>
-    <ProgressBrief progress={project.latestProgress} />
-    <a href={projectLink(project.projectId)}>프로젝트 열기</a>
+    <h3><a href={projectLink(project.projectId)}>{project.name}</a></h3>
+    <PriorityCounts assessment={project.latestReview?.riskSummary} compact />
   </article>)}</div>;
 }
 
