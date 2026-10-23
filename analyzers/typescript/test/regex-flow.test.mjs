@@ -13,6 +13,7 @@ for(const [name,body] of [
  ['overwrite',`const m=req.query.url.match(/(.*)/);if(m){let link=m[1];link='fixed';launch('convert '+link);}`],
  ['restricted-token',`const m=req.query.url.match(/^([A-Za-z0-9_]+)$/);if(m)launch('convert '+m[1]);`],
  ['fixed-input',`const m='static'.match(/(.*)/);if(m)launch('convert '+m[1]);`],
+ ['fixed-capture',`const m=req.query.url.match(/^(fixed)$/);if(m)launch(m[1]);`],
  ['no-null-check',`launch(req.query.url.match(/(.*)/)[1]);`],
  ['global-match',`const m=req.query.url.match(/(.*)/g);if(m)launch(m[1]);`],
  ['dynamic-pattern',`const m=req.query.url.match(new RegExp(req.query.pattern));if(m)launch(m[1]);`],
@@ -25,6 +26,7 @@ for(const [name,body] of [
  ['stale-match',`let text=req.query.url;const re=/(.*)/;if(text.match(re)){text=clean(text);launch(text.match(re)[1]);}`],
 ])test('regex does not assert an unsupported or safe command: '+name,()=>assert.equal(count(run(body)),0));
 test('restricted capture is not a safe attacker-selected executable',()=>assert.equal(count(run(`const m=req.query.url.match(/^([A-Za-z]+)$/);if(m)launch(m[1]);`)),1));
+test('a character class is a choice, not a concatenated fixed string',()=>assert.equal(count(run(`const m=req.query.url.match(/^([ab])$/);if(m)launch(m[1]);`)),1));
 test('regex planning never executes patterns and consumes existing budgets',()=>{
  const r=run(`const m=req.query.url.match(/((a+)+)$/);if(m)launch('convert '+m[1]);`);
  assert.equal(count(r),0);

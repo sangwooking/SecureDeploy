@@ -9,17 +9,18 @@ export function regexPlan(text,charge) {
     const captures=[];let nodes=0;
     function inspect(n,depth=0,optional=false){
       charge();if(++nodes>256||depth>16)throw Error('REGEX_LIMIT');
-      if(n.type==='Character')return {restricted:/^[A-Za-z0-9_./:-]$/.test(String.fromCodePoint(n.value)),broad:false};
+      if(n.type==='Character')return {restricted:/^[A-Za-z0-9_./:-]$/.test(String.fromCodePoint(n.value)),broad:false,fixed:ast.flags.ignoreCase?undefined:String.fromCodePoint(n.value)};
       if(n.type==='CharacterSet')return {restricted:!n.negate&&['digit','word'].includes(n.kind),broad:n.kind==='any'};
       if(n.type==='CharacterClassRange')return {restricted:n.min.value<=n.max.value&&n.max.value-n.min.value<=127&&Array.from({length:n.max.value-n.min.value+1},(_,i)=>String.fromCodePoint(n.min.value+i)).every(c=>/^[A-Za-z0-9_./:-]$/.test(c)),broad:false};
-      if(n.type==='Assertion'&&['start','end'].includes(n.kind))return {restricted:true,broad:false};
-      if(n.type==='Quantifier')return inspect(n.element,depth+1,optional||n.min===0);
+      if(n.type==='Assertion'&&['start','end'].includes(n.kind))return {restricted:true,broad:false,fixed:''};
+      if(n.type==='Quantifier'){const part=inspect(n.element,depth+1,optional||n.min===0);return {...part,fixed:undefined};}
       const children=n.alternatives??n.elements;
       if(!children||!['Pattern','Alternative','Group','CapturingGroup','CharacterClass'].includes(n.type)||n.negate)throw Error('REGEX_UNSUPPORTED');
       let slot;
       if(n.type==='CapturingGroup'){slot={optional};captures.push(slot);if(captures.length>16)throw Error('REGEX_LIMIT');}
       const parts=children.map(c=>inspect(c,depth+1,optional||!!n.alternatives&&children.length>1));
-      const summary={restricted:parts.every(p=>p.restricted),broad:parts.some(p=>p.broad)};
+      const summary={restricted:parts.every(p=>p.restricted),broad:parts.some(p=>p.broad),
+        fixed:n.type!=='CharacterClass'&&parts.every(p=>p.fixed!==undefined)&&(!n.alternatives||parts.length===1)?parts.map(p=>p.fixed).join(''):undefined};
       if(slot)Object.assign(slot,summary);
       return summary;
     }
@@ -66,6 +67,7 @@ export function regexFlow({ts,unwrap,expr,note,tick,loc,step,constant,unknown}) 
     const m=base.regexMatch,slot=m?.plan?.captures?.[Number(key)];
     const supported=/^(?:0|[1-9][0-9]?)$/.test(key)&&slot&&!slot.optional&&m.nonNull&&!base.unknown;
     if(!supported)note(state.mod,'REGEX_CAPTURE_UNVERIFIED');
+    if(supported&&slot.fixed!==undefined)return constant(slot.fixed);
     const v=m?.input??unknown();
     return step({...v,tag:'regex-capture',regexMatches:undefined,regexMatch:undefined,
       unknown:!supported||v.unknown||!slot?.restricted&&!slot?.broad,
