@@ -32,7 +32,14 @@ export interface PatchProvider { name: string; model: string; available: boolean
 export interface AiPatch { id: string; state: string; fileId: string; findingId: number; ruleId: string; reviewId: number;
   sourceRevision: string; revision: number; originalHash: string; currentHash: string; startLine: number;
   before: string; after: string | null; diff: string | null; provider: PatchProvider; explanation: string;
-  verificationSteps: string[]; limitations: string[]; flowFindingId?: string | null }
+  verificationSteps: string[]; limitations: string[]; flowFindingId?: string | null; method?: 'AI_ASSISTED' | 'DETERMINISTIC_FIX' }
+export interface FixOption { method: 'DETERMINISTIC_FIX' | 'AI_ASSISTED' | 'MANUAL_REVIEW' | 'UNSUPPORTED'; reason: string }
+export const fixOption = (w: EditingWorkspace, file: EditingFile, content: EditingContent, findingId: number, flowFindingId?: string) => call<FixOption>(`/${encodeURIComponent(w.id)}/fix-options`, {
+  method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ fileId: file.id, findingId, flowFindingId, revision: w.revision, originalHash: file.originalHash, currentHash: content.currentHash }),
+});
+export const prepareDeterministicPatch = (w: EditingWorkspace, file: EditingFile, content: EditingContent, flowFindingId: string) => call<AiPatch>(`/${encodeURIComponent(w.id)}/deterministic-patches`, {
+  method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ fileId: file.id, findingId: 0, flowFindingId, revision: w.revision, originalHash: file.originalHash, currentHash: content.currentHash }),
+});
 export const patchProvider = () => call<PatchProvider>('/patch-provider');
 export const listAiPatches = (id: string) => call<AiPatch[]>(`/${encodeURIComponent(id)}/patches`);
 export const prepareAiPatch = (w: EditingWorkspace, file: EditingFile, content: EditingContent, findingId: number, flowFindingId?: string) => call<AiPatch>(`/${encodeURIComponent(w.id)}/patches`, {

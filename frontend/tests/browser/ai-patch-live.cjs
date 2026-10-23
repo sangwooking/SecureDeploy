@@ -19,7 +19,7 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173',api='http://127.0
    await page.route('**/*',route=>{const url=new URL(route.request().url());if(url.pathname.startsWith('/api/'))return route.continue({url:api+url.pathname+url.search});if(url.origin===new URL(origin).origin)return route.continue();outbound.push(url.origin);return route.abort();});
    await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);
    await page.getByRole('button',{name:'수정 작업 공간 열기',exact:true}).click();await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).click();
-   await page.getByRole('button',{name:'application.properties',exact:true}).click();await pane(page,'수정 근거 · AI');const panel=page.getByLabel('AI 보안 수정안',{exact:true});
+   await page.getByRole('button',{name:'application.properties',exact:true}).click();await pane(page,'수정 근거 · AI');const panel=page.getByLabel('보안 수정안',{exact:true});
    await panel.getByLabel('수정할 분석 항목').selectOption({label:'DEBUG_ENABLED · 원본 1행'});
    await panel.getByRole('button',{name:'AI 수정안 전송 범위 확인'}).click();await panel.getByText('코드 전송 동의 대기',{exact:true}).waitFor();
    assert.ok(await panel.getByRole('button',{name:'동의한 코드로 AI 수정안 생성'}).isDisabled());

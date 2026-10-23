@@ -31,7 +31,7 @@ try{for(const [width,email] of [[1440,'editing-browser'],[1024,'scan-1440'],[768
  await page.locator('#source-code').fill('debug=true\n# unsaved\n');page.once('dialog',d=>d.dismiss());await page.getByRole('link',{name:'대시보드',exact:true}).click();
  await page.waitForTimeout(100);assert.ok((await page.locator('#source-code').inputValue()).includes('# unsaved'));
  await page.locator('#source-code').fill('debug=true\nserver.error.include-stacktrace=always\n');
- await pane(page,'수정 근거 · AI');const ai=page.getByLabel('AI 보안 수정안',{exact:true});await ai.getByLabel('수정할 분석 항목').selectOption({label:'DEBUG_ENABLED · 원본 1행'});
+ await pane(page,'수정 근거 · AI');const ai=page.getByLabel('보안 수정안',{exact:true});await ai.getByLabel('수정할 분석 항목').selectOption({label:'DEBUG_ENABLED · 원본 1행'});
  await ai.getByRole('button',{name:'AI 수정안 전송 범위 확인'}).click();assert.ok(await ai.getByRole('button',{name:'동의한 코드로 AI 수정안 생성'}).isDisabled());
  await ai.getByLabel('이 코드 범위의 외부 전송과 유료 호출 가능성에 동의합니다.').check();await ai.getByRole('button',{name:'동의한 코드로 AI 수정안 생성'}).click();await ai.getByText('제안 · 미적용',{exact:true}).waitFor();
  await page.screenshot({path:`/private/tmp/sd-ui-after-ai-${width}.png`});

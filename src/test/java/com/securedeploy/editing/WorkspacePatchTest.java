@@ -69,7 +69,41 @@ class WorkspacePatchTest {
         doAnswer(i->List.of(new SourceArchive.Entry(path,input.getBytes(StandardCharsets.UTF_8),false,0100644))).when(sources).github(anyLong(),any());
         workspace=workspaces.create(4,null);file=workspace.files().get(0);
     }
-    WorkspacePatch.View prepareDeno(){var content=workspaces.content(workspace.id(),file.id());return patches.prepare(workspace.id(),new WorkspacePatch.Prepare(file.id(),0,workspace.revision(),file.originalHash(),content.currentHash(),review.getServerAnalysis().validatedFindings().get(0).findingId()));}
+    WorkspacePatch.Prepare denoRequest(){var content=workspaces.content(workspace.id(),file.id());return new WorkspacePatch.Prepare(file.id(),0,workspace.revision(),file.originalHash(),content.currentHash(),review.getServerAnalysis().validatedFindings().get(0).findingId());}
+    WorkspacePatch.View prepareDeno(){return patches.prepare(workspace.id(),denoRequest());}
+    @Test void deterministicProposalWorksWithoutProviderAndRequiresExplicitCompatibleApproval() throws Exception {
+        deno();properties.setProvider(AiProviderType.TEMPLATE);when(provider.isAvailable()).thenReturn(false);
+        var request=denoRequest();
+        for(int i=0;i<4;i++)assertEquals("DETERMINISTIC_FIX",workspaces.fixOption(workspace.id(),request,patches.provider()).method());
+        assertTrue(workspaces.patches(workspace.id()).isEmpty());
+        var p=workspaces.prepareDeterministicPatch(workspace.id(),request);
+        assertEquals("PROPOSED",p.state());assertEquals("DETERMINISTIC_FIX",p.method());
+        assertEquals("DETERMINISTIC",p.provider().name());assertEquals("{status: 'ok'}",p.after());
+        assertEquals(input,workspaces.content(workspace.id(),file.id()).text());assertEquals(1,workspaces.get(workspace.id()).revision());
+        assertThrows(RuntimeException.class,()->workspaces.applyPatch(workspace.id(),p.id(),new WorkspacePatch.Decision(p.revision(),p.currentHash(),false,true)));
+        assertThrows(RuntimeException.class,()->workspaces.applyPatch(workspace.id(),p.id(),decision(p)));
+        var applied=workspaces.applyPatch(workspace.id(),p.id(),new WorkspacePatch.Decision(p.revision(),p.currentHash(),true,true));
+        assertEquals(2,applied.revision());assertEquals(input.replace(", diagnostic: Deno.env.get('API_SECRET')",""),workspaces.content(workspace.id(),file.id()).text());
+        assertThrows(RuntimeException.class,()->workspaces.applyPatch(workspace.id(),p.id(),new WorkspacePatch.Decision(p.revision(),p.currentHash(),true,true)));
+        verify(provider,never()).generateWorkspacePatch(any());verifyNoInteractions(usage);
+    }
+    @Test void deterministicRejectStaleOwnershipAndExpiryKeepSourceUnchanged() throws Exception {
+        deno();var p=workspaces.prepareDeterministicPatch(workspace.id(),denoRequest());
+        user.set(2);assertThrows(RuntimeException.class,()->workspaces.patch(workspace.id(),p.id()));
+        assertThrows(RuntimeException.class,()->workspaces.prepareDeterministicPatch(workspace.id(),denoRequest()));user.set(1);
+        workspaces.rejectPatch(workspace.id(),p.id());assertEquals(input,workspaces.content(workspace.id(),file.id()).text());
+        assertThrows(RuntimeException.class,()->workspaces.applyPatch(workspace.id(),p.id(),new WorkspacePatch.Decision(p.revision(),p.currentHash(),true,true)));
+        var stale=workspaces.prepareDeterministicPatch(workspace.id(),denoRequest());
+        workspaces.save(workspace.id(),file.id(),new EditingWorkspaceService.Change(1,file.originalHash(),input+"// user edit\n"),false);
+        assertEquals("STALE",workspaces.patch(workspace.id(),stale.id()).state());
+        assertThrows(RuntimeException.class,()->workspaces.applyPatch(workspace.id(),stale.id(),new WorkspacePatch.Decision(stale.revision(),stale.currentHash(),true,true)));
+        now.set(now.get().plusSeconds(1801));assertThrows(RuntimeException.class,()->workspaces.patch(workspace.id(),stale.id()));
+        verify(provider,never()).generateWorkspacePatch(any());verifyNoInteractions(usage);
+    }
+    @Test void deterministicEndpointDoesNotBroadenPropertiesSupport() {
+        var p=prepare();assertEquals("AI_ASSISTED",p.method());
+        assertThrows(RuntimeException.class,()->workspaces.prepareDeterministicPatch(workspace.id(),new WorkspacePatch.Prepare(file.id(),77,1,file.originalHash(),file.originalHash())));
+    }
     WorkspacePatch.Output denoOutput(WorkspacePatch.Prompt prompt,String replacement)throws Exception {
         var d=mapper.readTree(prompt.untrustedData());return new WorkspacePatch.Output("PATCH",d.path("fileId").asText(),d.path("startLine").asInt(),d.path("expectedHash").asText(),replacement,
                 "응답 필드 제거의 API 호환성을 확인하세요.",List.of("클라이언트 테스트 후 재검사하세요."),List.of("운영은 미확인입니다."));

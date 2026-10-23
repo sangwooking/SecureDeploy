@@ -140,7 +140,8 @@ public class EditingWorkspaceService {
         if (file.edit != null) Arrays.fill(file.edit, (byte) 0);
         file.edit = bytes; state.revision++;
         file.changeOrigin = bytes == null ? "UNCHANGED" : state.patches.values().stream()
-                .anyMatch(p -> p.fileId.equals(file.id) && "ACCEPTED".equals(p.state)) ? "MANUAL_AFTER_AI" : "MANUAL";
+                .anyMatch(p -> p.fileId.equals(file.id) && "ACCEPTED".equals(p.state)&&p.method().equals("AI_ASSISTED")) ? "MANUAL_AFTER_AI"
+                : state.patches.values().stream().anyMatch(p -> p.fileId.equals(file.id)&&"ACCEPTED".equals(p.state)) ? "MANUAL_AFTER_DETERMINISTIC" : "MANUAL";
         return describe(state);
     }
     public synchronized Difference diff(String id, String fileId) throws IOException {
@@ -148,14 +149,35 @@ public class EditingWorkspaceService {
         return new Difference(state.revision, file.id, file.hash, patch(file));
     }
     public synchronized WorkspacePatch.View preparePatch(String id, WorkspacePatch.Prepare request, WorkspacePatch.Provider provider) {
+        return preparePatch(id,request,provider,true);
+    }
+    public synchronized WorkspacePatch.FixOption fixOption(String id,WorkspacePatch.Prepare request,WorkspacePatch.Provider provider) {
+        var state=owned(id);var file=file(state,request.fileId());
+        if(!"EXACT_GIT_COMMIT".equals(state.identity))return new WorkspacePatch.FixOption("MANUAL_REVIEW","원본 일치가 검증되지 않아 수동 편집 후 새 분석이 필요합니다.");
+        if(!(file.original.path().endsWith(".properties")||file.original.path().endsWith(".ts")))
+            return new WorkspacePatch.FixOption("UNSUPPORTED","이 파일 유형의 수정안 생성은 지원하지 않습니다.");
+        try {
+            preparePatch(id,request,request.flowFindingId()!=null?WorkspacePatch.DETERMINISTIC:provider,false);
+            return new WorkspacePatch.FixOption(request.flowFindingId()!=null?"DETERMINISTIC_FIX":"AI_ASSISTED",
+                    request.flowFindingId()!=null?"정적 근거로 응답 필드 제거 제안을 만들 수 있습니다. 외부 AI 전송·비용은 없습니다.":"지원되는 설정이지만 현재 제품의 제안 생성은 별도 AI 동의가 필요합니다.");
+        }catch(com.securedeploy.global.error.SecureDeployException e){
+            if(e.getStatus()!=HttpStatus.UNPROCESSABLE_ENTITY)throw e;
+            return new WorkspacePatch.FixOption("MANUAL_REVIEW","수정 범위의 정적 근거를 확인하지 못했습니다. 직접 검토해 주세요.");
+        }
+    }
+    public synchronized WorkspacePatch.View prepareDeterministicPatch(String id,WorkspacePatch.Prepare request) {
+        if(request.flowFindingId()==null)throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"자동 수정안은 지원되는 Deno 환경값 응답 Finding만 허용합니다.");
+        return preparePatch(id,request,WorkspacePatch.DETERMINISTIC,true);
+    }
+    private WorkspacePatch.View preparePatch(String id, WorkspacePatch.Prepare request, WorkspacePatch.Provider provider,boolean retain) {
         var state=owned(id);
         if(!"EXACT_GIT_COMMIT".equals(state.identity))throw fail(HttpStatus.CONFLICT,"원본 일치 미검증 ZIP에는 AI 패치를 연결할 수 없습니다. 수동 편집 후 새 분석이 필요합니다.");
-        if(!provider.available())throw fail(HttpStatus.SERVICE_UNAVAILABLE,"AI 수정 Provider가 준비되지 않았습니다. 수동 편집과 기존 가이드는 계속 사용할 수 있습니다.");
+        if(retain&&!provider.available())throw fail(HttpStatus.SERVICE_UNAVAILABLE,"AI 수정 Provider가 준비되지 않았습니다. 수동 편집과 기존 가이드는 계속 사용할 수 있습니다.");
         var file=file(state,request.fileId());
         if(!file.editable()||request.revision()!=state.revision||!file.hash.equals(request.originalHash())
                 || !SourceArchive.hash(file.current()).equals(request.currentHash()))throw fail(HttpStatus.CONFLICT,"현재 파일 해시 또는 revision이 다릅니다. 다시 불러와 주세요.");
         var review=reviews.findAccessibleReviewWithVulnerabilities(state.review,"분석 결과에 접근할 수 없습니다.");
-        if(request.flowFindingId()!=null)return prepareResponsePatch(state,file,request,provider,review);
+        if(request.flowFindingId()!=null)return prepareResponsePatch(state,file,request,provider,review,retain);
         var finding=review.getVulnerabilities().stream().filter(v->v.getId()!=null&&v.getId()==request.findingId()).findFirst()
                 .orElseThrow(()->fail(HttpStatus.NOT_FOUND,"연결된 Finding을 확인할 수 없습니다."));
         if(!file.original.path().equals(finding.getFilePath()))throw fail(HttpStatus.CONFLICT,"Finding과 현재 파일의 연결을 확인할 수 없습니다.");
@@ -171,13 +193,13 @@ public class EditingWorkspaceService {
             String candidate=current.substring(0,target.offset())+target.after()+current.substring(target.offset()+target.before().length());
             String diff=patch(file.original.path(),file.current(),editedBytes(file,candidate),0);
             var session=new WorkspacePatch.Session(request,finding.getRuleId(),state.source,request.currentHash(),target.line(),target.offset(),target.before(),target.after(),diff,provider);
-            state.patches.put(session.id,session);return patchView(state,session,false);
+            if(retain)state.patches.put(session.id,session);return patchView(state,session,false);
         }catch(IllegalArgumentException | IOException unsupported){throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"단순한 상수 설정 한 줄의 위치와 변경 근거를 확인할 수 없습니다. 민감정보·중복 설정·동적 값은 전송하지 않으며 수동 검토가 필요합니다.");}
     }
     public synchronized List<WorkspacePatch.View> patches(String id) {
         var state=owned(id);return state.patches.values().stream().map(p->{refreshPatch(state,p);return patchView(state,p,false);}).toList();
     }
-    private WorkspacePatch.View prepareResponsePatch(State state,StoredFile file,WorkspacePatch.Prepare request,WorkspacePatch.Provider provider,ReviewEntity review) {
+    private WorkspacePatch.View prepareResponsePatch(State state,StoredFile file,WorkspacePatch.Prepare request,WorkspacePatch.Provider provider,ReviewEntity review,boolean retain) {
         if(request.findingId()!=0||request.flowFindingId().length()>200||state.patches.size()>=3)throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"지원 범위 또는 수정 제안 한도를 확인해 주세요.");
         try {
             if(!file.original.path().endsWith(".ts")||!file.hash.equals(request.currentHash()))throw new IllegalArgumentException();
@@ -204,15 +226,23 @@ public class EditingWorkspaceService {
                     "서버 환경값 조회에서 HTTP 응답으로 전달되는 필드만 대상으로 합니다. 실제 비밀값·운영 인증·배포 상태·전체 안전성은 미확인입니다.",
                     "현재 파일이 원본과 같은 경우만 지원하며 복잡한 helper·별칭·전체 환경값 응답은 수동 검토가 필요합니다. 구조 비교는 NOT_COMPARED입니다.");
             session.checks=List.of("삭제될 응답 필드의 API 사용처와 기능 영향을 확인하세요.","승인 후 STANDARD 재검사에서 후보·새 경고·Coverage를 확인하세요.");
-            state.patches.put(session.id,session);return patchView(state,session,false);
-        }catch(RuntimeException unsupported){throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"환경값 응답 필드만 바꿀 수 있는 정적 근거를 확인하지 못했습니다. 민감정보·전체 응답·동적 코드·변경된 파일은 전송하지 않으며 수동 검토가 필요합니다.");}
+            if(retain&&WorkspacePatch.DETERMINISTIC.equals(provider)) {
+                responsePatches.check(contract,target.suggestedReplacement());
+                String candidate=source.substring(0,target.offset())+target.suggestedReplacement()+source.substring(target.offset()+target.before().length());
+                String diff=patch(file.original.path(),file.current(),editedBytes(file,candidate),0);
+                if(diff.length()>128*1024)throw new IllegalArgumentException();
+                session.after=target.suggestedReplacement();session.diff=diff;session.state="PROPOSED";
+                session.explanation="확인된 서버 환경값 응답 필드만 제거하는 자동 수정안입니다. 외부 AI 전송·비용은 없으며 승인 전에는 파일을 바꾸지 않습니다. API 사용처의 호환성을 확인해 주세요.";
+            }
+            if(retain)state.patches.put(session.id,session);return patchView(state,session,false);
+        }catch(RuntimeException | IOException unsupported){throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"환경값 응답 필드만 바꿀 수 있는 정적 근거를 확인하지 못했습니다. 민감정보·전체 응답·동적 코드·변경된 파일은 전송하지 않으며 수동 검토가 필요합니다.");}
     }
     public synchronized WorkspacePatch.View patch(String id,String proposal) {
         var state=owned(id);return patchView(state,patchOwned(state,proposal),false);
     }
     synchronized WorkspacePatch.View beginPatch(String id,String proposal,WorkspacePatch.Consent consent,WorkspacePatch.Provider provider) {
         var state=owned(id);var session=patchOwned(state,proposal);
-        if(!"APPROVAL_REQUIRED".equals(session.state)||consent==null||!consent.consented()||consent.revision()!=session.revision
+        if(session.method().equals("DETERMINISTIC_FIX")||!"APPROVAL_REQUIRED".equals(session.state)||consent==null||!consent.consented()||consent.revision()!=session.revision
                 ||!session.currentHash.equals(consent.currentHash())||!session.provider.equals(provider))throw fail(HttpStatus.CONFLICT,"전송 동의가 없거나 코드·Provider·revision이 변경되었습니다. 새 제안을 준비해 주세요.");
         session.state="GENERATING";session.explanation="동의한 최소 코드 범위만 전송합니다. 아직 파일은 변경되지 않았습니다.";
         return patchView(state,session,true);
@@ -242,7 +272,7 @@ public class EditingWorkspaceService {
     public synchronized WorkspacePatch.View rejectPatch(String id,String proposal) {
         var state=owned(id);var session=patchOwned(state,proposal);
         if(!Set.of("APPROVAL_REQUIRED","GENERATING","PROPOSED","NEEDS_REVIEW").contains(session.state))throw fail(HttpStatus.CONFLICT,"이미 종료된 제안입니다.");
-        session.state="REJECTED";session.explanation="사용자가 제안을 거절했습니다. 파일은 변경되지 않았습니다. 이미 전송한 외부 요청의 처리·요금 취소는 보증하지 않습니다.";
+        session.state="REJECTED";session.explanation=session.method().equals("DETERMINISTIC_FIX")?"사용자가 자동 수정안을 거절했습니다. 파일 변경·외부 전송·AI 비용은 없습니다.":"사용자가 제안을 거절했습니다. 파일은 변경되지 않았습니다. 이미 전송한 외부 요청의 처리·요금 취소는 보증하지 않습니다.";
         return patchView(state,session,false);
     }
     public synchronized Workspace applyPatch(String id,String proposal,WorkspacePatch.Decision decision) {
@@ -253,7 +283,7 @@ public class EditingWorkspaceService {
         if(!current.regionMatches(session.offset,session.before,0,session.before.length()))throw fail(HttpStatus.CONFLICT,"예상한 변경 위치가 다릅니다.");
         String updated=current.substring(0,session.offset)+session.after+current.substring(session.offset+session.before.length());
         var next=save(id,file.id,new Change(state.revision,file.hash,updated),false);
-        session.state="ACCEPTED";file.changeOrigin="AI_APPROVED";return next;
+        session.state="ACCEPTED";file.changeOrigin=session.method().equals("DETERMINISTIC_FIX")?"DETERMINISTIC_APPROVED":"AI_APPROVED";return next;
     }
     private WorkspacePatch.Session patchOwned(State state,String id) {
         var session=state.patches.get(id);if(session==null)throw fail(HttpStatus.NOT_FOUND,"수정 제안에 접근할 수 없습니다.");
@@ -268,7 +298,7 @@ public class EditingWorkspaceService {
     private WorkspacePatch.View patchView(State state,WorkspacePatch.Session p,boolean internal) {
         boolean show=internal||Set.of("PROPOSED","ACCEPTED").contains(p.state);
         return new WorkspacePatch.View(p.id,p.state,p.fileId,p.findingId,p.rule,state.review,p.source,p.revision,p.originalHash,p.currentHash,p.line,
-                p.before,show?p.after:null,show?p.diff:null,p.provider,p.explanation,p.checks,p.limits,p.flowFindingId);
+                p.before,show?p.after:null,show?p.diff:null,p.provider,p.explanation,p.checks,p.limits,p.flowFindingId,p.method());
     }
     public synchronized Download download(String id, String format, Approval approval) throws IOException {
         var state = owned(id);

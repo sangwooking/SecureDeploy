@@ -21,3 +21,10 @@ test('Deno response patches require a structural identity and separate API impac
  for(const value of ['TS_SENSITIVE_DATA_EXPOSURE','HTTP_RESPONSE','compatibilityAccepted','API 호환성','객체 응답 코드','파일 전체가 아닙니다'])assert.ok(source.includes(value),value);
  assert.ok(api.includes('flowFindingId'));assert.ok(api.includes('responseContractAcknowledged: !!p.flowFindingId'));
 });
+test('deterministic generation is independent from AI availability and has no external consent step',()=>{
+ const source=fs.readFileSync('src/components/AiPatchPanel.tsx','utf8'),api=fs.readFileSync('src/api/editingApi.ts','utf8');
+ for(const value of ['DETERMINISTIC_FIX','AI_ASSISTED','MANUAL_REVIEW','자동 수정안 만들기','외부 AI 전송·비용 없음',"!deterministic&&selected.state === 'APPROVAL_REQUIRED'",'검토한 자동 수정안 적용'])assert.ok(source.includes(value),value);
+ assert.ok(api.includes('/deterministic-patches'));assert.ok(api.includes('/fix-options'));
+ assert.ok(source.includes('content.revision===workspace.revision'));assert.ok(source.includes('content.fileId===file.id'));
+ assert.ok(!source.match(/!provider\?\.available\s*\?/));
+});

@@ -14,6 +14,12 @@ test('workspace comparison identifies a revision, not a missing or newly pushed 
   assert.ok(html.includes('수정본은 새 GitHub commit이 아닙니다'));assert.ok(html.includes('원본 버전과 수정 revision·입력 해시'));
   assert.ok(!html.includes('현재 commit 정보 없음'));assert.ok(html.includes('NOT_COMPARED'));assert.equal(JSON.stringify(result),before);
 });
+test('approved deterministic edits are not mislabeled as AI output',()=>{
+ const result=fixture();result.comparison.workspaceScan={revision:2,originalReviewId:1,baselineVerified:true,sourceRevision:'a'.repeat(40),inputHash:'b'.repeat(64),analyzerVersion:'fixture',files:[
+  {fileId:'one',path:'index.ts',changed:true,changeOrigin:'DETERMINISTIC_APPROVED',originalHash:'c'.repeat(64),currentHash:'d'.repeat(64)},
+  {fileId:'two',path:'other.ts',changed:true,changeOrigin:'MANUAL_AFTER_DETERMINISTIC',originalHash:'c'.repeat(64),currentHash:'d'.repeat(64)}]};
+ const html=render(result);assert.ok(html.includes('승인된 자동 수정'));assert.ok(html.includes('자동 수정 적용 후 수동 변경'));assert.ok(!html.includes('승인된 AI 수정'));
+});
 
 test('saved deployment assessments precede reference score and resolved entries have no remediation', () => {
   const result = fixture(), previous = JSON.stringify(result), html = render(result);

@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 public final class WorkspacePatch {
     private WorkspacePatch() { }
     public record Provider(String name, String model, boolean available) { }
+    static final Provider DETERMINISTIC = new Provider("DETERMINISTIC", "AST_FIELD_REMOVAL_V1", true);
+    public record FixOption(String method, String reason) { }
     public record Prepare(String fileId, long findingId, long revision, String originalHash, String currentHash,String flowFindingId) {
         public Prepare(String fileId,long findingId,long revision,String originalHash,String currentHash){this(fileId,findingId,revision,originalHash,currentHash,null);}
     }
@@ -22,7 +24,7 @@ public final class WorkspacePatch {
     public record View(String id, String state, String fileId, long findingId, String ruleId, long reviewId,
                        String sourceRevision, long revision, String originalHash, String currentHash,
                        int startLine, String before, String after, String diff, Provider provider,
-                       String explanation, List<String> verificationSteps, List<String> limitations,String flowFindingId) { }
+                       String explanation, List<String> verificationSteps, List<String> limitations,String flowFindingId,String method) { }
     static final class Session {
         final String id = UUID.randomUUID().toString();
         final String fileId, rule, source, originalHash, currentHash, before;
@@ -32,6 +34,7 @@ public final class WorkspacePatch {
         final long findingId, revision;
         final int line, offset;
         final Provider provider;
+        String method(){return DETERMINISTIC.equals(provider)?"DETERMINISTIC_FIX":"AI_ASSISTED";}
         String state="APPROVAL_REQUIRED", explanation="코드는 전송되지 않았습니다.";
         List<String> checks=List.of(), limits=List.of("저장소 설정의 변경 제안입니다. 운영 적용·기능 호환성·취약점 해결은 검증하지 않았습니다.");
         Session(Prepare request, String rule, String source, String currentHash, int line, int offset,

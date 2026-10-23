@@ -69,7 +69,9 @@ export function responsePatch(input){
     const updated=source.slice(0,offset)+replacement+source.slice(target.end);
     if(ts.createSourceFile('updated.ts',updated,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS).parseDiagnostics.length)fail();
   }
-  return {before,offset,line,removed};
+  const suggestedReplacement='{'+retained.join(', ')+'}';
+  object(suggestedReplacement);
+  return {before,offset,line,removed,suggestedReplacement};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
   try{let chunks=[],size=0;for await(const c of process.stdin){size+=c.length;if(size>150000)fail();chunks.push(c);}

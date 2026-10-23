@@ -15,7 +15,7 @@ public class ResponsePatchValidator {
     private final ObjectMapper mapper=new ObjectMapper();
     public ResponsePatchValidator(TypeScriptAnalysisProperties properties){this.properties=properties;}
     record Contract(String source,ServerAnalysisSnapshot.Location sink,List<ServerAnalysisSnapshot.Location> sources) { }
-    record Target(String before,int offset,int line,List<String> removed) { }
+    record Target(String before,int offset,int line,List<String> removed,String suggestedReplacement) { }
     Target check(Contract contract,String replacement) {
         if(!properties.isEnabled()||!CAPACITY.tryAcquire())throw new IllegalArgumentException();
         Process process=null;var io=Executors.newFixedThreadPool(2,r->{var t=new Thread(r,"response-patch-parser");t.setDaemon(true);return t;});
@@ -34,7 +34,8 @@ public class ResponsePatchValidator {
             writer.get(1,TimeUnit.SECONDS);byte[] output=reader.get(1,TimeUnit.SECONDS);
             if(process.exitValue()!=0||output.length>16384)throw new IllegalArgumentException();
             var result=mapper.readValue(output,Target.class);
-            if(result.before()==null||result.before().length()>4096||result.offset()<0||result.line()<1||result.removed()==null||result.removed().isEmpty())throw new IllegalArgumentException();
+            if(result.before()==null||result.before().length()>4096||result.offset()<0||result.line()<1||result.removed()==null||result.removed().isEmpty()
+                    ||result.suggestedReplacement()==null||result.suggestedReplacement().length()>4096)throw new IllegalArgumentException();
             return result;
         }catch(InterruptedException e){Thread.currentThread().interrupt();throw new IllegalArgumentException();}
         catch(Exception e){throw new IllegalArgumentException();}

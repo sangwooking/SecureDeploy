@@ -18,7 +18,7 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173',api='http://127.0
    await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);
    await page.getByRole('button',{name:'수정 작업 공간 열기',exact:true}).click();await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).click();
    await page.getByRole('button',{name:'application.properties',exact:true}).click();
-   await pane(page,'수정 근거 · AI');const ai=page.getByLabel('AI 보안 수정안',{exact:true}),scan=page.getByLabel('수정본 보안 재검사',{exact:true});
+   await pane(page,'수정 근거 · AI');const ai=page.getByLabel('보안 수정안',{exact:true}),scan=page.getByLabel('수정본 보안 재검사',{exact:true});
    await ai.getByLabel('수정할 분석 항목').selectOption({label:'DEBUG_ENABLED · 원본 1행'});
    await ai.getByRole('button',{name:'AI 수정안 전송 범위 확인'}).click();await ai.getByLabel('이 코드 범위의 외부 전송과 유료 호출 가능성에 동의합니다.').check();
    await ai.getByRole('button',{name:'동의한 코드로 AI 수정안 생성'}).click();await ai.getByText('제안 · 미적용',{exact:true}).waitFor();

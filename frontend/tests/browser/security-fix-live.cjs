@@ -68,7 +68,7 @@ const facts=r=>({reviewId:r.reviewId,score:r.securityScore,risk:r.riskAssessment
    if(kind==='rule'){
     const unchanged=await rescan();assert.equal(unchanged.comparison.counts.RESOLVED,0);assert.equal(unchanged.comparison.counts.REMAINING,2);
     assert.equal(unchanged.securityScore,before.securityScore);
-    await stage(page,'코드 편집');await pane(page,'수정 근거 · AI');const ai=page.getByLabel('AI 보안 수정안',{exact:true});
+    await stage(page,'코드 편집');await pane(page,'수정 근거 · AI');const ai=page.getByLabel('보안 수정안',{exact:true});
     const generate=async()=>{
      await ai.getByLabel('수정할 분석 항목').selectOption({label:'DEBUG_ENABLED · 원본 1행'});
      await ai.getByRole('button',{name:'AI 수정안 전송 범위 확인'}).click();assert.ok(await ai.getByRole('button',{name:'동의한 코드로 AI 수정안 생성'}).isDisabled());

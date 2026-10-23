@@ -1,4 +1,3 @@
-import ts from 'typescript';
 import {createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 import {analyze} from '../analyzer.mjs';
@@ -30,10 +29,7 @@ export function prepareQualityCase(id) {
 // Evaluation-only baseline. Never connected to a product endpoint or automatic application.
 export function deterministicCandidate(prepared) {
   if (prepared.status !== 'PATCH') throw new Error('MANUAL_REVIEW_REQUIRED');
-  const {before, removed} = prepared.plan;
-  const parsed = ts.createSourceFile('synthetic.ts', `const value=${before}`, ts.ScriptTarget.Latest, true);
-  const object = parsed.statements[0].declarationList.declarations[0].initializer;
-  const replacement = '{' + object.properties.filter(p => !removed.includes(p.name.text)).map(p => p.getText()).join(', ') + '}';
+  const {before, suggestedReplacement:replacement} = prepared.plan;
   responsePatch({...prepared.input, replacement});
   return {fileId:prepared.fileId, revision:prepared.revision, currentHash:prepared.currentHash,
     expectedHash:hash(before), startLine:prepared.plan.line, replacement};

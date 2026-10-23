@@ -25,7 +25,7 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
       <details><summary>수정본 파일·해시 근거</summary><p className="source-revision">원본: {snapshot.workspaceScan.sourceRevision}<br />입력: {snapshot.workspaceScan.inputHash}</p>
         <p className="source-revision">분석기: {snapshot.workspaceScan.analyzerVersion}</p>
         {snapshot.workspaceScan.analysisRoot && <p>분석 위치는 ZIP의 {snapshot.workspaceScan.analysisRoot}/ 폴더 기준입니다. 아래 변경 파일·해시는 전체 원본 경로 기준입니다.</p>}
-        <ul>{snapshot.workspaceScan.files.filter(f => f.changed).map(f => <li key={f.fileId}>{f.path} · {f.changeOrigin === 'AI_APPROVED' ? '승인된 AI 수정' : f.changeOrigin === 'MANUAL_AFTER_AI' ? 'AI 적용 후 수동 변경' : '수동 수정'}<br />
+        <ul>{snapshot.workspaceScan.files.filter(f => f.changed).map(f => <li key={f.fileId}>{f.path} · {f.changeOrigin === 'DETERMINISTIC_APPROVED' ? '승인된 자동 수정' : f.changeOrigin === 'MANUAL_AFTER_DETERMINISTIC' ? '자동 수정 적용 후 수동 변경' : f.changeOrigin === 'AI_APPROVED' ? '승인된 AI 수정' : f.changeOrigin === 'MANUAL_AFTER_AI' ? 'AI 적용 후 수동 변경' : '수동 수정'}<br />
           <span className="source-revision">{f.originalHash} → {f.currentHash}</span></li>)}</ul></details></div>}
     <p className="review-caution">비교는 저장된 분석 계약과 확인한 범위에 한정됩니다. 구조 분석 후보의 NOT_COMPARED와 미검사·버전 차이로 인한 확인 불가는 RESOLVED가 아닙니다.</p>
     <p>{snapshot.message}</p>
