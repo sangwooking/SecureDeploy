@@ -309,6 +309,7 @@ export function analyze(input, overrides = {}) {
   }
   function property(base, key, node, state) {
     const { mod, fn } = state;
+    if(base.externalObject&&['__proto__','prototype','constructor'].includes(key))return {...unknown(),trace:base.trace};
     if(state.nodeMode){const supported=regexSupport.property(base,key,node,state);if(supported)return supported;}
     if(state.nodeMode){const supported=nodeSupport.property(base,key,node,state);if(supported)return supported;}
     if(['error-object','caught-error'].includes(base.tag) && key==='stack'){

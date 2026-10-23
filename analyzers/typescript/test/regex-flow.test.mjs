@@ -37,7 +37,7 @@ test('unrelated unknown external data write does not erase the request path',()=
  const r=analyze({files:[{filePath:'server.cjs',content:`const app=require('express')();const adapter=require('template-adapter');const extras=require('template-extras');adapter.views.helpers=extras;const launch=require('child_process').exec;app.post('/',(req,res)=>{const m=req.body.file.match(/(.*)/);if(m)launch('tool '+m[1]);});`}],nodeManifests:[{filePath:'package.json',express:'4.21.2'}]});
  assert.equal(count(r),1);assert.ok(r.files[0].limitations.includes('EXTERNAL_PROPERTY_WRITE_SCOPED_UNKNOWN'));
 });
-for(const change of ["adapter[unknownKey]=extras;","adapter.handler=launch;","adapter.handler=()=>launch('fixed');"])
+for(const change of ["adapter[unknownKey]=extras;","adapter.__proto__.handler=extras;","adapter.handler=launch;","adapter.handler=()=>launch('fixed');"])
 test('related or dynamic external writes keep uncertainty: '+change,()=>{
  const r=analyze({files:[{filePath:'server.cjs',content:`const app=require('express')();const adapter=require('template-adapter');const extras=require('template-extras');const launch=require('child_process').exec;${change}app.post('/',(req,res)=>launch(req.body.file));`}],nodeManifests:[{filePath:'package.json',express:'4.21.2'}]});
  assert.equal(count(r),0);
