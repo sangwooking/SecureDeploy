@@ -218,7 +218,15 @@ export function nodeServer(api) {
       for(const [key,v]of state.vars)if(!['express-request','express-response'].includes(v.tag))state.vars.set(key,{...v,unknown:true,constant:undefined});
       return {value:unknown()};
     }
-    if(receiver?.tag==='express-response'&&['send','json','render','redirect','status','end'].includes(method))return {value:receiver};
+    if(receiver?.tag==='express-response'&&['send','json','render','redirect','status','end'].includes(method)) {
+      if(['send','json','end'].includes(method)&&args.length){
+        if(args.length!==1)note(state.mod,'EXPRESS_RESPONSE_ARGUMENT_CONTRACT_UNKNOWN');
+        api.observeExpressResponse(args.length===1?args[0]:union(...args),node,state,
+          !!receiver.unknown||!!receiver.ref?.unknown||args.length!==1);
+      }
+      if(['render','redirect'].includes(method))note(state.mod,'EXPRESS_RESPONSE_RENDER_OR_REDIRECT_NOT_MODELED');
+      return {value:receiver};
+    }
     if(!state.context.setup&&['find','findOne','countDocuments'].includes(method))for(const query of args[0]?.nodeAlternatives??[args[0]]) {
       const where=query?.ref?.properties.get('$where');
       if(where?.trace.length)append(result.nodeUses,{ruleId:'JS_MONGO_WHERE_INPUT_FLOW',kind:'RECEIVER_NOT_VERIFIED',operation:method,

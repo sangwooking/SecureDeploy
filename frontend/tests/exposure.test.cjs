@@ -5,4 +5,8 @@ const use={kind:'HTTP_RESPONSE_RETURN',status:'SENSITIVE_FLOW_CANDIDATE',locatio
 test('exposure evidence is conditional and actionable without source or credential contents',()=>{const h=render([use]);for(const x of ['api/views.py:5','실제 유출은 미검증','기존 위험 건수','공개 클라이언트 환경변수','원문이 제외'])assert.ok(h.includes(x),x);});
 test('unknown environment and missing legacy records never become clean results',()=>{const h=render([{...use,status:'SENSITIVITY_UNVERIFIED',trace:[{...use.trace[0],kind:'ENVIRONMENT_VALUE_UNVERIFIED'}]}]);assert.ok(h.includes('민감한지 확인하지 못함'));assert.ok(render(null).includes('기록되지'));assert.ok(render([]).includes('보증은 아닙니다'));});
 test('exposure locations are escaped',()=>{const h=render([{...use,location:{...use.location,filePath:'<img src=x>'}}]);assert.ok(!h.includes('<img'));assert.ok(h.includes('&lt;img'));});
+test('Express transmission differs from a returned Fetch response and never promises exploit proof',()=>{
+ const h=render([{...use,kind:'HTTP_RESPONSE_SEND',trace:[{...use.trace[0],kind:'EXPRESS_HTTP_RESPONSE'}]}]);
+ assert.ok(h.includes('Express 응답 전송 호출'));assert.ok(h.includes('Express 응답 전송 위치'));assert.ok(h.includes('실제 유출은 미검증'));
+});
 test('Deno environment sources distinguish request selection and declared public values without printing names',()=>{for(const [kind,label]of [['REQUEST_SELECTED_ENVIRONMENT_VALUE','요청으로 선택한 서버 환경 설정값'],['SERVER_SECRET_ENVIRONMENT_VALUE','서버 비밀 설정 참조'],['DECLARED_PUBLIC_ENVIRONMENT_VALUE','공개용으로 선언한 환경 설정']]){const h=render([{...use,trace:[{...use.trace[0],kind}]}]);assert.ok(h.includes(label));assert.ok(h.includes('실제 유출은 미검증'));assert.ok(!h.includes('SUPABASE_SERVICE_ROLE_KEY'));}});

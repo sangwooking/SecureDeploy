@@ -11,7 +11,7 @@ import { nextEntries } from './next.mjs';
 import { analyzePolicies } from './rls.mjs';
 import { syntaxIndex, indexSyntax } from './syntax-index.mjs';
 
-export const VERSION = 'ts-server-v16';
+export const VERSION = 'ts-server-v17';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -88,6 +88,7 @@ export function analyze(input, overrides = {}) {
   let chars = 0, steps = 0, totalFunctions = 0;
   let phase='SETUP', astNodes=0;
   const phaseSteps={};
+  let jsonReplacerHint=false;
   function charged() {
     if(steps>=limits.maxSteps||Date.now()>deadline)throw Error('SUPABASE_BUDGET');
     steps++;phaseSteps[phase]=(phaseSteps[phase]??0)+1;
@@ -127,17 +128,22 @@ export function analyze(input, overrides = {}) {
         && !origins.some(o=>['CREDENTIAL_SHAPED_LITERAL','AUTHENTICATION_HEADER','INTERNAL_ERROR_DETAIL','ERROR_DETAIL_CONTEXT_UNKNOWN'].includes(o.kind)))return;
     const location = kind === 'HTTP_RESPONSE_RETURN' && v.responseLocations?.length ? v.responseLocations[0] : loc(node, state.mod, kind, state.fn);
     const unresolved = exposureUncertain(v) || state.uncertain || state.exposureUncertain;
-    const supported = origins.filter(o => ['CREDENTIAL_SHAPED_LITERAL', 'AUTHENTICATION_HEADER'].includes(o.kind));
+    const supported = origins.filter(o => ['CREDENTIAL_SHAPED_LITERAL', 'AUTHENTICATION_HEADER',
+      ...(kind==='LOG_ARGUMENT'?['SERVER_SECRET_ENVIRONMENT_VALUE','REQUEST_SELECTED_ENVIRONMENT_VALUE']:[])].includes(o.kind));
     const errors = kind === 'HTTP_RESPONSE_RETURN' ? origins.filter(o=>o.kind==='INTERNAL_ERROR_DETAIL') : [];
     let status = unresolved ? 'FLOW_UNRESOLVED' : supported.length || errors.length ? 'SENSITIVE_FLOW_CANDIDATE' : 'SENSITIVITY_UNVERIFIED';
     if(kind==='LOG_ARGUMENT' && !supported.length && origins.some(o=>['INTERNAL_ERROR_DETAIL','ERROR_DETAIL_CONTEXT_UNKNOWN'].includes(o.kind)))status='INTERNAL_DIAGNOSTIC_LOG_ONLY';
-    const limitations = ['STATIC_EXPOSURE_NOT_RUNTIME_LEAK_PROOF', 'MASKING_LOG_ACCESS_AND_DEPLOYMENT_UNKNOWN'];
+    const limitations = ['STATIC_EXPOSURE_NOT_RUNTIME_LEAK_PROOF', 'MASKING_LOG_ACCESS_AND_DEPLOYMENT_UNKNOWN',
+      ...(location.kind==='EXPRESS_HTTP_RESPONSE'?['EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED']:[])];
     const trace = [...origins,...exposureTrails(v)].slice(0,20);
-    append(result.exposureUses, { kind, status, location, trace, limitations }, state.mod);
+    append(result.exposureUses, { kind:location.kind==='EXPRESS_HTTP_RESPONSE'?'HTTP_RESPONSE_SEND':kind, status, location, trace, limitations }, state.mod);
     if (status !== 'SENSITIVE_FLOW_CANDIDATE') return;
     append(result.findings, { ruleId: errors.length ? 'TS_ERROR_DETAIL_EXPOSURE' : 'TS_SENSITIVE_DATA_EXPOSURE', kind: errors.length ? 'CWE-209' : 'CWE-200', confidence: 'HIGH', disposition: 'REVIEW_REQUIRED',
       source: (errors.length ? errors : supported)[0], sink: location, flow: [...trace, location], defenses: [], limitations,
-      message: errors.length ? '서버 내부 오류 정보가 사용자에게 전달될 가능성이 있습니다.' : '보호해야 할 정보 후보가 서버 응답 또는 로그에 전달되는 경로를 확인해 주세요.',
+      message: errors.length ? '서버 내부 오류 정보가 사용자에게 전달될 가능성이 있습니다.'
+        : kind==='LOG_ARGUMENT'&&supported.some(o=>['SERVER_SECRET_ENVIRONMENT_VALUE','REQUEST_SELECTED_ENVIRONMENT_VALUE'].includes(o.kind))
+          ? '서버 비밀 설정 후보가 로그에 전달됩니다. 로그 접근 권한과 마스킹을 확인해 주세요.'
+          : '보호해야 할 정보 후보가 서버 응답 또는 로그에 전달되는 경로를 확인해 주세요.',
       recommendation: errors.length ? '사용자 응답에는 일반 오류 메시지와 추적 ID만 반환하고 상세 스택은 접근이 제한된 내부 로그로 분리하세요. 로컬 오류 응답 테스트 후 재검사하세요.' : '응답·로그에서 해당 값을 제거하거나 목적에 맞게 마스킹하세요. 실제 노출이 확인됐다면 자격증명 교체를 검토하고 로컬 테스트와 재검사로 확인하세요. 클라이언트 공개 환경변수로 옮기는 것은 해결이 아닙니다.' }, state.mod);
   }
   function responseBody(v, depth=0, seen=new Set()) {
@@ -164,17 +170,32 @@ export function analyze(input, overrides = {}) {
       const sensitive=env.filter(o=>['REQUEST_SELECTED_ENVIRONMENT_VALUE','SERVER_SECRET_ENVIRONMENT_VALUE'].includes(o.kind));
       const serverReturn=proof.location.kind==='SERVER_FUNCTION_RETURN';
       const limitations = ['STATIC_EXPOSURE_NOT_RUNTIME_LEAK_PROOF', 'AUTHORIZATION_AND_DEPLOYMENT_NOT_VERIFIED',
+        ...(proof.location.kind==='EXPRESS_HTTP_RESPONSE'?['EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED']:[]),
         ...(serverReturn?['NEXT_SERVER_FUNCTION_INVOCATION_NOT_VERIFIED']:[]),
         'ENVIRONMENT_CONTENTS_AND_GATEWAY_POLICY_UNKNOWN', 'BRANCH_FEASIBILITY_NOT_VERIFIED'];
       const trace = [...proof.origins, ...proof.trail].filter((v,i,a)=>a.findIndex(w=>JSON.stringify(w)===JSON.stringify(v))===i).slice(0,19);
       const status = proof.unresolved ? 'FLOW_UNRESOLVED' : sensitive.length?'SENSITIVE_FLOW_CANDIDATE':'SENSITIVITY_UNVERIFIED';
-      append(result.exposureUses, {kind: serverReturn?'SERVER_FUNCTION_RETURN':'HTTP_RESPONSE_RETURN', status, location: proof.location, trace, limitations}, state.mod);
+      append(result.exposureUses, {kind: serverReturn?'SERVER_FUNCTION_RETURN':proof.location.kind==='EXPRESS_HTTP_RESPONSE'?'HTTP_RESPONSE_SEND':'HTTP_RESPONSE_RETURN', status, location: proof.location, trace, limitations}, state.mod);
       if (!proof.unresolved && sensitive.length) append(result.findings, {ruleId:'TS_SENSITIVE_DATA_EXPOSURE', kind:'CWE-200', confidence:'HIGH',
         disposition:'REVIEW_REQUIRED', source:sensitive[0], sink:proof.location, flow:[...trace, proof.location], defenses:[], limitations,
         message:serverReturn?'서버 환경 설정의 값이 서버 함수 반환값으로 전달됩니다. 클라이언트 호출·권한 문맥을 확인해 주세요.':'서버 환경 설정의 값이 요청 응답에 전달되는 경로를 확인했습니다.',
         recommendation:'환경값 전체를 반환하는 기능을 제거하고 필요한 서버 작업만 제공하세요. 공개 설정과 서버 전용 키를 분리하고, 가짜 값으로 일반 사용자 응답에 서버 비밀값이 포함되지 않는지 확인한 뒤 재검사하세요.'}, state.mod);
     }
   }
+  function observeExpressResponse(v,node,state,unresolved=false) {
+    if(state.context.setup)return;
+    const body=responseBody(v),location=loc(node,state.mod,'EXPRESS_HTTP_RESPONSE',state.fn);
+    const serializationUnverified=jsonReplacerHint&&(node.expression.name?.text==='json'||node.expression.name?.text==='send'&&!!v.ref?.properties);
+    if(serializationUnverified)note(state.mod,'EXPRESS_JSON_REPLACER_CONTEXT_UNVERIFIED');
+    const proof={...body,unresolved:body.unresolved||unresolved||serializationUnverified||state.uncertain||state.exposureUncertain,location};
+    const response={tag:'exposureResponse',trace:[],exposures:body.origins,exposureTrail:body.trail,
+      unknown:proof.unresolved,responseLocations:[location],environmentResponses:[proof]};
+    note(state.mod,'EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED');
+    observeExposure(response,node,state,'HTTP_RESPONSE_RETURN');
+    observeEnvironmentResponses(response,state);
+  }
+  const processObject=x=>ts.isIdentifier(x)&&x.text==='process'||ts.isPropertyAccessExpression(x)
+    &&ts.isIdentifier(x.expression)&&x.expression.text==='process'&&x.name.text==='env';
   for (const file of input.files ?? []) {
     if (result.files.length >= limits.maxFiles) { result.limitations.push('FILE_COUNT_LIMIT_EXCEEDED'); break; }
     if (!file || typeof file.filePath !== 'string' || typeof file.content !== 'string') continue;
@@ -200,6 +221,19 @@ export function analyze(input, overrides = {}) {
         if (++nodes > limits.maxNodes || Date.now() > deadline) throw new Error('BUDGET');
         astNodes++;
         indexSyntax(ts,n,mod.syntaxIndex);
+        // A visible serialization hook prevents assuming the default JSON contract.
+        // Its receiver/app relationship is not resolved, so keep this conservative and order independent.
+        if(ts.isCallExpression(n)&&ts.isPropertyAccessExpression(n.expression)&&n.expression.name.text==='set'
+            &&ts.isStringLiteral(n.arguments[0])&&n.arguments[0].text==='json replacer'&&n.arguments[1]
+            &&n.arguments[1].kind!==ts.SyntaxKind.NullKeyword)jsonReplacerHint=true;
+        if((ts.isCallExpression(n)||ts.isNewExpression(n))&&(n.arguments??[]).some(processObject))mod.processEscaped=true;
+        if((ts.isCallExpression(n)||ts.isNewExpression(n))&&(n.arguments??[]).some(x=>ts.isIdentifier(x)&&x.text==='console'))mod.consoleMutated=true;
+        if(ts.isDeleteExpression(n)||(ts.isPrefixUnaryExpression(n)||ts.isPostfixUnaryExpression(n))
+            &&[ts.SyntaxKind.PlusPlusToken,ts.SyntaxKind.MinusMinusToken].includes(n.operator)){
+          let x=n.expression??n.operand;while(x&&(ts.isPropertyAccessExpression(x)||ts.isElementAccessExpression(x)))x=x.expression;
+          if(x&&ts.isIdentifier(x)&&x.text==='process')mod.processEscaped=true;
+          if(x&&ts.isIdentifier(x)&&x.text==='console')mod.consoleMutated=true;
+        }
         if(ts.isIdentifier(n)&&n.text==='Deno')mod.hasDenoSyntax=true;
         if(ts.isIdentifier(n)&&['from','createClient'].includes(n.text))mod.hasSupabaseSyntax=true;
         if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === 'prepare') record.prepareCallSites++;
@@ -440,7 +474,7 @@ export function analyze(input, overrides = {}) {
       return unknown();
     }
     if (ts.isAwaitExpression(node)) return expr(node.expression, state);
-    const environment=nextEnvironmentValue(node,state);
+    const environment=serverEnvironmentValue(node,state);
     if(environment)return environment;
     if (ts.isPropertyAccessExpression(node)) return property(expr(node.expression, state), node.name.text, node, state);
     if (ts.isElementAccessExpression(node)) {
@@ -560,7 +594,8 @@ export function analyze(input, overrides = {}) {
         }
       }
       if (globalObject('console') && ['log','info','warn','error','debug'].includes(callee.name.text)) {
-        observeExposure(union(...args), node, state, 'LOG_ARGUMENT'); return constant(undefined);
+        const logged=union(...args);
+        observeExposure(mod.syntaxIndex.writes.has('console')||mod.syntaxIndex.aliases.has('console')||mod.consoleMutated?{...logged,unknown:true}:logged, node, state, 'LOG_ARGUMENT'); return constant(undefined);
       }
       if (globalObject('JSON') && callee.name.text === 'stringify') {
         if(args[0]?.tag==='exposureResponse')return {...unknown(),exposures:exposureSources(args[0])};
@@ -937,15 +972,22 @@ export function analyze(input, overrides = {}) {
     return { values: [], stops: false };
   }
   const canonicalFunctions = new WeakMap();
-  function nextEnvironmentValue(node,state) {
+  function serverEnvironmentValue(node,state) {
     const {mod,fn}=state;
-    if (!(ts.isPropertyAccessExpression(node)||ts.isElementAccessExpression(node)) || !mod.nextContract || !mod.nextEnvironment
-        || state.vars.has('process') || !ts.isPropertyAccessExpression(node.expression)
+    const index=mod.syntaxIndex;
+    const nodeEnvironment=state.nodeMode&&!index.bindings.has('process')&&!index.writes.has('process')
+      &&!index.aliases.has('process')&&!mod.processEscaped;
+    if (!(ts.isPropertyAccessExpression(node)||ts.isElementAccessExpression(node)) || !ts.isPropertyAccessExpression(node.expression)
         || !ts.isIdentifier(node.expression.expression) || node.expression.expression.text!=='process' || node.expression.name.text!=='env')return;
+    if(!(mod.nextContract&&mod.nextEnvironment||nodeEnvironment)||state.vars.has('process')){
+      if(state.nodeMode||mod.nextContract)note(mod,'SERVER_ENVIRONMENT_PROVENANCE_UNVERIFIED');return;
+    }
     const key=ts.isPropertyAccessExpression(node)?constant(node.name.text):expr(node.argumentExpression,state);
-    const publicValue=hasConstant(key)&&/^NEXT_PUBLIC_[A-Z0-9_]+$/.test(String(key.constant));
-    const secret=hasConstant(key)&&!publicValue&&/(?:SECRET|PRIVATE_KEY|PASSWORD|API_KEY|ACCESS_TOKEN|REFRESH_TOKEN|SERVICE_ROLE|DATABASE_URL)/i.test(String(key.constant));
-    const selected=key.trace.some(s=>['QUERY_PARAMETER','REQUEST_BODY','REQUEST_HEADER','ROUTE_PARAMETER','SERVER_FUNCTION_ARGUMENT'].includes(s.kind))&&!key.unknown;
+    const publicValue=hasConstant(key)&&(mod.nextContract&&/^NEXT_PUBLIC_[A-Z0-9_]+$/.test(String(key.constant))
+      ||['SUPABASE_ANON_KEY','SUPABASE_PUBLISHABLE_KEY','SUPABASE_URL'].includes(key.constant));
+    const publicHint=nodeEnvironment&&hasConstant(key)&&/^(?:NEXT_PUBLIC_|VITE_)/.test(String(key.constant));
+    const secret=hasConstant(key)&&!publicValue&&!publicHint&&/(?:SECRET|PRIVATE_KEY|PASSWORD|API_KEY|ACCESS_TOKEN|REFRESH_TOKEN|SERVICE_ROLE|DATABASE_URL)/i.test(String(key.constant));
+    const selected=key.trace.some(s=>['QUERY_PARAMETER','REQUEST_BODY','REQUEST_HEADER','ROUTE_PARAMETER','SERVER_FUNCTION_ARGUMENT','EXPRESS_QUERY','EXPRESS_BODY','EXPRESS_PARAMS'].includes(s.kind))&&!key.unknown;
     return value('environmentValue',[],{unknown:!!key.unknown,exposures:[...(selected?key.trace:[]),loc(node,mod,selected?'REQUEST_SELECTED_ENVIRONMENT_VALUE':secret?'SERVER_SECRET_ENVIRONMENT_VALUE':publicValue?'DECLARED_PUBLIC_ENVIRONMENT_VALUE':'ENVIRONMENT_VALUE_UNVERIFIED',fn)]});
   }
   function invoke(fn, args, depth, context, stack, uncertain = false, exposureUncertain = false,thisValue,constructing=false) {
@@ -1027,7 +1069,7 @@ export function analyze(input, overrides = {}) {
   denoEntries({ts,modules,resolve,claimFunction,tick,note,input});
   nextEntries({ts,modules,input,tick,note});
   entryContracts({ts,modules,tick,note,loc,append,result});
-  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction});
+  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse});
   nodeSupport.discover();
   phase='FLOW';
   for (const mod of modules.values()) for (const entry of mod.entries) {

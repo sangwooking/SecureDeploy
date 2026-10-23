@@ -1,0 +1,37 @@
+// Actual JWT/H2/upload/engine and React. Synthetic source only; no external AI or GitHub.
+const {chromium,request}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const assert=require('node:assert/strict'),{execFileSync}=require('node:child_process');
+const {resultView}=require('./editor-navigation.cjs');
+const origin='http://localhost:5173',api='http://127.0.0.1:8085';
+const cases=[
+ {name:'deno-log',path:'supabase/functions/a/index.ts',code:"Deno.serve(request=>{console.info(Deno.env.get('API_SECRET'));return Response.json({ready:true});});",sink:'LOG_ARGUMENT',label:'로그에 전달한 인자'},
+ {name:'express-response',path:'server.cjs',code:"const express=require('express');const app=express();app.get('/report',(request,response)=>response.json({value:process.env.API_SECRET}));",sink:'EXPRESS_HTTP_RESPONSE',label:'Express 응답 전송 호출'},
+];
+(async()=>{const browser=await chromium.launch(),http=await request.newContext({baseURL:api}),report=[];
+try{
+ const signup=await http.post('/api/auth/signup',{data:{email:`prebeta-${Date.now()}@example.invalid`,name:'synthetic',password:'Synthetic-Local-813!'}});
+ assert.equal(signup.status(),200);const user=await signup.json(),headers={Authorization:`Bearer ${user.accessToken}`};
+ for(const c of cases){
+  const files={[c.path]:c.code};if(c.name.startsWith('express'))files['package.json']='{"dependencies":{"express":"4.21.2"}}';
+  const zip=execFileSync('python3',['-c',"import io,sys,json,zipfile\nb=io.BytesIO()\nwith zipfile.ZipFile(b,'w',zipfile.ZIP_DEFLATED) as z:\n for p,s in json.load(sys.stdin).items(): z.writestr(p,s)\nsys.stdout.buffer.write(b.getvalue())"],{input:JSON.stringify(files)});
+  const upload=await http.post('/api/reviews/upload',{headers,multipart:{scanMode:'STANDARD',file:{name:'synthetic.zip',mimeType:'application/zip',buffer:zip}}});
+  assert.equal(upload.status(),200);const review=await upload.json(),flows=review.serverAnalysis.validatedFindings;
+  assert.equal(flows.length,1);assert.equal(flows[0].location.kind,c.sink);assert.equal(flows[0].comparisonPolicy,'NOT_COMPARED');assert.equal(flows[0].priority,'REVIEW_REQUIRED');
+  for(const width of [1440,390,320]){
+   const page=await browser.newPage({viewport:{width,height:1000}}),errors=[],outbound=[];
+   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+   await page.addInitScript(auth=>{localStorage.setItem('securedeploy.accessToken',auth.accessToken);localStorage.setItem('securedeploy.authUser',JSON.stringify(auth.user));},user);
+   await page.route('**/*',r=>{const u=new URL(r.request().url());if(u.pathname.startsWith('/api/'))return r.continue({url:api+u.pathname+u.search});if(u.origin===origin)return r.continue();outbound.push(u.origin);return r.abort();});
+   await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);await resultView(page,'배포 전 직접 확인할 부분');
+   const section=page.getByLabel('서버 코드 흐름 검사',{exact:true});await section.waitFor();
+   await section.getByText(/^응답·로그 정보 전달 근거/).click();
+   assert.ok((await section.innerText()).includes(c.label));assert.ok((await section.innerText()).includes('실제 유출은 미검증'));
+   assert.ok((await section.innerText()).includes(flows[0].location.filePath));assert.ok(!((await section.innerText()).includes('API_SECRET')));
+   assert.equal(await page.getByRole('button',{name:'자동 수정안 만들기',exact:true}).count(),0);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);assert.deepEqual(outbound,[]);
+   await page.screenshot({path:`/private/tmp/securedeploy-prebeta-${c.name}-${width}.png`,fullPage:true});await page.close();
+   report.push({case:c.name,width,review:review.reviewId,ruleCount:review.vulnerabilities.length,structuralCandidates:flows.length,coverage:review.coverage.status});
+  }
+ }
+ console.log(JSON.stringify({passed:true,source:'SYNTHETIC_ZIP',backend:'ACTUAL_H2',providerCalls:0,report}));
+}finally{await browser.close();await http.dispose();}})().catch(e=>{console.error(e.stack);process.exitCode=1;});

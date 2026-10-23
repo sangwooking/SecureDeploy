@@ -39,10 +39,16 @@ class WorkspaceEngineRegressionTest {
             assertEquals(old,actual,"Saved freeze Rule/FPR signals must not change");
             assertEquals(expected.path("securityScore").asInt(),result.response().securityScore());
             // Compare only deterministic security candidates, not timestamps or execution timing.
-            assertEquals(expected.at("/typescript/validatedFindings"),json.valueToTree(result.response().serverAnalysis().validatedFindings()));
+            assertEquals(withoutVersionIdentity(expected.at("/typescript/validatedFindings")),withoutVersionIdentity(json.valueToTree(result.response().serverAnalysis().validatedFindings())));
             assertEquals(expected.at("/typescript/supabaseAnalysis/findings"),json.valueToTree(ts.analyze(scanner.scan(source)).supabaseAnalysis().findings()));
             completed++;
         }
         assertEquals(4,completed);
+    }
+    private JsonNode withoutVersionIdentity(JsonNode findings) {
+        var copy=findings.deepCopy();
+        // Versioned IDs intentionally change. Preserve comparisons of every evidence/location/policy field.
+        for(var finding:copy)if(finding instanceof com.fasterxml.jackson.databind.node.ObjectNode object){object.remove("findingId");object.remove("analyzerVersion");}
+        return copy;
     }
 }

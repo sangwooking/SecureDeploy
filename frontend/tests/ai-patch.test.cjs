@@ -10,6 +10,13 @@ test('unavailable Provider cannot masquerade as a generated patch',()=>{
  const html=renderToStaticMarkup(React.createElement(AiPatchPanel,{...base,workspace:{...base.workspace,identityStatus:'EXACT_GIT_COMMIT'}}));
  assert.ok(html.includes('AI 수정 Provider가 준비되지 않았습니다'));assert.ok(html.includes('수동 편집'));
 });
+test('new Express and logging evidence never advertises an unsupported automatic patch',()=>{
+ for(const kind of ['EXPRESS_HTTP_RESPONSE','LOG_ARGUMENT']){
+  const html=renderToStaticMarkup(React.createElement(AiPatchPanel,{...base,workspace:{...base.workspace,identityStatus:'EXACT_GIT_COMMIT'},file:{id:'f',path:'server.ts'},
+   flowFindings:[{findingId:'new-flow',ruleId:'TS_SENSITIVE_DATA_EXPOSURE',location:{kind,line:1}}]}));
+  assert.ok(!html.includes('자동 수정안 만들기'));assert.ok(!html.includes('AI 수정안 전송 범위 확인'));
+ }
+});
 test('separate consent and acceptance gates retain uncertainty and never execute model code',()=>{
  const source=fs.readFileSync('src/components/AiPatchPanel.tsx','utf8');
  for(const value of ['!consented','!accepted','dirty','생성 취소·거절','STALE','해결 미검증','검토한 AI 수정안 적용'])assert.ok(source.includes(value),value);
