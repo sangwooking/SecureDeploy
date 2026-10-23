@@ -1,5 +1,6 @@
 import path from 'node:path';
 import {constructorSummaries} from './constructor-summary.mjs';
+import {sequelizeContracts} from './sequelize.mjs';
 
 // Library contracts over AST values only. Never require/import/eval target modules.
 export function nodeServer(api) {
@@ -38,6 +39,7 @@ export function nodeServer(api) {
     return result;
   };
   const summaries=constructorSummaries({...api,functionValue,object,validMongo});
+  const sequelize=sequelizeContracts({...api,object,native,findModule,observe});
   function findModule(mod,spec) {
     if(!spec.startsWith('.')||spec.includes('\\')||spec.includes('\0'))return;
     const base=path.posix.normalize(path.posix.join(path.posix.dirname(mod.filePath),spec));
@@ -50,6 +52,7 @@ export function nodeServer(api) {
   function dependency(mod,spec) {
     if(spec==='express')return native('express',mod);
     if(spec==='mongodb')return native('mongodb',mod);
+    if(spec==='sequelize')return native('sequelize',mod);
     if(['child_process','node:child_process'].includes(spec))return native('node-child-process',mod);
     if(['http','node:http','https','node:https'].includes(spec))return native('node-http',mod);
     const target=findModule(mod,spec);
@@ -60,6 +63,8 @@ export function nodeServer(api) {
     if(loaded.has(mod))return loaded.get(mod);
     if(loading.has(mod)||loading.size>limits.maxDepth){note(mod,'NODE_MODULE_CYCLE_OR_DEPTH_LIMIT');return unknown();}
     loading.add(mod);
+    const summarized=sequelize.summarize(mod);
+    if(summarized){loaded.set(mod,summarized);loading.delete(mod);return summarized;}
     const exports=object('node-exports'), module=object('node-module');module.ref.properties.set('exports',exports);
     const state={mod,fn:{name:'module',node:mod.ast},vars:new Map([['module',module],['exports',exports]]),nodeMode:true,context:context(),depth:0,stack:new Set(),uncertain:false};
     try {
@@ -92,6 +97,7 @@ export function nodeServer(api) {
     if(base.tag==='function')return base.ref?.properties.get(key)??unknown();
     if(base.native==='mongodb'&&key==='MongoClient')return native('mongo-client',base.nativeMod,base.ref);
     if(base.native==='express'&&key==='Router')return native('router',base.nativeMod,base.ref);
+    if(base.native==='sequelize'&&['Sequelize','default'].includes(key))return native('sequelize',base.nativeMod,base.ref);
     if(base.native==='node-child-process'&&['exec','execSync','execFile','execFileSync','spawn','spawnSync'].includes(key))return native('node-child-'+key,base.nativeMod,base.ref);
     if(base.tag==='express-router'&&key==='locals'){
       if(!base.ref.properties.has(key))base.ref.properties.set(key,object('express-locals'));
@@ -127,7 +133,7 @@ export function nodeServer(api) {
     append(result.findings,{ruleId,kind,confidence:uncertain?'MEDIUM':'HIGH',disposition:'REVIEW_REQUIRED',source:v.trace[0],sink,flow:v.trace,
       defenses:state.context.defenses.slice(0,20),limitations:['STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF','MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED',...(uncertain?['NODE_FLOW_UNRESOLVED']:[])],
       message:ruleId==='JS_SHELL_COMMAND_INPUT_FLOW'?'사용자가 보낸 값이 서버의 shell 명령 문자열에 전달됩니다.':ruleId==='JS_EVAL_INPUT_FLOW'?'사용자가 보낸 값이 서버의 코드 실행에 전달될 수 있습니다.':'사용자가 보낸 값이 데이터베이스의 실행 문자열에 들어갈 수 있습니다.',
-      recommendation:ruleId==='JS_SHELL_COMMAND_INPUT_FLOW'?'요청값을 shell 명령에 결합하지 마세요. 필요한 작업만 서버의 고정된 실행 파일과 shell을 사용하지 않는 인자 배열로 제공하고 입력 형식·허용 작업·실행 권한을 검증하세요. 인자 주입과 운영 환경은 별도 확인이 필요합니다.':ruleId==='JS_EVAL_INPUT_FLOW'?'입력값을 코드로 실행하지 말고 필요한 숫자 변환이나 스키마 검증을 사용하세요.':'$where 문자열 결합을 피하고 일반적인 값 비교 쿼리와 입력 타입 검증을 사용하세요.'},state.mod);
+      recommendation:ruleId==='JS_SHELL_COMMAND_INPUT_FLOW'?'요청값을 shell 명령에 결합하지 마세요. 필요한 작업만 서버의 고정된 실행 파일과 shell을 사용하지 않는 인자 배열로 제공하고 입력 형식·허용 작업·실행 권한을 검증하세요. 인자 주입과 운영 환경은 별도 확인이 필요합니다.':ruleId==='JS_EVAL_INPUT_FLOW'?'입력값을 코드로 실행하지 말고 필요한 숫자 변환이나 스키마 검증을 사용하세요.':ruleId==='JS_SEQUELIZE_SQL_INPUT_FLOW'?'SQL 문장을 고정하고 사용자 값은 지원 버전의 bind 또는 replacements 매개변수로 분리하세요. 이미 입력이 결합된 SQL에 바인딩 옵션을 추가하는 것만으로 해결되지 않습니다. 식별자는 서버의 고정된 허용 목록으로 제한하고 설치 버전·방언·정상 동작을 로컬에서 검증하세요.':'$where 문자열 결합을 피하고 일반적인 값 비교 쿼리와 입력 타입 검증을 사용하세요.'},state.mod);
   }
   function queryExecution(queries,origin,node,state,operation,createdAt) {
     for(const query of queries){
@@ -145,6 +151,7 @@ export function nodeServer(api) {
   }
   function call(node,callee,receiver,args,state,global,callable) {
     if(!state.nodeMode)return;
+    const rawQuery=sequelize.call(node,receiver,args,state,callable);if(rawQuery)return rawQuery;
     const method=ts.isPropertyAccessExpression(callee)?callee.name.text:undefined;
     if(global&&ts.isIdentifier(callee)&&callee.text==='require'&&ts.isCallExpression(node))
       return {value:args.length===1&&literal(args[0])&&typeof args[0].constant==='string'

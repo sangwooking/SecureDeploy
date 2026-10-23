@@ -72,6 +72,12 @@ const labels: Record<string, string> = {
   FUNCTION_RETURN:'함수 반환으로 전달',NODE_FLOW_UNRESOLVED:'Node.js 값 전달 또는 제어 흐름 미확인',
   MONGODB_RECEIVER_OR_OBJECT_FLOW_UNRESOLVED:'MongoDB 객체 출처 또는 객체 전달을 확인하지 못함',
   NODE_EXEC_SHELL:'Node.js shell 명령 호출',NODE_EXECSYNC_SHELL:'Node.js 동기 shell 명령 호출',NODE_PROCESS_ARGUMENTS:'프로세스 인자 전달 위치',
+  SEQUELIZE_RAW_QUERY:'Sequelize SQL 실행 위치',SEQUELIZE_DECLARED_INSTANCE_ORIGIN:'선언된 Sequelize 인스턴스 생성 위치',
+  SEQUELIZE_REGISTRY_SUMMARY:'제한된 모델 초기화 근거',SEQUELIZE_STATIC_MODEL_INVENTORY:'정적 소스 목록의 모델 등록 구조',SEQUELIZE_DEFINE_ONLY_MODEL:'선언만 확인한 모델',
+  SEQUELIZE_INITIALIZATION_SUMMARY_NOT_RUNTIME_EXECUTION:'제한된 초기화 요약 · 실제 초기화 실행 아님',
+  SEQUELIZE_DECLARED_API_VERSION_UNKNOWN:'지원하는 Sequelize 선언 버전을 확인하지 못함',SEQUELIZE_CONSTRUCTOR_EFFECTS_UNKNOWN:'Sequelize 생성자 옵션의 부작용 미확인',
+  SEQUELIZE_QUERY_ARGUMENT_CONTRACT_UNKNOWN:'Sequelize 쿼리 인자 계약 미확인',SOURCE_INVENTORY_NOT_RUNTIME_DIRECTORY:'수집된 소스 목록 기준 · 운영 디렉터리는 미확인',
+  DECLARED_VERSION_NOT_INSTALLED_VERSION:'선언 버전 기준 · 실제 설치 버전은 미확인',MODEL_API_AND_AUTHORIZATION_NOT_PROVEN:'모델 API 및 접근권한은 검증하지 않음',
   NODE_PROCESS_API_ORIGIN_UNKNOWN:'프로세스 API가 변경되어 실제 호출 대상을 확인하지 못함',NODE_PROCESS_OPTIONS_UNVERIFIED:'프로세스 호출 옵션의 의미 미확인',
   NODE_PROCESS_ARGV_NOT_WHOLE_OPERATION_SAFETY:'shell 미사용 기본 계약 관찰 · 실행 파일·인자·플랫폼 전체 안전 미검증',
   NODE_PROCESS_ARGV_AND_OPTIONS_NOT_MODELED:'프로세스 인자·shell 옵션 문맥 미지원',EXECUTABLE_ARGUMENT_INJECTION_AND_PLATFORM_NOT_VERIFIED:'실행 파일 선택·인자 주입·플랫폼 동작 미검증',
@@ -269,6 +275,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false, on
       <h4>{finding.ruleId === 'TS_SSRF_INPUT_FLOW' ? '서버 요청 주소의 처리 과정을 확인해 주세요'
         : finding.ruleId === 'JS_EVAL_INPUT_FLOW' ? '입력값을 코드로 실행하는지 확인해 주세요'
         : finding.ruleId === 'JS_SHELL_COMMAND_INPUT_FLOW' ? '입력값이 서버의 명령 문자열에 전달되는지 확인해 주세요'
+        : finding.ruleId === 'JS_SEQUELIZE_SQL_INPUT_FLOW' ? '입력값이 SQL 문장에 직접 들어가는지 확인해 주세요'
         : finding.ruleId === 'JS_MONGO_WHERE_INPUT_FLOW' ? '입력값이 데이터베이스 실행 문자열에 들어가는지 확인해 주세요'
         : finding.ruleId === 'PY_FILE_PATH_INPUT_FLOW' ? '입력된 파일 경로의 제한을 확인해 주세요'
         : finding.ruleId === 'PY_UNSAFE_DESERIALIZATION_INPUT_FLOW' ? '외부 데이터의 복원 방식을 확인해 주세요'

@@ -49,19 +49,19 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         if(snapshot.nodeUses()==null)return List.of();
         var groups=new LinkedHashMap<ServerAnalysisSnapshot.Location,List<ServerAnalysisSnapshot.Finding>>();
         for(var finding:snapshot.findings()) {
-            if(!Set.of("JS_SHELL_COMMAND_INPUT_FLOW","JS_EVAL_INPUT_FLOW","JS_MONGO_WHERE_INPUT_FLOW").contains(finding.ruleId())||!finding.confidence().equals("HIGH")
+            if(!Set.of("JS_SEQUELIZE_SQL_INPUT_FLOW","JS_SHELL_COMMAND_INPUT_FLOW","JS_EVAL_INPUT_FLOW","JS_MONGO_WHERE_INPUT_FLOW").contains(finding.ruleId())||!finding.confidence().equals("HIGH")
                     ||finding.limitations().contains("NODE_FLOW_UNRESOLVED")||finding.limitations().contains("TRACE_DETAILS_TRUNCATED"))continue;
             if(snapshot.nodeUses().stream().anyMatch(use->use.ruleId().equals(finding.ruleId())&&use.kind().equals("INPUT_TO_EXECUTION")
                     &&use.location().equals(finding.sink())&&use.trace().equals(finding.flow())))groups.computeIfAbsent(finding.sink(),ignored->new ArrayList<>()).add(finding);
         }
         return groups.entrySet().stream().map(group->{
-            var first=group.getValue().get(0);boolean eval=first.ruleId().equals("JS_EVAL_INPUT_FLOW"),shell=first.ruleId().equals("JS_SHELL_COMMAND_INPUT_FLOW");
+            var first=group.getValue().get(0);boolean eval=first.ruleId().equals("JS_EVAL_INPUT_FLOW"),shell=first.ruleId().equals("JS_SHELL_COMMAND_INPUT_FLOW"),sql=first.ruleId().equals("JS_SEQUELIZE_SQL_INPUT_FLOW");
             return new ServerFlowFinding(identity(snapshot.analyzerVersion(),first.ruleId(),group.getKey()),"TYPESCRIPT_DATA_FLOW",snapshot.analyzerVersion(),
                     first.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",group.getKey(),List.copyOf(group.getValue()),List.of(group.getKey()),
                     shell?"사용자가 보낸 값이 서버의 명령 문자열에 전달됩니다":eval?"사용자가 보낸 값이 서버에서 코드로 실행될 수 있습니다":"사용자가 보낸 값이 데이터베이스의 실행 문자열에 들어갈 수 있습니다",
-                    "정적으로 연결된 Express 요청 입력과 "+(shell?"Node.js shell 명령 호출(CWE-78)":eval?"eval 호출(CWE-95)":"MongoDB $where 쿼리 호출(CWE-943)")+" 사이의 전달 근거입니다. 미들웨어 검증·실제 라이브러리 설치·운영 실행·공격 성공은 확인하지 않았습니다.",
+                    "정적으로 연결된 Express 요청 입력과 "+(shell?"Node.js shell 명령 호출(CWE-78)":eval?"eval 호출(CWE-95)":sql?"Sequelize Raw SQL 실행 호출(CWE-89)":"MongoDB $where 쿼리 호출(CWE-943)")+" 사이의 전달 근거입니다. 미들웨어 검증·실제 라이브러리 설치·운영 실행·공격 성공은 확인하지 않았습니다.",
                     first.recommendation(),List.of("입력 위치부터 전달·실행 위치까지 확인하고 앞단의 검증·인증 미들웨어를 함께 검토하세요.",
-                            shell?"로컬 Mock으로 고정 실행 파일·shell 미사용·입력 허용 목록·인자 배열을 검증하세요. execFile 사용만으로 임의 실행 파일·인자 주입·플랫폼 위험까지 안전해지는 것은 아닙니다.":eval?"eval 대신 필요한 숫자 변환과 스키마 검증을 사용하고 로컬 Mock으로 코드 실행 호출이 사라졌는지 확인하세요.":"$where 문자열 결합을 일반 값 비교 쿼리로 바꾸고 타입 검증·드라이버 및 서버 버전·JavaScript 실행 설정을 로컬에서 확인하세요.",
+                            shell?"로컬 Mock으로 고정 실행 파일·shell 미사용·입력 허용 목록·인자 배열을 검증하세요. execFile 사용만으로 임의 실행 파일·인자 주입·플랫폼 위험까지 안전해지는 것은 아닙니다.":eval?"eval 대신 필요한 숫자 변환과 스키마 검증을 사용하고 로컬 Mock으로 코드 실행 호출이 사라졌는지 확인하세요.":sql?"SQL 문자열과 값 매개변수를 분리하고 정상 값·따옴표 포함 값을 로컬 테스트로 확인하세요. 실제 설치 버전·DB 방언·모델 및 hook 동작은 별도 검토하세요.":"$where 문자열 결합을 일반 값 비교 쿼리로 바꾸고 타입 검증·드라이버 및 서버 버전·JavaScript 실행 설정을 로컬에서 확인하세요.",
                             "수정 후 같은 프로젝트를 재검사하세요. 운영 서버 공격은 하지 마세요. 이 항목은 기존 점수·배포 판단·해결 건수와 별도입니다."));
         }).toList();
     }

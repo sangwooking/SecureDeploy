@@ -38,6 +38,39 @@ class ServerAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void sequelizeRawQueryPersistsWithSourceAndSinkAcrossAllIntakes() throws Exception {
+        String token=signup();
+        var sources=Map.of("package.json","{\"dependencies\":{\"express\":\"4.21.2\",\"sequelize\":\"6.37.5\"}}", "server.cjs",
+                "const express=require('express');const Engine=require('sequelize');const db=new Engine('unused');const app=express();app.post('/search',(req,res)=>{const sql='SELECT value FROM records WHERE id='+req.body.id;db.query(sql);});");
+        var zip=uploadSources(token,sources);var snapshot=zip.path("serverAnalysis");
+        assertThat(snapshot.path("validatedFindings")).hasSize(1);
+        var finding=snapshot.at("/validatedFindings/0");
+        assertThat(finding.path("ruleId").asText()).isEqualTo("JS_SEQUELIZE_SQL_INPUT_FLOW");
+        assertThat(finding.path("priority").asText()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(finding.path("comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        assertThat(finding.at("/evidence/0/kind").asText()).isEqualTo("CWE-89");
+        assertThat(finding.at("/evidence/0/source/kind").asText()).isEqualTo("EXPRESS_BODY");
+        assertThat(finding.at("/evidence/0/sink/kind").asText()).isEqualTo("SEQUELIZE_RAW_QUERY");
+        assertThat(zip.path("securityScore").asInt()).isEqualTo(100);
+        var roots=new ArrayList<Path>();
+        for(String name:List.of("sql-public","sql-private")) {
+            Path root=Files.createDirectory(temp.resolve(name));roots.add(root);
+            for(var source:sources.entrySet())Files.writeString(root.resolve(source.getKey()),source.getValue());
+        }
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/sql",roots.get(0),roots.get(0)));
+        var pub=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/sql\",\"scanMode\":\"STANDARD\"}");
+        var metadata=new GitHubSourceSnapshot("fixture","sql","https://github.com/fixture/sql","main","a".repeat(40),"aaaaaaa",null,null,null,null,2,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/sql",roots.get(1),roots.get(1),metadata));
+        var prv=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        for(var response:List.of(pub,prv))assertThat(response.path("serverAnalysis")).isEqualTo(snapshot);
+        for(var root:roots)assertThat(root).doesNotExist();
+        long id=zip.path("reviewId").asLong();assertThat(detail(token,id).path("serverAnalysis")).isEqualTo(snapshot);
+        mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+        var bound=uploadSources(token,Map.of("package.json",sources.get("package.json"),"server.cjs",sources.get("server.cjs")
+                .replace("const sql='SELECT value FROM records WHERE id='+req.body.id;db.query(sql);","db.query('SELECT value FROM records WHERE id=$1',{bind:[req.body.id]});")));
+        assertThat(bound.at("/serverAnalysis/validatedFindings")).isEmpty();
+    }
+
     @Test void shellEvidencePersistsAcrossZipAndPublicAndPrivateInputsWithoutLegacyRiskPromotion() throws Exception {
         String token=signup();
         var sources=Map.of("package.json","{\"dependencies\":{\"express\":\"4.21.2\"}}", "server.cjs",
