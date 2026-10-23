@@ -58,6 +58,8 @@ function registry(options={}){
 test('bounded registry initialization connects a branch-created instance after reviewed model definitions',()=>{
   const r=registry();assert.equal(strong(r).length,1,JSON.stringify(r.files));
   assert.ok(r.nodeUses.some(u=>u.operation==='SEQUELIZE_REGISTRY_SUMMARY'));
+  const origins=strong(r)[0].flow.filter(p=>p.kind==='SEQUELIZE_DECLARED_INSTANCE_ORIGIN');
+  assert.equal(origins.length,2);assert.ok(origins.every(p=>p.filePath==='records/index.js'&&p.line>1));
 });
 for(const [name,options] of [
   ['omitted model',{missing:true}],['incomplete inventory',{complete:false}],

@@ -187,3 +187,22 @@ Official contracts reviewed:
 Installed SDK versions and actual deployments are not verified by these API-shape
 contracts. Policy evidence is repository-local; matching the operational project,
 headers, role inheritance and applied migrations requires authorized external tests.
+
+## Bounded Sequelize raw queries (v20)
+
+An exact/caret/tilde dependency declaration for major 4-6 establishes only the
+static constructor/query API contract, not the installed version or runtime DB.
+Proven Express input in the SQL text is distinct from values in fixed SQL's
+bind/replacements options. Unknown transformations, escaped/mutated receivers,
+custom hooks and unsupported options do not become confirmed paths.
+
+The optional CommonJS registry summary supports the closed v4/v5
+readdir/filter/import scaffold with define-only model files and pure configuration.
+All non-hidden directory entries must be inventoried and parsed. Missing inventory,
+custom association/model effects, prototype writes and v6's removed import API
+reject the summary. Source inventory is not proof of the deployed directory.
+No target initialization is executed. Model.find and general ORM authorization
+are not proven by this summary. New findings remain REVIEW_REQUIRED/NOT_COMPARED.
+
+Contracts: https://sequelize.org/v4/class/lib/sequelize.js~sequelize
+and https://sequelize.org/docs/v6/other-topics/upgrade/

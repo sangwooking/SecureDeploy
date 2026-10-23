@@ -77,6 +77,8 @@ const labels: Record<string, string> = {
   SEQUELIZE_INITIALIZATION_SUMMARY_NOT_RUNTIME_EXECUTION:'제한된 초기화 요약 · 실제 초기화 실행 아님',
   SEQUELIZE_DECLARED_API_VERSION_UNKNOWN:'지원하는 Sequelize 선언 버전을 확인하지 못함',SEQUELIZE_CONSTRUCTOR_EFFECTS_UNKNOWN:'Sequelize 생성자 옵션의 부작용 미확인',
   SEQUELIZE_QUERY_ARGUMENT_CONTRACT_UNKNOWN:'Sequelize 쿼리 인자 계약 미확인',SOURCE_INVENTORY_NOT_RUNTIME_DIRECTORY:'수집된 소스 목록 기준 · 운영 디렉터리는 미확인',
+  SEQUELIZE_IMPORT_API_UNSUPPORTED:'선언된 버전에서 모델 import 초기화 계약 미지원',SEQUELIZE_MODEL_INVENTORY_INCOMPLETE:'모델 파일 목록이 불완전해 초기화 출처를 확정하지 않음',
+  SEQUELIZE_MODEL_NOT_PARSED_OR_UNSUPPORTED:'모델 파일 미검사 또는 선언 외 부작용 미지원',
   DECLARED_VERSION_NOT_INSTALLED_VERSION:'선언 버전 기준 · 실제 설치 버전은 미확인',MODEL_API_AND_AUTHORIZATION_NOT_PROVEN:'모델 API 및 접근권한은 검증하지 않음',
   NODE_PROCESS_API_ORIGIN_UNKNOWN:'프로세스 API가 변경되어 실제 호출 대상을 확인하지 못함',NODE_PROCESS_OPTIONS_UNVERIFIED:'프로세스 호출 옵션의 의미 미확인',
   NODE_PROCESS_ARGV_NOT_WHOLE_OPERATION_SAFETY:'shell 미사용 기본 계약 관찰 · 실행 파일·인자·플랫폼 전체 안전 미검증',

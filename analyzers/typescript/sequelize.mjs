@@ -157,15 +157,19 @@ export function sequelizeContracts(api) {
       if(match(s,'module.exports=$db;',new Map(bindings),mod)){if(!registry||!instanceExport)return;exported=true;continue;}
       return;
     }
-    if(!exported||!registry||!version(mod)||Number(version(mod))>5||!input.nodeSourceInventoryComplete||!Array.isArray(input.nodeSourceInventory)||input.nodeSourceInventory.length>1000)return;
+    if(!exported||!registry)return;
+    if(!version(mod)||Number(version(mod))>5){note(mod,'SEQUELIZE_IMPORT_API_UNSUPPORTED');return;}
+    if(!input.nodeSourceInventoryComplete||!Array.isArray(input.nodeSourceInventory)||input.nodeSourceInventory.length>1000){note(mod,'SEQUELIZE_MODEL_INVENTORY_INCOMPLETE');return;}
     const directory=path.posix.dirname(mod.filePath),prefix=directory==='.'?'':directory+'/';
     const inventory=input.nodeSourceInventory.filter(p=>typeof p==='string'&&path.posix.dirname(p)===directory&&path.posix.basename(p)[0]!=='.'&&p!==mod.filePath);
     if(!inventory.length||inventory.length>api.limits.maxFiles)return;
     const names=new Set();
-    for(const file of inventory){tick(mod);const target=modules.get(file);if(!target||!file.startsWith(prefix))return;
-      const name=model(target);if(!name||names.has(name))return;names.add(name);evidence.push(loc(target.ast,target,'SEQUELIZE_DEFINE_ONLY_MODEL'));
+    for(const file of inventory){tick(mod);const target=modules.get(file);if(!target||!file.startsWith(prefix)){note(mod,'SEQUELIZE_MODEL_NOT_PARSED_OR_UNSUPPORTED');return;}
+      const name=model(target);if(!name||names.has(name)){note(mod,'SEQUELIZE_MODEL_NOT_PARSED_OR_UNSUPPORTED');return;}names.add(name);evidence.push(loc(target.ast,target,'SEQUELIZE_DEFINE_ONLY_MODEL'));
     }
-    const db=object('object');db.ref.properties.set('sequelize',create(mod,mod.ast));if(constructorExport)db.ref.properties.set('Sequelize',native('sequelize',mod));
+    const db=object('object'),instance=create(mod,mod.ast);
+    instance.ref.origin=evidence.filter(e=>e.kind==='SEQUELIZE_DECLARED_INSTANCE_ORIGIN');
+    db.ref.properties.set('sequelize',instance);if(constructorExport)db.ref.properties.set('Sequelize',native('sequelize',mod));
     for(const name of names)db.ref.properties.set(name,unknown());
     note(mod,'SEQUELIZE_INITIALIZATION_SUMMARY_NOT_RUNTIME_EXECUTION');
     api.append(api.result.nodeUses,{ruleId:'JS_CONSTRUCTOR_EFFECT',kind:'INITIALIZATION_SUMMARY_MUST',operation:'SEQUELIZE_REGISTRY_SUMMARY',
