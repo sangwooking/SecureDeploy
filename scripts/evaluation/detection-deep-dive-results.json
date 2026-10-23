@@ -1,0 +1,633 @@
+{
+  "schemaVersion": 1,
+  "baseline": "45f205c2e8b5b59e62906cd6788a5d7189dcd543",
+  "engineCommit": "d3d53a94985771c5c5b41a7821712124acb1818d",
+  "frozenTruthSha256": "39385db056dd4bdb7c9974529609414a35ebb70341205e3354e76efe80c0fcac",
+  "counts": {
+    "before": {
+      "NOT_SUPPORTED": 7,
+      "NOT_INSPECTED": 3
+    },
+    "after": {
+      "NOT_SUPPORTED": 4,
+      "TP": 2,
+      "TN": 1,
+      "NOT_INSPECTED": 3
+    }
+  },
+  "cases": [
+    {
+      "caseId": "dvna-sql",
+      "truth": "RISK",
+      "cwe": "CWE-89",
+      "grade": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "filePath": "core/appHandler.js",
+      "line": 11,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED",
+      "rawRuleMatchedBefore": false,
+      "rawRuleMatchedAfter": false,
+      "reviewedFailureCause": "Sequelize/model query API and dynamically created model origin outside declared SQL contract.",
+      "split": "OBSERVED_REGRESSION_NOT_BLIND"
+    },
+    {
+      "caseId": "dvna-shell",
+      "truth": "RISK",
+      "cwe": "CWE-78",
+      "grade": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "filePath": "core/appHandler.js",
+      "line": 39,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "before": "NOT_SUPPORTED",
+      "after": "TP",
+      "rawRuleMatchedBefore": false,
+      "rawRuleMatchedAfter": false,
+      "reviewedFailureCause": "Verified Node builtin shell sink added; no inference from function name alone.",
+      "split": "OBSERVED_REGRESSION_NOT_BLIND"
+    },
+    {
+      "caseId": "dvna-deserialization",
+      "truth": "RISK",
+      "cwe": "CWE-502",
+      "grade": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "filePath": "core/appHandler.js",
+      "line": 218,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED",
+      "rawRuleMatchedBefore": false,
+      "rawRuleMatchedAfter": false,
+      "reviewedFailureCause": "Uploaded file source and node-serialize sink outside declared contract.",
+      "split": "OBSERVED_REGRESSION_NOT_BLIND"
+    },
+    {
+      "caseId": "dvna-2017-sql-still-present",
+      "truth": "RISK",
+      "cwe": "CWE-89",
+      "grade": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "filePath": "core/appHandler.js",
+      "line": 11,
+      "fileSha256": "a2df743e254dd312698e83a08a9da0193c76cb997ee5514f89a51dc73c3f112c",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED",
+      "rawRuleMatchedBefore": false,
+      "rawRuleMatchedAfter": false,
+      "reviewedFailureCause": "Sequelize/model query API and dynamically created model origin outside declared SQL contract.",
+      "split": "OBSERVED_REGRESSION_NOT_BLIND"
+    },
+    {
+      "caseId": "dvna-2017-shell-still-present",
+      "truth": "RISK",
+      "cwe": "CWE-78",
+      "grade": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "filePath": "core/appHandler.js",
+      "line": 39,
+      "fileSha256": "a2df743e254dd312698e83a08a9da0193c76cb997ee5514f89a51dc73c3f112c",
+      "before": "NOT_SUPPORTED",
+      "after": "TP",
+      "rawRuleMatchedBefore": false,
+      "rawRuleMatchedAfter": false,
+      "reviewedFailureCause": "Verified Node builtin shell sink added; no inference from function name alone.",
+      "split": "OBSERVED_REGRESSION_NOT_BLIND"
+    },
+    {
+      "caseId": "dvna-model-query-counterpart",
+      "truth": "NORMAL_FOR_TARGET",
+      "cwe": "CWE-89",
+      "grade": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "sha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "filePath": "core/appHandler.js",
+      "line": 10,
+      "fileSha256": "05446d6f7bbf2beb6ddb5db1070c14d6472d6118b1ce35c2b63ad975819dd9f3",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED",
+      "rawRuleMatchedBefore": false,
+      "rawRuleMatchedAfter": false,
+      "reviewedFailureCause": "Sequelize/model query API and dynamically created model origin outside declared SQL contract.",
+      "split": "OBSERVED_REGRESSION_NOT_BLIND"
+    },
+    {
+      "caseId": "dvna-execfile-counterpart",
+      "truth": "NORMAL_FOR_TARGET",
+      "cwe": "CWE-78",
+      "grade": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "sha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "filePath": "core/appHandler.js",
+      "line": 43,
+      "fileSha256": "05446d6f7bbf2beb6ddb5db1070c14d6472d6118b1ce35c2b63ad975819dd9f3",
+      "before": "NOT_SUPPORTED",
+      "after": "TN",
+      "rawRuleMatchedBefore": false,
+      "rawRuleMatchedAfter": false,
+      "reviewedFailureCause": "Verified Node builtin shell sink added; no inference from function name alone.",
+      "split": "OBSERVED_REGRESSION_NOT_BLIND"
+    },
+    {
+      "caseId": "juice-search-sql",
+      "truth": "RISK",
+      "cwe": "CWE-89",
+      "grade": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "filePath": "routes/search.ts",
+      "line": 23,
+      "fileSha256": "6e3272ef4065d080295d995a04964e8c5e6b1e06c4b4c8ebed3234286686ee5f",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_INSPECTED",
+      "rawRuleMatchedBefore": false,
+      "rawRuleMatchedAfter": false,
+      "reviewedFailureCause": "TARGET_ROUTE_NOT_SELECTED; server setup/wrappers also unmodeled, not proven as the first failure.",
+      "split": "OBSERVED_REGRESSION_NOT_BLIND"
+    },
+    {
+      "caseId": "juice-login-sql",
+      "truth": "RISK",
+      "cwe": "CWE-89",
+      "grade": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "filePath": "routes/login.ts",
+      "line": 34,
+      "fileSha256": "cf11d682edff6744bcb54339bce4b2dd6da5e80f9038facd7605df857b0a0b7b",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_INSPECTED",
+      "rawRuleMatchedBefore": false,
+      "rawRuleMatchedAfter": false,
+      "reviewedFailureCause": "TARGET_ROUTE_NOT_SELECTED; server setup/wrappers also unmodeled, not proven as the first failure.",
+      "split": "OBSERVED_REGRESSION_NOT_BLIND"
+    },
+    {
+      "caseId": "juice-profile-ssrf",
+      "truth": "RISK",
+      "cwe": "CWE-918",
+      "grade": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "filePath": "routes/profileImageUrlUpload.ts",
+      "line": 24,
+      "fileSha256": "75140f35e65141135d3abb4b3b86aad1556c0d2a22d733ae1d50a127cd0cbb26",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_INSPECTED",
+      "rawRuleMatchedBefore": false,
+      "rawRuleMatchedAfter": false,
+      "reviewedFailureCause": "TARGET_ROUTE_NOT_SELECTED; server setup/wrappers also unmodeled, not proven as the first failure.",
+      "split": "OBSERVED_REGRESSION_NOT_BLIND"
+    }
+  ],
+  "validation": {
+    "caseId": "goof-create-shell",
+    "truth": "RISK",
+    "filePath": "routes/index.js",
+    "line": 174,
+    "cwe": "CWE-78",
+    "grade": "A_DOCUMENTED_VULNERABLE_APP_PATH_NO_VERIFIED_FIX_PAIR",
+    "sha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+    "before": "NOT_SUPPORTED",
+    "after": "NOT_SUPPORTED",
+    "verifiedFirstGap": "Express receiver mutation/setup uncertainty; zero registered request entries.",
+    "untestedLaterHypothesis": "Regex match extraction may also require a separate supported transform contract.",
+    "split": "CROSS_REPOSITORY_OBSERVED_VALIDATION_NO_EXTERNAL_REVIEW"
+  },
+  "projectChecks": [
+    {
+      "project": "dvna-vulnerable",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "elapsedMsBefore": [
+        600,
+        486
+      ],
+      "elapsedMsAfter": [
+        587,
+        472
+      ],
+      "entrypointsBefore": 30,
+      "entrypointsAfter": 30,
+      "parsedBefore": 14,
+      "parsedAfter": 14,
+      "coverageBefore": "PARTIAL",
+      "coverageAfter": "PARTIAL"
+    },
+    {
+      "project": "dvna-fixed",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "elapsedMsBefore": [
+        559,
+        493
+      ],
+      "elapsedMsAfter": [
+        560,
+        480
+      ],
+      "entrypointsBefore": 30,
+      "entrypointsAfter": 30,
+      "parsedBefore": 14,
+      "parsedAfter": 14,
+      "coverageBefore": "PARTIAL",
+      "coverageAfter": "PARTIAL"
+    },
+    {
+      "project": "dvna-remediated",
+      "sha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "elapsedMsBefore": [
+        564,
+        472
+      ],
+      "elapsedMsAfter": [
+        574,
+        491
+      ],
+      "entrypointsBefore": 28,
+      "entrypointsAfter": 28,
+      "parsedBefore": 16,
+      "parsedAfter": 16,
+      "coverageBefore": "PARTIAL",
+      "coverageAfter": "PARTIAL"
+    },
+    {
+      "project": "juice-shop",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "elapsedMsBefore": [
+        924,
+        809
+      ],
+      "elapsedMsAfter": [
+        994,
+        747
+      ],
+      "entrypointsBefore": 0,
+      "entrypointsAfter": 0,
+      "parsedBefore": 61,
+      "parsedAfter": 61,
+      "coverageBefore": "PARTIAL",
+      "coverageAfter": "PARTIAL"
+    },
+    {
+      "project": "next-supabase",
+      "sha": "2998a2e801caab665d603daefc7445c04309285a",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "elapsedMsBefore": [
+        456,
+        390
+      ],
+      "elapsedMsAfter": [
+        441,
+        382
+      ],
+      "entrypointsBefore": 0,
+      "entrypointsAfter": 0,
+      "parsedBefore": 44,
+      "parsedAfter": 44,
+      "coverageBefore": "PARTIAL",
+      "coverageAfter": "PARTIAL"
+    },
+    {
+      "project": "goof-validation",
+      "sha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "elapsedMsBefore": [
+        642,
+        480
+      ],
+      "elapsedMsAfter": [
+        626,
+        474
+      ],
+      "entrypointsBefore": 0,
+      "entrypointsAfter": 0,
+      "parsedBefore": 10,
+      "parsedAfter": 10,
+      "coverageBefore": "PARTIAL",
+      "coverageAfter": "PARTIAL"
+    }
+  ],
+  "failureCasePacks": [
+    {
+      "caseId": "dvna-sql",
+      "repository": "appsecco/dvna",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "filePath": "core/appHandler.js",
+      "line": 11,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "groundTruth": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED",
+      "verifiedGap": "Sequelize/model query API and dynamically created model origin outside declared SQL contract.",
+      "improvementCommit": "d3d53a94985771c5c5b41a7821712124acb1818d",
+      "limits": [
+        "No execution, exploit or whole-project safety claim.",
+        "No original code persisted in this pack."
+      ]
+    },
+    {
+      "caseId": "dvna-shell",
+      "repository": "appsecco/dvna",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "filePath": "core/appHandler.js",
+      "line": 39,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "groundTruth": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "before": "NOT_SUPPORTED",
+      "after": "TP",
+      "verifiedGap": "Verified Node builtin shell sink added; no inference from function name alone.",
+      "improvementCommit": "d3d53a94985771c5c5b41a7821712124acb1818d",
+      "limits": [
+        "No execution, exploit or whole-project safety claim.",
+        "No original code persisted in this pack."
+      ]
+    },
+    {
+      "caseId": "dvna-deserialization",
+      "repository": "appsecco/dvna",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "filePath": "core/appHandler.js",
+      "line": 218,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "groundTruth": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED",
+      "verifiedGap": "Uploaded file source and node-serialize sink outside declared contract.",
+      "improvementCommit": "d3d53a94985771c5c5b41a7821712124acb1818d",
+      "limits": [
+        "No execution, exploit or whole-project safety claim.",
+        "No original code persisted in this pack."
+      ]
+    },
+    {
+      "caseId": "dvna-2017-sql-still-present",
+      "repository": "appsecco/dvna",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "filePath": "core/appHandler.js",
+      "line": 11,
+      "fileSha256": "a2df743e254dd312698e83a08a9da0193c76cb997ee5514f89a51dc73c3f112c",
+      "groundTruth": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED",
+      "verifiedGap": "Sequelize/model query API and dynamically created model origin outside declared SQL contract.",
+      "improvementCommit": "d3d53a94985771c5c5b41a7821712124acb1818d",
+      "limits": [
+        "No execution, exploit or whole-project safety claim.",
+        "No original code persisted in this pack."
+      ]
+    },
+    {
+      "caseId": "dvna-2017-shell-still-present",
+      "repository": "appsecco/dvna",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "filePath": "core/appHandler.js",
+      "line": 39,
+      "fileSha256": "a2df743e254dd312698e83a08a9da0193c76cb997ee5514f89a51dc73c3f112c",
+      "groundTruth": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "before": "NOT_SUPPORTED",
+      "after": "TP",
+      "verifiedGap": "Verified Node builtin shell sink added; no inference from function name alone.",
+      "improvementCommit": "d3d53a94985771c5c5b41a7821712124acb1818d",
+      "limits": [
+        "No execution, exploit or whole-project safety claim.",
+        "No original code persisted in this pack."
+      ]
+    },
+    {
+      "caseId": "juice-search-sql",
+      "repository": "juice-shop/juice-shop",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "filePath": "routes/search.ts",
+      "line": 23,
+      "fileSha256": "6e3272ef4065d080295d995a04964e8c5e6b1e06c4b4c8ebed3234286686ee5f",
+      "groundTruth": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_INSPECTED",
+      "verifiedGap": "TARGET_ROUTE_NOT_SELECTED; server setup/wrappers also unmodeled, not proven as the first failure.",
+      "improvementCommit": "d3d53a94985771c5c5b41a7821712124acb1818d",
+      "limits": [
+        "No execution, exploit or whole-project safety claim.",
+        "No original code persisted in this pack."
+      ]
+    },
+    {
+      "caseId": "juice-login-sql",
+      "repository": "juice-shop/juice-shop",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "filePath": "routes/login.ts",
+      "line": 34,
+      "fileSha256": "cf11d682edff6744bcb54339bce4b2dd6da5e80f9038facd7605df857b0a0b7b",
+      "groundTruth": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_INSPECTED",
+      "verifiedGap": "TARGET_ROUTE_NOT_SELECTED; server setup/wrappers also unmodeled, not proven as the first failure.",
+      "improvementCommit": "d3d53a94985771c5c5b41a7821712124acb1818d",
+      "limits": [
+        "No execution, exploit or whole-project safety claim.",
+        "No original code persisted in this pack."
+      ]
+    },
+    {
+      "caseId": "juice-profile-ssrf",
+      "repository": "juice-shop/juice-shop",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "filePath": "routes/profileImageUrlUpload.ts",
+      "line": 24,
+      "fileSha256": "75140f35e65141135d3abb4b3b86aad1556c0d2a22d733ae1d50a127cd0cbb26",
+      "groundTruth": "A_DOCUMENTED_PATH_NOT_CVE_CLAIM",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_INSPECTED",
+      "verifiedGap": "TARGET_ROUTE_NOT_SELECTED; server setup/wrappers also unmodeled, not proven as the first failure.",
+      "improvementCommit": "d3d53a94985771c5c5b41a7821712124acb1818d",
+      "limits": [
+        "No execution, exploit or whole-project safety claim.",
+        "No original code persisted in this pack."
+      ]
+    }
+  ],
+  "knownPatchCommits": [
+    "4fe36fcfbd615fc9ea340e1238be33dd0d140ef8",
+    "dc1f9c54685eb04f55e444370d6d622834e4cc00"
+  ],
+  "knownLimits": [
+    "Two shell positives are related DVNA revisions, not independent projects.",
+    "Grade C Next example is never a TN; next=latest cannot establish the versioned route contract.",
+    "No external independent reviewer or verified real-world CVE precision claim.",
+    "Live SCA/OSV/EPSS/KEV not run; static component extraction only.",
+    "Ground-truth locations corrected during baseline execution before result review; labels unchanged."
+  ],
+  "policyChanges": false,
+  "userPostgresModified": false,
+  "targetExecuted": false,
+  "existingAppRegressions": [
+    {
+      "project": "nglguarino--echoverse-11labs",
+      "sha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "sameStructuralCandidates": true,
+      "clients": 0,
+      "accesses": 0,
+      "repeatsConsistent": true
+    },
+    {
+      "project": "LellaSriHarsha--power-platform-hub",
+      "sha": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "sameStructuralCandidates": true,
+      "clients": 0,
+      "accesses": 0,
+      "repeatsConsistent": true
+    },
+    {
+      "project": "TinyikoMamban--workflowai-pro",
+      "sha": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "sameStructuralCandidates": true,
+      "clients": 3,
+      "accesses": 42,
+      "repeatsConsistent": true
+    },
+    {
+      "project": "Adriano-Digital2024--CopyMonster",
+      "sha": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "sameStructuralCandidates": true,
+      "clients": 29,
+      "accesses": 75,
+      "repeatsConsistent": true
+    }
+  ],
+  "tests": {
+    "backend": {
+      "tests": 670,
+      "skippedOptIn": 9,
+      "failures": 0
+    },
+    "typescript": 319,
+    "frontend": 158,
+    "evaluationTools": 174,
+    "frontendBuild": "PASS",
+    "browser": {
+      "backend": "ACTUAL_ISOLATED_H2",
+      "viewports": [
+        1440,
+        390,
+        320
+      ],
+      "apiTransport": "TEST_ONLY_CORS_PROXY; PRODUCTION_CORS_UNCHANGED",
+      "github": "MOCK_API_PARITY_NOT_LIVE_APP",
+      "providerCalls": 0
+    }
+  },
+  "interpretation": {
+    "scoredSubsetPrecision": 1,
+    "scoredSubsetRecall": 1,
+    "scoredPositivePaths": 2,
+    "positiveProjectFamilies": 1,
+    "riskDetectionAcross8OriginalRiskTargets": 0.25,
+    "determinedAcross10OriginalTargets": 0.3,
+    "newValidationRiskDetected": false,
+    "productWideAccuracyClaim": false
+  },
+  "selectionGap": {
+    "project": "juice-shop",
+    "javascriptCandidates": 648,
+    "submitted": 100,
+    "parsed": 61,
+    "parseFailed": 39,
+    "allParseFailuresIn": "data/static/codefixes",
+    "observedReason": "Standalone teaching fragments, including incomplete object syntax, consume selected slots; target server routes not selected.",
+    "changedThisMilestone": false
+  },
+  "falsePositiveAudit": {
+    "juiceRawWarnings": 349,
+    "juiceFilteredWarnings": 349,
+    "notAllWarningsReviewedOrFalsePositives": true,
+    "retainedNonRuntimeHttpTestTextExamples": [
+      {
+        "filePath": "frontend/src/app/order-completion/order-completion.component.spec.ts",
+        "line": 140
+      },
+      {
+        "filePath": "frontend/src/app/order-completion/order-completion.component.spec.ts",
+        "line": 142
+      }
+    ],
+    "fixImplemented": false,
+    "reason": "Scoped to one evidence-backed shell contract; no blanket test-path suppression."
+  },
+  "runtimeAndGit": {
+    "developmentBackend": "ISOLATED_EVALUATION_RECEIPT; ROLLOUT_APPROVED_SEPARATELY",
+    "main": "45f205c2e8b5b59e62906cd6788a5d7189dcd543",
+    "implementationBranch": "codex/detection-deep-dive",
+    "gitStatusScope": "AT_EVALUATION_TIME_BEFORE_MAIN_INTEGRATION",
+    "privateEvaluationDocumentsPreserved": 3
+  },
+  "provenanceUrls": [
+    "https://github.com/appsecco/dvna/commit/4fe36fcfbd615fc9ea340e1238be33dd0d140ef8",
+    "https://github.com/appsecco/dvna/commit/dc1f9c54685eb04f55e444370d6d622834e4cc00",
+    "https://github.com/juice-shop/juice-shop",
+    "https://github.com/snyk-labs/nodejs-goof",
+    "https://nodejs.org/api/child_process.html"
+  ]
+}

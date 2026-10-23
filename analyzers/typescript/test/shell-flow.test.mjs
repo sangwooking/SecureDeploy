@@ -29,7 +29,11 @@ for(const [name,body,setup] of [
  ['mutated-module',"cp.exec=custom;cp.exec(req.body.value);","const cp=require('child_process');"],
  ['escaped-module',"alter(cp);cp.exec(req.body.value);","const cp=require('child_process');"],
  ['unsupported-shell-argv',"exec('fixed',[req.body.value],{shell:true});","const exec=require('child_process').execFile;"],
-])test('uncertain process contract: '+name,()=>{const r=run(body,setup);assert.equal(candidate(r).length,0);assert.ok(r.files[0].limitations.length>0);});
+])test('uncertain process contract: '+name,()=>{
+ const r=run(body,setup);assert.equal(candidate(r).length,0);
+ assert.ok(r.nodeUses.some(u=>['FLOW_UNRESOLVED','UNKNOWN','PROCESS_CONTRACT_UNKNOWN'].includes(u.kind))
+   ||r.files.some(f=>f.flowStatus==='PARTIAL'&&f.limitations.some(l=>['NODE_PROCESS_API_ORIGIN_UNKNOWN','NODE_LIBRARY_MUTATION_UNKNOWN','CALL_TARGET_UNRESOLVED'].includes(l))),name);
+});
 test('relative helper retains the supported command path',()=>{
  const r=analyze({files:[{filePath:'server.mjs',content:"import express from 'express';import {run} from './helper.mjs';const app=express();app.post('/',(req,res)=>run(req.body.command));"},{filePath:'helper.mjs',content:"import {exec} from 'node:child_process';export function run(value){exec(value);}"}],nodeManifests:[{filePath:'package.json',express:'4.21.2'}]});assert.equal(candidate(r).length,1);
 });

@@ -10,6 +10,8 @@ import time
 from pathlib import Path
 import urllib.request
 from application_track import collect, outside, relative, write, CREDENTIAL
+from benchmark import stable
+from collections import Counter
 
 PINS = {
     'dvna-vulnerable': ('appsecco/dvna', '9ba473add536f66ac9007966acb2a775dd31277a'),
@@ -182,6 +184,79 @@ def probe(root, worker, label=None):
     write(root/('probe-'+version+('-'+label if label else '')+'.json'),dict(schemaVersion=1,scope='EXACT_BASELINE_SELECTED_INPUT_NOT_NEW_COLLECTION',
         workerHashes={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(worker.glob('*.mjs'))},projects=reports))
 
+def outcome(case, row):
+    ts=row['typescript'];path=case['filePath'];line=case['line'];cwe=case['cwe']
+    rules={'CWE-78':{'JS_SHELL_COMMAND_INPUT_FLOW'},'CWE-89':{'TS_SQL_INPUT_FLOW'},'CWE-918':{'TS_SSRF_INPUT_FLOW'}}
+    matching=[f for f in ts.get('validatedFindings') or [] if f['location']['filePath']==path and f['location']['line']==line
+              and f['ruleId'] in rules.get(cwe,set())]
+    if matching:return 'TP' if case['truth']=='RISK' else 'FP'
+    # Explicit reviewed contracts, not an absence-of-warning safety heuristic.
+    if case['caseId']=='dvna-execfile-counterpart' and any(u['kind']=='ARGV_WITHOUT_SHELL_DECLARED'
+            and u['location']['filePath']==path and u['location']['line']==line for u in ts.get('nodeUses') or []):return 'TN'
+    file=next((f for f in ts['files'] if f['filePath']==path),None)
+    if not file or file['parseStatus']!='PARSED':return 'NOT_INSPECTED'
+    if cwe in {'CWE-89','CWE-502'}:return 'NOT_SUPPORTED'
+    if file['entrypoints']==0:return 'NOT_SUPPORTED'
+    if cwe=='CWE-78' and ts['analyzerVersion']=='ts-server-v17':return 'NOT_SUPPORTED'
+    return 'FN' if case['truth']=='RISK' else 'UNKNOWN'
+
+def audit(root):
+    root=outside(root);truth=json.loads((root/'ground-truth-v2.json').read_text());assets={};rows=[];checks=[]
+    names=list(PINS)+['goof-validation']
+    for name in names:
+        before=json.loads((root/(name+'-baseline.json')).read_text())
+        after=json.loads((root/(name+'-after.json')).read_text())
+        if before['planSha256']!=after['planSha256']:raise ValueError('PLAN_CHANGED')
+        a,b=before['projects'][0],after['projects'][0]
+        if a['commitSha']!=b['commitSha'] or len(a['runs'])!=2 or len(b['runs'])!=2:raise ValueError('IDENTITY_OR_REPEAT')
+        for p in [a,b]:
+            if stable(p['runs'][0])!=stable(p['runs'][1]):raise ValueError('NONDETERMINISTIC_RESULTS')
+        assets[name]=(a['runs'][0],b['runs'][0])
+        unchanged={k:stable(a['runs'][0][k])==stable(b['runs'][0][k]) for k in ['raw','filtered','securityScore','risk','sca']}
+        checks.append(dict(project=name,sha=a['commitSha'],legacyUnchanged=unchanged,
+            elapsedMsBefore=[r['elapsedMs'] for r in a['runs']],elapsedMsAfter=[r['elapsedMs'] for r in b['runs']],
+            entrypointsBefore=sum(f['entrypoints'] for f in a['runs'][0]['typescript']['files']),
+            entrypointsAfter=sum(f['entrypoints'] for f in b['runs'][0]['typescript']['files']),
+            parsedBefore=sum(f['parseStatus']=='PARSED' for f in a['runs'][0]['typescript']['files']),
+            parsedAfter=sum(f['parseStatus']=='PARSED' for f in b['runs'][0]['typescript']['files']),
+            coverageBefore=a['runs'][0]['coverage']['status'],coverageAfter=b['runs'][0]['coverage']['status']))
+    for c in truth['cases']:
+        a,b=assets[c['project']]
+        if c['project'].startswith('juice-'):cause='TARGET_ROUTE_NOT_SELECTED; server setup/wrappers also unmodeled, not proven as the first failure.'
+        elif c['cwe']=='CWE-89':cause='Sequelize/model query API and dynamically created model origin outside declared SQL contract.'
+        elif c['cwe']=='CWE-502':cause='Uploaded file source and node-serialize sink outside declared contract.'
+        else:cause='Verified Node builtin shell sink added; no inference from function name alone.'
+        rows.append(dict(caseId=c['caseId'],truth=c['truth'],cwe=c['cwe'],grade=c['grade'],sha=c['sha'],
+            filePath=c['filePath'],line=c['line'],fileSha256=c['fileSha256'],before=outcome(c,a),after=outcome(c,b),
+            rawRuleMatchedBefore=any(f['filePath']==c['filePath'] and f['line']==c['line'] for f in a['raw']),
+            rawRuleMatchedAfter=any(f['filePath']==c['filePath'] and f['line']==c['line'] for f in b['raw']),
+            reviewedFailureCause=cause,split='OBSERVED_REGRESSION_NOT_BLIND'))
+    a,b=assets['goof-validation'];v=json.loads((root/'goof-validation'/'validation-truth.json').read_text())
+    case=dict(caseId='goof-create-shell',truth='RISK',filePath=v['sink']['filePath'],line=v['sink']['line'],cwe=v['cwe'])
+    validation=dict(**case,grade=v['grade'],sha=v['sha'],before=outcome(case,a),after=outcome(case,b),
+        verifiedFirstGap='Express receiver mutation/setup uncertainty; zero registered request entries.',
+        untestedLaterHypothesis='Regex match extraction may also require a separate supported transform contract.',
+        split='CROSS_REPOSITORY_OBSERVED_VALIDATION_NO_EXTERNAL_REVIEW')
+    counts={phase:dict(Counter(r[phase] for r in rows)) for phase in ['before','after']}
+    if not all(all(c['legacyUnchanged'].values()) for c in checks):raise ValueError('LEGACY_SIGNAL_CHANGED')
+    packs=[dict(caseId=r['caseId'],repository=PINS[next(c['project'] for c in truth['cases'] if c['caseId']==r['caseId'])][0],
+        sha=r['sha'],filePath=r['filePath'],line=r['line'],fileSha256=r['fileSha256'],groundTruth=r['grade'],
+        before=r['before'],after=r['after'],verifiedGap=r['reviewedFailureCause'],
+        improvementCommit=json.loads((root/'dvna-vulnerable-after.json').read_text())['engineCommit'],
+        limits=['No execution, exploit or whole-project safety claim.','No original code persisted in this pack.']) for r in rows if r['truth']=='RISK']
+    result=dict(schemaVersion=1,baseline=truth['baseline'],engineCommit=json.loads((root/'dvna-vulnerable-after.json').read_text())['engineCommit'],
+        frozenTruthSha256=hashlib.sha256((root/'ground-truth-v2.json').read_bytes()).hexdigest(),
+        counts=counts,cases=rows,validation=validation,projectChecks=checks,failureCasePacks=packs,
+        knownPatchCommits=['4fe36fcfbd615fc9ea340e1238be33dd0d140ef8','dc1f9c54685eb04f55e444370d6d622834e4cc00'],
+        knownLimits=['Two shell positives are related DVNA revisions, not independent projects.',
+            'Grade C Next example is never a TN; next=latest cannot establish the versioned route contract.',
+            'No external independent reviewer or verified real-world CVE precision claim.',
+            'Live SCA/OSV/EPSS/KEV not run; static component extraction only.',
+            'Ground-truth locations corrected during baseline execution before result review; labels unchanged.'],
+        policyChanges=False,userPostgresModified=False,targetExecuted=False)
+    write(root/'source-free-summary.json',result)
+    print(json.dumps(dict(counts=counts,validation=validation['after'],repeatConsistency=True,legacySignalsUnchanged=True)))
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('output', type=Path)
@@ -189,8 +264,10 @@ if __name__ == '__main__':
     parser.add_argument('--probe-worker',type=Path)
     parser.add_argument('--probe-label')
     parser.add_argument('--freeze-validation',action='store_true')
+    parser.add_argument('--audit',action='store_true')
     args=parser.parse_args()
-    if args.probe_worker:probe(args.output,args.probe_worker,args.probe_label)
+    if args.audit:audit(args.output)
+    elif args.probe_worker:probe(args.output,args.probe_worker,args.probe_label)
     elif args.freeze_validation:freeze_validation(args.output)
     elif args.freeze_truth:freeze_truth(args.output)
     else:intake(args.output)

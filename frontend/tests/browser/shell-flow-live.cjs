@@ -21,7 +21,11 @@ try{
    const page=await browser.newPage({viewport:{width,height:1000}}),errors=[],outbound=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.addInitScript(auth=>{localStorage.setItem('securedeploy.accessToken',auth.accessToken);localStorage.setItem('securedeploy.authUser',JSON.stringify(auth.user));},user);
-   await page.route('**/*',r=>{const u=new URL(r.request().url());if(u.pathname.startsWith('/api/'))return r.continue({url:api+u.pathname+u.search});if(u.origin===origin)return r.continue();outbound.push(u.origin);return r.abort();});
+   // Test-only transport proxy: production CORS remains restricted to localhost:5173.
+   await page.route('**/*',async r=>{const u=new URL(r.request().url());if(u.pathname.startsWith('/api/')){
+    const response=await r.fetch({url:api+u.pathname+u.search,headers:{...r.request().headers(),origin:'http://localhost:5173'}});
+    return r.fulfill({response,headers:{...response.headers(),'access-control-allow-origin':origin}});
+   }if(u.origin===origin)return r.continue();outbound.push(u.origin);return r.abort();});
    await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);await resultView(page,'배포 전 직접 확인할 부분');
    const section=page.getByLabel('서버 코드 흐름 검사',{exact:true});await section.waitFor();
    assert.ok((await section.innerText()).includes('명령 문자열'));assert.ok((await section.innerText()).includes('server.cjs:1'));
