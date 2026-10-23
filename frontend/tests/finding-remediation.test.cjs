@@ -13,7 +13,7 @@ const item = { findingId: 'code:42', provider: 'template', model: null, promptVe
   } };
 test('guide uses exact finding identity and escapes model output', () => {
   const html = render(FindingRemediation, { finding, snapshot: { findings: [item] } });
-  for (const text of ['AI 자세히 보기', '무엇을 수정해야 하나요?', '수정 후 무엇을 확인하나요?', '탐지 신뢰도와 별개', '&lt;script&gt;', '${DB_PASSWORD}']) assert.ok(html.includes(text));
+  for (const text of ['수정·확인 가이드', '무엇을 수정해야 하나요?', '수정 후 무엇을 확인하나요?', '탐지 신뢰도와 별개', '&lt;script&gt;', '${DB_PASSWORD}']) assert.ok(html.includes(text));
   assert.ok(!html.includes('<script>'));
   const other = render(FindingRemediation, { finding: { ...finding, findingId: 'code:43' }, snapshot: { findings: [item] } });
   assert.ok(other.includes('기본 안내'));

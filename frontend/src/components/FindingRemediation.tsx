@@ -24,7 +24,7 @@ export function FindingRemediation({ finding, snapshot, vulnerability, expanded 
 }) {
   if (!finding) return null;
   if (incompleteDependency(finding)) return <details className="finding-remediation" open={expanded || undefined}>
-    <summary>AI 자세히 보기 <span>정보 확인 안내</span></summary>
+    <summary>수정·확인 가이드 <span>정보 확인 안내</span></summary>
     <DependencyVerificationDetails finding={finding} />
   </details>;
   const item = snapshot?.findings.find(entry => entry.findingId === finding?.findingId);
@@ -32,8 +32,8 @@ export function FindingRemediation({ finding, snapshot, vulnerability, expanded 
   const manual = findingGuidance(finding, vulnerability);
   const review = needsVerification(finding, vulnerability);
   return <details className="finding-remediation" open={expanded || undefined}>
-    <summary>AI 자세히 보기 <span>{item ? labels[item.generationStatus] : '기본 안내'}</span></summary>
-    <h4>{advice ? 'AI 해결 가이드' : '저장된 AI 수정안 없음 · 기본 확인 안내'}</h4>
+    <summary>수정·확인 가이드 <span>{item ? labels[item.generationStatus] : '기본 안내'}</span></summary>
+    <h4>{advice ? item?.generationStatus==='GENERATED' ? 'AI 해결 가이드' : '저장된 템플릿 가이드' : '기본 확인 안내 · 저장된 수정안 없음'}</h4>
     <p className="remediation-notice">{review ? '배포 전 직접 확인할 부분입니다. 실제 문제인지 확인한 뒤 수정하세요.' : '저장된 근거를 바탕으로 한 수정 제안입니다. 실제 영향은 사용 방식에 따라 달라집니다.'}
       {' '}탐지 신뢰도·우선순위·배포 판단은 변경하지 않습니다.</p>
     <h4>이게 어떤 문제인가요?</h4><p>{manual.summary}</p>

@@ -24,6 +24,10 @@ try{
    await page.route('**/*',r=>{const u=new URL(r.request().url());if(u.pathname.startsWith('/api/'))return r.continue({url:api+u.pathname+u.search});if(u.origin===origin)return r.continue();outbound.push(u.origin);return r.abort();});
    await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);await resultView(page,'배포 전 직접 확인할 부분');
    const section=page.getByLabel('서버 코드 흐름 검사',{exact:true});await section.waitFor();
+   await page.evaluate(()=>new Promise(requestAnimationFrame));
+   const flowDetails=section.locator('.flow-action-details > summary').first();await flowDetails.focus();await page.keyboard.press('Enter');
+   assert.ok(await flowDetails.evaluate(e=>e.parentElement.open&&getComputedStyle(e).outlineStyle!=='none'));
+   assert.ok(await section.getByLabel('기록된 코드 전달 경로').first().isVisible());await page.keyboard.press('Enter');
    await section.getByText(/^응답·로그 정보 전달 근거/).click();
    assert.ok((await section.innerText()).includes(c.label));assert.ok((await section.innerText()).includes('실제 유출은 미검증'));
    assert.ok((await section.innerText()).includes(flows[0].location.filePath));assert.ok(!((await section.innerText()).includes('API_SECRET')));

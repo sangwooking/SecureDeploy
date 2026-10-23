@@ -23,9 +23,9 @@ test('approved deterministic edits are not mislabeled as AI output',()=>{
 
 test('saved deployment assessments precede reference score and resolved entries have no remediation', () => {
   const result = fixture(), previous = JSON.stringify(result), html = render(result);
-  assert.ok(html.indexOf('배포 전 수정 필요') < html.indexOf('룰 기반 참고 점수'));
-  assert.ok(html.includes('해결된 문제 1'));
-  assert.ok(html.includes('비교 확인 불가 1'));
+  assert.ok(html.indexOf('배포 전 수정 필요') < html.indexOf('규칙 기반 참고 점수'));
+  assert.match(html,/해결된 문제 <strong>1<\/strong>/);
+  assert.match(html,/비교 확인 불가 <strong>1<\/strong>/);
   assert.ok(!html.includes('코드에서 인증정보 제거'));
   assert.ok(html.includes('이전 기술 정보 보기'));
   assert.equal(JSON.stringify(result), previous);

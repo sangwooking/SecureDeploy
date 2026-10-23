@@ -125,6 +125,6 @@ test('repeated storage locations retain findings but are not presented as indepe
 
 test('guidance resolves saved advice by finding identity without legacy generation tabs', () => {
   const html = render(fixture(), 'GUIDANCE');
-  for (const text of ['해결할 문제 선택', '코드에서 인증정보 제거', '수정 후 무엇을 확인하나요?', 'AI 자세히 보기']) assert.ok(html.includes(text));
+  for (const text of ['해결할 문제 선택', '코드에서 인증정보 제거', '수정 후 무엇을 확인하나요?', '수정·확인 가이드']) assert.ok(html.includes(text));
   assert.ok(!html.includes('AI와 더 자세히 검토하기'));
 });

@@ -4,6 +4,7 @@ import type { EditingContent, EditingDiff, EditingFile, EditingWorkspace } from 
 import type { SecurityReviewResponse } from '../types/securityReview';
 import { AiPatchPanel } from './AiPatchPanel';
 import { WorkspaceScanPanel } from './WorkspaceScanPanel';
+import { PatchDiff } from './PatchDiff';
 
 interface TreeNode { name: string; children: Map<string, TreeNode>; file?: EditingFile }
 function FileTree({ files, selected, disabled, onSelect }: { files: EditingFile[]; selected?: string; disabled: boolean; onSelect: (file: EditingFile) => void }) {
@@ -34,6 +35,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath }: { result
   const [stage, setStage] = useState<'edit'|'diff'|'scan'>('edit');
   const [pane, setPane] = useState<'files'|'code'|'evidence'>('files');
   const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const [fileQuery, setFileQuery] = useState('');
   const mounted = useRef(true);
   const dirty = content !== null && text !== content.text.replace(/\r\n/g, '\n');
   useEffect(() => {
@@ -68,7 +70,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath }: { result
   const start = () => run(async () => {
     if (!result.reviewId) return;
     const value = await createEditingWorkspace(result.reviewId, result.sourceType === 'ZIP' ? zip ?? undefined : undefined);
-    if (mounted.current) { setWorkspace(value); setExpired(false); sessionStorage.setItem(key, value.id); }
+    if (mounted.current) { setWorkspace(value); setExpired(false); setFileQuery(''); sessionStorage.setItem(key, value.id); }
   });
   const select = (file: EditingFile) => void run(async () => {
     if (dirty && !window.confirm('저장하지 않은 편집을 버리고 다른 파일을 열까요?')) return;
@@ -111,8 +113,9 @@ export function SourceEditingWorkspace({ result, onBack, initialPath }: { result
   const clear = () => void run(async () => {
     if (workspace && !window.confirm('원본과 편집 내용을 삭제하고 작업 공간을 닫을까요? 복구할 수 없습니다.')) return;
     if (workspace && !expired) await deleteEditingWorkspace(workspace.id);
-    sessionStorage.removeItem(key); setWorkspace(null); setContent(null); setSelected(null); setText(''); setDiffs(null); setApproved(false); setExpired(false);
+    sessionStorage.removeItem(key); setWorkspace(null); setContent(null); setSelected(null); setText(''); setDiffs(null); setApproved(false); setExpired(false); setFileQuery('');
   });
+  const visibleFiles=workspace?.files.filter(f=>f.path.toLowerCase().includes(fileQuery.trim().toLowerCase()))??[];
   const findings = selected && workspace?.identityStatus === 'EXACT_GIT_COMMIT'
     ? result.vulnerabilities.filter(v => v.filePath.replace(/\\/g, '/') === selected.path) : [];
   const flowFindings = selected && workspace?.identityStatus === 'EXACT_GIT_COMMIT'
@@ -136,17 +139,21 @@ export function SourceEditingWorkspace({ result, onBack, initialPath }: { result
         {expired && <p role="alert">작업 공간이 만료되었습니다. 원본을 다시 확보해 주세요.</p>}
         <button type="button" className="secondary-button" disabled={busy} onClick={clear}>작업 공간 삭제</button>
       </div>
-      <nav className="editing-stages" aria-label="수정 단계">{([['edit','코드 편집'],['diff','변경 검토 · 다운로드'],['scan','재검사 · 비교']] as const).map(([id,label])=><button key={id} type="button" aria-current={stage===id?'step':undefined} onClick={()=>setStage(id)}>{label}</button>)}</nav>
+      <nav className="editing-stages" aria-label="수정 단계">{([['edit','코드 편집'],['diff','변경 검토 · 다운로드'],['scan','재검사 · 비교']] as const).map(([id,label],index)=><button key={id} type="button" aria-current={stage===id?'step':undefined} onClick={()=>setStage(id)}><span className="stage-number" aria-hidden="true">{index+1}</span>{label}</button>)}</nav>
       <div hidden={stage!=='scan'}><WorkspaceScanPanel workspace={workspace} original={result} disabled={busy || dirty || expired} /></div>
       {!expired && <>
         <div hidden={stage!=='edit'}>
         <nav className="editing-panes" aria-label="편집 화면">{([['files','파일'],['code','코드'],['evidence','수정 근거 · AI']] as const).map(([id,label])=><button key={id} type="button" aria-pressed={pane===id} onClick={()=>{setPane(id);if(id==='evidence')setEvidenceOpen(true);}}>{label}</button>)}</nav>
         <div className="editor-toolbar"><span>{selected?.path ?? '파일 선택'}</span><button type="button" className="secondary-button" aria-expanded={evidenceOpen} onClick={()=>setEvidenceOpen(!evidenceOpen)}>{evidenceOpen?'수정 근거 접기':'수정 근거 열기'}</button></div>
         <div className="source-editor-layout">
-          <nav className="source-file-tree" aria-label="프로젝트 파일"><FileTree files={workspace.files} selected={selected?.id} disabled={busy} onSelect={select} /></nav>
+          <nav className="source-file-tree" aria-label="프로젝트 파일">
+            <label className="file-search">파일 찾기<input type="search" value={fileQuery} onChange={e=>setFileQuery(e.target.value)} placeholder="파일명 또는 경로" /></label>
+            <FileTree files={visibleFiles} selected={selected?.id} disabled={busy} onSelect={select} />
+            {!visibleFiles.length&&<p role="status">일치하는 파일이 없습니다.</p>}
+          </nav>
           <div className="source-edit-pane">
             {selected ? <><h3>{selected.path}</h3><p>{selected.size.toLocaleString()} bytes · {selected.editable ? `${content?.newline ?? 'UTF-8'}${content?.bom ? ' · BOM 보존' : ''}` : '읽기 전용: 바이너리·크기·인코딩 제한'}</p>
-              {selected.editable && content && <><label className="source-code-label" htmlFor="source-code">파일 내용{dirty ? ' · 저장하지 않은 변경' : ''}</label>
+              {selected.editable && content && <><label className="source-code-label" htmlFor="source-code"><span className="editor-file-path">{selected.path}</span><span role="status">{dirty ? '저장하지 않은 변경' : selected.changed ? '저장됨 · 재검사로 확인 필요' : '원본과 동일'}</span><span className="visually-hidden">파일 내용</span></label>
                 <textarea id="source-code" className="source-code" value={text} spellCheck={false} autoCapitalize="off" autoComplete="off" autoCorrect="off" disabled={busy} onChange={e => { setText(e.target.value); setApproved(false); setDiffs(null); }} />
                 <div className="source-editor-actions"><button type="button" className="primary-button" disabled={busy || !dirty} onClick={() => save(false)}>변경 저장</button>
                   <button type="button" className="secondary-button" disabled={busy || (!selected.changed && !dirty)} onClick={() => save(true)}>원본으로 되돌리기</button></div></>}
@@ -172,7 +179,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath }: { result
           <ul>{workspace.files.filter(f => f.changed).map(f => <li key={f.id}>{f.path}</li>)}</ul>
           <button type="button" className="secondary-button" disabled={busy || dirty || workspace.changedFileIds.length === 0} onClick={reviewDiff}>전체 변경 Diff 확인</button>
           {dirty && <p>현재 편집 내용을 저장한 후 전체 변경을 확인해 주세요.</p>}
-          {diffs && diffs.map(diff => <div className="source-diff" key={diff.fileId}><h4>{workspace.files.find(f => f.id === diff.fileId)?.path}</h4><pre tabIndex={0}>{diff.patch || '변경 없음'}</pre></div>)}
+          {diffs && diffs.map(diff => <div className="source-diff" key={diff.fileId}><h4>{workspace.files.find(f => f.id === diff.fileId)?.path}</h4><PatchDiff patch={diff.patch || '변경 없음'} /></div>)}
           {diffs && <label className="source-export-approval"><input type="checkbox" checked={approved} disabled={busy} onChange={e => setApproved(e.target.checked)} />revision {workspace.revision}의 변경 {workspace.changedFileIds.length}개를 검토했으며 다운로드를 승인합니다.</label>}
           <div className="source-editor-actions"><button type="button" className="secondary-button" disabled={busy || !approved || !diffs || dirty} onClick={() => download('zip')}>수정본 ZIP 다운로드</button>
             <button type="button" className="secondary-button" disabled={busy || !approved || !diffs || dirty} onClick={() => download('patch')}>Patch 다운로드</button></div>

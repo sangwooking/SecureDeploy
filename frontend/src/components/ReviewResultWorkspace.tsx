@@ -73,15 +73,14 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
       {view === 'SUMMARY' && <>
         <h2 className="visually-hidden">프로젝트 보안 요약</h2>
         <section className={`readiness-band assessment-${assessment?.prioritizedDeploymentAssessment==='BLOCKED'?'blocked':'review'}`} aria-label="저장된 결과와 추가 확인 사항">
-          <ReviewSummaryPanel result={result}/>
-          <InspectionBoundaryNotice coverage={result.coverage} />
-          <div className="decision-counts">
+          <ReviewSummaryPanel result={result} actions={<div className="decision-counts" aria-label="확인할 문제">
             <button type="button" onClick={() => navigate('BLOCKING')}><span>반드시 처리</span><strong>{counts.blocking ?? '미평가'}</strong></button>
             <button type="button" onClick={() => navigate('REVIEW_REQUIRED')}><span>배포 전 직접 확인</span>
               <strong>{counts.review ?? '미평가'}</strong>
               <small>AI 추가 후보 {counts.candidates}건은 별도 확인</small></button>
             <button type="button" onClick={() => navigate('SHOULD_FIX')}><span>수정 권장</span><strong>{counts.recommended ?? '미평가'}</strong></button>
-          </div>
+          </div>}/>
+          <InspectionBoundaryNotice coverage={result.coverage} />
           <p className="decision-disclaimer">분석 당시의 판단입니다. 미발견이 완전한 안전을 뜻하지 않으며, AI 추가 후보와 서버 코드 흐름 검토 항목은 배포 판단에 합산하지 않습니다.</p>
         </section>
         <details className="summary-scope"><summary>파일별 검사 범위와 라이브러리 수정 위치</summary>
@@ -138,7 +137,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
       </>}
       {view === 'PROGRESS' && <ReviewProgressPanel result={result} />}
       {view === 'GUIDANCE' && <>
-        <h2>AI 해결 가이드</h2><p>문제 하나를 선택해 저장된 수정 제안과 직접 확인 방법을 보세요. 적용 전 사용 방식과 호환성을 확인하세요.</p>
+        <h2>수정·확인 가이드</h2><p>문제 하나를 선택해 저장된 수정 제안과 직접 확인 방법을 보세요. 적용 전 사용 방식과 호환성을 확인하세요.</p>
         <Guidance result={result} findings={findings} />
         {progress}
       </>}

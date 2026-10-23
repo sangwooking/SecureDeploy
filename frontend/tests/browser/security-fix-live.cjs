@@ -43,7 +43,7 @@ const facts=r=>({reviewId:r.reviewId,score:r.securityScore,risk:r.riskAssessment
    const scan=page.getByLabel('수정본 보안 재검사',{exact:true});
    const rescan=async()=>{
     workspace=await get(`/api/editing-workspaces/${workspace.id}`);
-    await stage(page,'재검사 · 비교');await scan.getByRole('checkbox').check();
+    await stage(page,'재검사 · 비교');if(!await scan.getByRole('checkbox').isVisible())await scan.locator('.scan-consent > summary').click();await scan.getByRole('checkbox').check();
     const started=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith(`/${workspace.id}/scans`));
     await scan.getByRole('button',{name:'수정본 다시 검사',exact:true}).click();const response=await started;assert.equal(response.status(),202);
     const job=await response.json();let completed;

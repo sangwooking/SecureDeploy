@@ -61,7 +61,7 @@ export function Workspace({ session, onLogout }: { session: AuthResponse; onLogo
         </>)}
       </>}
       {route.page === 'new' && <NewProjectAnalysis policy={policy} policyError={policyError} retryPolicy={() => setPolicyRetry(value => value + 1)}
-        onComplete={result => { window.location.hash = result.projectId ? projectLink(result.projectId) : '#/projects'; }} />}
+        onComplete={result => { window.location.hash = result.projectId ? projectLink(result.projectId, 'findings', result.reviewId ?? undefined, 'SUMMARY') : '#/projects'; }} />}
       {route.page === 'project' && <ProjectWorkspace key={route.projectId} route={route} policy={policy} policyError={policyError}
         retryPolicy={() => setPolicyRetry(value => value + 1)} onDeleted={() => { window.location.hash = '#/projects'; setRevision(value => value + 1); }} />}
       {route.page === 'account' && <section className="workspace-section"><h2>계정</h2>

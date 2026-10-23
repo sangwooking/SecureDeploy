@@ -19,19 +19,24 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
   const before = snapshot.assessmentBefore, after = snapshot.assessmentAfter;
   return <section className="security-progress" aria-label="보안 상태 변화">
     <h2>보안 상태 변화</h2>
+    <p className="comparison-policy">저장된 정책 판단: {before ? deploymentLabels[before.deploymentAssessment] : '평가 정보 없음'} → {after ? deploymentLabels[after.deploymentAssessment] : '평가 정보 없음'}</p>
+    <div className="comparison-score" aria-label="규칙 기반 참고 점수 변화"><span>규칙 기반 참고 점수</span><strong>{before?.referenceSecurityScore ?? '정보 없음'} → {after?.referenceSecurityScore ?? '정보 없음'}</strong><small>구조 후보·미검사 영역을 포함한 전체 안전 점수가 아닙니다.</small></div>
+    <nav className="progress-filters" aria-label="변화 분류">{(Object.keys(labels) as ProgressChange[]).map(change =>
+      <button type="button" key={change} aria-pressed={filter === change} onClick={() => setFilter(change)}>
+        {labels[change]} <strong>{snapshot.counts[change]}</strong></button>)}</nav>
+    <p className="review-caution">비교는 저장된 분석 계약과 확인한 범위에 한정됩니다. 구조 분석 후보의 NOT_COMPARED와 미검사·버전 차이로 인한 확인 불가는 RESOLVED가 아닙니다.</p>
+    {snapshot.workspaceScan&&<p>수정본은 새 GitHub commit이 아닙니다. 원본 버전과 수정 revision·입력 해시로 구분합니다.</p>}
+    {snapshot.workspaceScan&&!snapshot.workspaceScan.baselineVerified&&<p role="note">원본 동일성 미확인: 과거 Review와 자동 해결 비교를 하지 않습니다.</p>}
+    <p>{snapshot.message}</p>
+    <details className="comparison-context"><summary>비교한 분석·정책·파일 근거</summary>
     {snapshot.workspaceScan && <div className="workspace-scan-provenance"><p>수정본 revision {snapshot.workspaceScan.revision} · 원본 Review {snapshot.workspaceScan.originalReviewId} · GitHub 반영 안 함</p>
       <p>RESOLVED는 비교 가능한 검사에서 해당 경고가 재탐지되지 않았다는 뜻입니다. 실제 취약점 해결이나 전체 안전성의 증명이 아닙니다.</p>
-      {!snapshot.workspaceScan.baselineVerified && <p>원본 동일성 미확인: 과거 Review와 자동 해결 비교를 하지 않습니다.</p>}
       <details><summary>수정본 파일·해시 근거</summary><p className="source-revision">원본: {snapshot.workspaceScan.sourceRevision}<br />입력: {snapshot.workspaceScan.inputHash}</p>
         <p className="source-revision">분석기: {snapshot.workspaceScan.analyzerVersion}</p>
         {snapshot.workspaceScan.analysisRoot && <p>분석 위치는 ZIP의 {snapshot.workspaceScan.analysisRoot}/ 폴더 기준입니다. 아래 변경 파일·해시는 전체 원본 경로 기준입니다.</p>}
         <ul>{snapshot.workspaceScan.files.filter(f => f.changed).map(f => <li key={f.fileId}>{f.path} · {f.changeOrigin === 'DETERMINISTIC_APPROVED' ? '승인된 자동 수정' : f.changeOrigin === 'MANUAL_AFTER_DETERMINISTIC' ? '자동 수정 적용 후 수동 변경' : f.changeOrigin === 'AI_APPROVED' ? '승인된 AI 수정' : f.changeOrigin === 'MANUAL_AFTER_AI' ? 'AI 적용 후 수동 변경' : '수동 수정'}<br />
           <span className="source-revision">{f.originalHash} → {f.currentHash}</span></li>)}</ul></details></div>}
-    <p className="review-caution">비교는 저장된 분석 계약과 확인한 범위에 한정됩니다. 구조 분석 후보의 NOT_COMPARED와 미검사·버전 차이로 인한 확인 불가는 RESOLVED가 아닙니다.</p>
-    <p>{snapshot.message}</p>
-    {snapshot.workspaceScan
-      ? <p>수정본은 새 GitHub commit이 아닙니다. 원본 버전과 수정 revision·입력 해시로 구분합니다.</p>
-      : <GitHubCommitComparison before={snapshot.sourceBefore} after={snapshot.sourceAfter} />}
+    {!snapshot.workspaceScan&&<GitHubCommitComparison before={snapshot.sourceBefore} after={snapshot.sourceAfter} />}
     <div className="progress-assessments">
       {[{ label: '이전', value: before, id: snapshot.baselineReviewId, date: snapshot.baselineAnalyzedAt },
         { label: '현재', value: after, id: snapshot.currentReviewId, date: snapshot.currentAnalyzedAt }].map(item =>
@@ -44,9 +49,7 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
       <div key={priority}><dt>{priorityLabels[priority]}</dt><dd>{before?.prioritySummary[priority] ?? '미평가'} → {after?.prioritySummary[priority] ?? '미평가'}</dd></div>)}
     </dl>
     <p>배포 판단은 각 분석 당시의 평가입니다. 분석하지 못한 항목과 AI 후보는 해결 수에 포함하지 않습니다.</p>
-    <nav className="progress-filters" aria-label="변화 분류">{(Object.keys(labels) as ProgressChange[]).map(change =>
-      <button type="button" key={change} aria-pressed={filter === change} onClick={() => setFilter(change)}>
-        {labels[change]} {snapshot.counts[change]}</button>)}</nav>
+    </details>
     <h3>{labels[filter]}</h3>
     <div className="vulnerability-list">{snapshot.findings.filter(entry => entry.status === filter).map((entry, index) => {
       const finding = entry.after ?? entry.before;

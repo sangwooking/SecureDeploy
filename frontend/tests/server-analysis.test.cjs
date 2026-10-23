@@ -81,7 +81,7 @@ test('API text is escaped and no source content or credential is reconstructed',
 });
 test('validated finding has actions and stable identity without duplicate candidate or invented certainty', () => {
   const html = render(fixture());
-  for (const phrase of ['ts-flow:synthetic-only','어떤 입력인가요?','왜 확인해야 하나요?','어떻게 수정하나요?','수정 후 확인','NOT_COMPARED','functions/api/items.ts:7']) assert.ok(html.includes(phrase), phrase);
+  for (const phrase of ['ts-flow:synthetic-only','어떤 입력인가요?','입력 경로와 수정 방법','어떻게 수정하나요?','수정 후 확인','NOT_COMPARED','functions/api/items.ts:7']) assert.ok(html.includes(phrase), phrase);
   assert.equal((html.match(/<article /g) || []).length, 1);
   assert.ok(!html.includes('추가 문맥이 필요한 후보'));
 });

@@ -3,6 +3,7 @@ import { applyAiPatch, generateAiPatch, listAiPatches, patchProvider, prepareAiP
 import type { AiPatch, EditingContent, EditingFile, EditingWorkspace, PatchProvider, FixOption } from '../api/editingApi';
 import type { Vulnerability } from '../types/securityReview';
 import type { ServerAnalysisSnapshot } from '../types/serverAnalysis';
+import { PatchDiff } from './PatchDiff';
 
 const states: Record<string,string> = { APPROVAL_REQUIRED: '코드 전송 동의 대기', GENERATING: '수정안 생성 중', PROPOSED: '제안 · 미적용',
   REJECTED: '거절됨 · 변경 없음', ACCEPTED: '작업 공간 적용됨 · 해결 미검증', STALE: '코드 변경으로 적용 불가', INVALID: '유효하지 않은 응답', FAILED: '생성 실패', NEEDS_REVIEW: '추가 확인 필요 · 적용 불가' };
@@ -19,13 +20,16 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
   const [pending, setPending] = useState(''), [error, setError] = useState('');
   const [consented, setConsented] = useState(false), [accepted, setAccepted] = useState(false);
   const [compatibilityAccepted,setCompatibilityAccepted]=useState(false);
+  // Three proposals in this file already prove the workspace-wide preparation cap is reached.
+  const preparationLimitReached=proposals.length>=3;
   const active = useRef(true);
   useEffect(()=>{setFinding('');setSelectedId('');setProposals([]);},[file.id,workspace.id]);
   useEffect(()=>{let current=true;setOption(null);
+    if(preparationLimitReached){setOption({method:'MANUAL_REVIEW',reason:'작업 공간의 제안 준비 한도에 도달했습니다. 기존 제안을 검토하거나 수동 편집해 주세요.'});return;}
     if(finding&&!dirty&&!disabled&&content.revision===workspace.revision&&content.fileId===file.id)fixOption(workspace,file,content,finding.startsWith('flow:')?0:Number(finding),finding.startsWith('flow:')?finding.slice(5):undefined)
       .then(v=>{if(current)setOption(v);}).catch(()=>{if(current)setOption({method:'MANUAL_REVIEW',reason:'수정 범위를 확인하지 못했습니다. 최신 파일을 확인하거나 수동 편집해 주세요.'});});
     return()=>{current=false;};
-  },[finding,workspace.id,workspace.revision,file.id,content.currentHash,content.revision,content.fileId,dirty,disabled]);
+  },[finding,workspace.id,workspace.revision,file.id,content.currentHash,content.revision,content.fileId,dirty,disabled,preparationLimitReached]);
   useEffect(() => { active.current = true; patchProvider().then(v => { if (active.current) setProvider(v); }).catch(() => { if (active.current) setError('AI Provider 상태를 확인하지 못했습니다. 수동 편집은 계속할 수 있습니다.'); }); return () => { active.current = false; }; }, []);
   useEffect(() => { let current = true;
     listAiPatches(workspace.id).then(v => { if (current && active.current) setProposals(v.filter(p => p.fileId === file.id)); })
@@ -85,7 +89,7 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
       {proposals.map((p,i) => <option key={p.id} value={p.id}>{i+1}. {p.method==='DETERMINISTIC_FIX'?'자동':'AI'} · {p.ruleId} · {states[p.state] ?? p.state}</option>)}</select></label>}
     {selected && <div className="source-ai-proposal">
       <h4>{states[selected.state] ?? '알 수 없는 제안 상태'}</h4>
-      <p>{deterministic?'자동 수정안 · 정적 근거 기반 · 외부 AI 전송·비용 없음':'AI 수정 제안 · 외부 Provider 사용'}</p>
+      <p className={`proposal-method ${deterministic?'method-deterministic':'method-ai'}`}>{deterministic?'자동 수정안 · 정적 근거 기반 · 외부 AI 전송·비용 없음':'AI 수정 제안 · 외부 Provider 사용'}</p>
       <p>{file.path} · 현재 {selected.startLine}행 · 기준 revision {selected.revision} · {selected.ruleId}</p>
       {selected.flowFindingId&&<p>{deterministic?'수정':'전송'} 범위: {selected.startLine}~{selected.startLine+selected.before.split('\n').length-1}행의 객체 응답 부분입니다. 파일 전체가 아닙니다.</p>}
       <p>{selected.explanation}</p>
@@ -97,7 +101,7 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
         <button type="button" className="primary-button" disabled={disabled || !!pending || dirty || !consented} onClick={generate}>동의한 코드로 AI 수정안 생성</button>
       </>}
       {selected.state === 'GENERATING' && <p role="status">코드를 변경하지 않고 제안을 생성하고 있습니다. 취소해도 이미 전송한 요청의 처리·요금 취소는 보증하지 않습니다.</p>}
-      {selected.diff && <div className="source-diff"><h4>현재 수정본 → {deterministic?'자동 수정안':'AI 제안'}</h4><pre tabIndex={0}>{selected.diff}</pre></div>}
+      {selected.diff && <div className="source-diff"><h4>현재 수정본 → {deterministic?'자동 수정안':'AI 제안'}</h4><PatchDiff patch={selected.diff} /></div>}
       {selected.verificationSteps.length > 0 && <><h4>수정 후 확인</h4><ul>{selected.verificationSteps.map((s,i) => <li key={i}>{s}</li>)}</ul></>}
       <ul>{selected.limitations.map((s,i) => <li key={i}>{s}</li>)}</ul>
       {selected.state === 'PROPOSED' && <><label className="source-export-approval"><input type="checkbox" checked={accepted} disabled={disabled || dirty || !!pending} onChange={e => setAccepted(e.target.checked)} />Diff와 미확인 조건을 검토했고 현재 작업 공간에만 적용하도록 승인합니다.</label>

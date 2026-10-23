@@ -1,4 +1,5 @@
 import type { SecurityReviewResponse } from '../types/securityReview';
+import type { ReactNode } from 'react';
 import { deploymentLabels } from './reviewPresentation';
 
 const stateLabels: Record<string,string> = {
@@ -16,7 +17,7 @@ const observationLabels: Record<string,string> = {
 };
 const recorded = (value?: number | null) => value == null ? '미기록' : `${value}건`;
 
-export function ReviewSummaryPanel({ result }: { result: SecurityReviewResponse }) {
+export function ReviewSummaryPanel({ result, actions }: { result: SecurityReviewResponse; actions?: ReactNode }) {
   const summary=result.resultSummary?.schemaVersion===1?result.resultSummary:null;
   const policy=result.riskAssessment?.prioritizedDeploymentAssessment;
   const blocked=policy==='BLOCKED'||(result.riskAssessment?.prioritySummary.BLOCKING??0)>0;
@@ -29,10 +30,11 @@ export function ReviewSummaryPanel({ result }: { result: SecurityReviewResponse 
     <p className="summary-kicker">종합 안내 · 보안 점수나 새로운 배포 판정이 아닙니다</p>
     <h2>{title}</h2>
     <p>{summary?.reason??'새 요약 기록이 없는 이력입니다. 저장된 경고와 정책 판단을 유지하며, 과거 검사 범위나 구조 후보를 추측해서 채우지 않습니다.'}</p>
+    {actions}
     <dl className="summary-facts">
-      <div><dt>기존 규칙 기반 참고 점수</dt><dd>{result.securityScore} / 100</dd><small>구조 후보·미검사 범위를 포함한 전체 안전 점수가 아닙니다.</small></div>
       <div><dt>저장된 위험 정책 판단</dt><dd>{policy?deploymentLabels[policy]:'미평가'}</dd><small>{result.riskAssessment?.policyVersion??'정책 버전 미기록'} · 실제 배포 승인 아님</small></div>
       <div><dt>전체 검사 범위 기록</dt><dd>{summaryStateLabel(summary?.coverageStatus??result.coverage?.status??'NOT_RECORDED')}</dd><small>파일 파싱과 보안 흐름 검증은 다릅니다.</small></div>
+      <div><dt>기존 규칙 기반 참고 점수</dt><dd>{result.securityScore} / 100</dd><small>구조 후보·미검사 범위를 포함한 전체 안전 점수가 아닙니다.</small></div>
     </dl>
     <p className="summary-inspection-status">라이브러리 외부 조회: {summaryStateLabel(summary?.scaStatus??result.sca?.status??'NOT_RECORDED')} · AI 검토: {summaryStateLabel(summary?.semanticStatus??'NOT_RECORDED')}. 미실행·실패는 안전 판정이 아닙니다.</p>
     {(summary?.authContextObserved||summary?.rlsDeclarationsObserved)&&<p className="review-caution">

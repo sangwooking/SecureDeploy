@@ -238,13 +238,16 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false, on
       <span className="risk-badge risk-review_required">코드 흐름 · 추가 확인 필요</span>
       <h4>{finding.title}</h4>
       <p className="finding-location"><strong>확인할 파일</strong> {location(finding.location)}</p>
+      <p className="finding-next-step">{finding.riskExplanation}</p>
       {onEditFile && <button type="button" className="secondary-button" onClick={() => onEditFile(finding.location.filePath)}>이 파일 수정하기</button>}
+      <p className="fix-availability">수동 검토 필요 · 자동/AI 수정은 현재 소스와 지원 조건을 별도로 확인합니다.</p>
+      <details className="flow-action-details"><summary>입력 경로와 수정 방법</summary>
       <h4>어떤 입력인가요?</h4>
-      <ul>{finding.evidence.map((e, i) => <li key={i}>{text(e.source.kind)} · <code className="finding-location">{location(e.source)}</code></li>)}</ul>
-      <h4>왜 확인해야 하나요?</h4><p>{finding.riskExplanation}</p>
+      {finding.evidence.map((e, i) => <ol className="evidence-path" key={i} aria-label="기록된 코드 전달 경로">{e.flow.map((step,j)=><li key={j}><span>{text(step.kind)}</span><code>{location(step)}</code></li>)}</ol>)}
       <h4>어떻게 수정하나요?</h4><p>{finding.recommendedAction}</p>
       <p>정적 근거 기반 수정 방향입니다. 저장된 AI 해결 가이드 연결은 미기록이며, 실제 코드 변경은 수행하지 않았습니다.</p>
       <h4>수정 후 확인</h4><ol>{finding.verificationSteps.map(step => <li key={step}>{step}</li>)}</ol>
+      </details>
       <details className="technical-details"><summary>Finding 기술 근거와 한계</summary>
         <p className="finding-location">{finding.findingId}</p><p>{finding.sourceType} · {finding.ruleId} · {finding.priority} · {finding.analyzerVersion}</p>
         <p>입력 전달과 실행 호출 구문을 확인한 것이며 실제 실행·공격 성공은 검증하지 않았습니다.</p>

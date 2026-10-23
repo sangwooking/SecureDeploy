@@ -31,5 +31,5 @@ test('commit comparison preserves deterministic progress assessment and immutabl
   const saved = JSON.stringify(result), html = render(ReviewProgressPanel, { result });
   assert.ok(html.includes('aaaaaaa')); assert.ok(html.includes('bbbbbbb'));
   assert.ok(html.includes('Commit 변경 여부만으로 보안 개선을 판단하지 않습니다'));
-  assert.ok(html.includes('해결된 문제 1')); assert.equal(JSON.stringify(result), saved);
+  assert.match(html,/해결된 문제 <strong>1<\/strong>/); assert.equal(JSON.stringify(result), saved);
 });

@@ -34,9 +34,9 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
     <h3>{needsReview ? guidance.summary : codeExplanation(v).title}</h3>
     <p className="finding-location"><strong>확인할 파일</strong> <code>{v.filePath}</code> · {v.line}행</p>
     {needsReview && <p className="review-caution">실제 사용 방식과 주변 코드에 따라 위험이 달라질 수 있습니다. 먼저 해당 상황인지 확인하세요.</p>}
-    <h4>{needsReview ? '내가 확인할 일' : '내가 해야 할 일'}</h4>
-    <p>{needsReview ? guidance.steps[0] : guidance.action}</p>
+    <p className="finding-next-step"><strong>{needsReview ? '내가 확인할 일' : '내가 해야 할 일'}</strong><br />{needsReview ? guidance.steps[0] : guidance.action}</p>
     {onEditFile && <button className="secondary-button" type="button" onClick={()=>onEditFile(v.filePath)}>이 파일 수정하기</button>}
+    <p className="fix-availability">{onEditFile?'수동 수정 · 자동/AI 수정 가능 여부는 작업 공간에서 현재 소스를 확인한 뒤 안내합니다.':'이 화면에서는 코드 수정이 지원되지 않습니다.'}</p>
     <FindingRemediation finding={finding} snapshot={remediation} vulnerability={v} />
     <details className="action-details"><summary>진행 상태와 메모</summary>
       <div className="status-manager">
