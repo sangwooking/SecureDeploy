@@ -1,0 +1,1338 @@
+{
+  "schemaVersion": 1,
+  "baseline": "315c7dfdc06811f5edf3bf9dd5a919e45f87af52",
+  "engineCommit": "4fec3e132df6d69e005cdd9ccb7de60604725ec0",
+  "truthSha256": "39385db056dd4bdb7c9974529609414a35ebb70341205e3354e76efe80c0fcac",
+  "counts": {
+    "before": {
+      "NOT_SUPPORTED": 4,
+      "TP": 2,
+      "TN": 1,
+      "NOT_INSPECTED": 3
+    },
+    "after": {
+      "NOT_SUPPORTED": 7,
+      "TP": 2,
+      "TN": 1
+    }
+  },
+  "cases": [
+    {
+      "caseId": "dvna-sql",
+      "truth": "RISK",
+      "cwe": "CWE-89",
+      "filePath": "core/appHandler.js",
+      "line": 11,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "dvna-shell",
+      "truth": "RISK",
+      "cwe": "CWE-78",
+      "filePath": "core/appHandler.js",
+      "line": 39,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "before": "TP",
+      "after": "TP"
+    },
+    {
+      "caseId": "dvna-deserialization",
+      "truth": "RISK",
+      "cwe": "CWE-502",
+      "filePath": "core/appHandler.js",
+      "line": 218,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "dvna-2017-sql-still-present",
+      "truth": "RISK",
+      "cwe": "CWE-89",
+      "filePath": "core/appHandler.js",
+      "line": 11,
+      "fileSha256": "a2df743e254dd312698e83a08a9da0193c76cb997ee5514f89a51dc73c3f112c",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "dvna-2017-shell-still-present",
+      "truth": "RISK",
+      "cwe": "CWE-78",
+      "filePath": "core/appHandler.js",
+      "line": 39,
+      "fileSha256": "a2df743e254dd312698e83a08a9da0193c76cb997ee5514f89a51dc73c3f112c",
+      "before": "TP",
+      "after": "TP"
+    },
+    {
+      "caseId": "dvna-model-query-counterpart",
+      "truth": "NORMAL_FOR_TARGET",
+      "cwe": "CWE-89",
+      "filePath": "core/appHandler.js",
+      "line": 10,
+      "fileSha256": "05446d6f7bbf2beb6ddb5db1070c14d6472d6118b1ce35c2b63ad975819dd9f3",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "dvna-execfile-counterpart",
+      "truth": "NORMAL_FOR_TARGET",
+      "cwe": "CWE-78",
+      "filePath": "core/appHandler.js",
+      "line": 43,
+      "fileSha256": "05446d6f7bbf2beb6ddb5db1070c14d6472d6118b1ce35c2b63ad975819dd9f3",
+      "before": "TN",
+      "after": "TN"
+    },
+    {
+      "caseId": "juice-search-sql",
+      "truth": "RISK",
+      "cwe": "CWE-89",
+      "filePath": "routes/search.ts",
+      "line": 23,
+      "fileSha256": "6e3272ef4065d080295d995a04964e8c5e6b1e06c4b4c8ebed3234286686ee5f",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "juice-login-sql",
+      "truth": "RISK",
+      "cwe": "CWE-89",
+      "filePath": "routes/login.ts",
+      "line": 34,
+      "fileSha256": "cf11d682edff6744bcb54339bce4b2dd6da5e80f9038facd7605df857b0a0b7b",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "juice-profile-ssrf",
+      "truth": "RISK",
+      "cwe": "CWE-918",
+      "filePath": "routes/profileImageUrlUpload.ts",
+      "line": 24,
+      "fileSha256": "75140f35e65141135d3abb4b3b86aad1556c0d2a22d733ae1d50a127cd0cbb26",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_SUPPORTED"
+    }
+  ],
+  "projects": [
+    {
+      "project": "dvna-vulnerable",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "selection": [
+        {
+          "discoveredFiles": 14,
+          "submittedFiles": 14,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 144241,
+          "omissionReasons": {}
+        },
+        {
+          "discoveredFiles": 14,
+          "submittedFiles": 14,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 144241,
+          "omissionReasons": {}
+        }
+      ],
+      "parseStates": [
+        {
+          "PARSED": 14
+        },
+        {
+          "PARSED": 14
+        }
+      ],
+      "entries": [
+        30,
+        30
+      ],
+      "structuralCandidates": [
+        1,
+        1
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMsBefore": [
+        657,
+        481
+      ],
+      "elapsedMsAfter": [
+        640,
+        529
+      ]
+    },
+    {
+      "project": "dvna-fixed",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "selection": [
+        {
+          "discoveredFiles": 14,
+          "submittedFiles": 14,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 144999,
+          "omissionReasons": {}
+        },
+        {
+          "discoveredFiles": 14,
+          "submittedFiles": 14,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 144999,
+          "omissionReasons": {}
+        }
+      ],
+      "parseStates": [
+        {
+          "PARSED": 14
+        },
+        {
+          "PARSED": 14
+        }
+      ],
+      "entries": [
+        30,
+        30
+      ],
+      "structuralCandidates": [
+        1,
+        1
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMsBefore": [
+        557,
+        480
+      ],
+      "elapsedMsAfter": [
+        662,
+        525
+      ]
+    },
+    {
+      "project": "dvna-remediated",
+      "sha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "selection": [
+        {
+          "discoveredFiles": 16,
+          "submittedFiles": 16,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 149213,
+          "omissionReasons": {}
+        },
+        {
+          "discoveredFiles": 16,
+          "submittedFiles": 16,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 149213,
+          "omissionReasons": {}
+        }
+      ],
+      "parseStates": [
+        {
+          "PARSED": 16
+        },
+        {
+          "PARSED": 16
+        }
+      ],
+      "entries": [
+        28,
+        28
+      ],
+      "structuralCandidates": [
+        0,
+        0
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMsBefore": [
+        558,
+        490
+      ],
+      "elapsedMsAfter": [
+        724,
+        558
+      ]
+    },
+    {
+      "project": "juice-shop",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "selection": [
+        {
+          "discoveredFiles": 648,
+          "submittedFiles": 100,
+          "omittedFiles": 548,
+          "omittedDetails": 448,
+          "submittedCharacters": 205469,
+          "omissionReasons": {
+            "SOURCE_FILE_COUNT_LIMIT": 547,
+            "SOURCE_FILE_SIZE_LIMIT": 1
+          }
+        },
+        {
+          "discoveredFiles": 648,
+          "submittedFiles": 100,
+          "omittedFiles": 548,
+          "omittedDetails": 448,
+          "submittedCharacters": 332814,
+          "omissionReasons": {
+            "SOURCE_FILE_COUNT_LIMIT": 547,
+            "SOURCE_FILE_SIZE_LIMIT": 1
+          }
+        }
+      ],
+      "parseStates": [
+        {
+          "PARSED": 61,
+          "PARSE_FAILED": 39,
+          "LIMIT_EXCEEDED": 100
+        },
+        {
+          "PARSED": 100,
+          "LIMIT_EXCEEDED": 100
+        }
+      ],
+      "entries": [
+        0,
+        0
+      ],
+      "structuralCandidates": [
+        0,
+        0
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMsBefore": [
+        979,
+        737
+      ],
+      "elapsedMsAfter": [
+        1219,
+        971
+      ]
+    },
+    {
+      "project": "next-supabase",
+      "sha": "2998a2e801caab665d603daefc7445c04309285a",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "selection": [
+        {
+          "discoveredFiles": 44,
+          "submittedFiles": 44,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 77604,
+          "omissionReasons": {}
+        },
+        {
+          "discoveredFiles": 44,
+          "submittedFiles": 44,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 77604,
+          "omissionReasons": {}
+        }
+      ],
+      "parseStates": [
+        {
+          "PARSED": 44
+        },
+        {
+          "PARSED": 44
+        }
+      ],
+      "entries": [
+        0,
+        0
+      ],
+      "structuralCandidates": [
+        0,
+        0
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMsBefore": [
+        457,
+        384
+      ],
+      "elapsedMsAfter": [
+        527,
+        414
+      ]
+    },
+    {
+      "project": "goof-validation",
+      "sha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "selection": [
+        {
+          "discoveredFiles": 10,
+          "submittedFiles": 10,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 18817,
+          "omissionReasons": {}
+        },
+        {
+          "discoveredFiles": 10,
+          "submittedFiles": 10,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 18817,
+          "omissionReasons": {}
+        }
+      ],
+      "parseStates": [
+        {
+          "PARSED": 10
+        },
+        {
+          "PARSED": 10
+        }
+      ],
+      "entries": [
+        0,
+        15
+      ],
+      "structuralCandidates": [
+        0,
+        0
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMsBefore": [
+        624,
+        474
+      ],
+      "elapsedMsAfter": [
+        686,
+        528
+      ]
+    },
+    {
+      "project": "new-rest",
+      "sha": "179ae84efec61b14206d0305d941daed6c6d07f9",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "selection": [
+        {
+          "discoveredFiles": 49,
+          "submittedFiles": 49,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 108710,
+          "omissionReasons": {}
+        },
+        {
+          "discoveredFiles": 49,
+          "submittedFiles": 49,
+          "omittedFiles": 0,
+          "omittedDetails": 0,
+          "submittedCharacters": 108710,
+          "omissionReasons": {}
+        }
+      ],
+      "parseStates": [
+        {
+          "PARSED": 49
+        },
+        {
+          "PARSED": 49
+        }
+      ],
+      "entries": [
+        0,
+        0
+      ],
+      "structuralCandidates": [
+        0,
+        0
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMsBefore": [
+        491,
+        431
+      ],
+      "elapsedMsAfter": [
+        654,
+        486
+      ]
+    }
+  ],
+  "regressionApps": [
+    {
+      "project": "nglguarino--echoverse-11labs",
+      "sha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "entries": [
+        4,
+        4
+      ],
+      "flowCounts": [
+        1,
+        1
+      ],
+      "clients": [
+        0,
+        0
+      ],
+      "accesses": [
+        0,
+        0
+      ]
+    },
+    {
+      "project": "LellaSriHarsha--power-platform-hub",
+      "sha": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "entries": [
+        1,
+        1
+      ],
+      "flowCounts": [
+        0,
+        0
+      ],
+      "clients": [
+        0,
+        0
+      ],
+      "accesses": [
+        0,
+        0
+      ]
+    },
+    {
+      "project": "TinyikoMamban--workflowai-pro",
+      "sha": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "entries": [
+        1,
+        1
+      ],
+      "flowCounts": [
+        0,
+        0
+      ],
+      "clients": [
+        3,
+        3
+      ],
+      "accesses": [
+        42,
+        42
+      ]
+    },
+    {
+      "project": "Adriano-Digital2024--CopyMonster",
+      "sha": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "entries": [
+        20,
+        20
+      ],
+      "flowCounts": [
+        0,
+        0
+      ],
+      "clients": [
+        29,
+        29
+      ],
+      "accesses": [
+        75,
+        75
+      ]
+    }
+  ],
+  "juiceTargetStates": {
+    "before": [],
+    "after": [
+      {
+        "filePath": "server.ts",
+        "parseStatus": "PARSED",
+        "flowStatus": "NOT_SUPPORTED",
+        "entrypoints": 0,
+        "functionsAnalyzed": 0,
+        "prepareCallSites": 0,
+        "tracedPrepareCallSites": 0,
+        "limitations": [
+          "CALL_TARGET_UNRESOLVED",
+          "CONTEXT_MISSING",
+          "EXPRESSION_UNSUPPORTED",
+          "EXPRESS_RECEIVER_MUTATION_UNKNOWN",
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN",
+          "NAMESPACE_IMPORT_UNSUPPORTED",
+          "NODE_INITIALIZATION_STRUCTURE_UNKNOWN",
+          "NODE_MODULE_RESOLUTION_UNKNOWN",
+          "NODE_NAMESPACE_IMPORT_UNKNOWN",
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL",
+          "OBJECT_BRANCH_MERGE_PARTIAL",
+          "PROPERTY_WRITE_UNRESOLVED",
+          "SERVER_ENVIRONMENT_PROVENANCE_UNVERIFIED"
+        ],
+        "httpCallSites": 0,
+        "tracedHttpCallSites": 0,
+        "selectionReason": "TS_EXPRESS_MODULE_HINT",
+        "resourceCallSites": null,
+        "tracedResourceCallSites": null
+      },
+      {
+        "filePath": "routes/login.ts",
+        "parseStatus": "PARSED",
+        "flowStatus": "NOT_SUPPORTED",
+        "entrypoints": 0,
+        "functionsAnalyzed": 0,
+        "prepareCallSites": 0,
+        "tracedPrepareCallSites": 0,
+        "limitations": [
+          "CONTEXT_MISSING",
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN",
+          "NAMESPACE_IMPORT_UNSUPPORTED",
+          "NODE_MODULE_RESOLUTION_UNKNOWN",
+          "NODE_NAMESPACE_IMPORT_UNKNOWN",
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+        ],
+        "httpCallSites": 0,
+        "tracedHttpCallSites": 0,
+        "selectionReason": "TS_SERVER_USE_IMPORT_HINT",
+        "resourceCallSites": null,
+        "tracedResourceCallSites": null
+      },
+      {
+        "filePath": "routes/profileImageUrlUpload.ts",
+        "parseStatus": "PARSED",
+        "flowStatus": "NOT_SUPPORTED",
+        "entrypoints": 0,
+        "functionsAnalyzed": 0,
+        "prepareCallSites": 0,
+        "tracedPrepareCallSites": 0,
+        "limitations": [
+          "CONTEXT_MISSING",
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN",
+          "HTTP_CALLS_OUTSIDE_TRACED_FLOW",
+          "NAMESPACE_IMPORT_UNSUPPORTED",
+          "NODE_MODULE_RESOLUTION_UNKNOWN",
+          "NODE_NAMESPACE_IMPORT_UNKNOWN",
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+        ],
+        "httpCallSites": 1,
+        "tracedHttpCallSites": 0,
+        "selectionReason": "TS_SERVER_USE_IMPORT_HINT",
+        "resourceCallSites": null,
+        "tracedResourceCallSites": null
+      },
+      {
+        "filePath": "routes/search.ts",
+        "parseStatus": "PARSED",
+        "flowStatus": "NOT_SUPPORTED",
+        "entrypoints": 0,
+        "functionsAnalyzed": 0,
+        "prepareCallSites": 0,
+        "tracedPrepareCallSites": 0,
+        "limitations": [
+          "NAMESPACE_IMPORT_UNSUPPORTED",
+          "NODE_INITIALIZATION_STRUCTURE_UNKNOWN",
+          "NODE_NAMESPACE_IMPORT_UNKNOWN",
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+        ],
+        "httpCallSites": 0,
+        "tracedHttpCallSites": 0,
+        "selectionReason": "TS_SERVER_USE_IMPORT_HINT",
+        "resourceCallSites": null,
+        "tracedResourceCallSites": null
+      }
+    ]
+  },
+  "newValidation": {
+    "repository": "hagopj13/node-express-boilerplate",
+    "sha": "179ae84efec61b14206d0305d941daed6c6d07f9",
+    "grade": "C_CONTEXT_ONLY",
+    "wholeProjectTruth": "UNKNOWN_NEVER_TN",
+    "limitation": "Conditional initialization and array/forEach route registration remain outside proven request dispatch."
+  },
+  "conclusion": "SERVER_FILE_AND_REQUEST_OPPORTUNITY_IMPROVED; NO_NEW_REAL_WORLD_TARGET_TP",
+  "policyChanges": false,
+  "userPostgresModified": false,
+  "originalCodeIncluded": false,
+  "externalIndependentReview": false,
+  "fragmentAudit": {
+    "total": 39,
+    "categories": {
+      "MEMBER_FRAGMENT": 4,
+      "METHOD_FRAGMENT": 12,
+      "EXPORTED_DECLARATION_WITH_SYNTAX_ERROR": 12,
+      "CALL_OR_PROPERTY_EXCERPT_SYNTAX_ERROR": 8,
+      "BLOCK_EXCERPT_SYNTAX_ERROR": 3
+    },
+    "receiptSha256": "c59f7a9e1225254de57db11f8d31e70815588c5030768822cb6aa4afbbe8b7c8",
+    "basis": "Stored and served as text by routes/vulnCodeFixes.ts readFixes; no production code excluded by pathname or educational comments. Syntax was not repaired."
+  },
+  "resourceProfiles": {
+    "before": {
+      "scope": "FULL_SELECTED_JS_INCLUDING_PARSE_FAILURES; NOT_LIVE_BACKEND_REQUEST",
+      "workerHashes": {
+        "analyzer.mjs": "df38d24b4914ee396c1f36ca44f890b2a501045082911449d85c518decfbe037",
+        "constructor-summary.mjs": "fdc7d1fa5f9b706078965289dd0bb882bbbcf1e00124ae12a5c2e8f1c1201a63",
+        "deno.mjs": "19daa4d392ab013c1f65024efc4e588ea72712f964a48290b645c78bd7c5beef",
+        "destination.mjs": "f4c2f7626ea2fb76da0fbc63e7a8a344465d24af012a473cde12d63cc6c38509",
+        "entry-contracts.mjs": "255cf5a5b91e3454373f037e887d15596ebdf3df782c3154befd582555878e1b",
+        "entry-state.mjs": "bf85041e6fc316eb3de8652c91478d3f70b3751bdb4d5b75ffbaf87f06af00d0",
+        "exposure.mjs": "c67533a9be3660d02e3e6edb0823b5b5f97d1fe3d93993095279fbdd5687591b",
+        "next.mjs": "ce8816640af7eddc2f32ba6bf05d08c7393094ccdbf39efd41851e39f39df073",
+        "node-server.mjs": "2b278316433b150d5eed9207e33187f77b40d713bd56bc2dcae24e0a37fb5001",
+        "response-patch.mjs": "5d2d90af16257b806c2a9f3c79b8752d5f41780eea22918fd2a2157f9f1b1172",
+        "rls.mjs": "d66993f2acd8a699bab229ca84b6ede3c3bd5d9136e9906b9095210355293135",
+        "static-display-context.mjs": "7be13815ba8112aa7004e23e4383c5beb29f3eb4bba00fe9f74bc58604dd81b7",
+        "supabase-evidence.mjs": "2a0fe3a32c577b04837df16a00c502777576226fbab684af0321b36b84d67e02",
+        "supabase.mjs": "27e6a71f2d967586a094c1acb8ae24a1ee9f1d53935c30758a94ed882cb5d815",
+        "syntax-index.mjs": "4c6946caf8ef5a2815b3646dc91042107d03897061d88151e8842ab643382792",
+        "url-context-worker.mjs": "655a2671b8d6811df3d4089057ca7eaa1183862c0b14909f40d68dbc7ba3baa5",
+        "url-context.mjs": "f589931c70179e7bc1be909e1ad69546c3623123d2040dd06009af81d0e99ab7",
+        "worker.mjs": "27b53e2f020203aae907cb2e9a0915c2ed8016724a5f1fa51945b9d5777ef1c1"
+      },
+      "projects": [
+        {
+          "project": "juice-shop",
+          "submittedFiles": 100,
+          "inputSha256": "e8c03736edd4376bf3b153c1bb67b981d8c3f256fd88fa27e422edc5689e2688",
+          "measurements": [
+            {
+              "wallMs": 212,
+              "maxRssBytes": 160251904,
+              "version": "ts-server-v18",
+              "entries": 0,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 20039,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 653,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 40,
+                "STEPS_ENTRY_DISCOVERY": 613,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            },
+            {
+              "wallMs": 206,
+              "maxRssBytes": 169459712,
+              "version": "ts-server-v18",
+              "entries": 0,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 20039,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 653,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 40,
+                "STEPS_ENTRY_DISCOVERY": 613,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            }
+          ]
+        },
+        {
+          "project": "goof-validation",
+          "submittedFiles": 10,
+          "inputSha256": "b0ab246b218af09667b946d8568661f37d0b72e219128a9477fa3d98e74ca166",
+          "measurements": [
+            {
+              "wallMs": 181,
+              "maxRssBytes": 141918208,
+              "version": "ts-server-v18",
+              "entries": 0,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 3435,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 6407,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 6407,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            },
+            {
+              "wallMs": 183,
+              "maxRssBytes": 141606912,
+              "version": "ts-server-v18",
+              "entries": 0,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 3435,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 6407,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 6407,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            }
+          ]
+        },
+        {
+          "project": "dvna-vulnerable",
+          "submittedFiles": 14,
+          "inputSha256": "2b6a74616ef74bb0c5521c83bd4810ede20826ba7958d17a3876cd13382fcdbf",
+          "measurements": [
+            {
+              "wallMs": 241,
+              "maxRssBytes": 189906944,
+              "version": "ts-server-v18",
+              "entries": 30,
+              "candidateCount": 1,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 53184,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 33153,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 8603,
+                "STEPS_FLOW": 24550,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            },
+            {
+              "wallMs": 286,
+              "maxRssBytes": 193200128,
+              "version": "ts-server-v18",
+              "entries": 30,
+              "candidateCount": 1,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 53184,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 33153,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 8603,
+                "STEPS_FLOW": 24550,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            }
+          ]
+        },
+        {
+          "project": "dvna-remediated",
+          "submittedFiles": 16,
+          "inputSha256": "e72c3f622dd9174b274dcbdf70712a4559a383ba2c3de1eb4f541bc5ca505a7e",
+          "measurements": [
+            {
+              "wallMs": 245,
+              "maxRssBytes": 196362240,
+              "version": "ts-server-v18",
+              "entries": 28,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 54052,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 49471,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 10225,
+                "STEPS_FLOW": 39246,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            },
+            {
+              "wallMs": 250,
+              "maxRssBytes": 196509696,
+              "version": "ts-server-v18",
+              "entries": 28,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 54052,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 49471,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 10225,
+                "STEPS_FLOW": 39246,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            }
+          ]
+        },
+        {
+          "project": "next-supabase",
+          "submittedFiles": 44,
+          "inputSha256": "2d1e8e4e0327b700f0bb4446750e2b9c8245bde16ff0d78e669d5ef7abb3a84b",
+          "measurements": [
+            {
+              "wallMs": 187,
+              "maxRssBytes": 137560064,
+              "version": "ts-server-v18",
+              "entries": 0,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 8452,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 593,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 153,
+                "STEPS_ENTRY_DISCOVERY": 440,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            },
+            {
+              "wallMs": 187,
+              "maxRssBytes": 138084352,
+              "version": "ts-server-v18",
+              "entries": 0,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 8452,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 593,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 153,
+                "STEPS_ENTRY_DISCOVERY": 440,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "release": {
+      "scope": "FULL_SELECTED_JS_INCLUDING_PARSE_FAILURES; NOT_LIVE_BACKEND_REQUEST",
+      "workerHashes": {
+        "analyzer.mjs": "aef15d390acc1a960efeb93b58261f167610b484f79eb68bc2f676e4b2d329fa",
+        "constructor-summary.mjs": "fdc7d1fa5f9b706078965289dd0bb882bbbcf1e00124ae12a5c2e8f1c1201a63",
+        "deno.mjs": "19daa4d392ab013c1f65024efc4e588ea72712f964a48290b645c78bd7c5beef",
+        "destination.mjs": "f4c2f7626ea2fb76da0fbc63e7a8a344465d24af012a473cde12d63cc6c38509",
+        "entry-contracts.mjs": "255cf5a5b91e3454373f037e887d15596ebdf3df782c3154befd582555878e1b",
+        "entry-state.mjs": "bf85041e6fc316eb3de8652c91478d3f70b3751bdb4d5b75ffbaf87f06af00d0",
+        "exposure.mjs": "c67533a9be3660d02e3e6edb0823b5b5f97d1fe3d93993095279fbdd5687591b",
+        "next.mjs": "ce8816640af7eddc2f32ba6bf05d08c7393094ccdbf39efd41851e39f39df073",
+        "node-server.mjs": "557118f8fd3532a8601e5b68ce0ac471c1c8d03242759e2b65a22d6c8b104ff3",
+        "response-patch.mjs": "5d2d90af16257b806c2a9f3c79b8752d5f41780eea22918fd2a2157f9f1b1172",
+        "rls.mjs": "d66993f2acd8a699bab229ca84b6ede3c3bd5d9136e9906b9095210355293135",
+        "static-display-context.mjs": "7be13815ba8112aa7004e23e4383c5beb29f3eb4bba00fe9f74bc58604dd81b7",
+        "supabase-evidence.mjs": "2a0fe3a32c577b04837df16a00c502777576226fbab684af0321b36b84d67e02",
+        "supabase.mjs": "27e6a71f2d967586a094c1acb8ae24a1ee9f1d53935c30758a94ed882cb5d815",
+        "syntax-index.mjs": "4c6946caf8ef5a2815b3646dc91042107d03897061d88151e8842ab643382792",
+        "url-context-worker.mjs": "655a2671b8d6811df3d4089057ca7eaa1183862c0b14909f40d68dbc7ba3baa5",
+        "url-context.mjs": "f589931c70179e7bc1be909e1ad69546c3623123d2040dd06009af81d0e99ab7",
+        "worker.mjs": "27b53e2f020203aae907cb2e9a0915c2ed8016724a5f1fa51945b9d5777ef1c1"
+      },
+      "projects": [
+        {
+          "project": "juice-shop",
+          "submittedFiles": 100,
+          "inputSha256": "5c88d34f1e1c8043abfbb7a9312acdc0a8e6bc373d9162799b8d534872fcdd10",
+          "measurements": [
+            {
+              "wallMs": 346,
+              "maxRssBytes": 211025920,
+              "version": "ts-server-v19",
+              "entries": 0,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 48700,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 85292,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 533,
+                "STEPS_ENTRY_DISCOVERY": 84759,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            },
+            {
+              "wallMs": 337,
+              "maxRssBytes": 202899456,
+              "version": "ts-server-v19",
+              "entries": 0,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 48700,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 85292,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 533,
+                "STEPS_ENTRY_DISCOVERY": 84759,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            }
+          ]
+        },
+        {
+          "project": "goof-validation",
+          "submittedFiles": 10,
+          "inputSha256": "b0ab246b218af09667b946d8568661f37d0b72e219128a9477fa3d98e74ca166",
+          "measurements": [
+            {
+              "wallMs": 234,
+              "maxRssBytes": 152010752,
+              "version": "ts-server-v19",
+              "entries": 15,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 3435,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 24960,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 6389,
+                "STEPS_FLOW": 18571,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            },
+            {
+              "wallMs": 261,
+              "maxRssBytes": 151322624,
+              "version": "ts-server-v19",
+              "entries": 15,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 3435,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 24960,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 6389,
+                "STEPS_FLOW": 18571,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            }
+          ]
+        },
+        {
+          "project": "dvna-vulnerable",
+          "submittedFiles": 14,
+          "inputSha256": "fb009c6393ca649e1844bafc4364ce8757256bbcd188ceb74289017fbc6ef373",
+          "measurements": [
+            {
+              "wallMs": 331,
+              "maxRssBytes": 198852608,
+              "version": "ts-server-v19",
+              "entries": 30,
+              "candidateCount": 1,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 53184,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 33138,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 8588,
+                "STEPS_FLOW": 24550,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            },
+            {
+              "wallMs": 320,
+              "maxRssBytes": 199327744,
+              "version": "ts-server-v19",
+              "entries": 30,
+              "candidateCount": 1,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 53184,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 33138,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 8588,
+                "STEPS_FLOW": 24550,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            }
+          ]
+        },
+        {
+          "project": "dvna-remediated",
+          "submittedFiles": 16,
+          "inputSha256": "1d65acc4c5be618a04e416802e954e4ee47ee8eb5f2210b6e439a917fbe95d9d",
+          "measurements": [
+            {
+              "wallMs": 353,
+              "maxRssBytes": 207929344,
+              "version": "ts-server-v19",
+              "entries": 28,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 54052,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 49454,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 10208,
+                "STEPS_FLOW": 39246,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            },
+            {
+              "wallMs": 329,
+              "maxRssBytes": 205111296,
+              "version": "ts-server-v19",
+              "entries": 28,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 54052,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 49454,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 10208,
+                "STEPS_FLOW": 39246,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            }
+          ]
+        },
+        {
+          "project": "next-supabase",
+          "submittedFiles": 44,
+          "inputSha256": "2d1e8e4e0327b700f0bb4446750e2b9c8245bde16ff0d78e669d5ef7abb3a84b",
+          "measurements": [
+            {
+              "wallMs": 227,
+              "maxRssBytes": 147357696,
+              "version": "ts-server-v19",
+              "entries": 0,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 8452,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 593,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 153,
+                "STEPS_ENTRY_DISCOVERY": 440,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            },
+            {
+              "wallMs": 219,
+              "maxRssBytes": 145014784,
+              "version": "ts-server-v19",
+              "entries": 0,
+              "candidateCount": 0,
+              "budgetUsage": {
+                "AST_NODES_INDEXED": 8452,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 593,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 153,
+                "STEPS_ENTRY_DISCOVERY": 440,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "goofTarget": {
+    "sha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+    "source": {
+      "filePath": "routes/index.js",
+      "line": 168
+    },
+    "sink": {
+      "filePath": "routes/index.js",
+      "line": 174
+    },
+    "before": "NOT_SUPPORTED",
+    "after": "NOT_SUPPORTED",
+    "entrypoints": [
+      0,
+      15
+    ],
+    "targetFinding": [
+      0,
+      0
+    ],
+    "reason": "Registered handlers now traced; regex capture, branch/native-call continuity remain outside a proven complete command path. No new true positive claimed."
+  },
+  "regressionFixtures": {
+    "newInternalNodeTests": 13,
+    "riskNormalUnknown": "Primitive fallback/getter, mounted router and helper, fixed/overwritten values, lookalike objects, modified or escaped receiver, effectful fallback, dynamic require, unmounted router and unknown transform. Not independent external validation."
+  },
+  "tests": {
+    "backend": {
+      "total": 672,
+      "skippedOptIn": 9,
+      "failures": 0
+    },
+    "node": 332,
+    "frontend": 159,
+    "evaluationTools": 177,
+    "frontendBuild": "PASS",
+    "browser": {
+      "backend": "ACTUAL_ISOLATED_H2",
+      "widths": [
+        1440,
+        390,
+        320
+      ],
+      "transport": "TEST_ONLY_CORS_PROXY; PRODUCT_CORS_UNCHANGED",
+      "githubApiParity": "MOCK_NOT_LIVE_APP"
+    }
+  },
+  "unsupportedAndDeferred": [
+    "Juice Shop setup/factory/wrapper request dispatch",
+    "Sequelize/Mongoose API origin and query semantics",
+    "Regex capture and branch-sensitive native-call continuity",
+    "Dynamic factories, middleware effects and conditional route-array forEach",
+    "Live authentication/authorization and deployed configuration",
+    "No paid AI or live OSV/EPSS/KEV; static dependency evidence only"
+  ],
+  "rawWarningAudit": {
+    "juiceRawCount": 349,
+    "juiceFilteredCount": 349,
+    "allClassifiedAsFalsePositive": false,
+    "allClassifiedAsVerifiedVulnerability": false,
+    "samples": [
+      "Repeated localStorage token reads require storage/auth context, not separate fixes per occurrence.",
+      "HTTP test configuration and expectation strings are retained low-confidence pattern warnings, not proven network calls."
+    ],
+    "suppressionOrDedupPolicyChanged": false
+  },
+  "provenance": {
+    "expressContract": "https://expressjs.com/en/4x/api/application/",
+    "newValidationLicense": "MIT",
+    "newValidationIsAIToolProven": false,
+    "priorProjectGroundTruthChanged": false
+  }
+}

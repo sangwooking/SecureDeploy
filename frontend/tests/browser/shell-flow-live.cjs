@@ -9,7 +9,7 @@ try{
  assert.equal(signup.status(),200);const user=await signup.json(),headers={Authorization:`Bearer ${user.accessToken}`};
  const reports=[];
  for(const [name,body,count]of [['input',"cp.exec('fixed '+req.body.value)",1],['argv',"cp.execFile('fixed',['arg',req.body.value])",0]]){
-  const files={'package.json':'{"dependencies":{"express":"4.21.2"}}','server.cjs':`const express=require('express');const app=express();const cp=require('node:child_process');app.post('/work',(req,res)=>{${body};});`};
+  const files={'package.json':'{"dependencies":{"express":"4.21.2"}}','server.cjs':`const express=require('express');const app=express();const cp=require('node:child_process');app.set('port',process.env.PORT||3001);app.post('/work',(req,res)=>{${body};});app.get('env');`};
   const zip=execFileSync('python3',['-c',"import io,sys,json,zipfile\nb=io.BytesIO()\nwith zipfile.ZipFile(b,'w',zipfile.ZIP_DEFLATED) as z:\n for p,s in json.load(sys.stdin).items(): z.writestr(p,s)\nsys.stdout.buffer.write(b.getvalue())"],{input:JSON.stringify(files)});
   const response=await http.post('/api/reviews/upload',{headers,multipart:{scanMode:'STANDARD',file:{name:'synthetic.zip',mimeType:'application/zip',buffer:zip}}});
   assert.equal(response.status(),200);const review=await response.json();

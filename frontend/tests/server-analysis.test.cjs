@@ -5,6 +5,12 @@ const { renderToStaticMarkup } = require('react-dom/server');
 const { ServerAnalysisSection } = require('./load-component.cjs')('ServerAnalysisSection');
 const fixture = require('./server-analysis-fixture.cjs');
 const render = snapshot => renderToStaticMarkup(React.createElement(ServerAnalysisSection, { snapshot }));
+test('server selection and Express setting-read hints never imply request or runtime proof',()=>{
+ const data=fixture();data.files[0].selectionReason='TS_SERVER_USE_IMPORT_HINT';data.files[0].limitations.push('EXPRESS_SETTING_READ_NOT_ROUTE');
+ const html=render(data);
+ assert.ok(html.includes('상대 import 연결과 서버 작업 구문 후보'));assert.ok(html.includes('실행 근거는 별도 확인'));
+ assert.ok(html.includes('Express 설정값 조회'));assert.ok(html.includes('요청 등록이나 설정값 확인은 아님'));
+});
 test('shell evidence keeps execution and argv limits separate and offers only manual file navigation',()=>{
   const data=fixture();data.analyzerVersion='ts-server-v18';
   const f=data.findings[0];f.ruleId='JS_SHELL_COMMAND_INPUT_FLOW';f.kind='CWE-78';f.source.kind='EXPRESS_BODY';f.sink.kind='NODE_EXEC_SHELL';

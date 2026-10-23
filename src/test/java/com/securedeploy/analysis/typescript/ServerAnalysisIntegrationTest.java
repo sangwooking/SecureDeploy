@@ -41,7 +41,7 @@ class ServerAnalysisIntegrationTest {
     @Test void shellEvidencePersistsAcrossZipAndPublicAndPrivateInputsWithoutLegacyRiskPromotion() throws Exception {
         String token=signup();
         var sources=Map.of("package.json","{\"dependencies\":{\"express\":\"4.21.2\"}}", "server.cjs",
-                "const express=require('express');const app=express();const {exec}=require('node:child_process');app.post('/work',(req,res)=>exec('fixed '+req.body.value));");
+                "const express=require('express');const app=express();const {exec}=require('node:child_process');app.set('port',process.env.PORT||3001);app.post('/work',(req,res)=>exec('fixed '+req.body.value));app.get('env');");
         var zip=uploadSources(token,sources);var snapshot=zip.path("serverAnalysis");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
