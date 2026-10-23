@@ -186,10 +186,16 @@ def probe(root, worker, label=None):
 
 def outcome(case, row):
     ts=row['typescript'];path=case['filePath'];line=case['line'];cwe=case['cwe']
-    rules={'CWE-78':{'JS_SHELL_COMMAND_INPUT_FLOW'},'CWE-89':{'TS_SQL_INPUT_FLOW'},'CWE-918':{'TS_SSRF_INPUT_FLOW'}}
+    rules={'CWE-78':{'JS_SHELL_COMMAND_INPUT_FLOW'},'CWE-89':{'TS_SQL_INPUT_FLOW','JS_SEQUELIZE_SQL_INPUT_FLOW'},'CWE-918':{'TS_SSRF_INPUT_FLOW'}}
     matching=[f for f in ts.get('validatedFindings') or [] if f['location']['filePath']==path and f['location']['line']==line
               and f['ruleId'] in rules.get(cwe,set())]
     if matching:return 'TP' if case['truth']=='RISK' else 'FP'
+    if cwe=='CWE-89':
+        uses=[u for u in ts.get('nodeUses') or [] if u.get('ruleId')=='JS_SEQUELIZE_SQL_INPUT_FLOW'
+              and u['location']['filePath']==path and u['location']['line']==line]
+        if any(u['kind'] in {'UNKNOWN','FLOW_UNRESOLVED'} for u in uses):return 'UNKNOWN'
+        if any(u['kind']=='INPUT_TO_EXECUTION' for u in uses):return 'FN' if case['truth']=='RISK' else 'UNKNOWN'
+        if any(u['kind']=='STATIC_OR_DATA_ONLY' for u in uses):return 'FN' if case['truth']=='RISK' else 'TN'
     # Explicit reviewed contracts, not an absence-of-warning safety heuristic.
     if case['caseId']=='dvna-execfile-counterpart' and any(u['kind']=='ARGV_WITHOUT_SHELL_DECLARED'
             and u['location']['filePath']==path and u['location']['line']==line for u in ts.get('nodeUses') or []):return 'TN'

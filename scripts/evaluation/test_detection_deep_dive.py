@@ -25,4 +25,15 @@ class PathJudgmentTests(unittest.TestCase):
         self.assertEqual(outcome(case,self.row(uses=[use])),'TN')
         self.assertEqual(outcome(case,self.row([self.finding()],uses=[use])),'FP')
 
+    def test_sequelize_requires_exact_target_location_and_keeps_unproven_orm_counterpart_unsupported(self):
+        case=self.case(cwe='CWE-89')
+        self.assertEqual(outcome(case,self.row([self.finding(ruleId='JS_SEQUELIZE_SQL_INPUT_FLOW')])),'TP')
+        self.assertEqual(outcome(case,self.row([self.finding(ruleId='JS_MONGO_WHERE_INPUT_FLOW')])),'NOT_SUPPORTED')
+        self.assertEqual(outcome(self.case(cwe='CWE-89',truth='NORMAL_FOR_TARGET'),self.row()),'NOT_SUPPORTED')
+
+    def test_supported_sql_without_final_finding_is_not_hidden_as_unsupported(self):
+        use=dict(ruleId='JS_SEQUELIZE_SQL_INPUT_FLOW',kind='INPUT_TO_EXECUTION',location=dict(filePath='api.cjs',line=4))
+        self.assertEqual(outcome(self.case(cwe='CWE-89'),self.row(uses=[use])),'FN')
+        self.assertEqual(outcome(self.case(cwe='CWE-89'),self.row(uses=[dict(use,kind='FLOW_UNRESOLVED')])),'UNKNOWN')
+
 if __name__=='__main__':unittest.main()

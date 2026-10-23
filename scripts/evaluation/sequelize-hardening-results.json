@@ -1,0 +1,835 @@
+{
+  "schemaVersion": 1,
+  "baseline": "2835484429802cffe847914c4bf83b10de5ffe4b",
+  "baselineReceipt": "hardening2-release: production bytes identical; no new baseline API execution claimed",
+  "truthSha256": "39385db056dd4bdb7c9974529609414a35ebb70341205e3354e76efe80c0fcac",
+  "counts": {
+    "before": {
+      "NOT_SUPPORTED": 7,
+      "TP": 2,
+      "TN": 1
+    },
+    "after": {
+      "TP": 4,
+      "NOT_SUPPORTED": 5,
+      "TN": 1
+    }
+  },
+  "originalRiskDenominator": 8,
+  "cases": [
+    {
+      "caseId": "dvna-sql",
+      "project": "dvna-vulnerable",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "cwe": "CWE-89",
+      "truth": "RISK",
+      "filePath": "core/appHandler.js",
+      "line": 11,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "before": "NOT_SUPPORTED",
+      "after": "TP"
+    },
+    {
+      "caseId": "dvna-shell",
+      "project": "dvna-vulnerable",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "cwe": "CWE-78",
+      "truth": "RISK",
+      "filePath": "core/appHandler.js",
+      "line": 39,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "before": "TP",
+      "after": "TP"
+    },
+    {
+      "caseId": "dvna-deserialization",
+      "project": "dvna-vulnerable",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "cwe": "CWE-502",
+      "truth": "RISK",
+      "filePath": "core/appHandler.js",
+      "line": 218,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "dvna-2017-sql-still-present",
+      "project": "dvna-fixed",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "cwe": "CWE-89",
+      "truth": "RISK",
+      "filePath": "core/appHandler.js",
+      "line": 11,
+      "fileSha256": "a2df743e254dd312698e83a08a9da0193c76cb997ee5514f89a51dc73c3f112c",
+      "before": "NOT_SUPPORTED",
+      "after": "TP"
+    },
+    {
+      "caseId": "dvna-2017-shell-still-present",
+      "project": "dvna-fixed",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "cwe": "CWE-78",
+      "truth": "RISK",
+      "filePath": "core/appHandler.js",
+      "line": 39,
+      "fileSha256": "a2df743e254dd312698e83a08a9da0193c76cb997ee5514f89a51dc73c3f112c",
+      "before": "TP",
+      "after": "TP"
+    },
+    {
+      "caseId": "dvna-model-query-counterpart",
+      "project": "dvna-remediated",
+      "sha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "cwe": "CWE-89",
+      "truth": "NORMAL_FOR_TARGET",
+      "filePath": "core/appHandler.js",
+      "line": 10,
+      "fileSha256": "05446d6f7bbf2beb6ddb5db1070c14d6472d6118b1ce35c2b63ad975819dd9f3",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "dvna-execfile-counterpart",
+      "project": "dvna-remediated",
+      "sha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "cwe": "CWE-78",
+      "truth": "NORMAL_FOR_TARGET",
+      "filePath": "core/appHandler.js",
+      "line": 43,
+      "fileSha256": "05446d6f7bbf2beb6ddb5db1070c14d6472d6118b1ce35c2b63ad975819dd9f3",
+      "before": "TN",
+      "after": "TN"
+    },
+    {
+      "caseId": "juice-search-sql",
+      "project": "juice-shop",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "cwe": "CWE-89",
+      "truth": "RISK",
+      "filePath": "routes/search.ts",
+      "line": 23,
+      "fileSha256": "6e3272ef4065d080295d995a04964e8c5e6b1e06c4b4c8ebed3234286686ee5f",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "juice-login-sql",
+      "project": "juice-shop",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "cwe": "CWE-89",
+      "truth": "RISK",
+      "filePath": "routes/login.ts",
+      "line": 34,
+      "fileSha256": "cf11d682edff6744bcb54339bce4b2dd6da5e80f9038facd7605df857b0a0b7b",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED"
+    },
+    {
+      "caseId": "juice-profile-ssrf",
+      "project": "juice-shop",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "cwe": "CWE-918",
+      "truth": "RISK",
+      "filePath": "routes/profileImageUrlUpload.ts",
+      "line": 24,
+      "fileSha256": "75140f35e65141135d3abb4b3b86aad1556c0d2a22d733ae1d50a127cd0cbb26",
+      "before": "NOT_SUPPORTED",
+      "after": "NOT_SUPPORTED"
+    }
+  ],
+  "projects": [
+    {
+      "project": "dvna-vulnerable",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "engine": "8714cade4eea4df2d1d75a5cf1b98bb0c8282c73",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "securityScore": [
+        79,
+        79
+      ],
+      "legacyFindingCount": [
+        2,
+        2
+      ],
+      "candidates": [
+        1,
+        2
+      ],
+      "entries": [
+        30,
+        30
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMs": [
+        694,
+        582
+      ]
+    },
+    {
+      "project": "dvna-fixed",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "engine": "8714cade4eea4df2d1d75a5cf1b98bb0c8282c73",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "securityScore": [
+        79,
+        79
+      ],
+      "legacyFindingCount": [
+        2,
+        2
+      ],
+      "candidates": [
+        1,
+        2
+      ],
+      "entries": [
+        30,
+        30
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMs": [
+        661,
+        552
+      ]
+    },
+    {
+      "project": "dvna-remediated",
+      "sha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "engine": "8714cade4eea4df2d1d75a5cf1b98bb0c8282c73",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "securityScore": [
+        93,
+        93
+      ],
+      "legacyFindingCount": [
+        1,
+        1
+      ],
+      "candidates": [
+        0,
+        0
+      ],
+      "entries": [
+        28,
+        28
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMs": [
+        697,
+        570
+      ]
+    },
+    {
+      "project": "juice-shop",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "engine": "8714cade4eea4df2d1d75a5cf1b98bb0c8282c73",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "securityScore": [
+        0,
+        0
+      ],
+      "legacyFindingCount": [
+        349,
+        349
+      ],
+      "candidates": [
+        0,
+        0
+      ],
+      "entries": [
+        0,
+        0
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMs": [
+        1302,
+        1029
+      ]
+    },
+    {
+      "project": "next-supabase",
+      "sha": "2998a2e801caab665d603daefc7445c04309285a",
+      "engine": "8714cade4eea4df2d1d75a5cf1b98bb0c8282c73",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "securityScore": [
+        100,
+        100
+      ],
+      "legacyFindingCount": [
+        0,
+        0
+      ],
+      "candidates": [
+        0,
+        0
+      ],
+      "entries": [
+        0,
+        0
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMs": [
+        530,
+        445
+      ]
+    },
+    {
+      "project": "goof-validation",
+      "sha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "engine": "8714cade4eea4df2d1d75a5cf1b98bb0c8282c73",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "securityScore": [
+        23,
+        23
+      ],
+      "legacyFindingCount": [
+        7,
+        7
+      ],
+      "candidates": [
+        0,
+        0
+      ],
+      "entries": [
+        15,
+        15
+      ],
+      "coverage": [
+        "PARTIAL",
+        "PARTIAL"
+      ],
+      "elapsedMs": [
+        727,
+        528
+      ]
+    }
+  ],
+  "regressionApps": [
+    {
+      "project": "nglguarino--echoverse-11labs",
+      "sha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "flows": [
+        1,
+        1
+      ],
+      "clients": [
+        0,
+        0
+      ],
+      "accesses": [
+        0,
+        0
+      ]
+    },
+    {
+      "project": "LellaSriHarsha--power-platform-hub",
+      "sha": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "flows": [
+        0,
+        0
+      ],
+      "clients": [
+        0,
+        0
+      ],
+      "accesses": [
+        0,
+        0
+      ]
+    },
+    {
+      "project": "TinyikoMamban--workflowai-pro",
+      "sha": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "flows": [
+        0,
+        0
+      ],
+      "clients": [
+        3,
+        3
+      ],
+      "accesses": [
+        42,
+        42
+      ]
+    },
+    {
+      "project": "Adriano-Digital2024--CopyMonster",
+      "sha": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "flows": [
+        0,
+        0
+      ],
+      "clients": [
+        29,
+        29
+      ],
+      "accesses": [
+        75,
+        75
+      ]
+    }
+  ],
+  "failureCasePack": [
+    {
+      "caseId": "dvna-sql",
+      "project": "dvna-vulnerable",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "cwe": "CWE-89",
+      "truth": "RISK",
+      "filePath": "core/appHandler.js",
+      "line": 11,
+      "fileSha256": "0fc237589d5a9e73450d089f97124fb943d68222f70df0e973a8b9acfe2ebb6b",
+      "before": "NOT_SUPPORTED",
+      "after": "TP",
+      "rootCause": "Missing declared Sequelize constructor/query contract plus branch-created registry initialization provenance.",
+      "commonImprovement": "Closed initialization grammar over complete supplied inventory; define-only model summaries; versioned native query receiver.",
+      "normalCounterpart": "dvna-model-query-counterpart remains NOT_SUPPORTED: removed raw query is documented, Model.find origin is not proven.",
+      "patch": "https://github.com/appsecco/dvna/commit/dc1f9c54685eb04f55e444370d6d622834e4cc00",
+      "routeEvidence": [
+        "server.js:38 /app mount",
+        "routes/app.js:50 POST /usersearch",
+        "core/appHandler.js:8 userSearch"
+      ],
+      "flowEvidence": [
+        [
+          {
+            "filePath": "core/appHandler.js",
+            "line": 10,
+            "column": 58,
+            "functionName": "userSearch",
+            "kind": "EXPRESS_BODY"
+          },
+          {
+            "filePath": "core/appHandler.js",
+            "line": 10,
+            "column": 14,
+            "functionName": "userSearch",
+            "kind": "SQL_STRING_CONSTRUCTION"
+          },
+          {
+            "filePath": "core/appHandler.js",
+            "line": 10,
+            "column": 14,
+            "functionName": "userSearch",
+            "kind": "SQL_STRING_CONSTRUCTION"
+          },
+          {
+            "filePath": "core/appHandler.js",
+            "line": 10,
+            "column": 6,
+            "functionName": "userSearch",
+            "kind": "VARIABLE"
+          },
+          {
+            "filePath": "models/index.js",
+            "line": 10,
+            "column": 19,
+            "functionName": "module",
+            "kind": "SEQUELIZE_DECLARED_INSTANCE_ORIGIN"
+          },
+          {
+            "filePath": "models/index.js",
+            "line": 12,
+            "column": 19,
+            "functionName": "module",
+            "kind": "SEQUELIZE_DECLARED_INSTANCE_ORIGIN"
+          }
+        ]
+      ],
+      "remainingHypotheses": [
+        "Middleware validation and runtime DB execution are not proven.",
+        "Installed dependency versions and deployed model directory may differ."
+      ],
+      "regressionTest": "analyzers/typescript/test/sequelize.test.mjs",
+      "limitation": "Same DVNA project and vulnerability family, not independent project successes."
+    },
+    {
+      "caseId": "dvna-2017-sql-still-present",
+      "project": "dvna-fixed",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "cwe": "CWE-89",
+      "truth": "RISK",
+      "filePath": "core/appHandler.js",
+      "line": 11,
+      "fileSha256": "a2df743e254dd312698e83a08a9da0193c76cb997ee5514f89a51dc73c3f112c",
+      "before": "NOT_SUPPORTED",
+      "after": "TP",
+      "rootCause": "Missing declared Sequelize constructor/query contract plus branch-created registry initialization provenance.",
+      "commonImprovement": "Closed initialization grammar over complete supplied inventory; define-only model summaries; versioned native query receiver.",
+      "normalCounterpart": "dvna-model-query-counterpart remains NOT_SUPPORTED: removed raw query is documented, Model.find origin is not proven.",
+      "patch": "https://github.com/appsecco/dvna/commit/dc1f9c54685eb04f55e444370d6d622834e4cc00",
+      "routeEvidence": [
+        "server.js:38 /app mount",
+        "routes/app.js:50 POST /usersearch",
+        "core/appHandler.js:8 userSearch"
+      ],
+      "flowEvidence": [
+        [
+          {
+            "filePath": "core/appHandler.js",
+            "line": 10,
+            "column": 58,
+            "functionName": "userSearch",
+            "kind": "EXPRESS_BODY"
+          },
+          {
+            "filePath": "core/appHandler.js",
+            "line": 10,
+            "column": 14,
+            "functionName": "userSearch",
+            "kind": "SQL_STRING_CONSTRUCTION"
+          },
+          {
+            "filePath": "core/appHandler.js",
+            "line": 10,
+            "column": 14,
+            "functionName": "userSearch",
+            "kind": "SQL_STRING_CONSTRUCTION"
+          },
+          {
+            "filePath": "core/appHandler.js",
+            "line": 10,
+            "column": 6,
+            "functionName": "userSearch",
+            "kind": "VARIABLE"
+          },
+          {
+            "filePath": "models/index.js",
+            "line": 10,
+            "column": 19,
+            "functionName": "module",
+            "kind": "SEQUELIZE_DECLARED_INSTANCE_ORIGIN"
+          },
+          {
+            "filePath": "models/index.js",
+            "line": 12,
+            "column": 19,
+            "functionName": "module",
+            "kind": "SEQUELIZE_DECLARED_INSTANCE_ORIGIN"
+          }
+        ]
+      ],
+      "remainingHypotheses": [
+        "Middleware validation and runtime DB execution are not proven.",
+        "Installed dependency versions and deployed model directory may differ."
+      ],
+      "regressionTest": "analyzers/typescript/test/sequelize.test.mjs",
+      "limitation": "Same DVNA project and vulnerability family, not independent project successes."
+    }
+  ],
+  "interpretation": "New TP through support expansion, not a pre-existing supported-contract FN repair; normal ORM counterpart is not TN.",
+  "independentExternalReview": false,
+  "policyChanged": false,
+  "userDatabaseModified": false,
+  "targetExecuted": false,
+  "originalCodeIncluded": false,
+  "newValidation": {
+    "repository": "sequelize/express-example",
+    "sha": "7304dc6ff4b842b06301d962bd0bcb07454042b8",
+    "license": "MIT",
+    "licenseFiles": [
+      {
+        "path": "license",
+        "sha256": "d00f490b54d9afddda92bcc8c0a120647c6caa766e20eeebfdc6e5e8c6204dc2",
+        "bytes": 1103
+      }
+    ],
+    "grade": "C_CONTEXT_ONLY_NOT_TN",
+    "engine": "8714cade4eea4df2d1d75a5cf1b98bb0c8282c73",
+    "repeatIdentical": true,
+    "legacyUnchanged": {
+      "raw": true,
+      "filtered": true,
+      "securityScore": true,
+      "risk": true,
+      "sca": true
+    },
+    "entries": [
+      1,
+      1
+    ],
+    "flows": [
+      0,
+      0
+    ],
+    "limits": [
+      "Array-based model setup, custom associations and dynamic route loops remain unsupported.",
+      "No independent risk/fixed pair or external reviewer. No Grade C negative is scored TN."
+    ]
+  },
+  "workerResourceProfile": {
+    "scope": "FULL_SELECTED_SOURCE_STATIC_WORKER_PROFILE_NOT_LIVE_BACKEND_RSS",
+    "workerHashes": {
+      "supabase-evidence.mjs": "2a0fe3a32c577b04837df16a00c502777576226fbab684af0321b36b84d67e02",
+      "exposure.mjs": "c67533a9be3660d02e3e6edb0823b5b5f97d1fe3d93993095279fbdd5687591b",
+      "deno.mjs": "19daa4d392ab013c1f65024efc4e588ea72712f964a48290b645c78bd7c5beef",
+      "worker.mjs": "27b53e2f020203aae907cb2e9a0915c2ed8016724a5f1fa51945b9d5777ef1c1",
+      "response-patch.mjs": "5d2d90af16257b806c2a9f3c79b8752d5f41780eea22918fd2a2157f9f1b1172",
+      "url-context-worker.mjs": "655a2671b8d6811df3d4089057ca7eaa1183862c0b14909f40d68dbc7ba3baa5",
+      "url-context.mjs": "f589931c70179e7bc1be909e1ad69546c3623123d2040dd06009af81d0e99ab7",
+      "static-display-context.mjs": "7be13815ba8112aa7004e23e4383c5beb29f3eb4bba00fe9f74bc58604dd81b7",
+      "next.mjs": "ce8816640af7eddc2f32ba6bf05d08c7393094ccdbf39efd41851e39f39df073",
+      "syntax-index.mjs": "4c6946caf8ef5a2815b3646dc91042107d03897061d88151e8842ab643382792",
+      "entry-state.mjs": "bf85041e6fc316eb3de8652c91478d3f70b3751bdb4d5b75ffbaf87f06af00d0",
+      "constructor-summary.mjs": "fdc7d1fa5f9b706078965289dd0bb882bbbcf1e00124ae12a5c2e8f1c1201a63",
+      "node-server.mjs": "a8e5b7c82e009a2275aa22028690bcdda17279ff3e2fd88372cb66b3280e72a6",
+      "entry-contracts.mjs": "255cf5a5b91e3454373f037e887d15596ebdf3df782c3154befd582555878e1b",
+      "destination.mjs": "f4c2f7626ea2fb76da0fbc63e7a8a344465d24af012a473cde12d63cc6c38509",
+      "supabase.mjs": "27e6a71f2d967586a094c1acb8ae24a1ee9f1d53935c30758a94ed882cb5d815",
+      "sequelize.mjs": "1745e08a422c39ef60b3610c3eeac7ec522e3942831eb7007c3789a5960f9edf",
+      "rls.mjs": "d66993f2acd8a699bab229ca84b6ede3c3bd5d9136e9906b9095210355293135",
+      "analyzer.mjs": "e81e497e1da122e8c99f94e1641e7b9955fa0efdf1105dcdfe453ea8d6b0bc0c"
+    },
+    "projects": [
+      {
+        "project": "dvna-vulnerable",
+        "inputSha256": "85b3d68c326f781111e83b6e624532ceb2921c6e22e360df4cc8cf896c7569b3",
+        "runs": [
+          {
+            "wallMs": 255,
+            "maxRssBytes": 198066176,
+            "version": "ts-server-v20",
+            "budget": {
+              "AST_NODES_INDEXED": 53184,
+              "STEPS_LIMIT": 100000,
+              "STEPS_USED": 34730,
+              "STEPS_SETUP": 0,
+              "STEPS_POLICY": 0,
+              "STEPS_CLIENT": 0,
+              "STEPS_ENTRY_DISCOVERY": 8399,
+              "STEPS_FLOW": 26331,
+              "CLIENT_WORK_LIMIT": 15000,
+              "POLICY_WORK_LIMIT": 25000
+            },
+            "candidates": 2
+          },
+          {
+            "wallMs": 247,
+            "maxRssBytes": 192856064,
+            "version": "ts-server-v20",
+            "budget": {
+              "AST_NODES_INDEXED": 53184,
+              "STEPS_LIMIT": 100000,
+              "STEPS_USED": 34730,
+              "STEPS_SETUP": 0,
+              "STEPS_POLICY": 0,
+              "STEPS_CLIENT": 0,
+              "STEPS_ENTRY_DISCOVERY": 8399,
+              "STEPS_FLOW": 26331,
+              "CLIENT_WORK_LIMIT": 15000,
+              "POLICY_WORK_LIMIT": 25000
+            },
+            "candidates": 2
+          }
+        ]
+      },
+      {
+        "project": "dvna-remediated",
+        "inputSha256": "1c43cfda938c693979910ad9448ddefc6480754cf7a9e8e87e3bb3c4979c9cee",
+        "runs": [
+          {
+            "wallMs": 255,
+            "maxRssBytes": 194314240,
+            "version": "ts-server-v20",
+            "budget": {
+              "AST_NODES_INDEXED": 54052,
+              "STEPS_LIMIT": 100000,
+              "STEPS_USED": 51170,
+              "STEPS_SETUP": 0,
+              "STEPS_POLICY": 0,
+              "STEPS_CLIENT": 0,
+              "STEPS_ENTRY_DISCOVERY": 10048,
+              "STEPS_FLOW": 41122,
+              "CLIENT_WORK_LIMIT": 15000,
+              "POLICY_WORK_LIMIT": 25000
+            },
+            "candidates": 0
+          },
+          {
+            "wallMs": 255,
+            "maxRssBytes": 194134016,
+            "version": "ts-server-v20",
+            "budget": {
+              "AST_NODES_INDEXED": 54052,
+              "STEPS_LIMIT": 100000,
+              "STEPS_USED": 51170,
+              "STEPS_SETUP": 0,
+              "STEPS_POLICY": 0,
+              "STEPS_CLIENT": 0,
+              "STEPS_ENTRY_DISCOVERY": 10048,
+              "STEPS_FLOW": 41122,
+              "CLIENT_WORK_LIMIT": 15000,
+              "POLICY_WORK_LIMIT": 25000
+            },
+            "candidates": 0
+          }
+        ]
+      },
+      {
+        "project": "juice-shop",
+        "inputSha256": "abcafa44e1f0fd1521c3a093b9d6b4117e0b0a4fd86637939e3907773d20a375",
+        "runs": [
+          {
+            "wallMs": 302,
+            "maxRssBytes": 190758912,
+            "version": "ts-server-v20",
+            "budget": {
+              "AST_NODES_INDEXED": 48700,
+              "STEPS_LIMIT": 100000,
+              "STEPS_USED": 86396,
+              "STEPS_SETUP": 0,
+              "STEPS_POLICY": 0,
+              "STEPS_CLIENT": 533,
+              "STEPS_ENTRY_DISCOVERY": 85863,
+              "STEPS_FLOW": 0,
+              "CLIENT_WORK_LIMIT": 15000,
+              "POLICY_WORK_LIMIT": 25000
+            },
+            "candidates": 0
+          },
+          {
+            "wallMs": 313,
+            "maxRssBytes": 197197824,
+            "version": "ts-server-v20",
+            "budget": {
+              "AST_NODES_INDEXED": 48700,
+              "STEPS_LIMIT": 100000,
+              "STEPS_USED": 86396,
+              "STEPS_SETUP": 0,
+              "STEPS_POLICY": 0,
+              "STEPS_CLIENT": 533,
+              "STEPS_ENTRY_DISCOVERY": 85863,
+              "STEPS_FLOW": 0,
+              "CLIENT_WORK_LIMIT": 15000,
+              "POLICY_WORK_LIMIT": 25000
+            },
+            "candidates": 0
+          }
+        ]
+      },
+      {
+        "project": "goof-validation",
+        "inputSha256": "f12c646396603e5db6d1ca36ee7a9f6cb85f24b4de631aca7b8fbe7af06d3277",
+        "runs": [
+          {
+            "wallMs": 203,
+            "maxRssBytes": 145031168,
+            "version": "ts-server-v20",
+            "budget": {
+              "AST_NODES_INDEXED": 3435,
+              "STEPS_LIMIT": 100000,
+              "STEPS_USED": 25088,
+              "STEPS_SETUP": 0,
+              "STEPS_POLICY": 0,
+              "STEPS_CLIENT": 0,
+              "STEPS_ENTRY_DISCOVERY": 6517,
+              "STEPS_FLOW": 18571,
+              "CLIENT_WORK_LIMIT": 15000,
+              "POLICY_WORK_LIMIT": 25000
+            },
+            "candidates": 0
+          },
+          {
+            "wallMs": 200,
+            "maxRssBytes": 143900672,
+            "version": "ts-server-v20",
+            "budget": {
+              "AST_NODES_INDEXED": 3435,
+              "STEPS_LIMIT": 100000,
+              "STEPS_USED": 25088,
+              "STEPS_SETUP": 0,
+              "STEPS_POLICY": 0,
+              "STEPS_CLIENT": 0,
+              "STEPS_ENTRY_DISCOVERY": 6517,
+              "STEPS_FLOW": 18571,
+              "CLIENT_WORK_LIMIT": 15000,
+              "POLICY_WORK_LIMIT": 25000
+            },
+            "candidates": 0
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -26,6 +26,15 @@ test('structural finding file navigation is opt-in and absent for read-only resu
   const html=renderToStaticMarkup(React.createElement(ServerAnalysisSection,{snapshot:fixture(),onEditFile:()=>{}}));
   assert.ok(html.includes('이 파일 수정하기'));assert.ok(html.includes('NOT_COMPARED'));
 });
+test('Sequelize evidence identifies initialization separately and never advertises automatic patches',()=>{
+  const data=fixture();data.analyzerVersion='ts-server-v20';const f=data.findings[0];
+  f.ruleId='JS_SEQUELIZE_SQL_INPUT_FLOW';f.kind='CWE-89';f.source.kind='EXPRESS_BODY';f.sink.kind='SEQUELIZE_RAW_QUERY';
+  data.validatedFindings[0]={...data.validatedFindings[0],ruleId:f.ruleId,title:'SQL 입력 경로',riskExplanation:'입력값이 Sequelize Raw SQL 실행 호출(CWE-89)에 전달됩니다.',evidence:[f]};
+  data.nodeUses=[{ruleId:'JS_CONSTRUCTOR_EFFECT',kind:'INITIALIZATION_SUMMARY_MUST',operation:'SEQUELIZE_REGISTRY_SUMMARY',location:f.sink,trace:[],limitations:['DECLARED_VERSION_NOT_INSTALLED_VERSION']}];
+  const html=renderToStaticMarkup(React.createElement(ServerAnalysisSection,{snapshot:data,onEditFile:()=>{}}));
+  for(const text of ['제한된 모델 초기화·인스턴스 출처 확인','실제 설치 버전은 미확인','요청 본문','CWE-89','NOT_COMPARED','이 파일 수정하기'])assert.ok(html.includes(text),text);
+  assert.ok(!html.includes('자동 수정안 만들기'));assert.ok(!html.includes('AI 수정안 만들기'));
+});
 test('combined code and SQL selection is not confused with parsing or verified flows',()=>{
   const data=fixture();data.analyzerVersion='ts-server-v16';data.nodeUses=[];
   data.selectionCoverage={discoveredFiles:249,submittedFiles:100,omittedFiles:149,omittedDetails:49,submittedCharacters:450000,omissionReasons:{SOURCE_FILE_COUNT_LIMIT:149}};
