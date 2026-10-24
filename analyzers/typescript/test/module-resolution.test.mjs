@@ -59,9 +59,16 @@ test('resolution unit contract distinguishes files, directory main, fallback and
   assert.equal(resolver.resolve(mod,'.')?.filePath,'index.js');
   assert.equal(resolver.resolve(mod,'./service')?.filePath,'service.js');
   assert.equal(resolver.resolve(mod,'./service/')?.filePath,'service/entry.cjs');
-  assert.equal(resolver.resolve(mod,'./service','import')?.filePath,'service.js');
+  assert.equal(resolver.resolve(mod,'./service','import'),undefined);
   assert.equal(resolver.resolve(mod,'../escape'),undefined);
   const link=moduleResolution({modules,input:{nodeSourceInventory:['link']},tick(){},note(){}});
   assert.equal(link.resolve(mod,'./link'),undefined); // A collected symlink is metadata, never a readable module.
   assert.ok(notes.includes('NODE_COMMONJS_DIRECTORY_SOURCE_LINK'));
+});
+test('Node ESM requires explicit filenames while TypeScript source mapping remains a separate contract',()=>{
+  const modules=new Map(['entry.mjs','typed.ts','helper.js','helper.ts'].map(filePath=>[filePath,{filePath}]));
+  const resolver=moduleResolution({modules,input:{},tick(){},note(){}});
+  assert.equal(resolver.resolve(modules.get('entry.mjs'),'./helper','import'),undefined);
+  assert.equal(resolver.resolve(modules.get('entry.mjs'),'./helper.js','import')?.filePath,'helper.js');
+  assert.equal(resolver.resolve(modules.get('typed.ts'),'./helper','import')?.filePath,'helper.ts');
 });

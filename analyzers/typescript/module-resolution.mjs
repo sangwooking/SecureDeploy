@@ -40,8 +40,9 @@ export function moduleResolution({modules,input,tick,note}) {
     }
     if(mode==='import') {
       const exact=file(base);if(exact||blocked)return exact;
-      // Preserve the existing TS source/bundler contract, not Node ESM directory loading.
-      const choices=[base.replace(/\.js$/,'.ts'),...['.ts','.js','.mjs','.cjs'].map(e=>base+e)]
+      // TS source mapping is separate from Node ESM's mandatory file extensions.
+      if(!/\.[cm]?tsx?$/.test(mod.filePath)){note(mod,'NODE_ESM_DIRECTORY_OR_TARGET_NOT_SUPPORTED');return;}
+      const choices=[base.replace(/\.js$/,'.ts'),base+'.ts',base+'.tsx']
         .filter(p=>p!==base&&modules.has(p));
       if(choices.length===1){note(mod,'NODE_IMPORT_SOURCE_MAPPING_NOT_RUNTIME_PROOF');return modules.get(choices[0]);}
       note(mod,choices.length?'CALL_TARGET_UNKNOWN':'NODE_ESM_DIRECTORY_OR_TARGET_NOT_SUPPORTED');return;

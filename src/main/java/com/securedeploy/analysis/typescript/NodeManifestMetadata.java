@@ -42,6 +42,7 @@ final class NodeManifestMetadata {
                 }
                 var scripts=doc.path("scripts");
                 if(scripts.isObject())for(String name:iterable(scripts.fieldNames()).stream().sorted().limit(20).toList()) {
+                    if(!name.matches("(?:start|dev|serve)(?::[A-Za-z0-9_-]+)?"))continue;
                     var script=scripts.get(name);if(!script.isTextual())continue;
                     String command=script.asText();
                     if(command.length()<=260&&command.matches("node[ \\t]+[A-Za-z0-9_./-]+")){

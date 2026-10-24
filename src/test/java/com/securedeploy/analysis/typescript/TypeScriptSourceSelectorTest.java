@@ -37,6 +37,8 @@ class TypeScriptSourceSelectorTest {
         assertThat(plan.coverage().submittedCharacters()).isLessThanOrEqualTo(1_000_000);
         var metadata=NodeManifestMetadata.read(List.of(js("package.json","{\"main\":{},\"type\":\"module\"}")));
         assertThat(metadata.worker().get(0)).containsEntry("mainStatus","UNKNOWN").containsEntry("moduleType","module");
+        var scripts=NodeManifestMetadata.read(List.of(js("package.json","{\"scripts\":{\"package\":\"node pack.js\",\"test\":\"node check.js\",\"start:prod\":\"node runtime.cjs\",\"dev\":\"nodemon dev.js\"}}")));
+        assertThat(scripts.seeds()).containsExactly("runtime.cjs");
     }
     @Test void typeReferencesAreNotRuntimeSeedsAndEducationalMarkersDoNotExcludeLiveCode(){
         var plan=TypeScriptSourceSelector.select(List.of(
