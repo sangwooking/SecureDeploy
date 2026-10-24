@@ -68,7 +68,7 @@ export function SupabaseAnalysisSection({snapshot,compact=false}:{snapshot?:Supa
             <h4>변경할 데이터</h4><p>{text(a.writeEvidence.dataStatus)}</p>
             {a.writeEvidence.dataFields.map((v,j)=><div key={'d'+j}><p>{v.name} · {text(v.source)}</p><p className="finding-location">{v.location.filePath}:{v.location.line}</p>
               {v.sourceLocations.map((l,k)=><p className="finding-location" key={k}>값 출처: {l.filePath}:{l.line}</p>)}</div>)}
-            <h4>기존 행을 선택하는 필터</h4><p>{text(a.writeEvidence.filterStatus)}</p>
+            <h4>기존 행을 선택하는 필터</h4><p>{a.writeEvidence.filterStatus==='STATIC_FILTERS'&&!a.writeEvidence.filters.length?'이 호출 체인에서 행 필터가 관찰되지 않았습니다.':text(a.writeEvidence.filterStatus)}</p>
             {a.writeEvidence.filters.map((v,j)=><div key={'f'+j}><p>{v.name} · {v.operator} · {text(v.source)}</p><p className="finding-location">{v.location.filePath}:{v.location.line}</p>
               {v.sourceLocations.map((l,k)=><p className="finding-location" key={k}>값 출처: {l.filePath}:{l.line}</p>)}</div>)}
             <p>값의 출처만 확인했습니다. 사용자 입력 사용 자체는 취약점이 아니며, 필터나 사용자 ID가 있어도 실제 소유권·운영 DB 보호를 보증하지 않습니다.</p>

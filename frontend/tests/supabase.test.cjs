@@ -60,4 +60,6 @@ test('write fields and existing-row filters expose distinct origins without prom
  const h=render(f);
  for(const s of ['쓰기 데이터와 대상 행의 값 출처','변경할 데이터','기존 행을 선택하는 필터','요청자가 제어할 수 있는 값','인증 성공 보장 아님','사용자 A·B','title','user_id'])assert.ok(h.includes(s),s);
  assert.ok(!h.includes('자동 수정안 만들기'));assert.ok(render(fixture()).includes('쓰기 값·행 필터의 출처는 미검사'));
+ f.accesses[0].writeEvidence.filters=[];
+ assert.ok(render(f).includes('이 호출 체인에서 행 필터가 관찰되지 않았습니다.'));
 });
