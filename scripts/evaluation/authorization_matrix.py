@@ -121,11 +121,14 @@ def database(cases=CASES):
         return int(tag[1]) if tag else value
     try:
         p=command([binaries['pg_ctl'],'-D',str(data),'-l',str(folder/'server.log'),'-w','start','-o',f"-h '' -k {sock} -p 65488 -c shared_buffers=16MB -c max_connections=10 -c statement_timeout=2000 -c idle_in_transaction_session_timeout=2000"])
+        started=(data/'postmaster.pid').exists()
         if p.returncode:raise RuntimeError('ISOLATED_START_FAILED')
         started=True
         if sql('SHOW data_directory;')!=str(data) or sql('SHOW listen_addresses;')!='':raise RuntimeError('ISOLATION_ASSERTION_FAILED')
         bootstrap="CREATE ROLE anon NOLOGIN;CREATE ROLE authenticated NOLOGIN;CREATE ROLE limited_admin NOLOGIN NOBYPASSRLS;CREATE SCHEMA auth;CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;GRANT USAGE ON SCHEMA auth,public TO anon,authenticated,limited_admin;GRANT EXECUTE ON FUNCTION auth.uid() TO anon,authenticated,limited_admin;"
         sql(bootstrap)
+        if sql("SELECT count(*) FROM pg_roles WHERE rolname IN ('anon','authenticated','limited_admin') AND NOT rolsuper AND NOT rolbypassrls;")!=3:
+            raise RuntimeError('ROLE_ISOLATION_ASSERTION_FAILED')
         for c in cases:
             sql('DROP TABLE IF EXISTS public.items;'+c['sql'])
             for subject in [A,B]:
@@ -143,7 +146,8 @@ def database(cases=CASES):
                 actual=sql(query,role,'');rows.append(dict(caseId=c['id'],role=role,subject='NO_JWT',probe='role-access',expected=expected,actual=actual,match=actual==expected))
         version=sql('SHOW server_version;')
         return dict(postgres=version,tcpListening=False,userDatabaseAccessed=False,externalSqlExecuted=False,clusterRemoved=True,
-                    source='AUTHORED_CONSTANTS_ONLY',rows=rows,matched=sum(r['match'] for r in rows),total=len(rows))
+                    source='AUTHORED_CONSTANTS_ONLY',policyHashes={c['id']:hashlib.sha256(c['sql'].encode()).hexdigest() for c in cases},
+                    rows=rows,matched=sum(r['match'] for r in rows),total=len(rows))
     finally:
         if started:
             stopped=command([binaries['pg_ctl'],'-D',str(data),'-w','stop','-m','immediate'])
@@ -152,7 +156,9 @@ def database(cases=CASES):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('mode',choices=['database','engine','contexts']);p.add_argument('output',type=Path);p.add_argument('--analyzer',type=Path);p.add_argument('--validation',action='store_true')
-    a=p.parse_args();cases=VALIDATION if a.validation else CASES
+    a=p.parse_args()
+    if a.output.exists():raise ValueError('NEW_OUTPUT_REQUIRED')
+    cases=VALIDATION if a.validation else CASES
     result=database(cases) if a.mode=='database' else contexts(a.analyzer.resolve()) if a.mode=='contexts' else engine(a.analyzer.resolve(),cases)
     a.output.write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(dict(mode=a.mode,rows=len(result['rows']),matched=result.get('matched'))))
