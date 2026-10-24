@@ -1,0 +1,328 @@
+{
+  "scope": "ISOLATED_SELECTED_WORKER_PROFILE_NOT_WHOLE_BACKEND_RSS",
+  "heapMiB": 192,
+  "libraryInventoryContract": "No Sequelize registry present; omitted inventory/SQL metadata, not a second whole-product evaluation.",
+  "reports": [
+    {
+      "case": "CVE-2017-18354-before",
+      "inputSha256": "dbfedfe22838e47fb1113b76054cb209d2ca1eaa371dc3784b6fd356c38785da",
+      "runs": [
+        {
+          "wallMs": 187,
+          "maxRssBytes": 142475264,
+          "budget": {
+            "AST_NODES_INDEXED": 5310,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 14706,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 14706,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        },
+        {
+          "wallMs": 187,
+          "maxRssBytes": 142753792,
+          "budget": {
+            "AST_NODES_INDEXED": 5310,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 14706,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 14706,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        }
+      ]
+    },
+    {
+      "case": "CVE-2017-18354-after",
+      "inputSha256": "0c531b7e56071e07632d6028e012110673dbb23bb8d2dda2f9715f8f03f6f80f",
+      "runs": [
+        {
+          "wallMs": 191,
+          "maxRssBytes": 142688256,
+          "budget": {
+            "AST_NODES_INDEXED": 5347,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 14568,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 14568,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        },
+        {
+          "wallMs": 186,
+          "maxRssBytes": 143720448,
+          "budget": {
+            "AST_NODES_INDEXED": 5347,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 14568,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 14568,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        }
+      ]
+    },
+    {
+      "case": "CVE-2018-3783-before",
+      "inputSha256": "a5eb4b152c6696e88871656fbb001df6affe441f0766973315c79ef1c240091b",
+      "runs": [
+        {
+          "wallMs": 224,
+          "maxRssBytes": 169967616,
+          "budget": {
+            "AST_NODES_INDEXED": 24002,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 10547,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 31,
+            "STEPS_ENTRY_DISCOVERY": 10516,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        },
+        {
+          "wallMs": 223,
+          "maxRssBytes": 161628160,
+          "budget": {
+            "AST_NODES_INDEXED": 24002,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 10547,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 31,
+            "STEPS_ENTRY_DISCOVERY": 10516,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        }
+      ]
+    },
+    {
+      "case": "CVE-2018-3783-after",
+      "inputSha256": "48052980f67da9620595f5939dcb193f01aa78ea014a211397ecb79674f219a6",
+      "runs": [
+        {
+          "wallMs": 226,
+          "maxRssBytes": 169902080,
+          "budget": {
+            "AST_NODES_INDEXED": 24013,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 10591,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 31,
+            "STEPS_ENTRY_DISCOVERY": 10560,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        },
+        {
+          "wallMs": 220,
+          "maxRssBytes": 168902656,
+          "budget": {
+            "AST_NODES_INDEXED": 24013,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 10591,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 31,
+            "STEPS_ENTRY_DISCOVERY": 10560,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        }
+      ]
+    },
+    {
+      "case": "CVE-2017-16100-before",
+      "inputSha256": "cb3e22aba9d2731cd4e232d5d917ef733f0b8496992db95985c40482a75eaa1a",
+      "runs": [
+        {
+          "wallMs": 167,
+          "maxRssBytes": 134955008,
+          "budget": {
+            "AST_NODES_INDEXED": 305,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 30,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 30,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        },
+        {
+          "wallMs": 168,
+          "maxRssBytes": 133087232,
+          "budget": {
+            "AST_NODES_INDEXED": 305,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 30,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 30,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        }
+      ]
+    },
+    {
+      "case": "CVE-2017-16100-after",
+      "inputSha256": "bd47f9745e9dbd23c9675e7c99a42ad9b18d0ec044af46d8a2e446b430abdaf5",
+      "runs": [
+        {
+          "wallMs": 165,
+          "maxRssBytes": 129728512,
+          "budget": {
+            "AST_NODES_INDEXED": 379,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 33,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 33,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        },
+        {
+          "wallMs": 166,
+          "maxRssBytes": 127270912,
+          "budget": {
+            "AST_NODES_INDEXED": 379,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 33,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 33,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        }
+      ]
+    },
+    {
+      "case": "CVE-2018-3772-before",
+      "inputSha256": "3331082835459dcf66baf3e823f07c72567cc76ce47c3992ddec73549cf60ebf",
+      "runs": [
+        {
+          "wallMs": 167,
+          "maxRssBytes": 134774784,
+          "budget": {
+            "AST_NODES_INDEXED": 500,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 15,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 15,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        },
+        {
+          "wallMs": 167,
+          "maxRssBytes": 133595136,
+          "budget": {
+            "AST_NODES_INDEXED": 500,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 15,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 15,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        }
+      ]
+    },
+    {
+      "case": "CVE-2018-3772-after",
+      "inputSha256": "4ef5378d0696b9efe04d02203283e0250b016f653fc629e24c1f763a3fda086a",
+      "runs": [
+        {
+          "wallMs": 165,
+          "maxRssBytes": 131973120,
+          "budget": {
+            "AST_NODES_INDEXED": 505,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 15,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 15,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        },
+        {
+          "wallMs": 167,
+          "maxRssBytes": 135086080,
+          "budget": {
+            "AST_NODES_INDEXED": 505,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 15,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 15,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "findings": 0
+        }
+      ]
+    }
+  ],
+  "targetExecuted": false
+}

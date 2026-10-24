@@ -1,0 +1,148 @@
+{
+  "engine": "f20966b1b789c1353e36583a359ce46e91d527da",
+  "originalRiskDenominator": 8,
+  "originalPaths": 10,
+  "counts": {
+    "TP": 4,
+    "NOT_SUPPORTED": 5,
+    "TN": 1
+  },
+  "goofSeparateTP": 1,
+  "projects": [
+    {
+      "project": "dvna-vulnerable",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "risk": true,
+        "sca": true,
+        "securityScore": true,
+        "typescript": true
+      },
+      "repeatIdentical": true
+    },
+    {
+      "project": "dvna-fixed",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "risk": true,
+        "sca": true,
+        "securityScore": true,
+        "typescript": true
+      },
+      "repeatIdentical": true
+    },
+    {
+      "project": "dvna-remediated",
+      "sha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "risk": true,
+        "sca": true,
+        "securityScore": true,
+        "typescript": true
+      },
+      "repeatIdentical": true
+    },
+    {
+      "project": "juice-shop",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "risk": true,
+        "sca": true,
+        "securityScore": true,
+        "typescript": true
+      },
+      "repeatIdentical": true
+    },
+    {
+      "project": "next-supabase",
+      "sha": "2998a2e801caab665d603daefc7445c04309285a",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "risk": true,
+        "sca": true,
+        "securityScore": true,
+        "typescript": true
+      },
+      "repeatIdentical": true
+    },
+    {
+      "project": "goof-validation",
+      "sha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "risk": true,
+        "sca": true,
+        "securityScore": true,
+        "typescript": true
+      },
+      "repeatIdentical": true
+    }
+  ],
+  "apps": [
+    {
+      "project": "nglguarino--echoverse-11labs",
+      "sha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "risk": true,
+        "sca": true,
+        "securityScore": true,
+        "typescript": true
+      },
+      "repeatIdentical": true
+    },
+    {
+      "project": "LellaSriHarsha--power-platform-hub",
+      "sha": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "risk": true,
+        "sca": true,
+        "securityScore": true,
+        "typescript": true
+      },
+      "repeatIdentical": true
+    },
+    {
+      "project": "TinyikoMamban--workflowai-pro",
+      "sha": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "risk": true,
+        "sca": true,
+        "securityScore": true,
+        "typescript": true
+      },
+      "repeatIdentical": true
+    },
+    {
+      "project": "Adriano-Digital2024--CopyMonster",
+      "sha": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "unchanged": {
+        "raw": true,
+        "filtered": true,
+        "risk": true,
+        "sca": true,
+        "securityScore": true,
+        "typescript": true
+      },
+      "repeatIdentical": true
+    }
+  ],
+  "engineModified": false,
+  "userDatabaseModified": false,
+  "targetExecuted": false
+}

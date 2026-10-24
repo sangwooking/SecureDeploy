@@ -1,0 +1,1255 @@
+{
+  "schemaVersion": 1,
+  "engine": "f20966b1b789c1353e36583a359ce46e91d527da",
+  "worker": "ts-server-v21",
+  "engineModified": false,
+  "riskModified": false,
+  "evaluationToolSha256": "68c767a125072d2b98754a25a0844eeb8bf3fa47aeb152db427dc22f91c8a728",
+  "truthSha256": "482740319fdb2d7e093ce9cd282d3b21d91e69a7d908d763cf3e53fe7ef96f0d",
+  "datasetReview": {
+    "ossfPin": {
+      "repo": "ossf-cve-benchmark/ossf-cve-benchmark",
+      "sha": "91c59fd54b2b768c0f310bb0027d2ac59cdf74d4"
+    },
+    "ossfMetadataCount": 223,
+    "secbench": "README reviewed; explicit repository license not verified. No benchmark code or PoC copied/executed.",
+    "xjs": "Paper reviewed; usable public corpus URL, code/data license and pinned metadata not verified. Excluded from scored corpus."
+  },
+  "cases": [
+    {
+      "cve": "CVE-2017-18354",
+      "track": "WEB_APPLICATION",
+      "repository": "GoogleChrome/rendertron",
+      "cwe": "CWE-22",
+      "file": "src/renderer.js",
+      "line": 75,
+      "source": "src/main.js:99 request.params.url",
+      "route": "src/main.js:91 /render/:url(*) -> renderer.serialize -> _loadPage -> Page.navigate",
+      "patch": "src/main.js isRestricted adds a protocol check; local file URL path is the target, not all SSRF.",
+      "gaps": [
+        "CHROME_DEVTOOLS_NAVIGATION_SINK_UNSUPPORTED",
+        "CLASS_AND_PROMISE_CALL_CONTEXT_PARTIAL"
+      ],
+      "reference": "https://github.com/GoogleChrome/rendertron/commit/324ac99732c943d7b16aead2fceaa8b31a458eaa",
+      "versions": [
+        {
+          "stage": "before",
+          "sha": "16ade3208c80c3de8f8e36a05ad8242af1eeb7f4",
+          "fileSha256": "945913bb4736713c7ba803d288aa8e58d4b8bbc81218f3a4ff28997547825a65",
+          "license": "Apache-2.0",
+          "omissions": {}
+        },
+        {
+          "stage": "after",
+          "sha": "324ac99732c943d7b16aead2fceaa8b31a458eaa",
+          "fileSha256": "dc7cb4e97ba1163ac36f8be12b9ff49cbb6f6b51f5e45b96c161b12e046afb1c",
+          "license": "Apache-2.0",
+          "omissions": {}
+        }
+      ],
+      "grade": "A_UPSTREAM_ADVISORY_AND_REAL_PATCH_STATICALLY_REVIEWED",
+      "groundTruthLimit": "Static review only; no exploit execution, external reviewer or whole-project safe truth.",
+      "observations": [
+        {
+          "stage": "before",
+          "sha": "16ade3208c80c3de8f8e36a05ad8242af1eeb7f4",
+          "engine": "f20966b1b789c1353e36583a359ce46e91d527da",
+          "targetFile": {
+            "filePath": "src/renderer.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "EXTERNAL_IMPLEMENTATION_UNKNOWN",
+              "NODE_INITIALIZATION_STRUCTURE_UNKNOWN",
+              "NODE_MODULE_RESOLUTION_UNKNOWN",
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_RELATED_IMPORT_HINT",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "targetFindings": [],
+          "targetFileLegacy": [],
+          "allStructuralCount": 0,
+          "initializationFile": null,
+          "selectionCoverage": {
+            "discoveredFiles": 9,
+            "submittedFiles": 9,
+            "omittedFiles": 0,
+            "omittedDetails": 0,
+            "submittedCharacters": 37993,
+            "omissionReasons": {}
+          },
+          "parsedFiles": 9,
+          "entries": 0,
+          "legacyCount": 14,
+          "score": 0,
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            492,
+            408
+          ],
+          "repeatIdentical": true,
+          "budget": {
+            "AST_NODES_INDEXED": 5310,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 14706,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 14706,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "risk": "REVIEW_REQUIRED",
+          "rawRuleCount": 14,
+          "filteredRuleCount": 14,
+          "sourceAndSinkConnected": false,
+          "engineSourceObserved": false,
+          "engineSinkObserved": false,
+          "outcome": "NOT_SUPPORTED"
+        },
+        {
+          "stage": "after",
+          "sha": "324ac99732c943d7b16aead2fceaa8b31a458eaa",
+          "engine": "f20966b1b789c1353e36583a359ce46e91d527da",
+          "targetFile": {
+            "filePath": "src/renderer.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "EXTERNAL_IMPLEMENTATION_UNKNOWN",
+              "NODE_INITIALIZATION_STRUCTURE_UNKNOWN",
+              "NODE_MODULE_RESOLUTION_UNKNOWN",
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_RELATED_IMPORT_HINT",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "targetFindings": [],
+          "targetFileLegacy": [],
+          "allStructuralCount": 0,
+          "initializationFile": null,
+          "selectionCoverage": {
+            "discoveredFiles": 9,
+            "submittedFiles": 9,
+            "omittedFiles": 0,
+            "omittedDetails": 0,
+            "submittedCharacters": 38225,
+            "omissionReasons": {}
+          },
+          "parsedFiles": 9,
+          "entries": 0,
+          "legacyCount": 14,
+          "score": 0,
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            488,
+            413
+          ],
+          "repeatIdentical": true,
+          "budget": {
+            "AST_NODES_INDEXED": 5347,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 14568,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 14568,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "risk": "REVIEW_REQUIRED",
+          "rawRuleCount": 14,
+          "filteredRuleCount": 14,
+          "sourceAndSinkConnected": false,
+          "engineSourceObserved": false,
+          "engineSinkObserved": false,
+          "outcome": "NOT_SUPPORTED"
+        }
+      ],
+      "knownUnsupported": [
+        "CHROME_DEVTOOLS_NAVIGATION_SINK_UNSUPPORTED",
+        "CLASS_AND_PROMISE_CALL_CONTEXT_PARTIAL"
+      ],
+      "finalOutcome": "NOT_SUPPORTED",
+      "postPatchNoWarningIsNotTN": true,
+      "failureCasePack": {
+        "confirmedMissingContracts": [
+          "CHROME_DEVTOOLS_NAVIGATION_SINK_UNSUPPORTED",
+          "CLASS_AND_PROMISE_CALL_CONTEXT_PARTIAL"
+        ],
+        "unverified": "Other framework/heap limitations may also apply; no unsupported condition is auto-promoted.",
+        "regressionProposal": "Preserve original API source contract; use explicit HTTP adapters only as Grade B, never as actual web-app truth."
+      }
+    },
+    {
+      "cve": "CVE-2018-3783",
+      "track": "WEB_APPLICATION",
+      "repository": "JasonEtco/flintcms",
+      "cwe": "CWE-943",
+      "file": "server/apps/routes/auth.js",
+      "line": 80,
+      "source": "server/apps/routes/auth.js:79 req.body.email",
+      "route": "server/index.js:53 /admin -> server/apps/admin.js:12 auth factory -> POST /forgotpassword",
+      "patch": "Three request-derived Mongo query values are converted to strings. No SQL query or verified runtime authorization claim.",
+      "gaps": [
+        "MONGOOSE_OBJECT_OPERATOR_QUERY_CONTRACT_UNSUPPORTED",
+        "FACTORY_ACTIVATION_AND_GLOBAL_INITIALIZATION_CONTEXT"
+      ],
+      "reference": "https://github.com/JasonEtco/flintcms/commit/4ae34238ce39fde00dfa15082397541758c07af1",
+      "versions": [
+        {
+          "stage": "before",
+          "sha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+          "fileSha256": "6fbb97fe04d3fdd8ca646e243cf494a6c9753931967bd4e43577c1a196ea98f2",
+          "license": "MIT",
+          "omissions": {
+            "BINARY_ASSET_NOT_ANALYZED": 13
+          }
+        },
+        {
+          "stage": "after",
+          "sha": "4ae34238ce39fde00dfa15082397541758c07af1",
+          "fileSha256": "a8cc7f4b71947c854f5f748d13456122b906cc5c538e2dcdc71c6db9476c905f",
+          "license": "MIT",
+          "omissions": {
+            "BINARY_ASSET_NOT_ANALYZED": 13
+          }
+        }
+      ],
+      "grade": "A_UPSTREAM_ADVISORY_AND_REAL_PATCH_STATICALLY_REVIEWED",
+      "groundTruthLimit": "Static review only; no exploit execution, external reviewer or whole-project safe truth.",
+      "observations": [
+        {
+          "stage": "before",
+          "sha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+          "engine": "f20966b1b789c1353e36583a359ce46e91d527da",
+          "targetFile": {
+            "filePath": "server/apps/routes/auth.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "EXTERNAL_IMPLEMENTATION_UNKNOWN",
+              "NODE_MODULE_RESOLUTION_UNKNOWN",
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_EXPRESS_MODULE_HINT",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "targetFindings": [],
+          "targetFileLegacy": [],
+          "allStructuralCount": 0,
+          "initializationFile": {
+            "filePath": "index.js",
+            "parseStatus": "LIMIT_EXCEEDED",
+            "flowStatus": "NOT_RUN",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "SOURCE_FILE_COUNT_LIMIT"
+            ],
+            "httpCallSites": null,
+            "tracedHttpCallSites": null,
+            "selectionReason": "TS_DETERMINISTIC_FALLBACK",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "selectionCoverage": {
+            "discoveredFiles": 290,
+            "submittedFiles": 100,
+            "omittedFiles": 190,
+            "omittedDetails": 90,
+            "submittedCharacters": 149214,
+            "omissionReasons": {
+              "SOURCE_FILE_COUNT_LIMIT": 190
+            }
+          },
+          "parsedFiles": 100,
+          "entries": 0,
+          "legacyCount": 7,
+          "score": 30,
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            654,
+            508
+          ],
+          "repeatIdentical": true,
+          "budget": {
+            "AST_NODES_INDEXED": 24002,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 10547,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 31,
+            "STEPS_ENTRY_DISCOVERY": 10516,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "risk": "REVIEW_REQUIRED",
+          "rawRuleCount": 7,
+          "filteredRuleCount": 7,
+          "sourceAndSinkConnected": false,
+          "engineSourceObserved": false,
+          "engineSinkObserved": false,
+          "outcome": "NOT_SUPPORTED"
+        },
+        {
+          "stage": "after",
+          "sha": "4ae34238ce39fde00dfa15082397541758c07af1",
+          "engine": "f20966b1b789c1353e36583a359ce46e91d527da",
+          "targetFile": {
+            "filePath": "server/apps/routes/auth.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "CALL_TARGET_UNRESOLVED",
+              "EXTERNAL_IMPLEMENTATION_UNKNOWN",
+              "NODE_MODULE_RESOLUTION_UNKNOWN",
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_EXPRESS_MODULE_HINT",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "targetFindings": [],
+          "targetFileLegacy": [],
+          "allStructuralCount": 0,
+          "initializationFile": {
+            "filePath": "index.js",
+            "parseStatus": "LIMIT_EXCEEDED",
+            "flowStatus": "NOT_RUN",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "SOURCE_FILE_COUNT_LIMIT"
+            ],
+            "httpCallSites": null,
+            "tracedHttpCallSites": null,
+            "selectionReason": "TS_DETERMINISTIC_FALLBACK",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "selectionCoverage": {
+            "discoveredFiles": 290,
+            "submittedFiles": 100,
+            "omittedFiles": 190,
+            "omittedDetails": 90,
+            "submittedCharacters": 149261,
+            "omissionReasons": {
+              "SOURCE_FILE_COUNT_LIMIT": 190
+            }
+          },
+          "parsedFiles": 100,
+          "entries": 0,
+          "legacyCount": 7,
+          "score": 30,
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            688,
+            504
+          ],
+          "repeatIdentical": true,
+          "budget": {
+            "AST_NODES_INDEXED": 24013,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 10591,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 31,
+            "STEPS_ENTRY_DISCOVERY": 10560,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "risk": "REVIEW_REQUIRED",
+          "rawRuleCount": 7,
+          "filteredRuleCount": 7,
+          "sourceAndSinkConnected": false,
+          "engineSourceObserved": false,
+          "engineSinkObserved": false,
+          "outcome": "NOT_SUPPORTED"
+        }
+      ],
+      "knownUnsupported": [
+        "MONGOOSE_OBJECT_OPERATOR_QUERY_CONTRACT_UNSUPPORTED",
+        "FACTORY_ACTIVATION_AND_GLOBAL_INITIALIZATION_CONTEXT"
+      ],
+      "finalOutcome": "NOT_SUPPORTED",
+      "postPatchNoWarningIsNotTN": true,
+      "failureCasePack": {
+        "confirmedMissingContracts": [
+          "MONGOOSE_OBJECT_OPERATOR_QUERY_CONTRACT_UNSUPPORTED",
+          "FACTORY_ACTIVATION_AND_GLOBAL_INITIALIZATION_CONTEXT"
+        ],
+        "unverified": "Other framework/heap limitations may also apply; no unsupported condition is auto-promoted.",
+        "regressionProposal": "Preserve original API source contract; use explicit HTTP adapters only as Grade B, never as actual web-app truth."
+      }
+    },
+    {
+      "cve": "CVE-2017-16100",
+      "track": "NPM_LIBRARY",
+      "repository": "skoranga/node-dns-sync",
+      "cwe": "CWE-78",
+      "file": "lib/dns-sync.js",
+      "line": 21,
+      "source": "lib/dns-sync.js:14 exported resolve(hostname)",
+      "route": "public resolve -> util.format -> shelljs.exec (not child_process.exec)",
+      "patch": "Adds isValidHostName and rejects failed checks before command construction; dynamic RegExp.test is outside v21 proof.",
+      "gaps": [
+        "LIBRARY_PUBLIC_ARGUMENT_SOURCE_UNSUPPORTED",
+        "SHELLJS_EXEC_CONTRACT_UNSUPPORTED",
+        "UTIL_FORMAT_AND_VALIDATOR_UNSUPPORTED"
+      ],
+      "reference": "https://github.com/skoranga/node-dns-sync/commit/d9abaae384b198db1095735ad9c1c73d7b890a0d",
+      "versions": [
+        {
+          "stage": "before",
+          "sha": "b748fe77a87749d95876028eda8e759109be4c73",
+          "fileSha256": "d03e78cdf88ce0d71304e415e24b5aea4a9f7d6570f0901b277480eb3c865e5a",
+          "license": "MIT",
+          "omissions": {}
+        },
+        {
+          "stage": "after",
+          "sha": "d9abaae384b198db1095735ad9c1c73d7b890a0d",
+          "fileSha256": "9824d29a49a21d4486ee87672e16795743b9ce57c9c79020576e3c8e1ef3de40",
+          "license": "MIT",
+          "omissions": {}
+        }
+      ],
+      "grade": "A_UPSTREAM_ADVISORY_AND_REAL_PATCH_STATICALLY_REVIEWED",
+      "groundTruthLimit": "Static review only; no exploit execution, external reviewer or whole-project safe truth.",
+      "observations": [
+        {
+          "stage": "before",
+          "sha": "b748fe77a87749d95876028eda8e759109be4c73",
+          "engine": "f20966b1b789c1353e36583a359ce46e91d527da",
+          "targetFile": {
+            "filePath": "lib/dns-sync.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_DETERMINISTIC_FALLBACK",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "targetFindings": [],
+          "targetFileLegacy": [],
+          "allStructuralCount": 0,
+          "initializationFile": {
+            "filePath": "index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_DETERMINISTIC_FALLBACK",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "selectionCoverage": {
+            "discoveredFiles": 4,
+            "submittedFiles": 4,
+            "omittedFiles": 0,
+            "omittedDetails": 0,
+            "submittedCharacters": 1823,
+            "omissionReasons": {}
+          },
+          "parsedFiles": 4,
+          "entries": 0,
+          "legacyCount": 0,
+          "score": 100,
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            241,
+            181
+          ],
+          "repeatIdentical": true,
+          "budget": {
+            "AST_NODES_INDEXED": 305,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 30,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 30,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "risk": "REVIEW_REQUIRED",
+          "rawRuleCount": 0,
+          "filteredRuleCount": 0,
+          "sourceAndSinkConnected": false,
+          "engineSourceObserved": false,
+          "engineSinkObserved": false,
+          "outcome": "NOT_SUPPORTED"
+        },
+        {
+          "stage": "after",
+          "sha": "d9abaae384b198db1095735ad9c1c73d7b890a0d",
+          "engine": "f20966b1b789c1353e36583a359ce46e91d527da",
+          "targetFile": {
+            "filePath": "lib/dns-sync.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_DETERMINISTIC_FALLBACK",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "targetFindings": [],
+          "targetFileLegacy": [],
+          "allStructuralCount": 0,
+          "initializationFile": {
+            "filePath": "index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_DETERMINISTIC_FALLBACK",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "selectionCoverage": {
+            "discoveredFiles": 4,
+            "submittedFiles": 4,
+            "omittedFiles": 0,
+            "omittedDetails": 0,
+            "submittedCharacters": 2651,
+            "omissionReasons": {}
+          },
+          "parsedFiles": 4,
+          "entries": 0,
+          "legacyCount": 0,
+          "score": 100,
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            411,
+            354
+          ],
+          "repeatIdentical": true,
+          "budget": {
+            "AST_NODES_INDEXED": 379,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 33,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 33,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "risk": "REVIEW_REQUIRED",
+          "rawRuleCount": 0,
+          "filteredRuleCount": 0,
+          "sourceAndSinkConnected": false,
+          "engineSourceObserved": false,
+          "engineSinkObserved": false,
+          "outcome": "NOT_SUPPORTED"
+        }
+      ],
+      "knownUnsupported": [
+        "LIBRARY_PUBLIC_ARGUMENT_SOURCE_UNSUPPORTED",
+        "SHELLJS_EXEC_CONTRACT_UNSUPPORTED",
+        "UTIL_FORMAT_AND_VALIDATOR_UNSUPPORTED"
+      ],
+      "finalOutcome": "NOT_SUPPORTED",
+      "postPatchNoWarningIsNotTN": true,
+      "failureCasePack": {
+        "confirmedMissingContracts": [
+          "LIBRARY_PUBLIC_ARGUMENT_SOURCE_UNSUPPORTED",
+          "SHELLJS_EXEC_CONTRACT_UNSUPPORTED",
+          "UTIL_FORMAT_AND_VALIDATOR_UNSUPPORTED"
+        ],
+        "unverified": "Other framework/heap limitations may also apply; no unsupported condition is auto-promoted.",
+        "regressionProposal": "Preserve original API source contract; use explicit HTTP adapters only as Grade B, never as actual web-app truth."
+      }
+    },
+    {
+      "cve": "CVE-2018-3772",
+      "track": "NPM_LIBRARY",
+      "repository": "vvo/node-whereis",
+      "cwe": "CWE-78",
+      "file": "index.js",
+      "line": 4,
+      "source": "index.js:3 exported whereis(name,cb)",
+      "route": "public whereis -> child_process.exec, followed by nested fallback callbacks",
+      "patch": "First three exec calls change to execFile argv; fourth shell command at line 12 remains. Do not label whole patch safe.",
+      "gaps": [
+        "LIBRARY_PUBLIC_ARGUMENT_SOURCE_UNSUPPORTED",
+        "NESTED_CALLBACK_FALLBACK_NOT_INSPECTED"
+      ],
+      "reference": "https://github.com/vvo/node-whereis/commit/0f64e3780235004fb6e43bfd153ea3e0e210ee2b",
+      "versions": [
+        {
+          "stage": "before",
+          "sha": "b8b642b1163baa37f15ed49b4064dcbdb6e1876c",
+          "fileSha256": "151275eb7562d61e2c1414f58a4027b8917d3413f60adc6a7b58265338bec08d",
+          "license": "MIT",
+          "omissions": {}
+        },
+        {
+          "stage": "after",
+          "sha": "0f64e3780235004fb6e43bfd153ea3e0e210ee2b",
+          "fileSha256": "b80d982f624801f709599cb80076bd7f901b5aa918e3633e3e069ab34cc5f5c9",
+          "license": "MIT",
+          "omissions": {}
+        }
+      ],
+      "grade": "A_UPSTREAM_ADVISORY_AND_REAL_PATCH_STATICALLY_REVIEWED",
+      "groundTruthLimit": "Static review only; no exploit execution, external reviewer or whole-project safe truth.",
+      "observations": [
+        {
+          "stage": "before",
+          "sha": "b8b642b1163baa37f15ed49b4064dcbdb6e1876c",
+          "engine": "f20966b1b789c1353e36583a359ce46e91d527da",
+          "targetFile": {
+            "filePath": "index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_DETERMINISTIC_FALLBACK",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "targetFindings": [],
+          "targetFileLegacy": [],
+          "allStructuralCount": 0,
+          "initializationFile": {
+            "filePath": "index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_DETERMINISTIC_FALLBACK",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "selectionCoverage": {
+            "discoveredFiles": 2,
+            "submittedFiles": 2,
+            "omittedFiles": 0,
+            "omittedDetails": 0,
+            "submittedCharacters": 2535,
+            "omissionReasons": {}
+          },
+          "parsedFiles": 2,
+          "entries": 0,
+          "legacyCount": 0,
+          "score": 100,
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            249,
+            181
+          ],
+          "repeatIdentical": true,
+          "budget": {
+            "AST_NODES_INDEXED": 500,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 15,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 15,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "risk": "REVIEW_REQUIRED",
+          "rawRuleCount": 0,
+          "filteredRuleCount": 0,
+          "sourceAndSinkConnected": false,
+          "engineSourceObserved": false,
+          "engineSinkObserved": false,
+          "outcome": "NOT_SUPPORTED"
+        },
+        {
+          "stage": "after",
+          "sha": "0f64e3780235004fb6e43bfd153ea3e0e210ee2b",
+          "engine": "f20966b1b789c1353e36583a359ce46e91d527da",
+          "targetFile": {
+            "filePath": "index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_DETERMINISTIC_FALLBACK",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "targetFindings": [],
+          "targetFileLegacy": [],
+          "allStructuralCount": 0,
+          "initializationFile": {
+            "filePath": "index.js",
+            "parseStatus": "PARSED",
+            "flowStatus": "NOT_SUPPORTED",
+            "entrypoints": 0,
+            "functionsAnalyzed": 0,
+            "prepareCallSites": 0,
+            "tracedPrepareCallSites": 0,
+            "limitations": [
+              "NO_SUPPORTED_SERVER_ENTRY_OR_CALL"
+            ],
+            "httpCallSites": 0,
+            "tracedHttpCallSites": 0,
+            "selectionReason": "TS_DETERMINISTIC_FALLBACK",
+            "resourceCallSites": null,
+            "tracedResourceCallSites": null
+          },
+          "selectionCoverage": {
+            "discoveredFiles": 2,
+            "submittedFiles": 2,
+            "omittedFiles": 0,
+            "omittedDetails": 0,
+            "submittedCharacters": 2599,
+            "omissionReasons": {}
+          },
+          "parsedFiles": 2,
+          "entries": 0,
+          "legacyCount": 0,
+          "score": 100,
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            265,
+            193
+          ],
+          "repeatIdentical": true,
+          "budget": {
+            "AST_NODES_INDEXED": 505,
+            "STEPS_LIMIT": 100000,
+            "STEPS_USED": 15,
+            "STEPS_SETUP": 0,
+            "STEPS_POLICY": 0,
+            "STEPS_CLIENT": 0,
+            "STEPS_ENTRY_DISCOVERY": 15,
+            "STEPS_FLOW": 0,
+            "CLIENT_WORK_LIMIT": 15000,
+            "POLICY_WORK_LIMIT": 25000
+          },
+          "risk": "REVIEW_REQUIRED",
+          "rawRuleCount": 0,
+          "filteredRuleCount": 0,
+          "sourceAndSinkConnected": false,
+          "engineSourceObserved": false,
+          "engineSinkObserved": false,
+          "outcome": "NOT_SUPPORTED"
+        }
+      ],
+      "knownUnsupported": [
+        "LIBRARY_PUBLIC_ARGUMENT_SOURCE_UNSUPPORTED",
+        "NESTED_CALLBACK_FALLBACK_NOT_INSPECTED"
+      ],
+      "finalOutcome": "NOT_SUPPORTED",
+      "postPatchNoWarningIsNotTN": true,
+      "failureCasePack": {
+        "confirmedMissingContracts": [
+          "LIBRARY_PUBLIC_ARGUMENT_SOURCE_UNSUPPORTED",
+          "NESTED_CALLBACK_FALLBACK_NOT_INSPECTED"
+        ],
+        "unverified": "Other framework/heap limitations may also apply; no unsupported condition is auto-promoted.",
+        "regressionProposal": "Preserve original API source contract; use explicit HTTP adapters only as Grade B, never as actual web-app truth."
+      }
+    }
+  ],
+  "residual": {
+    "cve": "CVE-2018-3772",
+    "file": "index.js",
+    "line": 12,
+    "stage": "after",
+    "truth": "RISK_REMAINS",
+    "limitation": "Nested callback execution condition and platform are not dynamically confirmed."
+  },
+  "locationCorrections": [
+    {
+      "cve": "CVE-2017-18354",
+      "frozenSinkLine": 69,
+      "verifiedSinkLine": 75,
+      "frozenRequestLines": "94/83",
+      "verifiedRequestLines": "99/91",
+      "reason": "Local numbered source review corrected evaluator transcription; no labels, SHA or engine result changed."
+    }
+  ],
+  "web": {
+    "families": 2,
+    "vulnerabilities": 2,
+    "riskPaths": 2,
+    "TP": 0,
+    "FP": 0,
+    "FN": 0,
+    "TN": 0,
+    "NOT_SUPPORTED": 2,
+    "supportedPrecision": null,
+    "supportedRecall": null,
+    "wholeTargetRiskDetectionRatio": 0,
+    "interpretation": "Unsupported targets are not supported-scope FN or patched TN; do not omit them from whole-target coverage."
+  },
+  "libraries": {
+    "families": 2,
+    "vulnerabilities": 2,
+    "riskPaths": 3,
+    "TP": 0,
+    "FP": 0,
+    "FN": 0,
+    "TN": 0,
+    "NOT_SUPPORTED": 2,
+    "NOT_INSPECTED": 1,
+    "supportedPrecision": null,
+    "supportedRecall": null,
+    "wholeTargetRiskDetectionRatio": 0,
+    "interpretation": "Two public API sources and one residual callback path; not a web-service accuracy metric."
+  },
+  "newActualProjectTP": 0,
+  "externalIndependentReview": false,
+  "paidAiCalls": 0,
+  "targetExecuted": false,
+  "userDatabaseModified": false,
+  "controlled": {
+    "cases": [
+      {
+        "variant": "risk",
+        "expected": "TP",
+        "track": "GRADE_B_ADAPTER",
+        "sourceSHA": "b8b642b1163baa37f15ed49b4064dcbdb6e1876c",
+        "target": "index.js:4",
+        "targetSha256": "151275eb7562d61e2c1414f58a4027b8917d3413f60adc6a7b58265338bec08d",
+        "limit": "Only first native process call. Nested Windows fallback is not inspected; this is not real web-app CVE detection.",
+        "outcome": "TP",
+        "findings": [
+          {
+            "findingId": "ts-flow:780050f8384d2891d7b7e375ceff8a77509336da0ffe7004ec0c3316dbe539fc",
+            "sourceType": "TYPESCRIPT_DATA_FLOW",
+            "analyzerVersion": "ts-server-v21",
+            "ruleId": "JS_SHELL_COMMAND_INPUT_FLOW",
+            "priority": "REVIEW_REQUIRED",
+            "comparisonPolicy": "NOT_COMPARED",
+            "location": {
+              "filePath": "index.js",
+              "line": 4,
+              "column": 3,
+              "functionName": "exports",
+              "kind": "NODE_EXEC_SHELL"
+            },
+            "evidence": [
+              {
+                "ruleId": "JS_SHELL_COMMAND_INPUT_FLOW",
+                "kind": "CWE-78",
+                "confidence": "HIGH",
+                "disposition": "REVIEW_REQUIRED",
+                "source": {
+                  "filePath": "sd-evaluation-adapter.cjs",
+                  "line": 1,
+                  "column": 107,
+                  "functionName": "handler",
+                  "kind": "EXPRESS_BODY"
+                },
+                "sink": {
+                  "filePath": "index.js",
+                  "line": 4,
+                  "column": 3,
+                  "functionName": "exports",
+                  "kind": "NODE_EXEC_SHELL"
+                },
+                "flow": [
+                  {
+                    "filePath": "sd-evaluation-adapter.cjs",
+                    "line": 1,
+                    "column": 107,
+                    "functionName": "handler",
+                    "kind": "EXPRESS_BODY"
+                  },
+                  {
+                    "filePath": "sd-evaluation-adapter.cjs",
+                    "line": 1,
+                    "column": 101,
+                    "functionName": "handler",
+                    "kind": "VARIABLE"
+                  },
+                  {
+                    "filePath": "sd-evaluation-adapter.cjs",
+                    "line": 1,
+                    "column": 124,
+                    "functionName": "handler",
+                    "kind": "FUNCTION_ARGUMENT"
+                  },
+                  {
+                    "filePath": "index.js",
+                    "line": 4,
+                    "column": 11,
+                    "functionName": "exports",
+                    "kind": "SQL_STRING_CONSTRUCTION"
+                  }
+                ],
+                "defenses": [],
+                "limitations": [
+                  "STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF",
+                  "MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED"
+                ],
+                "message": "사용자가 보낸 값이 서버의 shell 명령 문자열에 전달됩니다.",
+                "recommendation": "요청값을 shell 명령에 결합하지 마세요. 필요한 작업만 서버의 고정된 실행 파일과 shell을 사용하지 않는 인자 배열로 제공하고 입력 형식·허용 작업·실행 권한을 검증하세요. 인자 주입과 운영 환경은 별도 확인이 필요합니다."
+              }
+            ],
+            "executionLocations": [
+              {
+                "filePath": "index.js",
+                "line": 4,
+                "column": 3,
+                "functionName": "exports",
+                "kind": "NODE_EXEC_SHELL"
+              }
+            ],
+            "title": "사용자가 보낸 값이 서버의 명령 문자열에 전달됩니다",
+            "riskExplanation": "정적으로 연결된 Express 요청 입력과 Node.js shell 명령 호출(CWE-78) 사이의 전달 근거입니다. 미들웨어 검증·실제 라이브러리 설치·운영 실행·공격 성공은 확인하지 않았습니다.",
+            "recommendedAction": "요청값을 shell 명령에 결합하지 마세요. 필요한 작업만 서버의 고정된 실행 파일과 shell을 사용하지 않는 인자 배열로 제공하고 입력 형식·허용 작업·실행 권한을 검증하세요. 인자 주입과 운영 환경은 별도 확인이 필요합니다.",
+            "verificationSteps": [
+              "입력 위치부터 전달·실행 위치까지 확인하고 앞단의 검증·인증 미들웨어를 함께 검토하세요.",
+              "로컬 Mock으로 고정 실행 파일·shell 미사용·입력 허용 목록·인자 배열을 검증하세요. execFile 사용만으로 임의 실행 파일·인자 주입·플랫폼 위험까지 안전해지는 것은 아닙니다.",
+              "수정 후 같은 프로젝트를 재검사하세요. 운영 서버 공격은 하지 마세요. 이 항목은 기존 점수·배포 판단·해결 건수와 별도입니다."
+            ]
+          }
+        ],
+        "uses": [
+          {
+            "ruleId": "JS_SHELL_COMMAND_INPUT_FLOW",
+            "kind": "INPUT_TO_EXECUTION",
+            "operation": "NODE_EXEC_SHELL",
+            "location": {
+              "filePath": "index.js",
+              "line": 4,
+              "column": 3,
+              "functionName": "exports",
+              "kind": "NODE_EXEC_SHELL"
+            },
+            "trace": [
+              {
+                "filePath": "sd-evaluation-adapter.cjs",
+                "line": 1,
+                "column": 107,
+                "functionName": "handler",
+                "kind": "EXPRESS_BODY"
+              },
+              {
+                "filePath": "sd-evaluation-adapter.cjs",
+                "line": 1,
+                "column": 101,
+                "functionName": "handler",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "sd-evaluation-adapter.cjs",
+                "line": 1,
+                "column": 124,
+                "functionName": "handler",
+                "kind": "FUNCTION_ARGUMENT"
+              },
+              {
+                "filePath": "index.js",
+                "line": 4,
+                "column": 11,
+                "functionName": "exports",
+                "kind": "SQL_STRING_CONSTRUCTION"
+              }
+            ],
+            "limitations": [
+              "STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF"
+            ]
+          }
+        ],
+        "coverage": "PARTIAL",
+        "repeatIdentical": true
+      },
+      {
+        "variant": "argv-target",
+        "expected": "TN_TARGET_ONLY",
+        "track": "GRADE_B_ADAPTER",
+        "sourceSHA": "0f64e3780235004fb6e43bfd153ea3e0e210ee2b",
+        "target": "index.js:4",
+        "targetSha256": "b80d982f624801f709599cb80076bd7f901b5aa918e3633e3e069ab34cc5f5c9",
+        "limit": "Only first native process call. Nested Windows fallback is not inspected; this is not real web-app CVE detection.",
+        "outcome": "TN_TARGET_ONLY",
+        "findings": [],
+        "uses": [
+          {
+            "ruleId": "JS_SHELL_COMMAND_INPUT_FLOW",
+            "kind": "ARGV_WITHOUT_SHELL_DECLARED",
+            "operation": "execFile",
+            "location": {
+              "filePath": "index.js",
+              "line": 4,
+              "column": 3,
+              "functionName": "exports",
+              "kind": "NODE_PROCESS_ARGUMENTS"
+            },
+            "trace": [
+              {
+                "filePath": "sd-evaluation-adapter.cjs",
+                "line": 1,
+                "column": 107,
+                "functionName": "handler",
+                "kind": "EXPRESS_BODY"
+              },
+              {
+                "filePath": "sd-evaluation-adapter.cjs",
+                "line": 1,
+                "column": 101,
+                "functionName": "handler",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "sd-evaluation-adapter.cjs",
+                "line": 1,
+                "column": 124,
+                "functionName": "handler",
+                "kind": "FUNCTION_ARGUMENT"
+              }
+            ],
+            "limitations": [
+              "EXECUTABLE_ARGUMENT_INJECTION_AND_PLATFORM_NOT_VERIFIED"
+            ]
+          }
+        ],
+        "coverage": "PARTIAL",
+        "repeatIdentical": true
+      },
+      {
+        "variant": "overwrite",
+        "expected": "TN_TARGET_ONLY",
+        "track": "GRADE_B_ADAPTER",
+        "sourceSHA": "b8b642b1163baa37f15ed49b4064dcbdb6e1876c",
+        "target": "index.js:4",
+        "targetSha256": "151275eb7562d61e2c1414f58a4027b8917d3413f60adc6a7b58265338bec08d",
+        "limit": "Only first native process call. Nested Windows fallback is not inspected; this is not real web-app CVE detection.",
+        "outcome": "TN_TARGET_ONLY",
+        "findings": [],
+        "uses": [
+          {
+            "ruleId": "JS_SHELL_COMMAND_INPUT_FLOW",
+            "kind": "STATIC_OR_DATA_ONLY",
+            "operation": "NODE_EXEC_SHELL",
+            "location": {
+              "filePath": "index.js",
+              "line": 4,
+              "column": 3,
+              "functionName": "exports",
+              "kind": "NODE_EXEC_SHELL"
+            },
+            "trace": [],
+            "limitations": [
+              "STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF"
+            ]
+          }
+        ],
+        "coverage": "PARTIAL",
+        "repeatIdentical": true
+      },
+      {
+        "variant": "unknown-transform",
+        "expected": "UNKNOWN",
+        "track": "GRADE_B_ADAPTER",
+        "sourceSHA": "b8b642b1163baa37f15ed49b4064dcbdb6e1876c",
+        "target": "index.js:4",
+        "targetSha256": "151275eb7562d61e2c1414f58a4027b8917d3413f60adc6a7b58265338bec08d",
+        "limit": "Only first native process call. Nested Windows fallback is not inspected; this is not real web-app CVE detection.",
+        "outcome": "UNKNOWN",
+        "findings": [],
+        "uses": [
+          {
+            "ruleId": "JS_SHELL_COMMAND_INPUT_FLOW",
+            "kind": "FLOW_UNRESOLVED",
+            "operation": "NODE_EXEC_SHELL",
+            "location": {
+              "filePath": "index.js",
+              "line": 4,
+              "column": 3,
+              "functionName": "exports",
+              "kind": "NODE_EXEC_SHELL"
+            },
+            "trace": [
+              {
+                "filePath": "sd-evaluation-adapter.cjs",
+                "line": 1,
+                "column": 125,
+                "functionName": "handler",
+                "kind": "EXPRESS_BODY"
+              },
+              {
+                "filePath": "sd-evaluation-adapter.cjs",
+                "line": 1,
+                "column": 101,
+                "functionName": "handler",
+                "kind": "VARIABLE"
+              },
+              {
+                "filePath": "sd-evaluation-adapter.cjs",
+                "line": 1,
+                "column": 143,
+                "functionName": "handler",
+                "kind": "FUNCTION_ARGUMENT"
+              },
+              {
+                "filePath": "index.js",
+                "line": 4,
+                "column": 11,
+                "functionName": "exports",
+                "kind": "SQL_STRING_CONSTRUCTION"
+              }
+            ],
+            "limitations": [
+              "STATIC_PATH_NOT_RUNTIME_EXPLOIT_PROOF",
+              "NODE_FLOW_UNRESOLVED"
+            ]
+          }
+        ],
+        "coverage": "PARTIAL",
+        "repeatIdentical": true
+      }
+    ],
+    "TP": 1,
+    "TN": 2,
+    "FP": 0,
+    "FN": 0,
+    "UNKNOWN": 1,
+    "supportedPrecision": 1.0,
+    "supportedRecall": 1.0,
+    "limitation": "Four author-controlled adapters, only first process call; no independent web vulnerability recall claim."
+  },
+  "priorMetadataExposure": {
+    "projects": [
+      "GoogleChrome/rendertron",
+      "skoranga/node-dns-sync"
+    ],
+    "provenance": "Existing CVEfixes fixes.json catalog contains repository metadata; no prior source/engine observations found in evaluation receipts.",
+    "interpretation": "New source-level evaluation, not a fully unseen repository name or blind external validation."
+  },
+  "metadataSemanticReview": {
+    "flintcms": "Upstream CWE-089 label describes MongoDB operator-object injection here, reviewed as CWE-943. No SQL-string success claimed.",
+    "whereis": "First native calls changed to argv while a fourth shell command remains. Fixed SHA is not a whole-project safe label.",
+    "rendertron": "Protocol/file access condition, not a complete SSRF fix. Our handwritten line typos are preserved as explicit location corrections."
+  },
+  "implementationDecision": {
+    "engineChange": "NONE",
+    "reason": "No supported-contract defect reproduced. Existing native command and argv handling distinguishes the controlled adapter pair; actual targets require new activation/source/API contracts.",
+    "nextCandidates": [
+      {
+        "area": "Explicit request activation and relevant initialization-file completeness",
+        "priority": 1,
+        "evidence": "Both web targets parsed but registered zero engine entries; FlintCMS root index.js also exceeded file-count selection.",
+        "limit": "The exact first state-loss expression was not isolated. Do not promise that activation alone detects either target."
+      },
+      {
+        "area": "Bounded Mongoose query-operator input and authentication context",
+        "priority": 2,
+        "evidence": "FlintCMS request object goes to User.findOne, with actual string-conversion patch.",
+        "limit": "New contract requiring design approval, model origin and version semantics; not solved by adding findOne name matching."
+      },
+      {
+        "area": "Explicit library API profiles and native process callback contexts",
+        "priority": 3,
+        "evidence": "Library sources absent; whereis fourth shell fallback remains after real patch.",
+        "limit": "Separate library track, not default taint of every export. Windows fallback is not observed execution."
+      },
+      {
+        "area": "Chrome DevTools navigation",
+        "priority": "DEFER",
+        "evidence": "Rendertron file URL navigation is outside supported HTTP sinks.",
+        "limit": "Higher framework cost and weaker direct relevance to current Vite/Supabase focus."
+      }
+    ],
+    "frontendChanged": false,
+    "backendChanged": false,
+    "dbMigration": false,
+    "serverRestartRequired": false,
+    "liveGitHubAppAndBrowser": "NOT_RERUN; no product code changes, isolated API evaluations and frontend regression only.",
+    "externalVulnerabilityLookups": "OSV/EPSS/KEV NOT_RUN in isolated evaluation; public source/advisory acquisition only."
+  }
+}
