@@ -36,6 +36,7 @@ try{
    if(guardedFactory)assert.ok(text.includes('설정값 부재 시 중단하는 factory 분기 · 인증 검사 아님'));
    assert.equal(await page.getByRole('button',{name:'자동 수정안 만들기',exact:true}).count(),0);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);assert.deepEqual(outbound,[]);
+   if(guardedFactory){await section.getByText('설정값 부재 시 중단하는 factory 분기 · 인증 검사 아님',{exact:false}).first().scrollIntoViewIfNeeded();await page.screenshot({path:`/private/tmp/securedeploy-guarded-client-${layout}-${width}.png`});}
    await page.screenshot({path:`/private/tmp/securedeploy-modern7-${layout}-${width}.png`,fullPage:true});await page.close();reports.push({layout,width,passed:true});
   }
  }
