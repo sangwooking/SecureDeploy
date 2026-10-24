@@ -1,8 +1,9 @@
 import path from 'node:path';
 import {authResultEvidence} from './auth-result-evidence.mjs';
+import {writeOrigins} from './write-origin.mjs';
 
 // Declaration provenance only. No target evaluation, session validation or database access.
-export function linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports}) {
+export function linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports,prepareWritePass}) {
   if(!snapshot.accesses.length)return;
   let work=0,bytes=Buffer.byteLength(JSON.stringify(snapshot));
   const charge=()=>{if(++work>5000)throw Error('CLIENT_POLICY_LINK_BUDGET_LIMIT');tick();};
@@ -180,6 +181,7 @@ export function linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports}) {
   }
   const authCalls=new Map();
   const authResults=authResultEvidence({ts,charge,binding,escaped,index,location,fnOf});
+  const observeWrites=writeOrigins({ts,charge,binding,escaped,index,location,fnOf,authResults});
   const checksFor=(mod,node,client)=>{
     const fn=fnOf(node),out=[];
     for(const call of authCalls.get(mod)?.get(fn)??[]){
@@ -194,8 +196,8 @@ export function linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports}) {
     }
     return out;
   };
+  const sites=new Map();
   try {
-    const sites=new Map();
     for(const mod of modules.values())for(const node of index(mod)?.nodes??[]){
       charge();
       if(ts.isPropertyAccessExpression(node.expression)&&['getUser','getClaims','getSession'].includes(node.expression.name.text)){
@@ -242,4 +244,18 @@ export function linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports}) {
       if(client)snapshot.clients.push(client);snapshot.accesses[i]=record;bytes+=delta;
     }
   } catch(error) {snapshot.limitations.push(['CLIENT_POLICY_LINK_BUDGET_LIMIT','CLIENT_STEP_BUDGET','SUPABASE_BUDGET'].includes(error?.message)?'CLIENT_POLICY_LINK_BUDGET_LIMIT':'CLIENT_POLICY_LINK_CONTEXT_INCOMPLETE');}
+  prepareWritePass?.(()=>{
+    let outputBytes=Buffer.byteLength(JSON.stringify(snapshot));
+    try {
+      for(const access of snapshot.accesses){
+        if(!access.authorizationEvidence?.requestEntry||access.clientStatus!=='CLIENT_DECLARATION_LINKED'||!['INSERT','UPDATE','DELETE'].includes(access.operation))continue;
+        charge();const matches=(sites.get(id(access.location))??[]).filter(s=>s.node.arguments[0]?.text===access.table.slice(7));
+        if(matches.length!==1)continue;
+        const e=observeWrites(matches[0].mod,matches[0].node,access);if(!e)continue;
+        const size=Buffer.byteLength(JSON.stringify(e))+24;
+        if(outputBytes+size>275000){snapshot.limitations.push('WRITE_EVIDENCE_OUTPUT_LIMIT');break;}
+        access.writeEvidence=e;outputBytes+=size;
+      }
+    }catch{snapshot.limitations.push('WRITE_EVIDENCE_BUDGET_OR_CONTEXT_LIMIT');}
+  });
 }

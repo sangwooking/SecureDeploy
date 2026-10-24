@@ -52,3 +52,12 @@ test('configuration absence exits in client factories are not authentication gua
  authChecks:[],clientTrace:[{...l,kind:'FACTORY_CONFIGURATION_ABSENCE_THROW'}],policyLocations:[],filterLocations:[],policyStates:[],limitations:[]};
  const h=render(f);assert.ok(h.includes('설정값 부재 시 중단하는 factory 분기 · 인증 검사 아님'));
 });
+test('write fields and existing-row filters expose distinct origins without promising authentication',()=>{
+ const f=fixture(),l=f.accesses[0].location;
+ f.accesses[0].writeEvidence={status:'LOCAL_VALUE_ORIGIN_EVIDENCE',operationLocation:l,dataStatus:'STATIC_FIELDS',
+ dataFields:[{name:'title',operator:'field',location:l,source:'REQUEST_CONTROLLED',sourceLocations:[l],limitations:[]}],filterStatus:'STATIC_FILTERS',
+ filters:[{name:'user_id',operator:'eq',location:l,source:'VERIFIED_USER_EVIDENCE',sourceLocations:[l],limitations:[]}],limitations:[]};
+ const h=render(f);
+ for(const s of ['쓰기 데이터와 대상 행의 값 출처','변경할 데이터','기존 행을 선택하는 필터','요청자가 제어할 수 있는 값','인증 성공 보장 아님','사용자 A·B','title','user_id'])assert.ok(h.includes(s),s);
+ assert.ok(!h.includes('자동 수정안 만들기'));assert.ok(render(fixture()).includes('쓰기 값·행 필터의 출처는 미검사'));
+});

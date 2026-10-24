@@ -20,12 +20,19 @@ public record SupabaseSnapshot(int schemaVersion,String analyzerVersion,String s
             List<Operation> operations,List<String> limitations) { }
     public record Client(Location location,String keySource,String authContext,List<String> limitations) { }
     public record Access(Location location,String table,String operation,String clientStatus,Location clientLocation,
-            String keySource,String policyStatus,Location policyLocation,List<String> limitations,AuthorizationEvidence authorizationEvidence) {
+            String keySource,String policyStatus,Location policyLocation,List<String> limitations,AuthorizationEvidence authorizationEvidence,WriteEvidence writeEvidence) {
+        public Access(Location location,String table,String operation,String clientStatus,Location clientLocation,
+                String keySource,String policyStatus,Location policyLocation,List<String> limitations,AuthorizationEvidence authorizationEvidence) {
+            this(location,table,operation,clientStatus,clientLocation,keySource,policyStatus,policyLocation,limitations,authorizationEvidence,null);
+        }
         public Access(Location location,String table,String operation,String clientStatus,Location clientLocation,
                 String keySource,String policyStatus,Location policyLocation,List<String> limitations) {
             this(location,table,operation,clientStatus,clientLocation,keySource,policyStatus,policyLocation,limitations,null);
         }
     }
+    public record WriteValue(String name,String operator,Location location,String source,List<Location> sourceLocations,List<String> limitations) { }
+    public record WriteEvidence(String status,Location operationLocation,String dataStatus,List<WriteValue> dataFields,
+            String filterStatus,List<WriteValue> filters,List<String> limitations) { }
     public record AuthResultEvidence(String status,Location guardLocation,List<Location> userIdFilters,List<String> limitations) { }
     public record AuthCheck(String method,String status,Location location,AuthResultEvidence resultEvidence) {
         public AuthCheck(String method,String status,Location location){this(method,status,location,null);}
@@ -57,6 +64,14 @@ public record SupabaseSnapshot(int schemaVersion,String analyzerVersion,String s
                 for(var check:evidence.authChecks()){
                     authSites.add(check.location());
                     if(check.resultEvidence()!=null){guards.add(check.resultEvidence().guardLocation());identityFilters.addAll(check.resultEvidence().userIdFilters());}
+                }
+            }
+            if(Set.of("INSERT","UPDATE","DELETE").contains(a.operation())){
+                var w=a.writeEvidence();counts.merge("WRITE_ORIGIN_"+(w==null?"UNRECORDED":"RECORDED"),1,Integer::sum);
+                if(w!=null){
+                    counts.merge("WRITE_DATA_"+w.dataStatus(),1,Integer::sum);counts.merge("WRITE_FILTER_"+w.filterStatus(),1,Integer::sum);
+                    w.dataFields().forEach(v->counts.merge("WRITE_FIELD_SOURCE_"+v.source(),1,Integer::sum));
+                    w.filters().forEach(v->counts.merge("WRITE_FILTER_SOURCE_"+v.source(),1,Integer::sum));
                 }
             }
         });

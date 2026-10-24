@@ -13,7 +13,7 @@ import { syntaxIndex, indexSyntax } from './syntax-index.mjs';
 import { regexFlow } from './regex-flow.mjs';
 import {tsPaths} from './ts-paths.mjs';
 
-export const VERSION = 'ts-server-v25';
+export const VERSION = 'ts-server-v26';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -1100,7 +1100,8 @@ export function analyze(input, overrides = {}) {
   }
   phase='CLIENT';
   let clientWork=0;const clientCap=Math.floor(limits.maxSteps*0.15);
-  const precomputedSupabase=supabaseAnalysis({ts,modules,input,sourceImports,precomputedPolicies,tick:()=>{
+  let writePass;
+  const precomputedSupabase=supabaseAnalysis({ts,modules,input,sourceImports,precomputedPolicies,prepareWritePass:pass=>{writePass=pass;},tick:()=>{
     if(clientWork>=clientCap)throw Error('CLIENT_STEP_BUDGET');clientWork++;
     charged();
   }});
@@ -1122,6 +1123,9 @@ export function analyze(input, overrides = {}) {
       evidence.requestEntry=entry;requestEvidenceBytes+=size;
     }catch{note(mod,'NEXT_ACCESS_ASSOCIATION_BUDGET_LIMIT');break;}
   }
+  phase='CLIENT';
+  writePass?.();
+  phase='ENTRY_DISCOVERY';
   entryContracts({ts,modules,tick,note,loc,append,result});
   nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse});
   nodeSupport.discover();

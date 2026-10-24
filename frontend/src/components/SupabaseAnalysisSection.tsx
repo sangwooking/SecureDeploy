@@ -1,5 +1,8 @@
 import type { SupabaseAnalysis } from '../types/supabaseAnalysis';
 const labels: Record<string,string>={
+  REQUEST_CONTROLLED:'요청자가 제어할 수 있는 값',VERIFIED_USER_EVIDENCE:'검증 API 반환 ID와 중단 분기 근거 · 인증 성공 보장 아님',
+  SESSION_UNVERIFIED:'세션 사용자 ID 참조 · 사용자 검증 미확인',SERVER_CONTROLLED:'정적으로 확인한 상수',
+  STATIC_FIELDS:'정적 필드별 출처 기록',NO_PAYLOAD:'변경 데이터 없음',STATIC_FILTERS:'지원 필터 구문 확인 · 행 권한 보장 아님',
   FACTORY_CONFIGURATION_ABSENCE_THROW:'설정값 부재 시 중단하는 factory 분기 · 인증 검사 아님',
   CONFIRMED_POLICY_EVIDENCE:'저장소 정책에 사용자별 행 제한 근거가 있음',BROAD_ACCESS_REVIEW:'넓은 쓰기 허용 선언 · 공유 데이터인지 확인 필요',
   ADMIN_ACCESS_REVIEW:'관리자 Client 계약 · 앱 자체의 접근권한 확인 필요',PUBLIC_READ_DECLARATION:'공유 읽기 허용 선언 · 공개 의도 미확인',
@@ -60,6 +63,18 @@ export function SupabaseAnalysisSection({snapshot,compact=false}:{snapshot?:Supa
       <details className="coverage-details"><summary>앱의 데이터 접근 선언 ({snapshot.accesses.length})</summary>
         {snapshot.accesses.map((a,i)=><div key={i}><p className="finding-location">{a.location.filePath}:{a.location.line}</p>
           <p>{a.table} · {a.operation} · {text(a.clientStatus)} · {text(a.keySource)} · {text(a.policyStatus)}</p>
+          {a.writeEvidence?<details className="technical-details"><summary>쓰기 데이터와 대상 행의 값 출처</summary>
+            <p className="finding-location">쓰기 위치: {a.writeEvidence.operationLocation.filePath}:{a.writeEvidence.operationLocation.line}</p>
+            <h4>변경할 데이터</h4><p>{text(a.writeEvidence.dataStatus)}</p>
+            {a.writeEvidence.dataFields.map((v,j)=><div key={'d'+j}><p>{v.name} · {text(v.source)}</p><p className="finding-location">{v.location.filePath}:{v.location.line}</p>
+              {v.sourceLocations.map((l,k)=><p className="finding-location" key={k}>값 출처: {l.filePath}:{l.line}</p>)}</div>)}
+            <h4>기존 행을 선택하는 필터</h4><p>{text(a.writeEvidence.filterStatus)}</p>
+            {a.writeEvidence.filters.map((v,j)=><div key={'f'+j}><p>{v.name} · {v.operator} · {text(v.source)}</p><p className="finding-location">{v.location.filePath}:{v.location.line}</p>
+              {v.sourceLocations.map((l,k)=><p className="finding-location" key={k}>값 출처: {l.filePath}:{l.line}</p>)}</div>)}
+            <p>값의 출처만 확인했습니다. 사용자 입력 사용 자체는 취약점이 아니며, 필터나 사용자 ID가 있어도 실제 소유권·운영 DB 보호를 보증하지 않습니다.</p>
+            <p>이 쓰기 위치와 아래 연결된 정책의 USING·WITH CHECK를 함께 검토하세요. 사용자 전용 데이터라면 격리 환경에서 사용자 A·B의 생성·변경·삭제와 소유자 변경을 각각 확인한 뒤 재검사하세요.</p>
+            <details><summary>미확인 사유 코드</summary><ul>{[...new Set([...a.writeEvidence.limitations,...a.writeEvidence.dataFields.flatMap(v=>v.limitations),...a.writeEvidence.filters.flatMap(v=>v.limitations)])].map(l=><li key={l}>{l}</li>)}</ul></details>
+          </details>:['INSERT','UPDATE','DELETE'].includes(a.operation)&&<p>쓰기 값·행 필터의 출처는 미검사이거나 이전 이력에 기록되지 않았습니다. 안전으로 판단하지 않습니다.</p>}
           {a.authorizationEvidence?<>
             <p>{text(a.authorizationEvidence.state)} · {text(a.authorizationEvidence.authStatus)}</p>
             <p>API 키와 로그인 사용자는 다릅니다. 실제 DB 역할과 운영 정책 적용은 확인하지 않았습니다.</p>

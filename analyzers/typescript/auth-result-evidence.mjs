@@ -1,8 +1,9 @@
 // Local syntax evidence only. Never upgrades policy state or establishes authentication.
 export function authResultEvidence({ts,charge,binding,escaped,index,location,fnOf}) {
-  function observe(mod,call,access) {
-    if(!['getUser','getClaims'].includes(call.expression.name.text)||call.arguments.length)return null;
-    const expected=call.expression.name.text==='getUser'?['data','user']:['data','claims'];
+  function observe(mod,call,access,value) {
+    const method=call.expression.name.text,session=method==='getSession';
+    if(!['getUser','getClaims',...(value?['getSession']:[])].includes(method)||call.arguments.length)return null;
+    const expected=method==='getUser'?['data','user']:session?['data','session','user']:['data','claims'];
     const fn=fnOf(access);if(!fn||fnOf(call)!==fn)return null;
     // The shared write index covers assignment expressions, not delete or ++/--.
     let unsupportedMutation=false;
@@ -37,6 +38,8 @@ export function authResultEvidence({ts,charge,binding,escaped,index,location,fnO
       const r=origin(variable.initializer,depth+1,seen);return r?{...r,fields:[...r.fields,...path]}:null;
     }
     const identity=n=>{const o=origin(n);return o?.awaited&&JSON.stringify(o.fields)===JSON.stringify(expected);};
+    const valueOrigin=value&&origin(value),valueIsUserId=!!valueOrigin?.awaited&&JSON.stringify(valueOrigin.fields)===JSON.stringify([...expected,method==='getClaims'?'sub':'id']);
+    if(session)return valueIsUserId?{status:'SESSION_READ_UNVERIFIED',valueIsUserId:true}:null;
     function rejectsAbsent(n){
       charge();n=peel(n);
       if(ts.isPrefixUnaryExpression(n)&&n.operator===ts.SyntaxKind.ExclamationToken)return identity(n.operand);
@@ -65,7 +68,7 @@ export function authResultEvidence({ts,charge,binding,escaped,index,location,fnO
       if(value&&ts.isPropertyAccessExpression(value)&&value.name.text===(call.expression.name.text==='getUser'?'id':'sub')&&identity(value.expression))
         filters.push(location(chain,mod,'IDENTITY_RESULT_ID_FILTER_OBSERVED'));
     }
-    return {status:'IDENTITY_RESULT_GUARD_OBSERVED',guardLocation:location(guard,mod,'IDENTITY_RESULT_ABSENCE_EXIT'),userIdFilters:filters,
+    return {status:'IDENTITY_RESULT_GUARD_OBSERVED',guardLocation:location(guard,mod,'IDENTITY_RESULT_ABSENCE_EXIT'),userIdFilters:filters,...(value?{valueIsUserId}:{}),
       limitations:['LOCAL_SYNTAX_NOT_AUTH_SUCCESS_PROOF','IDENTITY_FIELDS_AND_MIDDLEWARE_NOT_RUNTIME_VERIFIED','APPLICATION_FILTER_NOT_DATABASE_AUTHORIZATION']};
   }
   return {observe};

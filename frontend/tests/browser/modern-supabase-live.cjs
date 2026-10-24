@@ -5,6 +5,7 @@ const {resultView}=require('./editor-navigation.cjs');
 const origin='http://127.0.0.1:5174',api='http://127.0.0.1:8085';
 const directional=process.env.UPDATE_PHASES==='1';
 const guardedFactory=process.env.GUARDED_FACTORY==='1';
+const writeOrigin=process.env.WRITE_ORIGIN==='1';
 (async()=>{const browser=await chromium.launch(),http=await request.newContext({baseURL:api});
 try{
  const signup=await http.post('/api/auth/signup',{data:{email:`modern-${Date.now()}@example.invalid`,name:'synthetic',password:'Synthetic-Local-813!'}});
@@ -16,11 +17,13 @@ try{
    [prefix+'lib/client.ts']:guardedFactory?"import {createServerClient} from '@supabase/ssr';export function make(){const url=process.env.SERVICE_URL;const key=process.env.PUBLIC_ANON_KEY;if(!url||!key)throw new Error('missing');const jar=cookies();return createServerClient(url,key,{cookies:{getAll(){return jar.getAll();}}});}":"import {createServerClient} from '@supabase/ssr';export function make(){const jar=cookies();return createServerClient('https://example.invalid',process.env.PUBLIC_ANON_KEY,{cookies:{getAll(){return jar.getAll();}}});}",
    [prefix+'app/api/items/route.ts']:"import {make} from '~/lib/client';export async function POST(){const db=await make();const {data:{user}}=await db.auth.getUser();if(!user)throw new Error('missing');return Response.json(await db.from('items').update({}).eq('user_id',user.id));}",
    'supabase/migrations/20260101000000_items.sql':`CREATE TABLE public.items(user_id uuid);ALTER TABLE public.items ENABLE ROW LEVEL SECURITY;GRANT UPDATE ON public.items TO authenticated;CREATE POLICY p ON public.items FOR UPDATE TO authenticated USING(${directional&&layout==='root'?'auth.uid()=user_id':'true'}) WITH CHECK(${directional&&layout==='src'?'auth.uid()=user_id':'true'});`};
+  if(writeOrigin)files[prefix+'app/api/items/route.ts']=files[prefix+'app/api/items/route.ts'].replace('POST(){','POST(req){const input=await req.json();').replace('update({})','update({title:input.title,user_id:user.id})');
   const zip=execFileSync('python3',['-c',"import io,sys,json,zipfile\nb=io.BytesIO()\nwith zipfile.ZipFile(b,'w',zipfile.ZIP_DEFLATED) as z:\n for p,s in json.load(sys.stdin).items(): z.writestr(p,s)\nsys.stdout.buffer.write(b.getvalue())"],{input:JSON.stringify(files)});
   const response=await http.post('/api/reviews/upload',{headers,multipart:{scanMode:'STANDARD',file:{name:'synthetic.zip',mimeType:'application/zip',buffer:zip}}});
   assert.equal(response.status(),200);const review=await response.json(),s=review.serverAnalysis.supabaseAnalysis,e=s.accesses[0].authorizationEvidence;
   assert.equal(e.state,'BROAD_ACCESS_REVIEW');assert.equal(e.effectiveRole,'UNKNOWN');assert.equal(e.authChecks[0].resultEvidence.userIdFilters.length,1);
   assert.equal(s.findings[0].comparisonPolicy,'NOT_COMPARED');assert.equal(review.securityScore,100);
+  if(writeOrigin){const w=s.accesses[0].writeEvidence;assert.deepEqual(w.dataFields.map(f=>f.source),['REQUEST_CONTROLLED','VERIFIED_USER_EVIDENCE']);assert.equal(w.filters[0].source,'VERIFIED_USER_EVIDENCE');}
   for(const width of [1440,390,320]){
    const page=await browser.newPage({viewport:{width,height:1000}}),errors=[],outbound=[];page.on('pageerror',e=>errors.push(e.message));
    await page.addInitScript(auth=>{localStorage.setItem('securedeploy.accessToken',auth.accessToken);localStorage.setItem('securedeploy.authUser',JSON.stringify(auth.user));},user);
@@ -34,6 +37,8 @@ try{
    const text=await section.innerText();for(const value of ['인증 성공 보장 아님','실제 호출 여부는 미확인','DB 소유권 검증 보장 아님',prefix+'app/api/items/route.ts'])assert.ok(text.includes(value),value);
    if(directional)assert.ok(text.includes(layout==='root'?'변경 후 행의 사용자별 제한 미확인':'기존 행의 사용자별 제한 미확인'));
    if(guardedFactory)assert.ok(text.includes('설정값 부재 시 중단하는 factory 분기 · 인증 검사 아님'));
+   if(writeOrigin){for(const value of ['쓰기 데이터와 대상 행의 값 출처','변경할 데이터','기존 행을 선택하는 필터','요청자가 제어할 수 있는 값','검증 API 반환 ID와 중단 분기 근거'])assert.ok(text.includes(value),value);
+    await section.getByText('쓰기 데이터와 대상 행의 값 출처',{exact:true}).first().scrollIntoViewIfNeeded();await page.screenshot({path:`/private/tmp/securedeploy-write-origin-${layout}-${width}.png`});}
    assert.equal(await page.getByRole('button',{name:'자동 수정안 만들기',exact:true}).count(),0);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);assert.deepEqual(outbound,[]);
    if(guardedFactory){await section.getByText('설정값 부재 시 중단하는 factory 분기 · 인증 검사 아님',{exact:false}).first().scrollIntoViewIfNeeded();await page.screenshot({path:`/private/tmp/securedeploy-guarded-client-${layout}-${width}.png`});}

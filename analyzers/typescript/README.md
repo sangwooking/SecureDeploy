@@ -273,3 +273,26 @@ guard, sanitizer, successful invocation, deployed policy or runtime-role proof.
 Supabase write-argument taint and arbitrary helper request graphs are not added.
 The evaluator `write_flow_validation.mjs` separately counts existing policy
 warnings and connected policy evidence; a link improvement is not a new CVE TP.
+
+## Local Next write-value evidence (v26)
+
+After existing Next entry registration, linked Clients may record an optional
+`writeEvidence` for INSERT/UPDATE static object fields and UPDATE/DELETE eq/match
+filters. The payload and existing-row selection are separate. Only local const
+aliases, bounded object destructuring, awaited Request json/formData/text, explicit
+Server Function arguments and whitelisted primitive conversions are followed.
+An ID from getUser/getClaims plus the existing absence-exit evidence is labelled
+VERIFIED_USER_EVIDENCE; this names observed code evidence, not runtime success.
+getSession IDs are SESSION_UNVERIFIED. Constants are SERVER_CONTROLLED; unknown
+transforms, mutation/escape, spread/computed/duplicate fields remain UNKNOWN.
+No field name (including owner/user) establishes a resource ownership model.
+
+The write pass shares the existing 5,000 link-work / 15,000 Client / 100,000 global
+step limits and 275k evidence output limit. Depth is eight local expression edges,
+not increased function-call depth. At most 16 fields, eight filters and four source
+locations per value are emitted, with no raw literals. A budget failure is recorded
+as WRITE_EVIDENCE_BUDGET_OR_CONTEXT_LIMIT; absent evidence is not a safe result.
+Helper graphs, UPSERT, arrays, query/params extraction and dynamic wrappers are
+not added. Policy v3, effective DB role UNKNOWN, existing Findings/Risk and
+REVIEW_REQUIRED/NOT_COMPARED semantics are unchanged. Older snapshots have no
+invented write origins. Target sources are never executed or installed.

@@ -156,6 +156,23 @@ public class TypeScriptServerAnalyzer {
         snapshot.clients().forEach(c->locations.add(c.location()));
         snapshot.accesses().forEach(a->{locations.add(a.location());if(a.clientLocation()!=null)locations.add(a.clientLocation());if(a.policyLocation()!=null)locations.add(a.policyLocation());});
         snapshot.accesses().forEach(a->{
+            var w=a.writeEvidence();if(w==null)return;
+            if(!Set.of("INSERT","UPDATE","DELETE").contains(a.operation())||!"CLIENT_DECLARATION_LINKED".equals(a.clientStatus())
+                    ||a.authorizationEvidence()==null||a.authorizationEvidence().requestEntry()==null
+                    ||!"LOCAL_VALUE_ORIGIN_EVIDENCE".equals(w.status())||!Set.of("STATIC_FIELDS","NO_PAYLOAD","UNKNOWN").contains(w.dataStatus())
+                    ||!Set.of("STATIC_FILTERS","UNKNOWN").contains(w.filterStatus())||w.dataFields().size()>16||w.filters().size()>8||w.limitations().size()>12
+                    ||!"STATIC_FIELDS".equals(w.dataStatus())&&!w.dataFields().isEmpty()
+                    ||"DELETE".equals(a.operation())&&!"NO_PAYLOAD".equals(w.dataStatus()))throw new IllegalArgumentException("INVALID_WRITE_EVIDENCE");
+            locations.add(w.operationLocation());
+            var values=new ArrayList<>(w.dataFields());values.addAll(w.filters());
+            values.forEach(v->{
+                if(v.name()==null||!v.name().matches("[A-Za-z_][A-Za-z0-9_]{0,63}")||!Set.of("field","eq","match").contains(v.operator())
+                        ||!Set.of("REQUEST_CONTROLLED","VERIFIED_USER_EVIDENCE","SESSION_UNVERIFIED","SERVER_CONTROLLED","UNKNOWN").contains(v.source())
+                        ||v.sourceLocations().size()>4||v.limitations().size()>10)throw new IllegalArgumentException("INVALID_WRITE_VALUE");
+                locations.add(v.location());locations.addAll(v.sourceLocations());
+            });
+        });
+        snapshot.accesses().forEach(a->{
             var e=a.authorizationEvidence();if(e==null)return;
             if(!Set.of("UNKNOWN","CONFIRMED_POLICY_EVIDENCE","BROAD_ACCESS_REVIEW","ADMIN_ACCESS_REVIEW","PUBLIC_READ_DECLARATION").contains(e.state())
                     ||!"UNKNOWN".equals(e.effectiveRole())||e.authChecks().size()>4||e.clientTrace().size()>8||e.policyLocations().size()>8
@@ -187,7 +204,7 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v25".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v26".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200

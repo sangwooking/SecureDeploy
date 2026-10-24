@@ -9,6 +9,24 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
 class SupabaseAnalysisTest {
+    @Test void localWriteOriginsPersistWithoutValuesAndLegacySnapshotsStayUnrecorded() throws Exception {
+        String path="app/api/records/route.ts",code="import {createClient} from '@supabase/supabase-js';const db=createClient('https://example.invalid',process.env.ANON_KEY);export async function POST(req){const body=await req.json();return db.from('records').update({title:body.title,fixed:'private-placeholder'}).eq('id',body.id);}";
+        var files=new ArrayList<>(project(broad).analysisFiles());
+        files.add(new ProjectFile(Path.of(path),path,ProjectFileType.TYPESCRIPT,code.lines().toList()));
+        files.add(new ProjectFile(Path.of("package.json"),"package.json",ProjectFileType.PACKAGE_JSON,List.of("{\"dependencies\":{\"next\":\"15.2.0\"}}")));
+        var result=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties()).analyze(new ProjectStructure(Path.of("/not-executed"),files));
+        var w=result.supabaseAnalysis().accesses().get(0).writeEvidence();assertThat(w).isNotNull();
+        assertThat(w.dataFields()).extracting(SupabaseSnapshot.WriteValue::source).containsExactly("REQUEST_CONTROLLED","SERVER_CONTROLLED");
+        assertThat(w.filters()).extracting(SupabaseSnapshot.WriteValue::source).containsExactly("REQUEST_CONTROLLED");
+        var converter=new ServerAnalysisConverter();String json=converter.convertToDatabaseColumn(result);
+        assertThat(json).doesNotContain(code,"private-placeholder");assertThat(converter.convertToEntityAttribute(json)).isEqualTo(result);
+        var tree=(com.fasterxml.jackson.databind.node.ObjectNode)new com.fasterxml.jackson.databind.ObjectMapper().readTree(json);
+        tree.put("analyzerVersion","ts-server-v25");
+        ((com.fasterxml.jackson.databind.node.ObjectNode)tree.path("supabaseAnalysis").path("accesses").get(0)).remove("writeEvidence");
+        assertThat(converter.convertToEntityAttribute(tree.toString()).supabaseAnalysis().accesses().get(0).writeEvidence()).isNull();
+        assertThat(result.attachCoverage(new com.securedeploy.project.coverage.CoverageRecorder().snapshot()).analyzers())
+                .anyMatch(a->a.analyzer().equals("SUPABASE_RLS")&&a.fileStatuses().get("WRITE_ORIGIN_RECORDED")==1);
+    }
     @Test void linkedOperationEvidenceSurvivesSnapshotsButOldEvidenceIsNotInvented() throws Exception {
         var files=new ArrayList<>(project(broad.replace("USING(true) WITH CHECK(true)","USING(auth.uid()=user_id) WITH CHECK(auth.uid()=user_id)")).analysisFiles());
         String path="src/data.ts",code="import {createClient} from '@supabase/supabase-js';const db=createClient('https://example.invalid',process.env.ANON_KEY);db.from('records').update({});";

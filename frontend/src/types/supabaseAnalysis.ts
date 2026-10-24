@@ -1,4 +1,9 @@
 import type { AnalysisLocation } from './serverAnalysis';
+export interface SupabaseWriteValue {
+  name:string;operator:string;location:AnalysisLocation;
+  source:'REQUEST_CONTROLLED'|'VERIFIED_USER_EVIDENCE'|'SESSION_UNVERIFIED'|'SERVER_CONTROLLED'|'UNKNOWN';
+  sourceLocations:AnalysisLocation[];limitations:string[];
+}
 export interface SupabaseAnalysis {
   schemaVersion:number;analyzerVersion:string;status:string;limitations:string[];
   budgetUsage?:Record<string,number>|null;
@@ -9,6 +14,7 @@ export interface SupabaseAnalysis {
   clients:{location:AnalysisLocation;keySource:string;authContext:string;limitations:string[]}[];
   accesses:{location:AnalysisLocation;table:string;operation:string;clientStatus:string;clientLocation:AnalysisLocation|null;
     keySource:string;policyStatus:string;policyLocation:AnalysisLocation|null;limitations:string[];
+    writeEvidence?:{status:string;operationLocation:AnalysisLocation;dataStatus:string;dataFields:SupabaseWriteValue[];filterStatus:string;filters:SupabaseWriteValue[];limitations:string[]}|null;
     authorizationEvidence?:{state:string;clientContract:string;authStatus:string;effectiveRole:string;roleEvidence:string;
       authChecks:{method:string;status:string;location:AnalysisLocation;resultEvidence?:{status:string;guardLocation:AnalysisLocation;userIdFilters:AnalysisLocation[];limitations:string[]}|null}[];clientTrace:AnalysisLocation[];policyLocations:AnalysisLocation[];
       filterLocations:AnalysisLocation[];enclosingFunction:AnalysisLocation|null;requestEntry?:AnalysisLocation|null;policyStates:string[];limitations:string[]}|null}[];
