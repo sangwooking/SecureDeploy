@@ -63,3 +63,8 @@ test('field limits preserve UNKNOWN and output never includes literal values',()
  assert.equal(write(r).dataStatus,'UNKNOWN');assert.ok(write(r).limitations.includes('WRITE_FIELDS_LIMIT'));
  assert.ok(!JSON.stringify(write(r)).includes('private-placeholder'));
 });
+test('an earlier ID argument use retains the existing conservative escape boundary',()=>{
+ const r=run("const {data:{user}}=await db.auth.getUser();if(!user)throw new Error('missing');return db.from('items').update({user_id:user.id}).eq('user_id',user.id);");
+ assert.equal(field(r,'user_id'),'VERIFIED_USER_EVIDENCE');
+ assert.equal(write(r).filters[0].source,'UNKNOWN');
+});
