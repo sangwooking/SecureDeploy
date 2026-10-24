@@ -1,5 +1,6 @@
 import type { SupabaseAnalysis } from '../types/supabaseAnalysis';
 const labels: Record<string,string>={
+  FACTORY_CONFIGURATION_ABSENCE_THROW:'설정값 부재 시 중단하는 factory 분기 · 인증 검사 아님',
   CONFIRMED_POLICY_EVIDENCE:'저장소 정책에 사용자별 행 제한 근거가 있음',BROAD_ACCESS_REVIEW:'넓은 쓰기 허용 선언 · 공유 데이터인지 확인 필요',
   ADMIN_ACCESS_REVIEW:'관리자 Client 계약 · 앱 자체의 접근권한 확인 필요',PUBLIC_READ_DECLARATION:'공유 읽기 허용 선언 · 공개 의도 미확인',
   SESSION_REFERENCE_UNVERIFIED:'쿠키·세션 참조 · 사용자 검증은 미확인',SESSION_READ_UNVERIFIED:'세션 읽기 관찰 · 사용자 검증 아님',
@@ -65,7 +66,7 @@ export function SupabaseAnalysisSection({snapshot,compact=false}:{snapshot?:Supa
             <p>연결된 정책은 같은 저장소의 선언입니다. Client의 실제 접속 프로젝트와 일치하는지는 확인하지 않았습니다.</p>
             <details className="technical-details"><summary>Client·인증·정책 연결 근거</summary>
               {a.authorizationEvidence.enclosingFunction&&<p className="finding-location">포함된 함수: {a.authorizationEvidence.enclosingFunction.filePath}:{a.authorizationEvidence.enclosingFunction.line} · 요청 실행 증명 아님</p>}
-              {a.authorizationEvidence.clientTrace.map((l,j)=><p className="finding-location" key={'c'+j}>Client: {l.filePath}:{l.line}</p>)}
+              {a.authorizationEvidence.clientTrace.map((l,j)=><p className="finding-location" key={'c'+j}>Client: {l.filePath}:{l.line}{l.kind==='FACTORY_CONFIGURATION_ABSENCE_THROW'&&<> · {text(l.kind)}</>}</p>)}
               {a.authorizationEvidence.requestEntry&&<p className="finding-location">Next.js 요청·서버 함수 선언: {a.authorizationEvidence.requestEntry.filePath}:{a.authorizationEvidence.requestEntry.line} · 같은 함수 안의 접근이며 실제 호출 여부는 미확인</p>}
               {a.authorizationEvidence.authChecks.map((c,j)=><div key={'a'+j}><p className="finding-location">{c.method}: {c.location.filePath}:{c.location.line} · {text(c.status)}</p>
                 {c.resultEvidence&&<><p>{text(c.resultEvidence.status)}</p><p className="finding-location">중단 분기: {c.resultEvidence.guardLocation.filePath}:{c.resultEvidence.guardLocation.line}</p>

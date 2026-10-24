@@ -273,6 +273,21 @@ class ServerAnalysisIntegrationTest {
         }
     }
 
+    @Test void guardedConfigurationFactoryLinksServerFunctionWithoutInventingIdentity() throws Exception {
+        String token=signup();
+        var result=uploadSources(token,Map.of(
+            "package.json","{\"dependencies\":{\"next\":\"15.2.0\"}}",
+            "lib/client.ts","import {createClient} from '@supabase/supabase-js';export function make(){const url=process.env.SERVICE_URL;const key=process.env.PUBLIC_ANON_KEY;if(!url||!key)throw new Error('missing');return createClient(url,key);}",
+            "app/actions.ts","'use server';import {make} from '../lib/client';export async function change(formData){const db=make();return db.from('items').update({title:formData.get('title')});}"));
+        var a=result.at("/serverAnalysis/supabaseAnalysis/accesses/0");
+        assertThat(a.path("clientStatus").asText()).isEqualTo("CLIENT_DECLARATION_LINKED");
+        assertThat(a.at("/authorizationEvidence/requestEntry/kind").asText()).isEqualTo("NEXT_SERVER_FUNCTION");
+        assertThat(a.at("/authorizationEvidence/clientTrace").toString()).contains("FACTORY_CONFIGURATION_ABSENCE_THROW");
+        assertThat(a.at("/authorizationEvidence/authChecks")).isEmpty();
+        assertThat(a.at("/authorizationEvidence/state").asText()).isEqualTo("UNKNOWN");
+        assertThat(detail(token,result.path("reviewId").asLong()).at("/serverAnalysis/supabaseAnalysis/accesses/0")).isEqualTo(a);
+    }
+
     @Test void eightyJavaUnitsAndSourceLimitHavePersistedDistinctCoverage() throws Exception {
         String token=signup();var sources=new LinkedHashMap<String,String>();
         sources.put("Endpoint.java","import org.springframework.web.bind.annotation.*; import java.sql.Connection; @RestController class Endpoint { Connection c; @GetMapping(\"/\") void inspect(@RequestParam String input){c.prepareCall(\"{call \"+input+\"}\").execute();}}");

@@ -83,6 +83,25 @@ export function linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports}) {
     }
     return false;
   }
+  function configurationExit(m,fn,statement) {
+    charge();
+    if(!ts.isIfStatement(statement)||statement.elseStatement)return false;
+    const body=statement.thenStatement;
+    const exit=ts.isBlock(body)&&body.statements.length===1?body.statements[0]:body;
+    if(!ts.isThrowStatement(exit))return false;
+    const absent=(original,depth=0)=>{
+      charge();if(depth>4)return false;
+      const n=unwrap(original);
+      if(ts.isBinaryExpression(n)&&n.operatorToken.kind===ts.SyntaxKind.BarBarToken)return absent(n.left,depth+1)&&absent(n.right,depth+1);
+      if(!ts.isPrefixUnaryExpression(n)||n.operator!==ts.SyntaxKind.ExclamationToken||!ts.isIdentifier(unwrap(n.operand)))return false;
+      const name=unwrap(n.operand),d=binding(m,name.text,name);
+      if(!d||!ts.isVariableDeclaration(d)||fnOf(d)!==fn||!(d.parent.flags&ts.NodeFlags.Const)||d.pos>=statement.pos||index(m).writes.has(name.text))return false;
+      const value=unwrap(d.initializer);
+      return value&&ts.isPropertyAccessExpression(value)&&value.expression.getText(m.ast)==='process.env'
+        &&binding(m,'process',value)===undefined&&!index(m).writes.has('process');
+    };
+    return absent(statement.expression);
+  }
   function resolve(m,original,env=new Map(),depth=0,seen=new Set()) {
     charge();const node=unwrap(original);if(!node||depth>3||seen.has(node))return null;seen=new Set([...seen,node]);
     const ctx=contextClient(m,node);if(ctx)return ctx;
@@ -145,11 +164,19 @@ export function linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports}) {
     if(fn.modifiers?.some(p=>p.kind===ts.SyntaxKind.AsyncKeyword)&&!ts.isAwaitExpression(original)&&!ts.isAwaitExpression(node.parent))return null;
     if(node.arguments.length!==fn.parameters.length||fn.parameters.some(p=>!ts.isIdentifier(p.name)||p.dotDotDotToken||p.initializer))return null;
     const statements=ts.isBlock(fn.body)?fn.body.statements:null;
-    if(statements&&(statements.length>8||statements.slice(0,-1).some(s=>!ts.isVariableStatement(s)||!(s.declarationList.flags&ts.NodeFlags.Const))||!ts.isReturnStatement(statements.at(-1))))return null;
+    const guards=[];
+    if(statements){
+      if(statements.length>8||!ts.isReturnStatement(statements.at(-1)))return null;
+      for(const s of statements.slice(0,-1)){
+        if(ts.isVariableStatement(s)&&(s.declarationList.flags&ts.NodeFlags.Const))continue;
+        if(!configurationExit(target.mod,fn,s))return null;
+        guards.push(location(s,target.mod,'FACTORY_CONFIGURATION_ABSENCE_THROW'));
+      }
+    }
     const returned=statements?statements.at(-1).expression:fn.body;
     const bindings=new Map(env);fn.parameters.forEach((p,i)=>bindings.set(p,{mod:m,node:node.arguments[i],env}));
     const r=resolve(target.mod,returned,bindings,depth+1,seen);
-    return r?{...r,trace:[...r.trace,location(node,m,'STATIC_FACTORY_CALL')].slice(-8)}:null;
+    return r?{...r,trace:[...r.trace,...guards,location(node,m,'STATIC_FACTORY_CALL')].slice(-8)}:null;
   }
   const authCalls=new Map();
   const authResults=authResultEvidence({ts,charge,binding,escaped,index,location,fnOf});

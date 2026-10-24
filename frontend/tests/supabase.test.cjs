@@ -46,3 +46,9 @@ test('UPDATE old and new row restrictions are shown separately without promising
   assert.ok(h.includes(label));assert.ok(h.includes('운영 DB'));assert.ok(h.includes('NOT_COMPARED'));
  }
 });
+test('configuration absence exits in client factories are not authentication guards',()=>{
+ const f=fixture(),l=f.accesses[0].location;
+ f.accesses[0].authorizationEvidence={state:'UNKNOWN',clientContract:'SUPABASE_JS_CREATE_CLIENT',authStatus:'SESSION_AND_AUTH_HEADERS_UNKNOWN',effectiveRole:'UNKNOWN',roleEvidence:'UNKNOWN',
+ authChecks:[],clientTrace:[{...l,kind:'FACTORY_CONFIGURATION_ABSENCE_THROW'}],policyLocations:[],filterLocations:[],policyStates:[],limitations:[]};
+ const h=render(f);assert.ok(h.includes('설정값 부재 시 중단하는 factory 분기 · 인증 검사 아님'));
+});

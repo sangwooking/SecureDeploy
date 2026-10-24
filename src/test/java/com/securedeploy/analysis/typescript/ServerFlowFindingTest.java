@@ -1,6 +1,7 @@
 package com.securedeploy.analysis.typescript;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 import static com.securedeploy.analysis.typescript.TypeScriptServerAnalyzerTest.*;
@@ -57,7 +58,7 @@ class ServerFlowFindingTest {
         String start = "export default { fetch(request,env) { let id = new URL(request.url).searchParams.get('id'); ";
         var unsafe = analyzer.analyze(project(start + "return env.DB.prepare(id + (id = '0')).all(); }}"));
         var safe = analyzer.analyze(project(start + "return env.DB.prepare((id = '0') + id).all(); }}"));
-        assertThat(unsafe.analyzerVersion()).isEqualTo("ts-server-v24");
+        assertThat(unsafe.analyzerVersion()).isEqualTo("ts-server-v25");
         assertThat(unsafe.validatedFindings()).hasSize(1).allSatisfy(f -> {
             assertThat(f.priority().name()).isEqualTo("REVIEW_REQUIRED");
             assertThat(f.comparisonPolicy()).isEqualTo("NOT_COMPARED");
@@ -68,11 +69,13 @@ class ServerFlowFindingTest {
     @Test void v2SnapshotsRemainImmutableAndAreNotReconnectedByTheNewAnalyzer() {
         var converter = new ServerAnalysisConverter();
         var snapshot = analyzer.analyze(project(UNSAFE));
-        String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v24", "ts-server-v2");
-        var old = converter.convertToEntityAttribute(previous);
-        assertThat(old.analyzerVersion()).isEqualTo("ts-server-v2");
-        assertThat(converter.convertToDatabaseColumn(old)).isEqualTo(previous);
-        assertThat(old.validatedFindings()).allSatisfy(f -> assertThat(f.comparisonPolicy()).isEqualTo("NOT_COMPARED"));
+        for(String version:List.of("ts-server-v2","ts-server-v24")){
+            String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v25",version);
+            var old = converter.convertToEntityAttribute(previous);
+            assertThat(old.analyzerVersion()).isEqualTo(version);
+            assertThat(converter.convertToDatabaseColumn(old)).isEqualTo(previous);
+            assertThat(old.validatedFindings()).allSatisfy(f -> assertThat(f.comparisonPolicy()).isEqualTo("NOT_COMPARED"));
+        }
     }
 
     @Test void knownInputQueryAndExecutionBecomeOneSupplementalFinding() {

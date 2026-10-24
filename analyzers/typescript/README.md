@@ -258,3 +258,18 @@ no inherited PG settings, statement limits, and stop/removal in finally. Never p
 external migration SQL to this runner. Its A/B results validate PostgreSQL semantics,
 not a public application's deployed Supabase project or HTTP authorization.
 Official semantics: https://www.postgresql.org/docs/16/sql-createpolicy.html
+
+## Configuration-guarded Client factories (v25)
+
+The existing bounded factory return contract additionally permits a no-else
+`if (!localEnv || !otherLocalEnv) throw ...` prefix. Each referenced value must
+be an earlier immutable local read of unshadowed `process.env.NAME`. Only a
+single throw (optionally in a one-statement block) is accepted. Conditions have
+depth <=4; the existing eight-statement factory, three-call-depth, client work,
+output, file, time and memory limits are unchanged. Custom conditions, mutation,
+alternative returns, extra effects and unresolved wrappers remain unknown.
+`FACTORY_CONFIGURATION_ABSENCE_THROW` is Client provenance, not an authentication
+guard, sanitizer, successful invocation, deployed policy or runtime-role proof.
+Supabase write-argument taint and arbitrary helper request graphs are not added.
+The evaluator `write_flow_validation.mjs` separately counts existing policy
+warnings and connected policy evidence; a link improvement is not a new CVE TP.
