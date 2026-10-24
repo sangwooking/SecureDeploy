@@ -33,6 +33,23 @@ class TypeScriptServerAnalyzerTest {
         properties.setEnabled(false);
         assertThat(analyzer.analyze(project(UNSAFE)).status()).isEqualTo("DISABLED");
     }
+    @Test void boundedManifestMetadataConnectsDirectoryMainWithoutReadingTargetFiles() {
+        var sources=List.of(
+                source("package.json",ProjectFileType.PACKAGE_JSON,"{\"scripts\":{\"start\":\"node launch.js\"}}"),
+                source("launch.js",ProjectFileType.JAVASCRIPT,"const start=require('./service');start();"),
+                source("service/package.json",ProjectFileType.PACKAGE_JSON,"{\"main\":\"./transport.cjs\"}"),
+                source("service/transport.cjs",ProjectFileType.JAVASCRIPT,"const express=require('express');module.exports=()=>{const app=express();app.post('/',(req,res)=>eval(req.body.code));return app;};"));
+        var result=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties()).analyze(new ProjectStructure(Path.of("/unreadable"),sources));
+        assertThat(result.analyzerVersion()).isEqualTo("ts-server-v22");
+        assertThat(result.validatedFindings()).hasSize(1);
+        assertThat(result.validatedFindings().get(0).comparisonPolicy()).isEqualTo("NOT_COMPARED");
+        assertThat(result.files()).filteredOn(f->f.filePath().equals("launch.js"))
+                .allSatisfy(f->assertThat(f.selectionReason()).isEqualTo("TS_NODE_MANIFEST_ENTRY_HINT"));
+        var malformed=new ArrayList<>(sources);
+        malformed.set(2,source("service/package.json",ProjectFileType.PACKAGE_JSON,"{"));
+        assertThat(new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties()).analyze(new ProjectStructure(Path.of("/unreadable"),malformed)).validatedFindings()).isEmpty();
+    }
+    private static ProjectFile source(String path,ProjectFileType type,String text){return new ProjectFile(Path.of("/unreadable").resolve(path),path,type,text.lines().toList());}
     @Test void timeoutTerminatesOnlyTheAnalysisChild() throws Exception {
         var properties = fixtureWorker("while (true) {};"); properties.setTimeoutSeconds(1);
         assertThat(new TypeScriptServerAnalyzer(properties).analyze(project(UNSAFE)).status()).isEqualTo("TIMEOUT");
@@ -46,7 +63,7 @@ class TypeScriptServerAnalyzerTest {
                 const envClean = Object.keys(process.env).every(key => ['LANG', '__CF_USER_TEXT_ENCODING'].includes(key));
                 let input = ''; for await (const chunk of process.stdin) input += chunk;
                 const files = JSON.parse(input).files.map(f => ({filePath:f.filePath, parseStatus:'PARSED',flowStatus:'NOT_SUPPORTED',entrypoints:0,functionsAnalyzed:0,limitations:[]}));
-                process.stdout.write(JSON.stringify({schemaVersion:1,analyzerVersion:'ts-server-v21',parserVersion:'6.0.3',status:'PARTIAL',files,findings:[],sqlUses:[],httpUses:[],exposureUses:[],nodeUses:[],authorizationContexts:[],limitations:[blocked && envClean ? 'ISOLATED' : 'ISOLATION_FAILED']}));
+                process.stdout.write(JSON.stringify({schemaVersion:1,analyzerVersion:'ts-server-v22',parserVersion:'6.0.3',status:'PARTIAL',files,findings:[],sqlUses:[],httpUses:[],exposureUses:[],nodeUses:[],authorizationContexts:[],limitations:[blocked && envClean ? 'ISOLATED' : 'ISOLATION_FAILED']}));
                 """.formatted(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(outside.toString()));
         var result = new TypeScriptServerAnalyzer(fixtureWorker(code)).analyze(project(UNSAFE));
         assertThat(result.limitations()).contains("ISOLATED").doesNotContain("ISOLATION_FAILED");

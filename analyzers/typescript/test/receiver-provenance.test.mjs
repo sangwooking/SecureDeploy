@@ -74,10 +74,10 @@ test('depth-limited constructor cannot leave a passed database falsely verified'
 test('already loaded static exports remain available at a deeper import boundary',()=>{
   const r=analyze({files:[
     {filePath:'server.cjs',content:`const express=require('express');require('./common');const routes=require('./a');const app=express();app.get('/',routes.handler);`},
-    {filePath:'common.cjs',content:`exports.handler=(req,res)=>eval(req.query.code);`},
-    {filePath:'a.cjs',content:`module.exports=require('./b');`},
-    {filePath:'b.cjs',content:`module.exports=require('./c');`},
-    {filePath:'c.cjs',content:`module.exports=require('./common');`},
+    {filePath:'common.js',content:`exports.handler=(req,res)=>eval(req.query.code);`},
+    {filePath:'a.js',content:`module.exports=require('./b');`},
+    {filePath:'b.js',content:`module.exports=require('./c');`},
+    {filePath:'c.js',content:`module.exports=require('./common');`},
   ]});
   assert.equal(r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW'&&f.confidence==='HIGH').length,1);
 });

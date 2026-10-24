@@ -27,6 +27,8 @@ final class TypeScriptSourceSelector {
     }
 
     static Plan select(List<ProjectFile> input) {
+        var manifests=NodeManifestMetadata.read(input);
+        var packages=new HashMap<String,Map<String,String>>();manifests.worker().forEach(m->packages.put(m.get("filePath"),m));
         var js=input.stream().filter(f->f.relativePath().matches(".*(?:\\.[jt]sx?|\\.[cm]js)$"))
                 .sorted(Comparator.comparing(ProjectFile::relativePath)).toList();
         var sql=input.stream().filter(f->f.type()==ProjectFileType.SUPABASE_SQL)
@@ -38,7 +40,7 @@ final class TypeScriptSourceSelector {
             for(String key:List.of(p,stem))if(specs.putIfAbsent(key,p)!=null)ambiguous.add(key);
         }
         ambiguous.forEach(specs::remove);
-        int hints=0,characters=0;boolean complete=true;
+        int hints=0,characters=manifests.characters();boolean complete=manifests.complete();
         var texts=new HashMap<String,String>();
         var hintOrder=js.stream().sorted(Comparator.comparingInt((ProjectFile f)->convention(f.relativePath()))
                 .thenComparing(ProjectFile::relativePath)).toList();
@@ -51,6 +53,13 @@ final class TypeScriptSourceSelector {
                 reason=hint(p,text);priority=priority(reason);
             } else if(size<=MAX_FILE_CHARS){complete=false;reason="TS_SELECTION_HINT_LIMIT";}
             choices.put(p,new Choice(f,reason,priority,size,false));
+        }
+        // Manifest paths are scheduling hints only; no exported initializer is invoked.
+        for(String seed:manifests.seeds()) {
+            String target=resolveHint(seed,specs,packages);
+            if(target==null)continue;
+            var old=choices.get(target);
+            if(old.priority()>0)choices.put(target,new Choice(old.file(),"TS_NODE_MANIFEST_ENTRY_HINT",0,old.characters(),false));
         }
         // Probe broadly before expanding relevant modules. Reuse one global hint
         // budget; imports and sink-shaped uses remain scheduling hints, never proof.
@@ -68,7 +77,7 @@ final class TypeScriptSourceSelector {
             if(priority(own)<current.priority()) {
                 current=new Choice(current.file(),own,priority(own),current.characters(),false);choices.put(p,current);
             }
-            var refs=references(p,text,specs);edges.put(p,refs);
+            var refs=references(p,text,specs,packages);edges.put(p,refs);
             if(current.priority()<3)for(String target:refs) {
                 var old=choices.get(target);int depth=current.priority()+1;
                 if(old.priority()>depth) {
@@ -129,17 +138,28 @@ final class TypeScriptSourceSelector {
         if(text.stripLeading().startsWith("'use server'")||text.stripLeading().startsWith("\"use server\""))return "TS_SERVER_DIRECTIVE_HINT";
         return "TS_DETERMINISTIC_FALLBACK";
     }
-    private static Set<String> references(String p,String text,Map<String,String> specs) {
+    private static Set<String> references(String p,String text,Map<String,String> specs,Map<String,Map<String,String>> packages) {
         var refs=new TreeSet<String>();var m=IMPORT.matcher(text);
         while(m.find()) {
             String base=Path.of(p).getParent()==null?m.group(1):Path.of(p).getParent().resolve(m.group(1)).toString();
             base=Path.of(base).normalize().toString().replace('\\','/');
             if(base.startsWith("../")||base.startsWith("/"))continue;
-            for(String key:List.of(base,base.replaceFirst("\\.js$",".ts"),base+"/index")) {
-                String target=specs.get(key);if(target!=null){refs.add(target);break;}
-            }
+            String target=resolveHint(base,specs,packages);if(target!=null)refs.add(target);
         }
         return refs;
+    }
+    private static String resolveHint(String base,Map<String,String> specs,Map<String,Map<String,String>> packages){
+        for(String key:List.of(base,base+".js",base.replaceFirst("\\.js$",".ts"))){String target=specs.get(key);if(target!=null)return target;}
+        var metadata=packages.get(Path.of(base).resolve("package.json").normalize().toString().replace('\\','/'));
+        if(metadata!=null){
+            if(!"PARSED".equals(metadata.get("resolutionStatus"))||"UNKNOWN".equals(metadata.get("mainStatus")))return null;
+            if("STATIC".equals(metadata.get("mainStatus"))){
+                String main=Path.of(base).resolve(metadata.get("main")).normalize().toString().replace('\\','/');
+                if(main.equals("..")||main.startsWith("../")||main.startsWith("/"))return null;
+                for(String key:List.of(main,main+".js",Path.of(main).resolve("index").toString().replace('\\','/'))){String target=specs.get(key);if(target!=null)return target;}
+            }
+        }
+        return specs.get(Path.of(base).resolve("index").normalize().toString().replace('\\','/'));
     }
     private static int convention(String p){return p.matches("(?:.*/)?supabase/functions/.*|(?:.*/)?app/(?:[^/]+/)*route\\.[jt]s")?0:1;}
     private static int length(ProjectFile f){long n=f.lines().stream().mapToLong(l->l.length()+1L).sum();return (int)Math.min(n,Integer.MAX_VALUE);}

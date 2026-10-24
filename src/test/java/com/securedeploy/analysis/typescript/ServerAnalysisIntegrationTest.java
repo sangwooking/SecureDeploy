@@ -320,7 +320,7 @@ class ServerAnalysisIntegrationTest {
     }
 
     @Test void expressCommonInputsStoreReviewOnlyCandidatesAndPreserveHistoricalRisk() throws Exception {
-        String token=signup();String code="const web=require('./web');const app=web();const router=web.Router();router.post('/run',(req,res)=>{eval(req.body.code);});app.use('/api',router);";
+        String token=signup();String code="const web=require('./web.cjs');const app=web();const router=web.Router();router.post('/run',(req,res)=>{eval(req.body.code);});app.use('/api',router);";
         String web="const express=require('express');module.exports=function(){return express();};module.exports.Router=()=>express.Router();";
         String auth="const passport=require('passport');const Bearer=require('passport-http-bearer').Strategy;const handlers=module.exports;handlers.verify=(token,done)=>done(null,false);handlers.setup=()=>passport.use(new Bearer(handlers.verify));";
         var sources=Map.of("server.cjs",code,"web.cjs",web,"auth.cjs",auth);
@@ -350,6 +350,29 @@ class ServerAnalysisIntegrationTest {
         stored.put("analyzerVersion","ts-server-v6");jdbc.update("update reviews set server_analysis_json=? where id=?",json.writeValueAsString(stored),id);entities.clear();
         assertThat(detail(token,id).at("/serverAnalysis/nodeUses").isNull()).isTrue();
         assertThat(detail(token,id).at("/serverAnalysis/analyzerVersion").asText()).isEqualTo("ts-server-v6");
+    }
+
+    @Test void commonJsDirectoryMainUsesSameZipPublicAndPrivateAnalysis() throws Exception {
+        String token=signup();
+        var sources=Map.of("package.json","{\"main\":\"transport/entry.cjs\",\"scripts\":{\"start\":\"node launch.js\"}}",
+                "launch.js","const start=require('.');start();",
+                "transport/entry.cjs","const express=require('express');module.exports=()=>{const app=express();app.post('/',(req,res)=>eval(req.body.code));return app;};");
+        var zip=uploadSources(token,sources);
+        assertThat(zip.at("/serverAnalysis/validatedFindings/0/ruleId").asText()).isEqualTo("JS_EVAL_INPUT_FLOW");
+        assertThat(zip.at("/serverAnalysis/validatedFindings/0/comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        assertThat(zip.path("serverAnalysis").toString()).contains("TS_NODE_MANIFEST_ENTRY_HINT","NODE_COMMONJS_DIRECTORY_SOURCE_LINK");
+        Path pub=Files.createDirectory(temp.resolve("directory-public")),prv=Files.createDirectory(temp.resolve("directory-private"));
+        for(var root:List.of(pub,prv))for(var entry:sources.entrySet()){
+            Path target=root.resolve(entry.getKey());Files.createDirectories(target.getParent());Files.writeString(target,entry.getValue());
+        }
+        when(github.clonePublicRepository(anyString())).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/directory",pub,pub));
+        var publicResult=postJson("/api/reviews/github",token,"{\"repositoryUrl\":\"https://github.com/fixture/directory\",\"scanMode\":\"STANDARD\"}");
+        var meta=new GitHubSourceSnapshot("fixture","directory","https://github.com/fixture/directory","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(123L,456L,true);
+        when(connected.collect(anyLong(),eq(456L),eq(123L))).thenReturn(new ClonedRepository("fixture","https://github.com/fixture/directory",prv,prv,meta));
+        var privateResult=postJson("/api/reviews/github/connected",token,"{\"repositoryId\":123,\"installationId\":456,\"scanMode\":\"STANDARD\"}");
+        for(var value:List.of(publicResult,privateResult))assertThat(value.path("serverAnalysis")).isEqualTo(zip.path("serverAnalysis"));
+        assertThat(pub).doesNotExist();assertThat(prv).doesNotExist();
+        mvc.perform(get("/api/reviews/"+zip.path("reviewId").asLong()).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
     }
 
     @Test void mongoProvenanceSharesAllSourcesAndPersistsOriginWithoutPromotingRisk() throws Exception {

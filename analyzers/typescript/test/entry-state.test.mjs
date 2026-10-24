@@ -51,7 +51,7 @@ test('runtime relative require uses the same entry graph as a captured import',(
       app.get('/query',(req,res)=>{const second=require('./holder');unknownMutation(second);
         return holder.collection('items').find({$where:req.query.code}).toArray();});
       app.get('/clean',(req,res)=>holder.collection('items').find({$where:req.query.code}).toArray());`},
-    {filePath:'holder.cjs',content:`const {MongoClient}=require('mongodb');const client=new MongoClient('unused');module.exports=client.db('test');`}],
+    {filePath:'holder.js',content:`const {MongoClient}=require('mongodb');const client=new MongoClient('unused');module.exports=client.db('test');`}],
     nodeManifests:[{filePath:'package.json',mongodb:'4.0.0'}]});
   assert.equal(confirmed(r),1);
 });

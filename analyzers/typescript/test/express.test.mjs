@@ -29,9 +29,9 @@ test('static Router mount and ESM module handler preserve source and destination
 });
 test('CommonJS registration, constructor member and DAO closure connect only static Mongo collection calls', () => {
   const r=run(express(`const routes=require('./routes');const MongoClient=require('mongodb').MongoClient;MongoClient.connect('unused',(err,db)=>{routes(app,db)});`),[
-    {filePath:'routes.cjs',content:`const Handler=require('./handler');module.exports=(app,db)=>{const h=new Handler(db);app.get('/items/:id',h.show);};`},
-    {filePath:'handler.cjs',content:`const Store=require('./store').Store;function Handler(db){const store=new Store(db);this.show=(req,res)=>store.find(req.query.limit)}module.exports=Handler;`},
-    {filePath:'store.cjs',content:`function Store(db){const collection=db.collection('items');this.find=(value)=>{const query=()=>({$where:'this.amount > '+value});return collection.find(query()).toArray();};}module.exports.Store=Store;`},
+    {filePath:'routes.js',content:`const Handler=require('./handler');module.exports=(app,db)=>{const h=new Handler(db);app.get('/items/:id',h.show);};`},
+    {filePath:'handler.js',content:`const Store=require('./store').Store;function Handler(db){const store=new Store(db);this.show=(req,res)=>store.find(req.query.limit)}module.exports=Handler;`},
+    {filePath:'store.js',content:`function Store(db){const collection=db.collection('items');this.find=(value)=>{const query=()=>({$where:'this.amount > '+value});return collection.find(query()).toArray();};}module.exports.Store=Store;`},
   ]);
   assert.equal(strong(r).length,1);assert.equal(strong(r)[0].ruleId,'JS_MONGO_WHERE_INPUT_FLOW');
   assert.equal(strong(r)[0].kind,'CWE-943');assert.ok(strong(r)[0].flow.some(l=>l.kind==='FUNCTION_ARGUMENT'));

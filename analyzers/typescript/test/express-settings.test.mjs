@@ -16,8 +16,8 @@ test('setting reads after registration do not invalidate the known Express recei
 });
 test('settings getter aliases preserve a mounted router and relative helper',()=>{
  const r=run(pre+"const alias=app;const router=require('./router');alias.use('/api',router);alias.get('port');",[
-  {filePath:'router.cjs',content:"const router=require('express').Router();const {handle}=require('./logic');router.post('/work',handle);module.exports=router;"},
-  {filePath:'logic.cjs',content:"exports.handle=(req,res)=>eval(req.body.value);"}]);
+  {filePath:'router.js',content:"const router=require('express').Router();const {handle}=require('./logic');router.post('/work',handle);module.exports=router;"},
+  {filePath:'logic.js',content:"exports.handle=(req,res)=>eval(req.body.value);"}]);
  assert.equal(count(r),1);assert.equal(r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW'&&f.confidence==='HIGH').length,1);
 });
 for(const [name,body]of [

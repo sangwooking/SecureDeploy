@@ -1,11 +1,13 @@
 import path from 'node:path';
 import {constructorSummaries} from './constructor-summary.mjs';
 import {sequelizeContracts} from './sequelize.mjs';
+import {moduleResolution} from './module-resolution.mjs';
 
 // Library contracts over AST values only. Never require/import/eval target modules.
 export function nodeServer(api) {
   const {ts,modules,limits,result,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames}=api;
   const loaded=new Map(), loading=new Set(), apps=[], routes=[];
+  const resolver=moduleResolution(api);
   const object=tag=>value(tag,[],{ref:{properties:new Map(),trace:[],unknown:false,nodeIdentity:{}}});
   const literal=v=>v?.tag==='constant'&&!v.unknown;
   const context=()=>({setup:true,checks:[],defenses:[],resources:[]});
@@ -40,22 +42,14 @@ export function nodeServer(api) {
   };
   const summaries=constructorSummaries({...api,functionValue,object,validMongo});
   const sequelize=sequelizeContracts({...api,object,native,findModule,observe});
-  function findModule(mod,spec) {
-    if(!spec.startsWith('.')||spec.includes('\\')||spec.includes('\0'))return;
-    const base=path.posix.normalize(path.posix.join(path.posix.dirname(mod.filePath),spec));
-    if(base.startsWith('../'))return;
-    const choices=[base,...['.js','.mjs','.cjs','.ts'].map(e=>base+e),...['js','mjs','cjs','ts'].map(e=>base+'/index.'+e)];
-    const matches=[...new Set(choices.filter(p=>modules.has(p)))];
-    if(matches.length!==1)note(mod,matches.length?'CALL_TARGET_UNKNOWN':'CONTEXT_MISSING');
-    return matches.length===1?modules.get(matches[0]):undefined;
-  }
-  function dependency(mod,spec) {
+  function findModule(mod,spec,mode='require') { return resolver.resolve(mod,spec,mode); }
+  function dependency(mod,spec,mode='require') {
     if(spec==='express')return native('express',mod);
     if(spec==='mongodb')return native('mongodb',mod);
     if(spec==='sequelize')return native('sequelize',mod);
     if(['child_process','node:child_process'].includes(spec))return native('node-child-process',mod);
     if(['http','node:http','https','node:https'].includes(spec))return native('node-http',mod);
-    const target=findModule(mod,spec);
+    const target=findModule(mod,spec,mode);
     if(!target){
       note(mod,'NODE_MODULE_RESOLUTION_UNKNOWN');
       if(!spec.startsWith('.')){
@@ -77,7 +71,7 @@ export function nodeServer(api) {
     try {
       for(const [name,fn]of mod.functions)if(typeof name==='string')state.vars.set(name,{...object('function'),target:{...fn,nodeMode:true,closure:state.vars}});
       for(const s of mod.ast.statements)if(ts.isImportDeclaration(s)&&ts.isStringLiteral(s.moduleSpecifier)&&!s.importClause?.isTypeOnly) {
-        const imported=dependency(mod,s.moduleSpecifier.text);
+        const imported=dependency(mod,s.moduleSpecifier.text,'import');
         if(s.importClause?.name)state.vars.set(s.importClause.name.text,imported.native==='express'?imported:imported.ref?.properties.get('default')??imported);
         const bindings=s.importClause?.namedBindings;
         if(bindings&&ts.isNamedImports(bindings))for(const e of bindings.elements){if(e.isTypeOnly)continue;const key=e.propertyName?.text??e.name.text;state.vars.set(e.name.text,property(imported,key,e,state)??imported.ref?.properties.get(key)??unknown());}
@@ -310,19 +304,19 @@ export function nodeServer(api) {
     const roots=new Set(),parents=new Map();
     for(const mod of modules.values()) {
       let root=false;
-      const dependencyEdge=spec=>{
+      const dependencyEdge=(spec,mode)=>{
         if(spec==='express')root=true;
         if(['koa','@koa/router','koa-compose'].includes(spec))note(mod,'FRAMEWORK_NOT_SUPPORTED');
         if(!spec.startsWith('.'))return;
-        const child=findModule(mod,spec);
+        const child=findModule(mod,spec,mode);
         if(!child)return;
         if(!parents.has(child))parents.set(child,new Set());parents.get(child).add(mod);
       };
-      const scan=node=>{tick(mod);if(ts.isImportDeclaration(node)&&ts.isStringLiteral(node.moduleSpecifier)&&!node.importClause?.isTypeOnly)dependencyEdge(node.moduleSpecifier.text);
-        if(ts.isCallExpression(node)&&ts.isIdentifier(node.expression)&&node.expression.text==='require'&&node.arguments.length===1&&ts.isStringLiteral(node.arguments[0]))dependencyEdge(node.arguments[0].text);
+      const scan=node=>{tick(mod);if(ts.isImportDeclaration(node)&&ts.isStringLiteral(node.moduleSpecifier)&&!node.importClause?.isTypeOnly)dependencyEdge(node.moduleSpecifier.text,'import');
+        if(ts.isCallExpression(node)&&ts.isIdentifier(node.expression)&&node.expression.text==='require'&&node.arguments.length===1&&ts.isStringLiteral(node.arguments[0]))dependencyEdge(node.arguments[0].text,'require');
         ts.forEachChild(node,scan);};
       try{
-        if(mod.syntaxIndex)for(const edge of mod.syntaxIndex.dependencies){tick(mod);dependencyEdge(edge.spec);}
+        if(mod.syntaxIndex)for(const edge of mod.syntaxIndex.dependencies){tick(mod);dependencyEdge(edge.spec,edge.mode??'require');}
         else scan(mod.ast);
         if(root)roots.add(mod);
       }catch{note(mod,'NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED');}

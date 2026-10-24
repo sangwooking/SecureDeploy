@@ -7,6 +7,37 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TypeScriptSourceSelectorTest {
+    @Test void manifestHintsProtectArbitraryStartFilesAndImportsUnderPressure(){
+        var files=new ArrayList<ProjectFile>();
+        for(int i=0;i<180;i++)files.add(js("aaa/Panel%03d.js".formatted(i),"export const label=1;"));
+        files.add(js("package.json","{\"main\":\"runtime/launch.js\",\"scripts\":{\"start\":\"node tools/run.cjs\",\"dev\":\"NODE_ENV=x node ignored.js\"}}"));
+        files.add(js("runtime/launch.js","const start=require('../server');module.exports=start;"));
+        files.add(js("tools/run.cjs","require('../runtime/launch.js');"));
+        files.add(js("server/index.js","const handle=require('./helper');module.exports=handle;"));
+        files.add(js("server/helper.js","module.exports=()=>1;"));
+        files.add(js("ignored.js","module.exports=()=>1;"));
+        var plan=TypeScriptSourceSelector.select(files);
+        assertThat(plan.selected()).hasSize(100);
+        assertThat(plan.selected()).extracting(c->c.file().relativePath()).contains("runtime/launch.js","tools/run.cjs","server/index.js","server/helper.js");
+        assertThat(plan.selected()).filteredOn(c->List.of("runtime/launch.js","tools/run.cjs").contains(c.file().relativePath()))
+                .allSatisfy(c->assertThat(c.reason()).isEqualTo("TS_NODE_MANIFEST_ENTRY_HINT"));
+        Collections.shuffle(files,new Random(779));assertThat(TypeScriptSourceSelector.select(files)).isEqualTo(plan);
+    }
+    @Test void untrustedManifestSyntaxCannotInventAnEntryHint(){
+        for(String text:List.of("{","{\"main\":\"a.js\",\"main\":\"b.js\"}","{\"main\":\"../../escape.js\"}",
+                "{\"main\":{},\"scripts\":{\"start\":\"node ${TARGET}\",\"dev\":\"nodemon app.js\",\"test\":\"node app.js && node other.js\"}}")) {
+            var plan=TypeScriptSourceSelector.select(List.of(js("package.json",text),js("app.js","export const a=1;")));
+            assertThat(plan.selected()).noneMatch(c->c.reason().equals("TS_NODE_MANIFEST_ENTRY_HINT"));
+        }
+    }
+    @Test void nestedManifestPathsAndMainWithoutExtensionStayWithinExistingCharacterCaps(){
+        var plan=TypeScriptSourceSelector.select(List.of(js("api/package.json","{\"main\":\"./start\",\"scripts\":{\"start\":\"node ./serve.js\"}}"),
+                js("api/start.js","module.exports={};"),js("api/serve.js","module.exports={};")));
+        assertThat(plan.selected()).allSatisfy(c->assertThat(c.reason()).isEqualTo("TS_NODE_MANIFEST_ENTRY_HINT"));
+        assertThat(plan.coverage().submittedCharacters()).isLessThanOrEqualTo(1_000_000);
+        var metadata=NodeManifestMetadata.read(List.of(js("package.json","{\"main\":{},\"type\":\"module\"}")));
+        assertThat(metadata.worker().get(0)).containsEntry("mainStatus","UNKNOWN").containsEntry("moduleType","module");
+    }
     @Test void typeReferencesAreNotRuntimeSeedsAndEducationalMarkersDoNotExcludeLiveCode(){
         var plan=TypeScriptSourceSelector.select(List.of(
                 js("checks/example.ts","import type { Express } from 'express';export const example=1;"),

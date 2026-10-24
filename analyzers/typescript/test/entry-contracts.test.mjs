@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {analyze} from '../analyzer.mjs';
 
 const run=(main,extra=[],limits)=>analyze({files:[{filePath:'main.cjs',content:main},...extra]},limits);
-const wrapper={filePath:'lib/web.cjs',content:`const express=require('express');
+const wrapper={filePath:'lib/web.js',content:`const express=require('express');
   module.exports=function(){return express();};
   module.exports.Router=()=>{const router=express.Router();return router;};`};
 const high=r=>r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW'&&f.confidence==='HIGH');
@@ -39,8 +39,8 @@ test('partial imports and bounded importer depth remain uninspected, not fabrica
   const missing=run(`const web=require('./missing');const app=web();app.get('/',(req,res)=>eval(req.query.code));`);
   assert.equal(high(missing).length,0);assert.ok(missing.files.some(f=>f.limitations.includes('CONTEXT_MISSING')));
   const deep=run(`const web=require('./one');web();`,[
-    {filePath:'one.cjs',content:`module.exports=require('./two');`},
-    {filePath:'two.cjs',content:`module.exports=require('./lib/web');`},wrapper],{maxDepth:1});
+    {filePath:'one.js',content:`module.exports=require('./two');`},
+    {filePath:'two.js',content:`module.exports=require('./lib/web');`},wrapper],{maxDepth:1});
   assert.equal(high(deep).length,0);assert.ok(deep.files.some(f=>f.limitations.some(l=>l.includes('DEPTH'))));
 });
 

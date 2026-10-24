@@ -67,20 +67,7 @@ public class TypeScriptServerAnalyzer {
             if (!Files.isRegularFile(directory.resolve("worker.mjs"))
                     || !Files.isRegularFile(directory.resolve("node_modules/typescript/lib/typescript.js")))
                 return ServerAnalysisSnapshot.unavailable("UNAVAILABLE", unavailableFiles, "TRUSTED_PARSER_NOT_INSTALLED");
-            var manifests=new ArrayList<Map<String,String>>();
-            for(var file:project.analysisFiles().stream().sorted(Comparator.comparing(f->f.relativePath())).toList())if(file.relativePath().endsWith("package.json")&&manifests.size()<100
-                    &&file.lines().stream().mapToLong(String::length).sum()<100_000) {
-                try {
-                    var document=mapper.readTree(String.join("\n",file.lines()));var manifest=new HashMap<String,String>();
-                    String path=CoverageRecorder.safePath(file.relativePath());if(path.equals("[redacted-path]"))continue;
-                    manifest.put("filePath",path);
-                    for(String name:List.of("express","mongodb","next","sequelize")) {
-                        String version=document.path("dependencies").path(name).asText("");
-                        if(version.length()<=80&&version.matches("[~^]?[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?"))manifest.put(name,version);
-                    }
-                    manifests.add(manifest);
-                }catch(Exception ignored){/* A malformed manifest cannot establish a driver API contract. */}
-            }
+            var manifests=NodeManifestMetadata.read(project.analysisFiles()).worker();
             var denoConfigs=new ArrayList<Map<String,Object>>();
             for(var file:project.analysisFiles().stream().sorted(Comparator.comparing(f->f.relativePath())).toList())if(file.relativePath().matches("(?:.*/)?supabase/config\\.toml") && denoConfigs.size()<20
                     &&file.lines().stream().mapToLong(String::length).sum()<100_000) {
@@ -190,7 +177,7 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v21".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v22".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200
