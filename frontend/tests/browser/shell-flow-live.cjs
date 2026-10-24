@@ -5,6 +5,7 @@ const {resultView}=require('./editor-navigation.cjs');
 const origin=process.env.FRONTEND_ORIGIN||'http://127.0.0.1:5174',api='http://127.0.0.1:8085';
 const sql=process.env.FLOW_KIND==='sequelize';
 const regex=process.env.FLOW_KIND==='regex';
+const directory=process.env.FLOW_KIND==='directory';
 (async()=>{const browser=await chromium.launch(),http=await request.newContext({baseURL:api});
 try{
  const signup=await http.post('/api/auth/signup',{data:{email:`shell-${Date.now()}@example.invalid`,name:'synthetic',password:'Synthetic-Local-813!'}});
@@ -18,6 +19,13 @@ try{
   if(sql){
    files['store/index.js']="const fs=require('fs');const path=require('path');const E=require('sequelize');const connection=new E('unused');const db={};fs.readdirSync(__dirname).filter(function(file){return(file.indexOf('.')!==0)&&(file!=='index.js');}).forEach(function(file){var model=connection.import(path.join(__dirname,file));db[model.name]=model;});db.sequelize=connection;module.exports=db;";
    files['store/item.js']="module.exports=function(c,T){return c.define('Item',{id:{type:T.INTEGER}});};";
+  }
+  let findingFile='server.cjs';
+  if(directory){
+   files['package.json']=JSON.stringify({main:'runtime/transport.cjs',scripts:{start:'node launch.js'},dependencies:{express:'4.21.2'}});
+   files['runtime/transport.cjs']='module.exports=()=>{'+files['server.cjs']+'return app;};';
+   files['launch.js']="const create=require('.');create();";
+   delete files['server.cjs'];findingFile='runtime/transport.cjs';
   }
   const zip=execFileSync('python3',['-c',"import io,sys,json,zipfile\nb=io.BytesIO()\nwith zipfile.ZipFile(b,'w',zipfile.ZIP_DEFLATED) as z:\n for p,s in json.load(sys.stdin).items(): z.writestr(p,s)\nsys.stdout.buffer.write(b.getvalue())"],{input:JSON.stringify(files)});
   const response=await http.post('/api/reviews/upload',{headers,multipart:{scanMode:'STANDARD',file:{name:'synthetic.zip',mimeType:'application/zip',buffer:zip}}});
@@ -38,7 +46,7 @@ try{
    }if(u.origin===origin)return r.continue();outbound.push(u.origin);return r.abort();});
    await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);await resultView(page,'배포 전 직접 확인할 부분');
    const section=page.getByLabel('서버 코드 흐름 검사',{exact:true});await section.waitFor();
-   assert.ok((await section.innerText()).includes(sql?'실행 문자열':'명령 문자열'));assert.ok((await section.innerText()).includes('server.cjs:1'));
+   assert.ok((await section.innerText()).includes(sql?'실행 문자열':'명령 문자열'));assert.ok((await section.innerText()).includes(findingFile+':1'));
    const details=section.locator('.flow-action-details > summary').first();await details.focus();await page.keyboard.press('Enter');
    assert.ok(await section.getByLabel('기록된 코드 전달 경로').first().isVisible());
    assert.ok((await section.innerText()).includes('요청 본문'));assert.ok((await section.innerText()).includes(sql?'CWE-89':'CWE-78'));

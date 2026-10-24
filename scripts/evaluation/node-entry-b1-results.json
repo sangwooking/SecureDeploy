@@ -1,0 +1,1659 @@
+{
+  "schemaVersion": 1,
+  "baseline": "effdc2d88f292628417df34c63b59290fff4767b",
+  "worker": "ts-server-v22",
+  "projects": [
+    {
+      "project": "JasonEtco--flintcms",
+      "sha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "dc95cfc9fd320c7080b4e13bf1123ceeb52e4c29f826dd50194e9852ffbe39cc",
+      "before": {
+        "entries": 0,
+        "findings": [],
+        "selected": 100,
+        "parsed": 100,
+        "selectedCharacters": 149214,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 24002,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 10547,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 31,
+          "STEPS_ENTRY_DISCOVERY": 10516,
+          "STEPS_FLOW": 0,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 20,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 38,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 99,
+          "CALL_TARGET_UNRESOLVED": 16,
+          "CONTEXT_MISSING": 53,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "UNMOUNTED_ROUTER_NOT_ANALYZED": 1,
+          "EXTERNAL_PROPERTY_WRITE_SCOPED_UNKNOWN": 1,
+          "NODE_INITIALIZATION_STRUCTURE_UNKNOWN": 1,
+          "PROPERTY_WRITE_UNRESOLVED": 1,
+          "OBJECT_MEMBER_UNRESOLVED": 1,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 1,
+          "SWITCH_FLOW_PARTIAL": 1,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 7,
+          "SOURCE_FILE_COUNT_LIMIT": 100
+        },
+        "manifestSelected": [],
+        "score": 30,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "after": {
+        "entries": 0,
+        "findings": [],
+        "selected": 100,
+        "parsed": 100,
+        "selectedCharacters": 144881,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 22632,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 17327,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 31,
+          "STEPS_ENTRY_DISCOVERY": 17296,
+          "STEPS_FLOW": 0,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 32,
+          "EXPRESSION_UNSUPPORTED": 1,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 39,
+          "NODE_COMMONJS_DIRECTORY_SOURCE_LINK": 9,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 57,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 98,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 2,
+          "PROPERTY_WRITE_UNRESOLVED": 11,
+          "NODE_MODULE_TARGET_NOT_INSPECTED": 30,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "UNMOUNTED_ROUTER_NOT_ANALYZED": 1,
+          "SWITCH_FLOW_PARTIAL": 1,
+          "NODE_INITIALIZATION_STRUCTURE_UNKNOWN": 2,
+          "NODE_ESM_DIRECTORY_OR_TARGET_NOT_SUPPORTED": 15,
+          "EXTERNAL_PROPERTY_WRITE_SCOPED_UNKNOWN": 1,
+          "OBJECT_MEMBER_UNRESOLVED": 1,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 3,
+          "SOURCE_FILE_COUNT_LIMIT": 100
+        },
+        "manifestSelected": [
+          "index.js"
+        ],
+        "score": 30,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        703,
+        511
+      ],
+      "sampledParentHeapBytes": [
+        79066128,
+        97527224
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    },
+    {
+      "project": "JasonEtco--flintcms",
+      "sha": "4ae34238ce39fde00dfa15082397541758c07af1",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "72723f8f8219dadea2c62c9ca643c20d28dde48b22c610c3b68571738a2d9992",
+      "before": {
+        "entries": 0,
+        "findings": [],
+        "selected": 100,
+        "parsed": 100,
+        "selectedCharacters": 149261,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 24013,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 10591,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 31,
+          "STEPS_ENTRY_DISCOVERY": 10560,
+          "STEPS_FLOW": 0,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 20,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 38,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 99,
+          "CALL_TARGET_UNRESOLVED": 16,
+          "CONTEXT_MISSING": 53,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "UNMOUNTED_ROUTER_NOT_ANALYZED": 1,
+          "EXTERNAL_PROPERTY_WRITE_SCOPED_UNKNOWN": 1,
+          "NODE_INITIALIZATION_STRUCTURE_UNKNOWN": 1,
+          "PROPERTY_WRITE_UNRESOLVED": 1,
+          "OBJECT_MEMBER_UNRESOLVED": 1,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 1,
+          "SWITCH_FLOW_PARTIAL": 1,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 7,
+          "SOURCE_FILE_COUNT_LIMIT": 100
+        },
+        "manifestSelected": [],
+        "score": 30,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "after": {
+        "entries": 0,
+        "findings": [],
+        "selected": 100,
+        "parsed": 100,
+        "selectedCharacters": 144928,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 22643,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 17371,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 31,
+          "STEPS_ENTRY_DISCOVERY": 17340,
+          "STEPS_FLOW": 0,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 32,
+          "EXPRESSION_UNSUPPORTED": 1,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 39,
+          "NODE_COMMONJS_DIRECTORY_SOURCE_LINK": 9,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 57,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 98,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 2,
+          "PROPERTY_WRITE_UNRESOLVED": 11,
+          "NODE_MODULE_TARGET_NOT_INSPECTED": 30,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "UNMOUNTED_ROUTER_NOT_ANALYZED": 1,
+          "SWITCH_FLOW_PARTIAL": 1,
+          "NODE_INITIALIZATION_STRUCTURE_UNKNOWN": 2,
+          "NODE_ESM_DIRECTORY_OR_TARGET_NOT_SUPPORTED": 15,
+          "EXTERNAL_PROPERTY_WRITE_SCOPED_UNKNOWN": 1,
+          "OBJECT_MEMBER_UNRESOLVED": 1,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 3,
+          "SOURCE_FILE_COUNT_LIMIT": 100
+        },
+        "manifestSelected": [
+          "index.js"
+        ],
+        "score": 30,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        682,
+        508
+      ],
+      "sampledParentHeapBytes": [
+        109379144,
+        111760400
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    },
+    {
+      "project": "appsecco--dvna",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "654470a58d8a7e4e19f95347b58bd35a493d56c0dfd8dcbdfd6bbba43af0467b",
+      "before": {
+        "entries": 30,
+        "findings": [
+          [
+            "JS_SEQUELIZE_SQL_INPUT_FLOW",
+            "core/appHandler.js",
+            11,
+            2
+          ],
+          [
+            "JS_SHELL_COMMAND_INPUT_FLOW",
+            "core/appHandler.js",
+            39,
+            2
+          ]
+        ],
+        "selected": 14,
+        "parsed": 14,
+        "selectedCharacters": 144241,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 53184,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 35093,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 0,
+          "STEPS_ENTRY_DISCOVERY": 8399,
+          "STEPS_FLOW": 26694,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 4,
+          "EXPRESS_RESPONSE_RENDER_OR_REDIRECT_NOT_MODELED": 4,
+          "MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED": 4,
+          "CALL_TARGET_UNRESOLVED": 5,
+          "DYNAMIC_PROPERTY_UNRESOLVED": 1,
+          "EXPRESS_HANDLER_UNKNOWN": 1,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 4,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 4,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 9,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 3,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 3,
+          "EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED": 1,
+          "PROPERTY_WRITE_UNRESOLVED": 1,
+          "VAR_HOISTING_PARTIAL": 2,
+          "SEQUELIZE_INITIALIZATION_SUMMARY_NOT_RUNTIME_EXECUTION": 1
+        },
+        "manifestSelected": [],
+        "score": 79,
+        "coverage": "PARTIAL",
+        "risk": "BLOCKED"
+      },
+      "after": {
+        "entries": 30,
+        "findings": [
+          [
+            "JS_SEQUELIZE_SQL_INPUT_FLOW",
+            "core/appHandler.js",
+            11,
+            2
+          ],
+          [
+            "JS_SHELL_COMMAND_INPUT_FLOW",
+            "core/appHandler.js",
+            39,
+            2
+          ]
+        ],
+        "selected": 14,
+        "parsed": 14,
+        "selectedCharacters": 144241,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 53184,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 35205,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 0,
+          "STEPS_ENTRY_DISCOVERY": 8511,
+          "STEPS_FLOW": 26694,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 4,
+          "EXPRESS_RESPONSE_RENDER_OR_REDIRECT_NOT_MODELED": 4,
+          "MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED": 4,
+          "CALL_TARGET_UNRESOLVED": 5,
+          "DYNAMIC_PROPERTY_UNRESOLVED": 1,
+          "EXPRESS_HANDLER_UNKNOWN": 1,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 4,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 4,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 9,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 3,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 3,
+          "EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED": 1,
+          "NODE_COMMONJS_DIRECTORY_SOURCE_LINK": 3,
+          "PROPERTY_WRITE_UNRESOLVED": 1,
+          "VAR_HOISTING_PARTIAL": 2,
+          "SEQUELIZE_INITIALIZATION_SUMMARY_NOT_RUNTIME_EXECUTION": 1
+        },
+        "manifestSelected": [],
+        "score": 79,
+        "coverage": "PARTIAL",
+        "risk": "BLOCKED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        585,
+        482
+      ],
+      "sampledParentHeapBytes": [
+        60063544,
+        70549304
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    },
+    {
+      "project": "appsecco--dvna",
+      "sha": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "11df2baef2708d196e826cfd14d822dfc169de6154075f126eef8565ba912f58",
+      "before": {
+        "entries": 30,
+        "findings": [
+          [
+            "JS_SEQUELIZE_SQL_INPUT_FLOW",
+            "core/appHandler.js",
+            11,
+            2
+          ],
+          [
+            "JS_SHELL_COMMAND_INPUT_FLOW",
+            "core/appHandler.js",
+            39,
+            2
+          ]
+        ],
+        "selected": 14,
+        "parsed": 14,
+        "selectedCharacters": 144999,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 53328,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 35923,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 0,
+          "STEPS_ENTRY_DISCOVERY": 8801,
+          "STEPS_FLOW": 27122,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 4,
+          "EXPRESS_RESPONSE_RENDER_OR_REDIRECT_NOT_MODELED": 4,
+          "MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED": 4,
+          "CALL_TARGET_UNRESOLVED": 5,
+          "DYNAMIC_PROPERTY_UNRESOLVED": 1,
+          "EXPRESS_HANDLER_UNKNOWN": 1,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 5,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 5,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 3,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 9,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 3,
+          "EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED": 1,
+          "PROPERTY_WRITE_UNRESOLVED": 1,
+          "VAR_HOISTING_PARTIAL": 2,
+          "SEQUELIZE_INITIALIZATION_SUMMARY_NOT_RUNTIME_EXECUTION": 1
+        },
+        "manifestSelected": [],
+        "score": 79,
+        "coverage": "PARTIAL",
+        "risk": "BLOCKED"
+      },
+      "after": {
+        "entries": 30,
+        "findings": [
+          [
+            "JS_SEQUELIZE_SQL_INPUT_FLOW",
+            "core/appHandler.js",
+            11,
+            2
+          ],
+          [
+            "JS_SHELL_COMMAND_INPUT_FLOW",
+            "core/appHandler.js",
+            39,
+            2
+          ]
+        ],
+        "selected": 14,
+        "parsed": 14,
+        "selectedCharacters": 144999,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 53328,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 36035,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 0,
+          "STEPS_ENTRY_DISCOVERY": 8913,
+          "STEPS_FLOW": 27122,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 4,
+          "EXPRESS_RESPONSE_RENDER_OR_REDIRECT_NOT_MODELED": 4,
+          "MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED": 4,
+          "CALL_TARGET_UNRESOLVED": 5,
+          "DYNAMIC_PROPERTY_UNRESOLVED": 1,
+          "EXPRESS_HANDLER_UNKNOWN": 1,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 5,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 5,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 3,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 9,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 3,
+          "EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED": 1,
+          "NODE_COMMONJS_DIRECTORY_SOURCE_LINK": 3,
+          "PROPERTY_WRITE_UNRESOLVED": 1,
+          "VAR_HOISTING_PARTIAL": 2,
+          "SEQUELIZE_INITIALIZATION_SUMMARY_NOT_RUNTIME_EXECUTION": 1
+        },
+        "manifestSelected": [],
+        "score": 79,
+        "coverage": "PARTIAL",
+        "risk": "BLOCKED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        582,
+        482
+      ],
+      "sampledParentHeapBytes": [
+        60954512,
+        70391696
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    },
+    {
+      "project": "appsecco--dvna",
+      "sha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "8416b7e5da80d5e932e607e4e053d958d6f77129c5a40b331ccabe0a9ad4619c",
+      "before": {
+        "entries": 28,
+        "findings": [],
+        "selected": 16,
+        "parsed": 16,
+        "selectedCharacters": 149213,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 54052,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 51825,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 0,
+          "STEPS_ENTRY_DISCOVERY": 10048,
+          "STEPS_FLOW": 41777,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 8,
+          "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 4,
+          "EXPRESS_RESPONSE_RENDER_OR_REDIRECT_NOT_MODELED": 4,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 7,
+          "MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED": 4,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 7,
+          "DYNAMIC_PROPERTY_UNRESOLVED": 1,
+          "EXPRESS_HANDLER_UNKNOWN": 1,
+          "EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED": 2,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 4,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 10,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 3,
+          "EXCEPTION_FLOW_PARTIAL": 1,
+          "NODE_PROCESS_ARGV_NOT_WHOLE_OPERATION_SAFETY": 1,
+          "PROPERTY_WRITE_UNRESOLVED": 1,
+          "VAR_HOISTING_PARTIAL": 1,
+          "SEQUELIZE_INITIALIZATION_SUMMARY_NOT_RUNTIME_EXECUTION": 1
+        },
+        "manifestSelected": [],
+        "score": 93,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "after": {
+        "entries": 28,
+        "findings": [],
+        "selected": 16,
+        "parsed": 16,
+        "selectedCharacters": 149213,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 54052,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 51969,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 0,
+          "STEPS_ENTRY_DISCOVERY": 10192,
+          "STEPS_FLOW": 41777,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 8,
+          "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 4,
+          "EXPRESS_RESPONSE_RENDER_OR_REDIRECT_NOT_MODELED": 4,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 7,
+          "MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED": 4,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 7,
+          "DYNAMIC_PROPERTY_UNRESOLVED": 1,
+          "EXPRESS_HANDLER_UNKNOWN": 1,
+          "EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED": 2,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 4,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 10,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 3,
+          "EXCEPTION_FLOW_PARTIAL": 1,
+          "NODE_COMMONJS_DIRECTORY_SOURCE_LINK": 3,
+          "NODE_PROCESS_ARGV_NOT_WHOLE_OPERATION_SAFETY": 1,
+          "PROPERTY_WRITE_UNRESOLVED": 1,
+          "VAR_HOISTING_PARTIAL": 1,
+          "SEQUELIZE_INITIALIZATION_SUMMARY_NOT_RUNTIME_EXECUTION": 1
+        },
+        "manifestSelected": [],
+        "score": 93,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        579,
+        485
+      ],
+      "sampledParentHeapBytes": [
+        69303672,
+        78740856
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    },
+    {
+      "project": "juice-shop--juice-shop",
+      "sha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "4c73a4ed4f05ac4f89d71f6eff2bff3545f275b5a96394c9621a9eb59ca0f362",
+      "before": {
+        "entries": 0,
+        "findings": [],
+        "selected": 100,
+        "parsed": 100,
+        "selectedCharacters": 332814,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 48700,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 86413,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 533,
+          "STEPS_ENTRY_DISCOVERY": 85880,
+          "STEPS_FLOW": 0,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 17,
+          "CONTEXT_MISSING": 55,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 12,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 48,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 63,
+          "NODE_INITIALIZATION_STRUCTURE_UNKNOWN": 29,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 72,
+          "NODE_NAMESPACE_IMPORT_UNKNOWN": 62,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 98,
+          "UNMOUNTED_ROUTER_NOT_ANALYZED": 1,
+          "EXPRESSION_UNSUPPORTED": 1,
+          "EXPRESS_RECEIVER_MUTATION_UNKNOWN": 1,
+          "EXTERNAL_PROPERTY_WRITE_SCOPED_UNKNOWN": 1,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 4,
+          "PROPERTY_WRITE_UNRESOLVED": 2,
+          "SERVER_ENVIRONMENT_PROVENANCE_UNVERIFIED": 1,
+          "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 2,
+          "EXCEPTION_FLOW_PARTIAL": 1,
+          "LOOP_FLOW_PARTIAL": 1,
+          "REGEX_SYNTAX_OR_RESOURCE_UNSUPPORTED": 1,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 1,
+          "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+          "OBJECT_MEMBER_UNRESOLVED": 1,
+          "OPTIONAL_CHAIN_PARTIAL": 1,
+          "UNREACHED_FUNCTIONS_NOT_ANALYZED": 1,
+          "SOURCE_FILE_COUNT_LIMIT": 100
+        },
+        "manifestSelected": [],
+        "score": 0,
+        "coverage": "PARTIAL",
+        "risk": "BLOCKED"
+      },
+      "after": {
+        "entries": 0,
+        "findings": [],
+        "selected": 100,
+        "parsed": 100,
+        "selectedCharacters": 332814,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 48700,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 87247,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 533,
+          "STEPS_ENTRY_DISCOVERY": 86714,
+          "STEPS_FLOW": 0,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 17,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 12,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 48,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 63,
+          "NODE_ESM_DIRECTORY_OR_TARGET_NOT_SUPPORTED": 54,
+          "NODE_IMPORT_SOURCE_MAPPING_NOT_RUNTIME_PROOF": 67,
+          "NODE_INITIALIZATION_STRUCTURE_UNKNOWN": 29,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 72,
+          "NODE_NAMESPACE_IMPORT_UNKNOWN": 62,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 98,
+          "UNMOUNTED_ROUTER_NOT_ANALYZED": 1,
+          "EXPRESSION_UNSUPPORTED": 1,
+          "EXPRESS_RECEIVER_MUTATION_UNKNOWN": 1,
+          "EXTERNAL_PROPERTY_WRITE_SCOPED_UNKNOWN": 1,
+          "NODE_MODULE_TARGET_NOT_INSPECTED": 4,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 4,
+          "PROPERTY_WRITE_UNRESOLVED": 2,
+          "SERVER_ENVIRONMENT_PROVENANCE_UNVERIFIED": 1,
+          "NODE_MODULE_CYCLE_OR_DEPTH_LIMIT": 2,
+          "EXCEPTION_FLOW_PARTIAL": 1,
+          "LOOP_FLOW_PARTIAL": 1,
+          "REGEX_SYNTAX_OR_RESOURCE_UNSUPPORTED": 1,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 1,
+          "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+          "OBJECT_MEMBER_UNRESOLVED": 1,
+          "OPTIONAL_CHAIN_PARTIAL": 1,
+          "UNREACHED_FUNCTIONS_NOT_ANALYZED": 1,
+          "SOURCE_FILE_COUNT_LIMIT": 100
+        },
+        "manifestSelected": [],
+        "score": 0,
+        "coverage": "PARTIAL",
+        "risk": "BLOCKED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        1086,
+        851
+      ],
+      "sampledParentHeapBytes": [
+        66387792,
+        88887320
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    },
+    {
+      "project": "vercel--next.js",
+      "sha": "2998a2e801caab665d603daefc7445c04309285a",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "c5d538025606ab7ba21c46b1bdad498e750345f64750d30e623ac32b17f728f7",
+      "before": {
+        "entries": 0,
+        "findings": [],
+        "selected": 44,
+        "parsed": 44,
+        "selectedCharacters": 77604,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 8452,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 593,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 153,
+          "STEPS_ENTRY_DISCOVERY": 440,
+          "STEPS_FLOW": 0,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 44,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 34,
+          "CONTEXT_MISSING": 10,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 7,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 3
+        },
+        "manifestSelected": [],
+        "score": 100,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "after": {
+        "entries": 0,
+        "findings": [],
+        "selected": 44,
+        "parsed": 44,
+        "selectedCharacters": 77604,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 8452,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 608,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 153,
+          "STEPS_ENTRY_DISCOVERY": 455,
+          "STEPS_FLOW": 0,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 44,
+          "NODE_IMPORT_SOURCE_MAPPING_NOT_RUNTIME_PROOF": 10,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 34,
+          "NODE_MODULE_TARGET_NOT_INSPECTED": 1,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 7,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 3
+        },
+        "manifestSelected": [],
+        "score": 100,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        471,
+        385
+      ],
+      "sampledParentHeapBytes": [
+        56758728,
+        65147336
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    },
+    {
+      "project": "snyk-labs--nodejs-goof",
+      "sha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "d57b7dfba3acf1a6fab7b276b5e4c54365c9c58e5132204e4a4e5a2b3522537b",
+      "before": {
+        "entries": 15,
+        "findings": [
+          [
+            "JS_SHELL_COMMAND_INPUT_FLOW",
+            "routes/index.js",
+            174,
+            5
+          ]
+        ],
+        "selected": 10,
+        "parsed": 10,
+        "selectedCharacters": 18817,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 3435,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 25865,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 0,
+          "STEPS_ENTRY_DISCOVERY": 6517,
+          "STEPS_FLOW": 19348,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 5,
+          "EXPRESS_HANDLER_UNKNOWN": 1,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "EXPRESS_RECEIVER_MUTATION_UNKNOWN": 1,
+          "EXPRESS_SETTING_READ_NOT_ROUTE": 1,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 5,
+          "EXTERNAL_PROPERTY_WRITE_SCOPED_UNKNOWN": 1,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 5,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 8,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 4,
+          "PROPERTY_WRITE_UNRESOLVED": 2,
+          "EXCEPTION_FLOW_PARTIAL": 1,
+          "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 2,
+          "EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED": 2,
+          "MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED": 2,
+          "VAR_HOISTING_PARTIAL": 2,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 1,
+          "EXPRESS_RESPONSE_RENDER_OR_REDIRECT_NOT_MODELED": 1,
+          "OBJECT_MEMBER_UNRESOLVED": 1
+        },
+        "manifestSelected": [],
+        "score": 23,
+        "coverage": "PARTIAL",
+        "risk": "BLOCKED"
+      },
+      "after": {
+        "entries": 15,
+        "findings": [
+          [
+            "JS_SHELL_COMMAND_INPUT_FLOW",
+            "routes/index.js",
+            174,
+            5
+          ]
+        ],
+        "selected": 10,
+        "parsed": 10,
+        "selectedCharacters": 18817,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 3435,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 25911,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 0,
+          "STEPS_ENTRY_DISCOVERY": 6563,
+          "STEPS_FLOW": 19348,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 5,
+          "EXPRESS_HANDLER_UNKNOWN": 1,
+          "EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN": 1,
+          "EXPRESS_RECEIVER_MUTATION_UNKNOWN": 1,
+          "EXPRESS_SETTING_READ_NOT_ROUTE": 1,
+          "EXTERNAL_IMPLEMENTATION_UNKNOWN": 5,
+          "EXTERNAL_PROPERTY_WRITE_SCOPED_UNKNOWN": 1,
+          "NODE_COMMONJS_DIRECTORY_SOURCE_LINK": 1,
+          "NODE_MODULE_RESOLUTION_UNKNOWN": 5,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 8,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 4,
+          "PROPERTY_WRITE_UNRESOLVED": 2,
+          "EXCEPTION_FLOW_PARTIAL": 1,
+          "EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED": 2,
+          "EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED": 2,
+          "MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED": 2,
+          "VAR_HOISTING_PARTIAL": 2,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 1,
+          "EXPRESS_RESPONSE_RENDER_OR_REDIRECT_NOT_MODELED": 1,
+          "OBJECT_MEMBER_UNRESOLVED": 1
+        },
+        "manifestSelected": [],
+        "score": 23,
+        "coverage": "PARTIAL",
+        "risk": "BLOCKED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        708,
+        536
+      ],
+      "sampledParentHeapBytes": [
+        82553360,
+        69110704
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    },
+    {
+      "project": "nglguarino--echoverse-11labs",
+      "sha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "before": {
+        "entries": 4,
+        "findings": [
+          [
+            "TS_SENSITIVE_DATA_EXPOSURE",
+            "supabase/functions/get-secret/index.ts",
+            30,
+            12
+          ]
+        ],
+        "selected": 70,
+        "parsed": 70,
+        "selectedCharacters": 206588,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 26282,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 4995,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 2,
+          "STEPS_ENTRY_DISCOVERY": 1411,
+          "STEPS_FLOW": 3582,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 3,
+          "DENO_AUTHORIZATION_AND_DEPLOYMENT_NOT_VERIFIED": 4,
+          "DESTINATION_FLOW_UNRESOLVED": 3,
+          "EXCEPTION_FLOW_PARTIAL": 4,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 48,
+          "NUMERIC_COERCION_PARTIAL": 2,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 1,
+          "OBJECT_MEMBER_UNRESOLVED": 4,
+          "OPTIONAL_CHAIN_PARTIAL": 2,
+          "PROPERTY_WRITE_UNRESOLVED": 2,
+          "SUPABASE_LIVE_AUTHORIZATION_AND_RLS_NOT_VERIFIED": 4,
+          "SUPABASE_VERIFY_JWT_DECLARATION_UNKNOWN": 4,
+          "LOOP_FLOW_PARTIAL": 2,
+          "CALLBACK_FLOW_UNSUPPORTED": 1,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 8,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 66,
+          "CONTEXT_MISSING": 2,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 56
+        },
+        "manifestSelected": [],
+        "score": 86,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "after": {
+        "entries": 4,
+        "findings": [
+          [
+            "TS_SENSITIVE_DATA_EXPOSURE",
+            "supabase/functions/get-secret/index.ts",
+            30,
+            12
+          ]
+        ],
+        "selected": 70,
+        "parsed": 70,
+        "selectedCharacters": 206588,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 26282,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 4999,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 2,
+          "STEPS_ENTRY_DISCOVERY": 1415,
+          "STEPS_FLOW": 3582,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 3,
+          "DENO_AUTHORIZATION_AND_DEPLOYMENT_NOT_VERIFIED": 4,
+          "DESTINATION_FLOW_UNRESOLVED": 3,
+          "EXCEPTION_FLOW_PARTIAL": 4,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 48,
+          "NUMERIC_COERCION_PARTIAL": 2,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 1,
+          "OBJECT_MEMBER_UNRESOLVED": 4,
+          "OPTIONAL_CHAIN_PARTIAL": 2,
+          "PROPERTY_WRITE_UNRESOLVED": 2,
+          "SUPABASE_LIVE_AUTHORIZATION_AND_RLS_NOT_VERIFIED": 4,
+          "SUPABASE_VERIFY_JWT_DECLARATION_UNKNOWN": 4,
+          "LOOP_FLOW_PARTIAL": 2,
+          "CALLBACK_FLOW_UNSUPPORTED": 1,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 8,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 66,
+          "NODE_IMPORT_SOURCE_MAPPING_NOT_RUNTIME_PROOF": 1,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 56,
+          "NODE_MODULE_TARGET_NOT_INSPECTED": 1
+        },
+        "manifestSelected": [],
+        "score": 86,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        712,
+        529
+      ],
+      "sampledParentHeapBytes": [
+        104977920,
+        68035872
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    },
+    {
+      "project": "LellaSriHarsha--power-platform-hub",
+      "sha": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "before": {
+        "entries": 1,
+        "findings": [],
+        "selected": 69,
+        "parsed": 69,
+        "selectedCharacters": 347176,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 35959,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 1676,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 0,
+          "STEPS_ENTRY_DISCOVERY": 1233,
+          "STEPS_FLOW": 443,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 66,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 44,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 50,
+          "CALL_TARGET_UNRESOLVED": 2,
+          "NUMERIC_COERCION_PARTIAL": 1,
+          "UNREACHED_FUNCTIONS_NOT_ANALYZED": 1,
+          "CONTEXT_MISSING": 2,
+          "CALLBACK_FLOW_UNSUPPORTED": 1,
+          "EXCEPTION_FLOW_PARTIAL": 1,
+          "EXPRESSION_UNSUPPORTED": 1,
+          "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 1
+        },
+        "manifestSelected": [],
+        "score": 86,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "after": {
+        "entries": 1,
+        "findings": [],
+        "selected": 69,
+        "parsed": 69,
+        "selectedCharacters": 347176,
+        "clients": 0,
+        "accesses": 0,
+        "budget": {
+          "AST_NODES_INDEXED": 35959,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 1684,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 0,
+          "STEPS_CLIENT": 0,
+          "STEPS_ENTRY_DISCOVERY": 1241,
+          "STEPS_FLOW": 443,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 66,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 44,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 50,
+          "CALL_TARGET_UNRESOLVED": 2,
+          "NUMERIC_COERCION_PARTIAL": 1,
+          "UNREACHED_FUNCTIONS_NOT_ANALYZED": 1,
+          "NODE_IMPORT_SOURCE_MAPPING_NOT_RUNTIME_PROOF": 5,
+          "NODE_MODULE_SPECIFIER_NOT_SUPPORTED": 1,
+          "CALLBACK_FLOW_UNSUPPORTED": 1,
+          "EXCEPTION_FLOW_PARTIAL": 1,
+          "EXPRESSION_UNSUPPORTED": 1,
+          "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 1
+        },
+        "manifestSelected": [],
+        "score": 86,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        466,
+        454
+      ],
+      "sampledParentHeapBytes": [
+        89007392,
+        108930336
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    },
+    {
+      "project": "TinyikoMamban--workflowai-pro",
+      "sha": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "before": {
+        "entries": 1,
+        "findings": [],
+        "selected": 89,
+        "parsed": 87,
+        "selectedCharacters": 341967,
+        "clients": 3,
+        "accesses": 42,
+        "budget": {
+          "AST_NODES_INDEXED": 45173,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 8454,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 4122,
+          "STEPS_CLIENT": 2115,
+          "STEPS_ENTRY_DISCOVERY": 1819,
+          "STEPS_FLOW": 398,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 4,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 84,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 69,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 44,
+          "CALL_TARGET_UNRESOLVED": 2,
+          "NUMERIC_COERCION_PARTIAL": 1,
+          "UNREACHED_FUNCTIONS_NOT_ANALYZED": 1,
+          "CONTEXT_MISSING": 2,
+          "CALLBACK_FLOW_UNSUPPORTED": 1,
+          "EXCEPTION_FLOW_PARTIAL": 1,
+          "EXPRESSION_UNSUPPORTED": 1
+        },
+        "manifestSelected": [],
+        "score": 86,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "after": {
+        "entries": 1,
+        "findings": [],
+        "selected": 89,
+        "parsed": 87,
+        "selectedCharacters": 341967,
+        "clients": 3,
+        "accesses": 42,
+        "budget": {
+          "AST_NODES_INDEXED": 45173,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 8480,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 4122,
+          "STEPS_CLIENT": 2115,
+          "STEPS_ENTRY_DISCOVERY": 1845,
+          "STEPS_FLOW": 398,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 4,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 84,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 69,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+          "NAMESPACE_IMPORT_UNSUPPORTED": 44,
+          "NODE_IMPORT_SOURCE_MAPPING_NOT_RUNTIME_PROOF": 8,
+          "CALL_TARGET_UNRESOLVED": 2,
+          "NUMERIC_COERCION_PARTIAL": 1,
+          "UNREACHED_FUNCTIONS_NOT_ANALYZED": 1,
+          "NODE_MODULE_SPECIFIER_NOT_SUPPORTED": 1,
+          "CALLBACK_FLOW_UNSUPPORTED": 1,
+          "EXCEPTION_FLOW_PARTIAL": 1,
+          "EXPRESSION_UNSUPPORTED": 1
+        },
+        "manifestSelected": [],
+        "score": 86,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        566,
+        549
+      ],
+      "sampledParentHeapBytes": [
+        144646816,
+        102213896
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    },
+    {
+      "project": "Adriano-Digital2024--CopyMonster",
+      "sha": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "engine": "f6ea1c310c70818bcb991ae477df75dafe95ac63",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "before": {
+        "entries": 20,
+        "findings": [],
+        "selected": 100,
+        "parsed": 33,
+        "selectedCharacters": 616625,
+        "clients": 29,
+        "accesses": 75,
+        "budget": {
+          "AST_NODES_INDEXED": 30242,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 89366,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 25081,
+          "STEPS_CLIENT": 4200,
+          "STEPS_ENTRY_DISCOVERY": 1459,
+          "STEPS_FLOW": 58626,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 22,
+          "DENO_AUTHORIZATION_AND_DEPLOYMENT_NOT_VERIFIED": 20,
+          "EXCEPTION_FLOW_PARTIAL": 17,
+          "EXPRESSION_UNSUPPORTED": 8,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 10,
+          "OBJECT_MEMBER_UNRESOLVED": 17,
+          "PROPERTY_WRITE_UNRESOLVED": 4,
+          "SUPABASE_LIVE_AUTHORIZATION_AND_RLS_NOT_VERIFIED": 20,
+          "SUPABASE_VERIFY_JWT_DECLARED_TRUE": 8,
+          "SWITCH_FLOW_PARTIAL": 2,
+          "ARRAY_BINDING_UNSUPPORTED": 4,
+          "CALLBACK_FLOW_UNSUPPORTED": 8,
+          "LOOP_FLOW_PARTIAL": 9,
+          "NUMERIC_COERCION_PARTIAL": 15,
+          "OPTIONAL_CHAIN_PARTIAL": 17,
+          "SUPABASE_VERIFY_JWT_DECLARED_FALSE": 10,
+          "DESTINATION_FLOW_UNRESOLVED": 12,
+          "SUPABASE_VERIFY_JWT_DECLARATION_UNKNOWN": 2,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 3,
+          "DYNAMIC_PROPERTY_UNRESOLVED": 6,
+          "CALLER_HEAP_EFFECTS_PARTIAL": 3,
+          "STATEMENT_UNSUPPORTED": 2,
+          "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+          "UNREACHED_FUNCTIONS_NOT_ANALYZED": 2,
+          "LEXICAL_READ_BEFORE_INITIALIZATION": 1,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 11,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 7,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+          "CONTEXT_MISSING": 1,
+          "SOURCE_FILE_COUNT_LIMIT": 99,
+          "SOURCE_FILE_SIZE_LIMIT": 1
+        },
+        "manifestSelected": [],
+        "score": 16,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "after": {
+        "entries": 20,
+        "findings": [],
+        "selected": 100,
+        "parsed": 33,
+        "selectedCharacters": 616625,
+        "clients": 29,
+        "accesses": 75,
+        "budget": {
+          "AST_NODES_INDEXED": 30242,
+          "STEPS_LIMIT": 100000,
+          "STEPS_USED": 89418,
+          "STEPS_SETUP": 0,
+          "STEPS_POLICY": 25081,
+          "STEPS_CLIENT": 4200,
+          "STEPS_ENTRY_DISCOVERY": 1511,
+          "STEPS_FLOW": 58626,
+          "CLIENT_WORK_LIMIT": 15000,
+          "POLICY_WORK_LIMIT": 25000
+        },
+        "limits": {
+          "CALL_TARGET_UNRESOLVED": 22,
+          "DENO_AUTHORIZATION_AND_DEPLOYMENT_NOT_VERIFIED": 20,
+          "EXCEPTION_FLOW_PARTIAL": 17,
+          "EXPRESSION_UNSUPPORTED": 8,
+          "OBJECT_BRANCH_MERGE_PARTIAL": 10,
+          "OBJECT_MEMBER_UNRESOLVED": 17,
+          "PROPERTY_WRITE_UNRESOLVED": 4,
+          "SUPABASE_LIVE_AUTHORIZATION_AND_RLS_NOT_VERIFIED": 20,
+          "SUPABASE_VERIFY_JWT_DECLARED_TRUE": 8,
+          "SWITCH_FLOW_PARTIAL": 2,
+          "ARRAY_BINDING_UNSUPPORTED": 4,
+          "CALLBACK_FLOW_UNSUPPORTED": 8,
+          "LOOP_FLOW_PARTIAL": 9,
+          "NUMERIC_COERCION_PARTIAL": 15,
+          "OPTIONAL_CHAIN_PARTIAL": 17,
+          "SUPABASE_VERIFY_JWT_DECLARED_FALSE": 10,
+          "DESTINATION_FLOW_UNRESOLVED": 12,
+          "SUPABASE_VERIFY_JWT_DECLARATION_UNKNOWN": 2,
+          "CLOSURE_SIDE_EFFECTS_UNRESOLVED": 3,
+          "DYNAMIC_PROPERTY_UNRESOLVED": 6,
+          "CALLER_HEAP_EFFECTS_PARTIAL": 3,
+          "STATEMENT_UNSUPPORTED": 2,
+          "HTTP_CALLS_OUTSIDE_TRACED_FLOW": 2,
+          "UNREACHED_FUNCTIONS_NOT_ANALYZED": 2,
+          "LEXICAL_READ_BEFORE_INITIALIZATION": 1,
+          "NO_SUPPORTED_SERVER_ENTRY_OR_CALL": 11,
+          "REACT_UI_NOT_SERVER_AUTHORIZATION": 7,
+          "NODE_IMPORT_SOURCE_MAPPING_NOT_RUNTIME_PROOF": 1,
+          "DEFAULT_EXPORT_FRAMEWORK_UNSUPPORTED": 2,
+          "NODE_ESM_DIRECTORY_OR_TARGET_NOT_SUPPORTED": 1,
+          "NODE_MODULE_TARGET_NOT_INSPECTED": 1,
+          "SOURCE_FILE_COUNT_LIMIT": 99,
+          "SOURCE_FILE_SIZE_LIMIT": 1
+        },
+        "manifestSelected": [],
+        "score": 16,
+        "coverage": "PARTIAL",
+        "risk": "REVIEW_REQUIRED"
+      },
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "elapsedMs": [
+        814,
+        792
+      ],
+      "sampledParentHeapBytes": [
+        80811520,
+        148222320
+      ],
+      "targetTruth": "REGRESSION_PREVIOUSLY_OBSERVED_NOT_NEW_HOLDOUT"
+    }
+  ],
+  "targetExecuted": false,
+  "paidAiCalls": 0,
+  "userDatabaseModified": false,
+  "limits": "100 combined files, 100k chars/file, 1M source chars, 200k AST nodes, 100k steps, depth 3, 5s, Node old-space 192MiB unchanged",
+  "limitsOfEvidence": [
+    "Selection is not request execution. Module source linking is not runtime proof.",
+    "FlintCMS class initialization, DB events and Mongoose query contracts remain unsupported.",
+    "No new independent real-application or external-review accuracy claim."
+  ],
+  "fixedRegressionPaths": {
+    "cases": [
+      {
+        "caseId": "dvna-sql",
+        "outcome": "TP"
+      },
+      {
+        "caseId": "dvna-shell",
+        "outcome": "TP"
+      },
+      {
+        "caseId": "dvna-deserialization",
+        "outcome": "NOT_SUPPORTED"
+      },
+      {
+        "caseId": "dvna-2017-sql-still-present",
+        "outcome": "TP"
+      },
+      {
+        "caseId": "dvna-2017-shell-still-present",
+        "outcome": "TP"
+      },
+      {
+        "caseId": "dvna-model-query-counterpart",
+        "outcome": "NOT_SUPPORTED"
+      },
+      {
+        "caseId": "dvna-execfile-counterpart",
+        "outcome": "TN"
+      },
+      {
+        "caseId": "juice-search-sql",
+        "outcome": "NOT_SUPPORTED"
+      },
+      {
+        "caseId": "juice-login-sql",
+        "outcome": "NOT_SUPPORTED"
+      },
+      {
+        "caseId": "juice-profile-ssrf",
+        "outcome": "NOT_SUPPORTED"
+      }
+    ],
+    "counts": {
+      "TP": 4,
+      "NOT_SUPPORTED": 5,
+      "TN": 1
+    },
+    "riskDenominator": 8,
+    "GoofAdditionalPath": "TP maintained separately; not an independent new family"
+  },
+  "resources": [
+    {
+      "scope": "STATIC_SELECTED_WORKER_ONLY_NOT_WHOLE_BACKEND_RSS",
+      "projects": [
+        {
+          "project": "JasonEtco--flintcms",
+          "sha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+          "inputSha256": "bd0d6272c0a6c34c73a5753e48e4fc53261f87181b3e0064260c0b968fde2350",
+          "runs": [
+            {
+              "wallMs": 229,
+              "maxRssBytes": 166330368,
+              "budget": {
+                "AST_NODES_INDEXED": 22632,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 17327,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 31,
+                "STEPS_ENTRY_DISCOVERY": 17296,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              },
+              "findings": 0
+            },
+            {
+              "wallMs": 229,
+              "maxRssBytes": 175915008,
+              "budget": {
+                "AST_NODES_INDEXED": 22632,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 17327,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 31,
+                "STEPS_ENTRY_DISCOVERY": 17296,
+                "STEPS_FLOW": 0,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              },
+              "findings": 0
+            }
+          ]
+        }
+      ],
+      "targetExecuted": false
+    },
+    {
+      "scope": "STATIC_SELECTED_WORKER_ONLY_NOT_WHOLE_BACKEND_RSS",
+      "projects": [
+        {
+          "project": "snyk-labs--nodejs-goof",
+          "sha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+          "inputSha256": "5778e5a504b06e85a6bce740f8cc1eb9bd41402e8ec3200a8fa23289ab9f98fa",
+          "runs": [
+            {
+              "wallMs": 197,
+              "maxRssBytes": 144588800,
+              "budget": {
+                "AST_NODES_INDEXED": 3435,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 25911,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 6563,
+                "STEPS_FLOW": 19348,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              },
+              "findings": 1
+            },
+            {
+              "wallMs": 199,
+              "maxRssBytes": 145309696,
+              "budget": {
+                "AST_NODES_INDEXED": 3435,
+                "STEPS_LIMIT": 100000,
+                "STEPS_USED": 25911,
+                "STEPS_SETUP": 0,
+                "STEPS_POLICY": 0,
+                "STEPS_CLIENT": 0,
+                "STEPS_ENTRY_DISCOVERY": 6563,
+                "STEPS_FLOW": 19348,
+                "CLIENT_WORK_LIMIT": 15000,
+                "POLICY_WORK_LIMIT": 25000
+              },
+              "findings": 1
+            }
+          ]
+        }
+      ],
+      "targetExecuted": false
+    }
+  ],
+  "contracts": {
+    "manifest": "Static main and simple node PATH in start/dev/serve[:variant] only; hint, not execution proof",
+    "commonjs": "Relative file priority, directory package main then index; no filesystem access",
+    "esm": "Explicit JavaScript filenames; no directory main/index fallback. Unique TypeScript source mapping retained separately.",
+    "unsupported": "Dynamic shell wrappers, exported class lifecycle, DB events, Mongoose query semantics, native/JSON module evaluation, symlink traversal"
+  },
+  "tests": {
+    "backend": {
+      "total": 681,
+      "passed": 672,
+      "skipped": 9,
+      "failures": 0
+    },
+    "frontend": {
+      "passed": 160,
+      "build": "PASS"
+    },
+    "worker": {
+      "passed": 398
+    },
+    "evaluationTools": {
+      "passed": 187
+    },
+    "browser": {
+      "backend": "ACTUAL_ISOLATED_H2",
+      "frontend": "ACTUAL_REACT",
+      "widths": [
+        1440,
+        390,
+        320
+      ],
+      "riskPathCandidate": 1,
+      "normalPathCandidate": 0,
+      "overflow": false,
+      "unsupportedAutoFixButton": false
+    },
+    "github": "Public/private collectors MOCK; no live GitHub App E2E"
+  },
+  "policy": {
+    "riskChanged": false,
+    "schemaMigration": false,
+    "historicalSnapshotsRecomputed": false,
+    "serverRestarted": false,
+    "engineVersionChanged": "v21 -> v22; no structural RESOLVED claim"
+  },
+  "failureCasePack": {
+    "case": "CVE-2018-3783",
+    "split": "REGRESSION_NOT_HOLDOUT",
+    "selectionFix": "Manifest main and bounded related-import scheduling within existing caps",
+    "resolutionFix": "POSIX normalized relative directory resolution with package precedence and fail-closed omitted targets",
+    "confirmedRemaining": [
+      "dev.js uses nodemon wrapper outside simple-node selection contract and remains unselected",
+      "ES class startServer lifecycle unsupported",
+      "DB-open event model registration not evaluated",
+      "Mongoose object-selector query contract not implemented"
+    ],
+    "sourceExecution": false,
+    "nextGate": "Evaluate direct registered modern Express/Mongoose model contracts separately; do not automatically implement class/event lifecycle"
+  },
+  "references": [
+    "https://nodejs.org/api/modules.html#all-together",
+    "https://nodejs.org/api/esm.html#mandatory-file-extensions"
+  ],
+  "evaluationToolSha256": "c6984ec51396be5d7543a83118ee8a268730df4c0409a312b066807a1bdfc9ac"
+}
