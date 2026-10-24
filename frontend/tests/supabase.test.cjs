@@ -40,3 +40,9 @@ test('local result guards and Next declarations are not rendered as successful a
  const h=render(f);
  for(const s of ['중단 분기','실제 호출 여부는 미확인','DB 소유권 검증 보장 아님','반환된 사용자 ID'])assert.ok(h.includes(s),s);
 });
+test('UPDATE old and new row restrictions are shown separately without promising database authorization',()=>{
+ for(const [state,label]of [['UPDATE_NEW_ROW_UNRESTRICTED','변경 후 행의 사용자별 제한 미확인'],['UPDATE_EXISTING_ROWS_UNRESTRICTED','기존 행의 사용자별 제한 미확인']]){
+  const f=fixture();f.tables[0].operations[0].state=state;const h=render(f);
+  assert.ok(h.includes(label));assert.ok(h.includes('운영 DB'));assert.ok(h.includes('NOT_COMPARED'));
+ }
+});

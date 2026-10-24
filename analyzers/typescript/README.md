@@ -240,3 +240,21 @@ Worker version changes preserve the existing conservative comparison boundary.
 authored Grade B controls in root-app and src-app layouts. Its confusion counts
 measure connected policy classification, not new real-CVE detection. Actual
 Grade C project receipts are recorded separately in `modern-supabase-results.json`.
+
+## Directional UPDATE policy evidence (v24 / supabase-rls-v3)
+
+UPDATE USING evaluates existing rows while WITH CHECK evaluates replacement rows.
+Combining these as predicates on a single row can incorrectly claim ownership.
+An explicit broad replacement condition alongside UID-restricted existing rows,
+or the reverse, is now a directional REVIEW_REQUIRED/NOT_COMPARED candidate when
+the corresponding GRANT is explicit. Omitted WITH CHECK still inherits USING.
+Denials, unknown expressions, missing grants and restrictive constraints are not
+automatically upgraded to risk or protection. Existing Risk/Score formulas remain.
+
+`scripts/evaluation/authorization_matrix.py` separates static engine replay from
+an optional local PostgreSQL oracle. Database mode executes only authored constants
+in a new private cluster with TCP disabled, explicit socket/user/database arguments,
+no inherited PG settings, statement limits, and stop/removal in finally. Never pass
+external migration SQL to this runner. Its A/B results validate PostgreSQL semantics,
+not a public application's deployed Supabase project or HTTP authorization.
+Official semantics: https://www.postgresql.org/docs/16/sql-createpolicy.html

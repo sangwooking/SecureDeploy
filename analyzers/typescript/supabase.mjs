@@ -2,7 +2,7 @@ import {analyzePolicies} from './rls.mjs';
 import {linkSupabaseEvidence} from './supabase-evidence.mjs';
 
 export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies,sourceImports}){
-  const unavailable=reason=>({schemaVersion:1,analyzerVersion:'supabase-rls-v2',status:'PARTIAL',files:(input.policyFiles??[]).slice(0,100).map(f=>({filePath:f.filePath,status:'NOT_RUN',statements:0,limitations:[reason]})),tables:[],clients:[],accesses:[],findings:[],limitations:['DECLARATIONS_NOT_LIVE_DATABASE',reason]});
+  const unavailable=reason=>({schemaVersion:1,analyzerVersion:'supabase-rls-v3',status:'PARTIAL',files:(input.policyFiles??[]).slice(0,100).map(f=>({filePath:f.filePath,status:'NOT_RUN',statements:0,limitations:[reason]})),tables:[],clients:[],accesses:[],findings:[],limitations:['DECLARATIONS_NOT_LIVE_DATABASE',reason]});
   const location=(node,mod,kind)=>{const p=mod.ast.getLineAndCharacterOfPosition(node.getStart(mod.ast));return {filePath:mod.filePath,line:p.line+1,column:p.character+1,functionName:'',kind};};
   const clients=[],accesses=[],limitations=['DECLARATIONS_NOT_LIVE_DATABASE','CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF'];
   let policies;
@@ -97,12 +97,12 @@ export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies,sour
       table:table.table,location,roles:[...new Set(broad.map(o=>o.role))],operations:[...new Set(broad.map(o=>o.operation))],
       evidenceLocations:[location,table.location,...table.grantLocations,...broad.flatMap(o=>o.policyLocations)].filter((v,i,a)=>a.findIndex(x=>JSON.stringify(x)===JSON.stringify(v))===i),
       title:'사용자별 수정 권한이 넓게 선언되어 있습니다',
-      reason:'명시적 쓰기 권한과 행 접근 선언에서 사용자별 제한이 없는 작업을 확인했습니다. 의도적인 공유 데이터인지와 운영 적용 상태는 별도 확인이 필요합니다.',
+      reason:'명시적 쓰기 권한과 행 접근 선언에서 사용자별 제한이 없는 작업 또는 UPDATE의 기존 행·변경 후 행 중 한쪽만 제한된 작업을 확인했습니다. 의도적인 공유 데이터인지와 운영 적용 상태는 별도 확인이 필요합니다.',
       recommendation:'공유 데이터인지 먼저 확인하고, 사용자 전용 데이터라면 해당 작업의 기존 행 조건(USING)과 새 행 조건(WITH CHECK)에 실제 소유자 컬럼과 auth.uid() 비교를 적용하세요. 여러 permissive 정책과 GRANT도 함께 검토하세요.',
       verificationSteps:['격리 테스트 환경에서 사용자 A·B의 조회·수정·삭제와 소유자 변경을 각각 확인하세요.','익명 사용자와 관리자 경로를 따로 검사하고 실제 적용 migration·GRANT·역할을 대조한 뒤 재검사하세요.'],
       limitations:['DECLARATIONS_NOT_LIVE_DATABASE','PUBLIC_OR_SHARED_DATA_INTENT_UNKNOWN','REQUEST_EXECUTION_AND_EXPLOIT_NOT_VERIFIED']});
   }
-  const snapshot={schemaVersion:1,analyzerVersion:'supabase-rls-v2',status:policies.files.length||accesses.length||clients.length?'PARTIAL':'NOT_APPLICABLE',
+  const snapshot={schemaVersion:1,analyzerVersion:'supabase-rls-v3',status:policies.files.length||accesses.length||clients.length?'PARTIAL':'NOT_APPLICABLE',
     ...policies,clients,accesses,findings,limitations:[...policies.limitations,...limitations]};
   linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports});
   return Buffer.byteLength(JSON.stringify(snapshot))>300000?unavailable('SUPABASE_OUTPUT_LIMIT'):snapshot;

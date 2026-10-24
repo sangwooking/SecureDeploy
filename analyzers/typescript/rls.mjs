@@ -186,8 +186,11 @@ export function analyzePolicies(files,tick,workTick=tick){
         return applicable.filter(p=>p.mode==='RESTRICTIVE').reduce((a,p)=>combine(a,p[key],true),permissive);};
       const using=merge('using'),check=merge('check'),grant=t.grants.get(role)?.has(op)||t.grants.get('public')?.has(op)||false;
       const broad=v=>v.kind==='ALLOW'||role==='authenticated'&&v.kind==='AUTHENTICATION_ONLY';
-      const state=uncertain?'UNKNOWN':t.rls==='ENABLED'?(op==='INSERT'?check.kind:op==='UPDATE'?combine(using,check,true).kind:using.kind):t.rls;
-      const candidate=!uncertain&&grant&&op!=='SELECT'&&(['DISABLED','DISABLED_BY_CREATE'].includes(t.rls)||t.rls==='ENABLED'&&(op==='INSERT'?broad(check):op==='DELETE'?broad(using):broad(using)&&broad(check)));
+      // USING checks the old row; WITH CHECK checks its replacement, not the same row.
+      const partialUpdate=using.kind==='UID_COLUMN_EQUALITY'&&broad(check)?'UPDATE_NEW_ROW_UNRESTRICTED':
+        broad(using)&&check.kind==='UID_COLUMN_EQUALITY'?'UPDATE_EXISTING_ROWS_UNRESTRICTED':null;
+      const state=uncertain?'UNKNOWN':t.rls==='ENABLED'?(op==='INSERT'?check.kind:op==='UPDATE'?(partialUpdate??combine(using,check,true).kind):using.kind):t.rls;
+      const candidate=!uncertain&&grant&&op!=='SELECT'&&(['DISABLED','DISABLED_BY_CREATE'].includes(t.rls)||t.rls==='ENABLED'&&(op==='INSERT'?broad(check):op==='DELETE'?broad(using):!!partialUpdate||broad(using)&&broad(check)));
       operations.push({role,operation:op,grant:grant?'EXPLICIT_GRANT':'NOT_ESTABLISHED',using:using.kind,check:check.kind,
         columns:[...new Set([...using.columns,...check.columns])],state,candidate,
         policyLocations:applicable.map(p=>p.location)});

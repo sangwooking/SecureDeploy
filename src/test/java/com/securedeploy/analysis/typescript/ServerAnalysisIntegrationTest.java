@@ -256,6 +256,23 @@ class ServerAnalysisIntegrationTest {
         assertThat(detail(token,result.path("reviewId").asLong()).at("/serverAnalysis/supabaseAnalysis")).isEqualTo(result.at("/serverAnalysis/supabaseAnalysis"));
     }
 
+    @Test void updateOwnershipRequiresBothRowPhasesAndDoesNotChangeLegacyRisk() throws Exception {
+        String token=signup();
+        for(String check:List.of(" WITH CHECK(true)","")){
+            String sql="CREATE TABLE public.items(user_id uuid);ALTER TABLE public.items ENABLE ROW LEVEL SECURITY;GRANT UPDATE ON public.items TO authenticated;CREATE POLICY p ON public.items FOR UPDATE TO authenticated USING(auth.uid()=user_id)"+check+";";
+            var result=uploadSources(token,Map.of("supabase/migrations/20260101000000_policy.sql",sql,
+                "app/api/items/route.ts","import {createClient} from '@supabase/supabase-js';const db=createClient('url',process.env.ANON_KEY);export async function POST(){return db.from('items').update({});}",
+                "package.json","{\"dependencies\":{\"next\":\"15.2.0\"}}"));
+            var s=result.at("/serverAnalysis/supabaseAnalysis");
+            assertThat(s.path("findings")).hasSize(check.isEmpty()?0:1);
+            assertThat(s.at("/accesses/0/authorizationEvidence/state").asText()).isEqualTo(check.isEmpty()?"CONFIRMED_POLICY_EVIDENCE":"BROAD_ACCESS_REVIEW");
+            if(!check.isEmpty())assertThat(s.at("/findings/0/comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+            assertThat(result.path("securityScore").asInt()).isEqualTo(100);
+            assertThat(result.at("/riskAssessment/prioritySummary/BLOCKING").asInt()).isZero();
+            assertThat(detail(token,result.path("reviewId").asLong()).at("/serverAnalysis/supabaseAnalysis")).isEqualTo(s);
+        }
+    }
+
     @Test void eightyJavaUnitsAndSourceLimitHavePersistedDistinctCoverage() throws Exception {
         String token=signup();var sources=new LinkedHashMap<String,String>();
         sources.put("Endpoint.java","import org.springframework.web.bind.annotation.*; import java.sql.Connection; @RestController class Endpoint { Connection c; @GetMapping(\"/\") void inspect(@RequestParam String input){c.prepareCall(\"{call \"+input+\"}\").execute();}}");

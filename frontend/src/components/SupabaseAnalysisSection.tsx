@@ -14,6 +14,8 @@ const labels: Record<string,string>={
   SQL_SOURCE_NOT_INSPECTED:'SQL 입력을 검사하지 못함',SOURCE_FILE_COUNT_LIMIT:'공통 파일 수 상한',SOURCE_TOTAL_CHAR_LIMIT:'공통 문자 수 상한',SOURCE_FILE_SIZE_LIMIT:'개별 파일 크기 상한',
   ENABLED:'RLS 활성화 선언',DISABLED:'RLS 비활성화 선언',DISABLED_BY_CREATE:'테이블 생성 시 RLS 비활성 상태',
   UID_COLUMN_EQUALITY:'현재 사용자 ID와 컬럼 일치 조건',AUTHENTICATION_ONLY:'로그인 여부 조건 · 소유권 확인 아님',
+  UPDATE_NEW_ROW_UNRESTRICTED:'UPDATE 변경 후 행의 사용자별 제한 미확인 · 기존 행 조건만 확인',
+  UPDATE_EXISTING_ROWS_UNRESTRICTED:'UPDATE 기존 행의 사용자별 제한 미확인 · 변경 후 행 조건만 확인',
   COLUMN_FILTER:'행의 컬럼 조건 · 사용자 소유권 확인 아님',
   ALLOW:'행 제한 없는 조건',DENY:'선언상 허용 경로 없음',UNKNOWN:'확인 불가',NOT_ESTABLISHED:'명시적 GRANT 미확인',
   EXPLICIT_GRANT:'명시적 GRANT 확인',CLIENT_DECLARATION_LINKED:'Client 생성 선언 연결',CLIENT_ORIGIN_UNKNOWN:'Client 출처 미확인',

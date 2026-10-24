@@ -3,6 +3,7 @@ const {chromium,request}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),{execFileSync}=require('node:child_process');
 const {resultView}=require('./editor-navigation.cjs');
 const origin='http://127.0.0.1:5174',api='http://127.0.0.1:8085';
+const directional=process.env.UPDATE_PHASES==='1';
 (async()=>{const browser=await chromium.launch(),http=await request.newContext({baseURL:api});
 try{
  const signup=await http.post('/api/auth/signup',{data:{email:`modern-${Date.now()}@example.invalid`,name:'synthetic',password:'Synthetic-Local-813!'}});
@@ -13,7 +14,7 @@ try{
    'tsconfig.json':JSON.stringify({compilerOptions:{baseUrl:prefix||'.',paths:{'~/*':['*']}}}),
    [prefix+'lib/client.ts']:"import {createServerClient} from '@supabase/ssr';export function make(){const jar=cookies();return createServerClient('https://example.invalid',process.env.PUBLIC_ANON_KEY,{cookies:{getAll(){return jar.getAll();}}});}",
    [prefix+'app/api/items/route.ts']:"import {make} from '~/lib/client';export async function POST(){const db=await make();const {data:{user}}=await db.auth.getUser();if(!user)throw new Error('missing');return Response.json(await db.from('items').update({}).eq('user_id',user.id));}",
-   'supabase/migrations/20260101000000_items.sql':"CREATE TABLE public.items(user_id uuid);ALTER TABLE public.items ENABLE ROW LEVEL SECURITY;GRANT UPDATE ON public.items TO authenticated;CREATE POLICY p ON public.items FOR UPDATE TO authenticated USING(true) WITH CHECK(true);"};
+   'supabase/migrations/20260101000000_items.sql':`CREATE TABLE public.items(user_id uuid);ALTER TABLE public.items ENABLE ROW LEVEL SECURITY;GRANT UPDATE ON public.items TO authenticated;CREATE POLICY p ON public.items FOR UPDATE TO authenticated USING(${directional&&layout==='root'?'auth.uid()=user_id':'true'}) WITH CHECK(${directional&&layout==='src'?'auth.uid()=user_id':'true'});`};
   const zip=execFileSync('python3',['-c',"import io,sys,json,zipfile\nb=io.BytesIO()\nwith zipfile.ZipFile(b,'w',zipfile.ZIP_DEFLATED) as z:\n for p,s in json.load(sys.stdin).items(): z.writestr(p,s)\nsys.stdout.buffer.write(b.getvalue())"],{input:JSON.stringify(files)});
   const response=await http.post('/api/reviews/upload',{headers,multipart:{scanMode:'STANDARD',file:{name:'synthetic.zip',mimeType:'application/zip',buffer:zip}}});
   assert.equal(response.status(),200);const review=await response.json(),s=review.serverAnalysis.supabaseAnalysis,e=s.accesses[0].authorizationEvidence;
@@ -30,6 +31,7 @@ try{
    const section=page.getByLabel('Supabase 데이터 접근 검사',{exact:true});await section.waitFor();
    await section.locator('details').evaluateAll(elements=>elements.forEach(e=>e.open=true));
    const text=await section.innerText();for(const value of ['인증 성공 보장 아님','실제 호출 여부는 미확인','DB 소유권 검증 보장 아님',prefix+'app/api/items/route.ts'])assert.ok(text.includes(value),value);
+   if(directional)assert.ok(text.includes(layout==='root'?'변경 후 행의 사용자별 제한 미확인':'기존 행의 사용자별 제한 미확인'));
    assert.equal(await page.getByRole('button',{name:'자동 수정안 만들기',exact:true}).count(),0);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);assert.deepEqual(outbound,[]);
    await page.screenshot({path:`/private/tmp/securedeploy-modern7-${layout}-${width}.png`,fullPage:true});await page.close();reports.push({layout,width,passed:true});
