@@ -1,7 +1,8 @@
 import path from 'node:path';
+import {authResultEvidence} from './auth-result-evidence.mjs';
 
 // Declaration provenance only. No target evaluation, session validation or database access.
-export function linkSupabaseEvidence({ts,modules,snapshot,tick}) {
+export function linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports}) {
   if(!snapshot.accesses.length)return;
   let work=0,bytes=Buffer.byteLength(JSON.stringify(snapshot));
   const charge=()=>{if(++work>5000)throw Error('CLIENT_POLICY_LINK_BUDGET_LIMIT');tick();};
@@ -23,10 +24,11 @@ export function linkSupabaseEvidence({ts,modules,snapshot,tick}) {
   }
   function imported(m,name,use) {
     if(binding(m,name,use)!==undefined||index(m)?.writes.has(name)||index(m)?.typeOnly.has(name))return null;
-    return m.imports.get(name);
+    const imp=m.imports.get(name);
+    return imp&&(known(imp.spec)||server(imp.spec)||imp.spec==='@supabase/ssr')&&sourceImports?.shadows(m,imp.spec)?null:imp;
   }
   function targetModule(m,spec) {
-    if(!spec.startsWith('.'))return null;
+    if(!spec.startsWith('.'))return sourceImports?.target(m,spec)??null;
     const p=path.posix.normalize(path.posix.join(path.posix.dirname(m.filePath),spec));
     if(p.startsWith('../')||p.startsWith('/'))return null;
     const options=[p,p+'.ts',p+'.tsx',p+'.js',p+'/index.ts',p+'/index.js'].filter(k=>modules.has(k));
@@ -136,7 +138,7 @@ export function linkSupabaseEvidence({ts,modules,snapshot,tick}) {
         &&!fetchOverride&&(!schema||ts.isStringLiteral(schema)&&schema.text==='public');
       return {location:location(node,m,'SUPABASE_CLIENT_DECLARATION'),keySource,authContext:ssr?'SESSION_REFERENCE_UNVERIFIED':options?'OPTIONS_OR_AUTH_OVERRIDE_NOT_EVALUATED':'SESSION_AND_AUTH_HEADERS_UNKNOWN',
         contract:sdk?'SUPABASE_JS_CREATE_CLIENT':imp.exported==='createServerClient'?'SUPABASE_SSR_SERVER':'SUPABASE_SSR_BROWSER',
-        trace:[],policyScopeEligible:eligible,transport:!eligible?'CLIENT_SCHEMA_OR_TRANSPORT_UNVERIFIED':override?'AUTHORIZATION_OVERRIDE_UNVERIFIED':'SESSION_AND_HEADERS_UNKNOWN'};
+        trace:[],policyScopeEligible:eligible&&!sourceImports?.uncertain(m),transport:sourceImports?.uncertain(m)?'TS_PATH_CONFIG_UNKNOWN':!eligible?'CLIENT_SCHEMA_OR_TRANSPORT_UNVERIFIED':override?'AUTHORIZATION_OVERRIDE_UNVERIFIED':'SESSION_AND_HEADERS_UNKNOWN'};
     }
     const target=functionTarget(m,node.expression);if(!target?.fn?.body)return null;
     const fn=target.fn;
@@ -150,6 +152,7 @@ export function linkSupabaseEvidence({ts,modules,snapshot,tick}) {
     return r?{...r,trace:[...r.trace,location(node,m,'STATIC_FACTORY_CALL')].slice(-8)}:null;
   }
   const authCalls=new Map();
+  const authResults=authResultEvidence({ts,charge,binding,escaped,index,location,fnOf});
   const checksFor=(mod,node,client)=>{
     const fn=fnOf(node),out=[];
     for(const call of authCalls.get(mod)?.get(fn)??[]){
@@ -159,7 +162,8 @@ export function linkSupabaseEvidence({ts,modules,snapshot,tick}) {
       const auth=call.expression.expression;
       if(!ts.isPropertyAccessExpression(auth)||auth.name.text!=='auth'||!ts.isAwaitExpression(call.parent))continue;
       const c=resolve(mod,auth.expression);if(!c||identity(c)!==identity(client))continue;
-      out.push({method:call.expression.name.text,location:location(call,mod,'AUTH_API_CALL'),status:call.expression.name.text==='getSession'?'SESSION_READ_UNVERIFIED':'IDENTITY_VERIFICATION_CALL_OBSERVED'});
+      out.push({method:call.expression.name.text,location:location(call,mod,'AUTH_API_CALL'),status:call.expression.name.text==='getSession'?'SESSION_READ_UNVERIFIED':'IDENTITY_VERIFICATION_CALL_OBSERVED',
+        resultEvidence:authResults.observe(mod,call,node)});
     }
     return out;
   };

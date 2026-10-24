@@ -10,8 +10,8 @@ export interface SupabaseAnalysis {
   accesses:{location:AnalysisLocation;table:string;operation:string;clientStatus:string;clientLocation:AnalysisLocation|null;
     keySource:string;policyStatus:string;policyLocation:AnalysisLocation|null;limitations:string[];
     authorizationEvidence?:{state:string;clientContract:string;authStatus:string;effectiveRole:string;roleEvidence:string;
-      authChecks:{method:string;status:string;location:AnalysisLocation}[];clientTrace:AnalysisLocation[];policyLocations:AnalysisLocation[];
-      filterLocations:AnalysisLocation[];enclosingFunction:AnalysisLocation|null;policyStates:string[];limitations:string[]}|null}[];
+      authChecks:{method:string;status:string;location:AnalysisLocation;resultEvidence?:{status:string;guardLocation:AnalysisLocation;userIdFilters:AnalysisLocation[];limitations:string[]}|null}[];clientTrace:AnalysisLocation[];policyLocations:AnalysisLocation[];
+      filterLocations:AnalysisLocation[];enclosingFunction:AnalysisLocation|null;requestEntry?:AnalysisLocation|null;policyStates:string[];limitations:string[]}|null}[];
   findings:{findingId:string;ruleId:string;priority:'REVIEW_REQUIRED';comparisonPolicy:'NOT_COMPARED';table:string;location:AnalysisLocation;
     roles:string[];operations:string[];evidenceLocations:AnalysisLocation[];title:string;reason:string;recommendation:string;verificationSteps:string[];limitations:string[]}[];
 }

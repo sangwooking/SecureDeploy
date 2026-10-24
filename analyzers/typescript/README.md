@@ -209,3 +209,34 @@ are not proven by this summary. New findings remain REVIEW_REQUIRED/NOT_COMPARED
 
 Contracts: https://sequelize.org/v4/class/lib/sequelize.js~sequelize
 and https://sequelize.org/docs/v6/other-topics/upgrade/
+
+## Static Next/Supabase alias and identity observations (v23)
+
+The collector supplies up to 32 `tsconfig.json` JSONC texts (64k characters each,
+128k combined, within the existing hint budget). Only static `baseUrl` and
+single-target `paths` mappings without `extends` are resolved. Resolution uses
+the nearest supplied config and selected source inventory, never a compiler host,
+target filesystem access, package installation or target execution. Duplicate keys,
+ambiguous targets, missing nested configs and workspace escapes do not establish
+a link. Explicit local mappings cannot masquerade as the official Supabase SDK.
+Existing function-depth, AST, step, file, character, time and heap limits remain.
+
+Aliases reuse existing function and SSR Client return/argument provenance; they
+do not add React.cache, Proxy, dynamic context or arbitrary framework semantics.
+The optional `authChecks[].resultEvidence` records direct zero-argument awaited
+`getUser`/`getClaims` results, supported local absence return/throw guards, and
+matching `.eq()` ID fields. Reassignment, escapes, arbitrary intervening calls and
+unsupported branches invalidate this observation. A guard is not authentication
+success, an application filter is not database authorization, and `getSession`
+does not gain identity-verification evidence. Installed SDK behavior is unverified.
+
+Optional `requestEntry` identifies a supported Next declaration in the very same
+function as a data access. Helper-internal evidence is not promoted to an HTTP
+request or an invocation proof. Policy state and actual DB role are not upgraded
+by these new observations. Old snapshots deserialize missing fields as null;
+Worker version changes preserve the existing conservative comparison boundary.
+
+`scripts/evaluation/modern_supabase_validation.mjs <absolute-analyzer-path>` runs
+authored Grade B controls in root-app and src-app layouts. Its confusion counts
+measure connected policy classification, not new real-CVE detection. Actual
+Grade C project receipts are recorded separately in `modern-supabase-results.json`.

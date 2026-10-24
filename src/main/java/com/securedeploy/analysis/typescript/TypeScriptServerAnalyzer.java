@@ -94,7 +94,7 @@ public class TypeScriptServerAnalyzer {
             boolean metadataComplete=ledger!=null&&ledger.omittedEntries()==0&&project.enumeratedDirectories().contains(".")
                     &&inventory.size()<=1000&&!inventory.contains("[redacted-path]");
             boolean inventoryComplete=metadataComplete&&ledger.inventoryComplete();
-            byte[] input = mapper.writeValueAsBytes(Map.of("files", sources,"nodeManifests",manifests,"denoConfigs",denoConfigs,"policyFiles",policyFiles,"policyInventoryComplete",sqlCandidates.size()<=100,
+            byte[] input = mapper.writeValueAsBytes(Map.of("typescriptConfigs",TypeScriptConfigMetadata.read(project.analysisFiles()),"files", sources,"nodeManifests",manifests,"denoConfigs",denoConfigs,"policyFiles",policyFiles,"policyInventoryComplete",sqlCandidates.size()<=100,
                     "nodeSourceInventory",inventory.stream().limit(1000).toList(),"nodeSourceInventoryComplete",inventoryComplete,
                     "nodeEnumeratedDirectories",metadataComplete?project.enumeratedDirectories().stream().sorted().toList():List.of()));
             var builder = new ProcessBuilder(properties.getNodeExecutable(), "--permission", "--no-addons",
@@ -162,7 +162,17 @@ public class TypeScriptServerAnalyzer {
                     ||e.policyStates().size()>8||e.filterLocations().size()>4||e.limitations().size()>20)throw new IllegalArgumentException("INVALID_AUTHORIZATION_EVIDENCE");
             locations.addAll(e.clientTrace());locations.addAll(e.policyLocations());locations.addAll(e.filterLocations());
             if(e.enclosingFunction()!=null)locations.add(e.enclosingFunction());
-            e.authChecks().forEach(c->{if(!Set.of("getUser","getClaims","getSession").contains(c.method()))throw new IllegalArgumentException("INVALID_AUTH_API");locations.add(c.location());});
+            if(e.requestEntry()!=null){
+                if(!Set.of("NEXT_ROUTE_HANDLER","NEXT_SERVER_FUNCTION").contains(e.requestEntry().kind()))throw new IllegalArgumentException("INVALID_REQUEST_CONTEXT");
+                locations.add(e.requestEntry());
+            }
+            e.authChecks().forEach(c->{
+                if(!Set.of("getUser","getClaims","getSession").contains(c.method()))throw new IllegalArgumentException("INVALID_AUTH_API");locations.add(c.location());
+                var r=c.resultEvidence();if(r!=null){
+                    if(!Set.of("getUser","getClaims").contains(c.method())||!"IDENTITY_RESULT_GUARD_OBSERVED".equals(r.status())||r.userIdFilters().size()>4||r.limitations().size()>10)throw new IllegalArgumentException("INVALID_AUTH_RESULT");
+                    locations.add(r.guardLocation());locations.addAll(r.userIdFilters());
+                }
+            });
         });
         snapshot.findings().forEach(f->{if(!"REVIEW_REQUIRED".equals(f.priority())||!"NOT_COMPARED".equals(f.comparisonPolicy())||!"SUPABASE_BROAD_WRITE_DECLARATION".equals(f.ruleId()))throw new IllegalArgumentException("INVALID_RLS_FINDING");locations.add(f.location());locations.addAll(f.evidenceLocations());});
         if(snapshot.budgetUsage()!=null){
@@ -177,7 +187,7 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v22".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v23".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200

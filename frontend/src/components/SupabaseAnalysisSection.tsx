@@ -4,6 +4,7 @@ const labels: Record<string,string>={
   ADMIN_ACCESS_REVIEW:'관리자 Client 계약 · 앱 자체의 접근권한 확인 필요',PUBLIC_READ_DECLARATION:'공유 읽기 허용 선언 · 공개 의도 미확인',
   SESSION_REFERENCE_UNVERIFIED:'쿠키·세션 참조 · 사용자 검증은 미확인',SESSION_READ_UNVERIFIED:'세션 읽기 관찰 · 사용자 검증 아님',
   IDENTITY_VERIFICATION_CALL_OBSERVED:'사용자 검증 API 호출 관찰 · 성공·적용은 미확인',USER_JWT_WRAPPER_DECLARATION:'공식 wrapper의 사용자 JWT 검증 선언',
+  IDENTITY_RESULT_GUARD_OBSERVED:'사용자 정보가 없을 때 중단하는 분기 관찰 · 인증 성공 보장 아님',
   SESSION_AND_AUTH_HEADERS_UNKNOWN:'개별 사용자 세션·인증 헤더 적용 미확인',OPTIONS_OR_AUTH_OVERRIDE_NOT_EVALUATED:'Client 옵션·인증 헤더 문맥 미확인',
   WRAPPER_CALLER_MODE_NOT_USER_PROOF:'호출 자격 선언 · 개별 사용자 확인의 증거 아님',
   CLIENT_POLICY_LINK_BUDGET_LIMIT:'Client·정책 연결 작업 상한 · 나머지 연결 미검사',CLIENT_POLICY_EVIDENCE_OUTPUT_LIMIT:'연결 근거 출력 상한 · 나머지 연결 미검사',
@@ -63,7 +64,12 @@ export function SupabaseAnalysisSection({snapshot,compact=false}:{snapshot?:Supa
             <details className="technical-details"><summary>Client·인증·정책 연결 근거</summary>
               {a.authorizationEvidence.enclosingFunction&&<p className="finding-location">포함된 함수: {a.authorizationEvidence.enclosingFunction.filePath}:{a.authorizationEvidence.enclosingFunction.line} · 요청 실행 증명 아님</p>}
               {a.authorizationEvidence.clientTrace.map((l,j)=><p className="finding-location" key={'c'+j}>Client: {l.filePath}:{l.line}</p>)}
-              {a.authorizationEvidence.authChecks.map((c,j)=><p className="finding-location" key={'a'+j}>{c.method}: {c.location.filePath}:{c.location.line} · {text(c.status)}</p>)}
+              {a.authorizationEvidence.requestEntry&&<p className="finding-location">Next.js 요청·서버 함수 선언: {a.authorizationEvidence.requestEntry.filePath}:{a.authorizationEvidence.requestEntry.line} · 같은 함수 안의 접근이며 실제 호출 여부는 미확인</p>}
+              {a.authorizationEvidence.authChecks.map((c,j)=><div key={'a'+j}><p className="finding-location">{c.method}: {c.location.filePath}:{c.location.line} · {text(c.status)}</p>
+                {c.resultEvidence&&<><p>{text(c.resultEvidence.status)}</p><p className="finding-location">중단 분기: {c.resultEvidence.guardLocation.filePath}:{c.resultEvidence.guardLocation.line}</p>
+                  {c.resultEvidence.userIdFilters.map((l,k)=><p className="finding-location" key={k}>반환된 사용자 ID를 사용한 필터: {l.filePath}:{l.line} · DB 소유권 검증 보장 아님</p>)}
+                </>}
+              </div>)}
               {a.authorizationEvidence.policyLocations.map((l,j)=><p className="finding-location" key={'p'+j}>정책: {l.filePath}:{l.line}</p>)}
               {a.authorizationEvidence.filterLocations.map((l,j)=><p className="finding-location" key={'f'+j}>앱 필터: {l.filePath}:{l.line} · DB 권한 검사 보장 아님</p>)}
               <p>{a.authorizationEvidence.clientContract} · {a.authorizationEvidence.roleEvidence} · DB 역할: {text(a.authorizationEvidence.effectiveRole)}</p>

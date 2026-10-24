@@ -11,8 +11,9 @@ import { nextEntries } from './next.mjs';
 import { analyzePolicies } from './rls.mjs';
 import { syntaxIndex, indexSyntax } from './syntax-index.mjs';
 import { regexFlow } from './regex-flow.mjs';
+import {tsPaths} from './ts-paths.mjs';
 
-export const VERSION = 'ts-server-v22';
+export const VERSION = 'ts-server-v23';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -299,10 +300,14 @@ export function analyze(input, overrides = {}) {
       modules.set(filePath, mod);
     } catch { record.parseStatus = 'LIMIT_EXCEEDED'; record.limitations.add('PARSER_BUDGET_EXCEEDED'); }
   }
+  const sourceImports=tsPaths({ts,input,modules,note,charge:()=>{
+    charged();if(astNodes>=limits.maxNodes)throw Error('AST_CONFIG_LIMIT');astNodes++;
+  }});
   function resolve(mod, name) {
     if (mod.functions.has(name)) return mod.functions.get(name);
     const imported = mod.imports.get(name);
-    if (!imported || !imported.spec.startsWith('.')) return undefined;
+    if (!imported) return undefined;
+    if(!imported.spec.startsWith('.'))return sourceImports.target(mod,imported.spec)?.exports.get(imported.exported);
     const base = path.posix.normalize(path.posix.join(path.posix.dirname(mod.filePath), imported.spec));
     for (const c of [base, base.replace(/\.js$/, '.ts'), `${base}.ts`, `${base}.js`, `${base}/index.ts`, `${base}/index.js`])
       if (modules.get(c)?.exports.has(imported.exported)) return modules.get(c).exports.get(imported.exported);
@@ -1095,13 +1100,28 @@ export function analyze(input, overrides = {}) {
   }
   phase='CLIENT';
   let clientWork=0;const clientCap=Math.floor(limits.maxSteps*0.15);
-  const precomputedSupabase=supabaseAnalysis({ts,modules,input,precomputedPolicies,tick:()=>{
+  const precomputedSupabase=supabaseAnalysis({ts,modules,input,sourceImports,precomputedPolicies,tick:()=>{
     if(clientWork>=clientCap)throw Error('CLIENT_STEP_BUDGET');clientWork++;
     charged();
   }});
   phase='ENTRY_DISCOVERY';
   denoEntries({ts,modules,resolve,claimFunction,tick,note,input});
   nextEntries({ts,modules,input,tick,note});
+  let requestEvidenceBytes=Buffer.byteLength(JSON.stringify(precomputedSupabase));
+  for(const access of precomputedSupabase.accesses){
+    const evidence=access.authorizationEvidence,at=evidence?.enclosingFunction,mod=at&&modules.get(at.filePath);
+    if(!mod)continue;
+    try {
+      tick(mod);
+      const entries=mod.entries.filter(e=>['NEXT_ROUTE_HANDLER','NEXT_SERVER_FUNCTION'].includes(e.kind)&&(()=>{
+        const p=loc(e.fn.node,mod,e.kind,e.fn);return p.line===at.line&&p.column===at.column;
+      })());
+      if(entries.length!==1)continue;
+      const entry=loc(entries[0].fn.node,mod,entries[0].kind,entries[0].fn),size=Buffer.byteLength(JSON.stringify(entry))+30;
+      if(requestEvidenceBytes+size>275000){note(mod,'CLIENT_POLICY_EVIDENCE_OUTPUT_LIMIT');break;}
+      evidence.requestEntry=entry;requestEvidenceBytes+=size;
+    }catch{note(mod,'NEXT_ACCESS_ASSOCIATION_BUDGET_LIMIT');break;}
+  }
   entryContracts({ts,modules,tick,note,loc,append,result});
   nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse});
   nodeSupport.discover();

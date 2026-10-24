@@ -32,3 +32,11 @@ test('policy evidence, identity API observations and unknown runtime roles are s
  for(const s of ['사용자별 행 제한 근거','성공·적용은 미확인','실제 DB 역할','getUser','Client·인증·정책 연결 근거','사용자 A·B'])assert.ok(h.includes(s),s);
  assert.ok(render(fixture()).includes('이 연결의 권한 근거는 미검사'));
 });
+test('local result guards and Next declarations are not rendered as successful authentication',()=>{
+ const f=fixture(),l=f.accesses[0].location;
+ f.accesses[0].authorizationEvidence={state:'UNKNOWN',clientContract:'SUPABASE_SSR_SERVER',authStatus:'IDENTITY_VERIFICATION_CALL_OBSERVED',effectiveRole:'UNKNOWN',roleEvidence:'UNKNOWN',
+ authChecks:[{method:'getUser',status:'IDENTITY_VERIFICATION_CALL_OBSERVED',location:l,resultEvidence:{status:'IDENTITY_RESULT_GUARD_OBSERVED',guardLocation:l,userIdFilters:[l],limitations:[]}}],
+ clientTrace:[],policyLocations:[],filterLocations:[],policyStates:[],limitations:[],requestEntry:l};
+ const h=render(f);
+ for(const s of ['중단 분기','실제 호출 여부는 미확인','DB 소유권 검증 보장 아님','반환된 사용자 ID'])assert.ok(h.includes(s),s);
+});

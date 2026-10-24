@@ -40,7 +40,8 @@ final class TypeScriptSourceSelector {
             for(String key:List.of(p,stem))if(specs.putIfAbsent(key,p)!=null)ambiguous.add(key);
         }
         ambiguous.forEach(specs::remove);
-        int hints=0,characters=manifests.characters();boolean complete=manifests.complete();
+        int configCharacters=TypeScriptConfigMetadata.read(input).stream().mapToInt(c->c.getOrDefault("content","").length()).sum();
+        int hints=0,characters=manifests.characters()+configCharacters;boolean complete=manifests.complete();
         var texts=new HashMap<String,String>();
         var hintOrder=js.stream().sorted(Comparator.comparingInt((ProjectFile f)->convention(f.relativePath()))
                 .thenComparing(ProjectFile::relativePath)).toList();

@@ -26,10 +26,19 @@ public record SupabaseSnapshot(int schemaVersion,String analyzerVersion,String s
             this(location,table,operation,clientStatus,clientLocation,keySource,policyStatus,policyLocation,limitations,null);
         }
     }
-    public record AuthCheck(String method,String status,Location location) { }
+    public record AuthResultEvidence(String status,Location guardLocation,List<Location> userIdFilters,List<String> limitations) { }
+    public record AuthCheck(String method,String status,Location location,AuthResultEvidence resultEvidence) {
+        public AuthCheck(String method,String status,Location location){this(method,status,location,null);}
+    }
     public record AuthorizationEvidence(String state,String clientContract,String authStatus,String effectiveRole,String roleEvidence,
             List<AuthCheck> authChecks,List<Location> clientTrace,List<Location> policyLocations,List<Location> filterLocations,
-            Location enclosingFunction,List<String> policyStates,List<String> limitations) { }
+            Location enclosingFunction,List<String> policyStates,List<String> limitations,Location requestEntry) {
+        public AuthorizationEvidence(String state,String clientContract,String authStatus,String effectiveRole,String roleEvidence,
+                List<AuthCheck> authChecks,List<Location> clientTrace,List<Location> policyLocations,List<Location> filterLocations,
+                Location enclosingFunction,List<String> policyStates,List<String> limitations){
+            this(state,clientContract,authStatus,effectiveRole,roleEvidence,authChecks,clientTrace,policyLocations,filterLocations,enclosingFunction,policyStates,limitations,null);
+        }
+    }
     public record Finding(String findingId,String ruleId,String priority,String comparisonPolicy,String table,Location location,
             List<String> roles,List<String> operations,List<Location> evidenceLocations,String title,String reason,
             String recommendation,List<String> verificationSteps,List<String> limitations) { }
@@ -38,13 +47,21 @@ public record SupabaseSnapshot(int schemaVersion,String analyzerVersion,String s
         files.forEach(f->counts.merge("SQL_"+f.status(),1,Integer::sum));
         counts.put("TABLE_DECLARATIONS",tables.size());counts.put("CLIENT_DECLARATIONS",clients.size());
         counts.put("DATA_ACCESS_DECLARATIONS",accesses.size());counts.put("REVIEW_CANDIDATES",findings.size());
-        var authSites=new HashSet<AuthCheck>();
+        var authSites=new HashSet<Location>();var guards=new HashSet<Location>();var identityFilters=new HashSet<Location>();
         accesses.forEach(a->{
             var evidence=a.authorizationEvidence();
             counts.merge("ACCESS_AUTH_"+(evidence==null?"UNRECORDED":evidence.state()),1,Integer::sum);
-            if(evidence!=null){counts.merge("AUTH_CHECK_REFERENCES",evidence.authChecks().size(),Integer::sum);authSites.addAll(evidence.authChecks());}
+            if(evidence!=null){
+                counts.merge("AUTH_CHECK_REFERENCES",evidence.authChecks().size(),Integer::sum);
+                if(evidence.requestEntry()!=null)counts.merge("NEXT_ACCESS_ENTRY_DECLARATIONS",1,Integer::sum);
+                for(var check:evidence.authChecks()){
+                    authSites.add(check.location());
+                    if(check.resultEvidence()!=null){guards.add(check.resultEvidence().guardLocation());identityFilters.addAll(check.resultEvidence().userIdFilters());}
+                }
+            }
         });
         counts.put("AUTH_API_CALLS_OBSERVED",authSites.size());
+        counts.put("AUTH_RESULT_GUARDS_OBSERVED",guards.size());counts.put("IDENTITY_ID_FILTERS_OBSERVED",identityFilters.size());
         if(budgetUsage!=null)counts.putAll(budgetUsage);
         var analyzers=new ArrayList<>(ledger.analyzers());
         analyzers.add(new CoverageLedger.Analyzer("SUPABASE_RLS",status,

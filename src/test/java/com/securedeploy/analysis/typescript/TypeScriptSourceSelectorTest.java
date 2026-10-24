@@ -7,6 +7,17 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TypeScriptSourceSelectorTest {
+    @Test void staticConfigMetadataIsBoundedAndDeterministicWithoutReadingDisk(){
+        var files=new ArrayList<ProjectFile>();
+        files.add(js("tsconfig.json","{\"compilerOptions\":{\"paths\":{\"@/*\":[\"./*\"]}}}"));
+        files.add(js("nested/tsconfig.json","x".repeat(64_001)));
+        files.add(js("tsconfig.extra.json","{}"));
+        var metadata=TypeScriptConfigMetadata.read(files);
+        assertThat(metadata).hasSize(2);
+        assertThat(metadata.get(0)).containsEntry("status","LIMIT_EXCEEDED").doesNotContainKey("content");
+        assertThat(metadata.get(1)).containsEntry("status","SELECTED").containsKey("content");
+        Collections.reverse(files);assertThat(TypeScriptConfigMetadata.read(files)).isEqualTo(metadata);
+    }
     @Test void manifestHintsProtectArbitraryStartFilesAndImportsUnderPressure(){
         var files=new ArrayList<ProjectFile>();
         for(int i=0;i<180;i++)files.add(js("aaa/Panel%03d.js".formatted(i),"export const label=1;"));

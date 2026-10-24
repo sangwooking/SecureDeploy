@@ -240,6 +240,22 @@ class ServerAnalysisIntegrationTest {
         assertThat(detail(token,id).at("/serverAnalysis/supabaseAnalysis").isNull()).isTrue();
     }
 
+    @Test void collectedAliasesAndLocalIdentityObservationsPersistWithoutClaimingAuthorization() throws Exception {
+        String token=signup();
+        var result=uploadSources(token,Map.of(
+            "package.json","{\"dependencies\":{\"next\":\"15.2.0\"}}",
+            "tsconfig.json","{\"compilerOptions\":{\"paths\":{\"@/*\":[\"./*\"]}}}",
+            "lib/client.ts","import {createServerClient} from '@supabase/ssr';export function make(){const c=cookies();return createServerClient('https://example.invalid',process.env.PUBLIC_ANON_KEY,{cookies:{getAll(){return c.getAll();}}});}",
+            "app/api/items/route.ts","import {make} from '@/lib/client';export async function GET(){const db=make();const {data:{user}}=await db.auth.getUser();if(!user)throw new Error('missing');return Response.json(await db.from('items').select().eq('user_id',user.id));}"));
+        var access=result.at("/serverAnalysis/supabaseAnalysis/accesses/0");
+        assertThat(access.path("clientStatus").asText()).isEqualTo("CLIENT_DECLARATION_LINKED");
+        assertThat(access.at("/authorizationEvidence/authStatus").asText()).isEqualTo("IDENTITY_VERIFICATION_CALL_OBSERVED");
+        assertThat(access.at("/authorizationEvidence/effectiveRole").asText()).isEqualTo("UNKNOWN");
+        assertThat(access.at("/authorizationEvidence/requestEntry/kind").asText()).isEqualTo("NEXT_ROUTE_HANDLER");
+        assertThat(access.at("/authorizationEvidence/authChecks/0/resultEvidence/userIdFilters")).hasSize(1);
+        assertThat(detail(token,result.path("reviewId").asLong()).at("/serverAnalysis/supabaseAnalysis")).isEqualTo(result.at("/serverAnalysis/supabaseAnalysis"));
+    }
+
     @Test void eightyJavaUnitsAndSourceLimitHavePersistedDistinctCoverage() throws Exception {
         String token=signup();var sources=new LinkedHashMap<String,String>();
         sources.put("Endpoint.java","import org.springframework.web.bind.annotation.*; import java.sql.Connection; @RestController class Endpoint { Connection c; @GetMapping(\"/\") void inspect(@RequestParam String input){c.prepareCall(\"{call \"+input+\"}\").execute();}}");

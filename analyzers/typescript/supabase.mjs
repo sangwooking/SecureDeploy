@@ -1,7 +1,7 @@
 import {analyzePolicies} from './rls.mjs';
 import {linkSupabaseEvidence} from './supabase-evidence.mjs';
 
-export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies}){
+export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies,sourceImports}){
   const unavailable=reason=>({schemaVersion:1,analyzerVersion:'supabase-rls-v2',status:'PARTIAL',files:(input.policyFiles??[]).slice(0,100).map(f=>({filePath:f.filePath,status:'NOT_RUN',statements:0,limitations:[reason]})),tables:[],clients:[],accesses:[],findings:[],limitations:['DECLARATIONS_NOT_LIVE_DATABASE',reason]});
   const location=(node,mod,kind)=>{const p=mod.ast.getLineAndCharacterOfPosition(node.getStart(mod.ast));return {filePath:mod.filePath,line:p.line+1,column:p.character+1,functionName:'',kind};};
   const clients=[],accesses=[],limitations=['DECLARATIONS_NOT_LIVE_DATABASE','CLIENT_CALL_NOT_AUTHENTICATION_OR_RUNTIME_PROOF'];
@@ -34,6 +34,11 @@ export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies}){
         if(ds.length===1&&ts.isVariableDeclaration(ds[0])&&(ds[0].parent.flags&ts.NodeFlags.Const))return resolve(mod,ds[0].initializer,seen,depth+1);
         if(ds.length)return null;
         const imp=mod.imports.get(node.text);
+        if(imp&&!imp.spec.startsWith('.')){
+          const target=sourceImports?.target(mod,imp.spec);
+          const d=target&&caches.get(target)?.declarations.get(imp.exported);
+          if(d?.length===1&&ts.isVariableDeclaration(d[0])&&d[0].parent.parent.modifiers?.some(m=>m.kind===ts.SyntaxKind.ExportKeyword))return resolve(target,d[0].name,seen,depth+1);
+        }
         if(imp?.spec.startsWith('.')){
           const base=mod.filePath.split('/').slice(0,-1);for(const p of imp.spec.split('/')){if(p==='..')base.pop();else if(p!=='.')base.push(p);}
           const path=base.join('/');const target=[path,path+'.ts',path+'.tsx',path+'.js',path+'/index.ts'].map(p=>modules.get(p)).find(Boolean);
@@ -42,7 +47,7 @@ export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies}){
       }
       if(ts.isCallExpression(node)&&ts.isIdentifier(node.expression)){
         const imp=mod.imports.get(node.expression.text);
-        if(imp?.exported==='createClient'&&official(imp.spec)&&!cache.typeOnly.has(node.expression.text)&&!cache.declarations.has(node.expression.text)&&!cache.writes.has(node.expression.text)&&node.arguments.length>=2&&node.arguments.length<=3){
+        if(imp?.exported==='createClient'&&official(imp.spec)&&!sourceImports?.shadows(mod,imp.spec)&&!cache.typeOnly.has(node.expression.text)&&!cache.declarations.has(node.expression.text)&&!cache.writes.has(node.expression.text)&&node.arguments.length>=2&&node.arguments.length<=3){
           const loc=location(node,mod,'SUPABASE_CLIENT_DECLARATION');
           let key=unwrap(node.arguments[1]),steps=0;
           while(key&&ts.isIdentifier(key)&&steps++<3){const ds=cache.declarations.get(key.text);if(ds?.length!==1||cache.writes.has(key.text)||!ts.isVariableDeclaration(ds[0]))break;key=unwrap(ds[0].initializer);}
@@ -99,6 +104,6 @@ export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies}){
   }
   const snapshot={schemaVersion:1,analyzerVersion:'supabase-rls-v2',status:policies.files.length||accesses.length||clients.length?'PARTIAL':'NOT_APPLICABLE',
     ...policies,clients,accesses,findings,limitations:[...policies.limitations,...limitations]};
-  linkSupabaseEvidence({ts,modules,snapshot,tick});
+  linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports});
   return Buffer.byteLength(JSON.stringify(snapshot))>300000?unavailable('SUPABASE_OUTPUT_LIMIT'):snapshot;
 }
