@@ -22,7 +22,7 @@ def profile(spec):
     revisions={'before':spec.get('beforeRevision','e620a4cbf3ae1629ad58c9c9f8cc3cd83d1e167a'),'after':spec.get('afterRevision','2d88ce37e2a93b44fa10c07656efd33302971c67')}
     versions={'before':spec.get('beforeVersion','ts-server-v25'),'after':spec.get('afterVersion','ts-server-v26')}
     for key,root in repos.items():
-        if not re.fullmatch('[a-f0-9]{40}',revisions[key]) or versions[key] not in ['ts-server-v25','ts-server-v26','ts-server-v27']:raise ValueError('PINNED_ENGINE_REQUIRED')
+        if not re.fullmatch('[a-f0-9]{40}',revisions[key]) or versions[key] not in ['ts-server-v25','ts-server-v26','ts-server-v27','ts-server-v28']:raise ValueError('PINNED_ENGINE_REQUIRED')
         subprocess.run(['git','merge-base','--is-ancestor','e620a4cbf3ae1629ad58c9c9f8cc3cd83d1e167a',revisions[key]],cwd=root,check=True,capture_output=True)
         # Only verified SecureDeploy analysis code, not a downloaded application's module.
         subprocess.run(['git','diff','--exit-code',revisions[key],'--','analyzers','scripts/evaluation/node_probe_worker.mjs'],cwd=root,check=True,capture_output=True)
