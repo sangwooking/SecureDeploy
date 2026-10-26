@@ -296,3 +296,16 @@ Helper graphs, UPSERT, arrays, query/params extraction and dynamic wrappers are
 not added. Policy v3, effective DB role UNKNOWN, existing Findings/Risk and
 REVIEW_REQUIRED/NOT_COMPARED semantics are unchanged. Older snapshots have no
 invented write origins. Target sources are never executed or installed.
+
+## Acquisition policy omissions (v27 bridge)
+
+The backend now forwards known uninspected SQL files from the existing Coverage
+Ledger as NOT_RUN descriptors, including LFS/symlink acquisition omissions with
+no file type. It reuses ProjectFileCollector's supported SQL paths and the ignore
+policy. Canonical migration omissions invalidate their existing RLS scope;
+truncated/redacted metadata, unavailable SQL directories, descriptor overflow or
+non-migration SQL sources conservatively invalidate inventory completeness.
+At most 100 SQL descriptors are retained, with no missing-file contents loaded.
+Unrelated images and ignored dependency SQL do not establish policy uncertainty.
+RLS v3 semantics, risk formulas, resource limits and candidate rules are unchanged.
+Worker version 27 distinguishes this changed input contract for comparisons.

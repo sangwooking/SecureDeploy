@@ -33,7 +33,6 @@ public class TypeScriptServerAnalyzer {
                 .sorted(Comparator.comparing(f -> f.relativePath())).toList();
         var sqlCandidates=project.analysisFiles().stream().filter(f->f.type()==com.securedeploy.project.model.ProjectFileType.SUPABASE_SQL)
                 .sorted(Comparator.comparing(f->f.relativePath())).toList();
-        if (candidates.isEmpty()&&sqlCandidates.isEmpty()) return ServerAnalysisSnapshot.unavailable("NOT_APPLICABLE", List.of(), "NO_JAVASCRIPT_OR_TYPESCRIPT_FILES");
         List<Map<String, String>> sources = new ArrayList<>();
         List<FileCoverage> omitted = new ArrayList<>();
         Map<String, Integer> lineCounts = new HashMap<>();
@@ -56,6 +55,9 @@ public class TypeScriptServerAnalyzer {
         }
         for(var choice:selection.omitted())if(choice.sql()&&policyFiles.size()<100)
             policyFiles.add(Map.of("filePath",CoverageRecorder.safePath(choice.file().relativePath()),"status","LIMIT_EXCEEDED","reason",selection.omissions().get(choice.file().relativePath())));
+        boolean policyInventoryComplete=sqlCandidates.size()<=100&&appendSourcePolicyOmissions(project,policyFiles);
+        if(candidates.isEmpty()&&sqlCandidates.isEmpty()&&policyFiles.isEmpty())
+            return ServerAnalysisSnapshot.unavailable(policyInventoryComplete?"NOT_APPLICABLE":"PARTIAL",List.of(),policyInventoryComplete?"NO_JAVASCRIPT_OR_TYPESCRIPT_FILES":"SOURCE_POLICY_INVENTORY_INCOMPLETE");
         sources.forEach(f -> unavailableFiles.add(new FileCoverage(f.get("filePath"), "NOT_RUN", "NOT_RUN", 0, 0, List.of()).withSelectionReason(selectionReasons.get(f.get("filePath")))));
         if (!properties.isEnabled()) return ServerAnalysisSnapshot.unavailable("DISABLED", unavailableFiles, "ANALYZER_DISABLED");
         if (sources.isEmpty()&&policyFiles.isEmpty()) return ServerAnalysisSnapshot.unavailable("PARTIAL", unavailableFiles, "NO_SOURCE_WITHIN_LIMITS");
@@ -94,7 +96,7 @@ public class TypeScriptServerAnalyzer {
             boolean metadataComplete=ledger!=null&&ledger.omittedEntries()==0&&project.enumeratedDirectories().contains(".")
                     &&inventory.size()<=1000&&!inventory.contains("[redacted-path]");
             boolean inventoryComplete=metadataComplete&&ledger.inventoryComplete();
-            byte[] input = mapper.writeValueAsBytes(Map.of("typescriptConfigs",TypeScriptConfigMetadata.read(project.analysisFiles()),"files", sources,"nodeManifests",manifests,"denoConfigs",denoConfigs,"policyFiles",policyFiles,"policyInventoryComplete",sqlCandidates.size()<=100,
+            byte[] input = mapper.writeValueAsBytes(Map.of("typescriptConfigs",TypeScriptConfigMetadata.read(project.analysisFiles()),"files", sources,"nodeManifests",manifests,"denoConfigs",denoConfigs,"policyFiles",policyFiles,"policyInventoryComplete",policyInventoryComplete,
                     "nodeSourceInventory",inventory.stream().limit(1000).toList(),"nodeSourceInventoryComplete",inventoryComplete,
                     "nodeEnumeratedDirectories",metadataComplete?project.enumeratedDirectories().stream().sorted().toList():List.of()));
             var builder = new ProcessBuilder(properties.getNodeExecutable(), "--permission", "--no-addons",
@@ -145,6 +147,32 @@ public class TypeScriptServerAnalyzer {
 
     private FileCoverage skipped(String path, String reason) {
         return new FileCoverage(path, "LIMIT_EXCEEDED", "NOT_RUN", 0, 0, List.of(reason));
+    }
+
+    // Source acquisition omissions are not selector omissions: their bytes never reached analysisFiles.
+    private boolean appendSourcePolicyOmissions(ProjectStructure project,List<Map<String,String>> policies){
+        boolean complete=policies.stream().noneMatch(p->"[redacted-path]".equals(p.get("filePath")));
+        var ledger=project.coverage();if(ledger==null)return complete;
+        complete&=ledger.omittedEntries()==0;
+        var collector=new com.securedeploy.project.service.ProjectFileCollector();
+        var seen=new HashSet<String>();policies.forEach(p->seen.add(p.get("filePath")));
+        for(var e:ledger.entries().stream().sorted(Comparator.comparing(com.securedeploy.project.coverage.CoverageLedger.Entry::filePath)).toList()){
+            if("SELECTED".equals(e.status()))continue;
+            String path=CoverageRecorder.safePath(e.filePath());
+            if("[redacted-path]".equals(path)){complete=false;continue;}
+            Path relative=Path.of(path);
+            if(com.securedeploy.project.service.ProjectIgnorePolicy.ignores(relative))continue;
+            if("DIRECTORY".equals(e.kind())){
+                if(path.matches("(?:.*/)?supabase(?:/(?:migrations|schemas|policies))?"))complete=false;
+                continue;
+            }
+            if(!"FILE".equals(e.kind())||!("SUPABASE_SQL".equals(e.fileType())||collector.resolveAnalysisFileType(relative).filter(t->t==com.securedeploy.project.model.ProjectFileType.SUPABASE_SQL).isPresent())||seen.contains(path))continue;
+            if(policies.size()>=100){complete=false;continue;}
+            policies.add(Map.of("filePath",path,"status","NOT_RUN","reason","SOURCE_LEDGER_SQL_NOT_INSPECTED"));seen.add(path);
+            // Non-migration sources have no unambiguous migration scope/order.
+            if(!path.matches("(?:.*/)?supabase/migrations/[^/]+\\.sql"))complete=false;
+        }
+        return complete;
     }
 
     private void validateSupabase(SupabaseSnapshot snapshot,Map<String,Integer> files){
@@ -204,7 +232,7 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v26".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v27".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200
