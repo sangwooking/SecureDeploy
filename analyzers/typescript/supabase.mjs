@@ -10,7 +10,7 @@ export function supabaseAnalysis({ts,modules,input,tick,precomputedPolicies,sour
     policies=precomputedPolicies??analyzePolicies(input.policyFiles??[],()=>tick());
     if(input.policyInventoryComplete===false){
       policies.limitations.push('SQL_FILE_INVENTORY_TRUNCATED');
-      for(const t of policies.tables){t.rls='UNKNOWN';t.limitations.push('SQL_FILE_INVENTORY_TRUNCATED');for(const o of t.operations){o.state='UNKNOWN';o.candidate=false;}}
+      for(const t of policies.tables){t.rls='UNKNOWN';t.limitations.push('SQL_FILE_INVENTORY_TRUNCATED');for(const o of t.operations){o.state='UNKNOWN';o.candidate=false;}for(const p of t.updatePrivileges??[]){p.status='UNKNOWN';p.tableGrant='UNKNOWN';p.columns=[];}}
     }
     const caches=new Map();
     const unwrap=n=>{while(n&&(ts.isAsExpression(n)||ts.isNonNullExpression(n)||ts.isParenthesizedExpression(n)))n=n.expression;return n;};

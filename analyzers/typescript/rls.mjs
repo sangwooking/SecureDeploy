@@ -88,7 +88,7 @@ export function analyzePolicies(files,tick,workTick=tick){
   const scopes=new Map();
   const migrationRoots=new Set(files.map(f=>f.filePath.match(/^(.*)supabase\/migrations\/[^/]+\.sql$/)?.[1]).filter(v=>v!==undefined));
   const ambiguousRoots=new Set(files.filter(f=>!f.filePath.includes('/migrations/')).map(f=>f.filePath.match(/^(.*)supabase\/(?:schemas\/|policies\/)?[^/]+\.sql$/)?.[1]??(f.filePath==='schema.sql'?'':null)).filter(v=>v!==null&&migrationRoots.has(v)));
-  function table(scope,name,location){const key=scope+'|'+name;if(!tables.has(key)){if(tables.size>=200)throw Error('SQL_TABLE_LIMIT');tables.set(key,{scope,table:name,rls:'UNKNOWN',force:'UNKNOWN',location,policies:new Map(),grants:new Map(),grantLocations:[],uncertain:false});}return tables.get(key);}
+  function table(scope,name,location){const key=scope+'|'+name;if(!tables.has(key)){if(tables.size>=200)throw Error('SQL_TABLE_LIMIT');tables.set(key,{scope,table:name,rls:'UNKNOWN',force:'UNKNOWN',location,policies:new Map(),grants:new Map(),updateColumns:new Map(),grantLocations:[],uncertain:false});}return tables.get(key);}
   let statements=0,workExhausted=false;
   // CLI ListLocalMigrations uses directory lexical order and accepts numeric
   // version strings, not just generated 14-digit timestamps. Never run scripts.
@@ -155,12 +155,28 @@ export function analyzePolicies(files,tick,workTick=tick){
           }else if(is(s[0],'grant')||is(s[0],'revoke')){
             if(is(s[1],'execute')){row.status='PARTIAL';row.limitations.push('FUNCTION_EXECUTE_PRIVILEGES_NOT_INTERPRETED');continue;}
             if(s[1]?.quoted)throw Error('UNSUPPORTED_GRANT');
-            const grant=c.eat('grant');if(!grant)c.require('revoke');let ops;
-            if(c.eat('all')){c.eat('privileges');ops=OPS;}else ops=c.list().map(x=>x.toUpperCase());
-            if(ops.some(x=>!OPS.includes(x)))throw Error('UNSUPPORTED_GRANT');c.require('on');c.eat('table');target=table(scope,c.table(),location(s[0].line));
-            c.require(grant?'to':'from');const roles=c.list();c.end();
+            const grant=c.eat('grant');if(!grant)c.require('revoke');const privileges=[];
+            if(c.eat('all')){c.eat('privileges');privileges.push(...OPS.map(op=>({op,columns:null})));}
+            else do{
+              if(s[c.i]?.quoted)throw Error('UNSUPPORTED_GRANT');
+              const op=c.id().toUpperCase();if(!OPS.includes(op))throw Error('UNSUPPORTED_GRANT');
+              let columns=null;
+              if(c.eat('(')){if(op!=='UPDATE')throw Error('UNSUPPORTED_COLUMN_PRIVILEGE');columns=c.list();c.require(')');if(columns.length>64)throw Error('COLUMN_PRIVILEGE_LIMIT');}
+              privileges.push({op,columns});if(privileges.length>4)throw Error('GRANT_OPERATION_LIMIT');
+            }while(c.eat(','));
+            c.require('on');c.eat('table');target=table(scope,c.table(),location(s[0].line));
+            c.require(grant?'to':'from');const roleStart=c.i,roles=c.list();c.end();
+            if(roles.length>32||s.slice(roleStart).some(t=>t.quoted&&t.v==='public')||roles.some(r=>['current_user','current_role','session_user'].includes(r)))throw Error('UNSUPPORTED_GRANT_ROLE');
             target.grantLocations.push(location(s[0].line));
-            for(const role of roles){const set=target.grants.get(role)??new Set();for(const op of ops)grant?set.add(op):set.delete(op);target.grants.set(role,set);}
+            for(const role of roles){
+              if(!target.grants.has(role)&&target.grants.size>=32)throw Error('GRANT_ROLE_LIMIT');
+              const set=target.grants.get(role)??new Set(),cols=target.updateColumns.get(role)??new Set();
+              for(const {op,columns} of privileges){
+                if(columns){for(const col of columns)grant?cols.add(col):cols.delete(col);if(cols.size>64)throw Error('COLUMN_PRIVILEGE_LIMIT');}
+                else {grant?set.add(op):set.delete(op);if(!grant&&op==='UPDATE')cols.clear();}
+              }
+              target.grants.set(role,set);target.updateColumns.set(role,cols);
+            }
           }else if(c.eat('begin')||c.eat('commit'))c.end();
           else if(c.eat('do')||c.eat('set')||c.eat('reset')||c.eat('rollback'))throw Error('DYNAMIC_OR_TRANSACTION_STATE_UNKNOWN');
           else {row.status='PARTIAL';row.limitations.push('OTHER_SQL_NOT_INTERPRETED');}
@@ -195,7 +211,10 @@ export function analyzePolicies(files,tick,workTick=tick){
         columns:[...new Set([...using.columns,...check.columns])],state,candidate,
         policyLocations:applicable.map(p=>p.location)});
     }
-    output.push({scope:t.scope,table:t.table,rls:uncertain?'UNKNOWN':t.rls,force:t.force,location:t.location,grantLocations:t.grantLocations,policies,operations,
+    const updatePrivileges=['anon','authenticated'].map(role=>({role,status:uncertain?'UNKNOWN':'DECLARATION_ONLY',
+      tableGrant:uncertain?'UNKNOWN':t.grants.get(role)?.has('UPDATE')||t.grants.get('public')?.has('UPDATE')?'EXPLICIT_GRANT':'NOT_ESTABLISHED',
+      columns:uncertain?[]:[...new Set([...(t.updateColumns.get(role)??[]),...(t.updateColumns.get('public')??[])])].sort()}));
+    output.push({scope:t.scope,table:t.table,rls:uncertain?'UNKNOWN':t.rls,force:t.force,location:t.location,grantLocations:t.grantLocations,policies,operations,updatePrivileges,
       limitations:['DECLARATIONS_NOT_LIVE_DATABASE',...(uncertain?['MIGRATION_OR_SQL_CONTEXT_UNKNOWN',...scopes.get(t.scope).reasons]:[])]});
   }
   return {files:results,tables:output,limitations:[...limits]};

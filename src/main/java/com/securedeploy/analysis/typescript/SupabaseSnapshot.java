@@ -17,7 +17,12 @@ public record SupabaseSnapshot(int schemaVersion,String analyzerVersion,String s
     public record Operation(String role,String operation,String grant,String using,String check,List<String> columns,
             String state,boolean candidate,List<Location> policyLocations) { }
     public record Table(String scope,String table,String rls,String force,Location location,List<Location> grantLocations,List<Policy> policies,
-            List<Operation> operations,List<String> limitations) { }
+            List<Operation> operations,List<String> limitations,List<UpdatePrivilege> updatePrivileges) {
+        public Table(String scope,String table,String rls,String force,Location location,List<Location> grantLocations,List<Policy> policies,List<Operation> operations,List<String> limitations){
+            this(scope,table,rls,force,location,grantLocations,policies,operations,limitations,null);
+        }
+    }
+    public record UpdatePrivilege(String role,String status,String tableGrant,List<String> columns) { }
     public record Client(Location location,String keySource,String authContext,List<String> limitations) { }
     public record Access(Location location,String table,String operation,String clientStatus,Location clientLocation,
             String keySource,String policyStatus,Location policyLocation,List<String> limitations,AuthorizationEvidence authorizationEvidence,WriteEvidence writeEvidence) {
@@ -32,7 +37,14 @@ public record SupabaseSnapshot(int schemaVersion,String analyzerVersion,String s
     }
     public record WriteValue(String name,String operator,Location location,String source,List<Location> sourceLocations,List<String> limitations) { }
     public record WriteEvidence(String status,Location operationLocation,String dataStatus,List<WriteValue> dataFields,
-            String filterStatus,List<WriteValue> filters,List<String> limitations) { }
+            String filterStatus,List<WriteValue> filters,List<String> limitations,ColumnUpdate columnUpdate) {
+        public WriteEvidence(String status,Location operationLocation,String dataStatus,List<WriteValue> dataFields,String filterStatus,List<WriteValue> filters,List<String> limitations){
+            this(status,operationLocation,dataStatus,dataFields,filterStatus,filters,limitations,null);
+        }
+    }
+    public record ColumnField(String name,String source,String grant) { }
+    public record ColumnRole(String role,String tableGrant,List<ColumnField> fields) { }
+    public record ColumnUpdate(String analyzerVersion,String status,List<ColumnRole> roles,List<Location> grantLocations,List<String> limitations) { }
     public record AuthResultEvidence(String status,Location guardLocation,List<Location> userIdFilters,List<String> limitations) { }
     public record AuthCheck(String method,String status,Location location,AuthResultEvidence resultEvidence) {
         public AuthCheck(String method,String status,Location location){this(method,status,location,null);}
@@ -69,6 +81,7 @@ public record SupabaseSnapshot(int schemaVersion,String analyzerVersion,String s
             if(Set.of("INSERT","UPDATE","DELETE").contains(a.operation())){
                 var w=a.writeEvidence();counts.merge("WRITE_ORIGIN_"+(w==null?"UNRECORDED":"RECORDED"),1,Integer::sum);
                 if(w!=null){
+                    if(w.columnUpdate()!=null)counts.merge("COLUMN_UPDATE_"+w.columnUpdate().status(),1,Integer::sum);
                     counts.merge("WRITE_DATA_"+w.dataStatus(),1,Integer::sum);counts.merge("WRITE_FILTER_"+w.filterStatus(),1,Integer::sum);
                     w.dataFields().forEach(v->counts.merge("WRITE_FIELD_SOURCE_"+v.source(),1,Integer::sum));
                     w.filters().forEach(v->counts.merge("WRITE_FILTER_SOURCE_"+v.source(),1,Integer::sum));

@@ -16,12 +16,18 @@ class SupabaseAnalysisTest {
         files.add(new ProjectFile(Path.of("package.json"),"package.json",ProjectFileType.PACKAGE_JSON,List.of("{\"dependencies\":{\"next\":\"15.2.0\"}}")));
         var result=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties()).analyze(new ProjectStructure(Path.of("/not-executed"),files));
         var w=result.supabaseAnalysis().accesses().get(0).writeEvidence();assertThat(w).isNotNull();
+        assertThat(w.columnUpdate()).isNotNull();assertThat(w.columnUpdate().roles()).hasSize(2);
+        assertThat(w.columnUpdate().roles().get(1).fields()).extracting(SupabaseSnapshot.ColumnField::grant).containsOnly("TABLE_GRANT");
         assertThat(w.dataFields()).extracting(SupabaseSnapshot.WriteValue::source).containsExactly("REQUEST_CONTROLLED","SERVER_CONTROLLED");
         assertThat(w.filters()).extracting(SupabaseSnapshot.WriteValue::source).containsExactly("REQUEST_CONTROLLED");
         var converter=new ServerAnalysisConverter();String json=converter.convertToDatabaseColumn(result);
         assertThat(json).doesNotContain(code,"private-placeholder");assertThat(converter.convertToEntityAttribute(json)).isEqualTo(result);
         var tree=(com.fasterxml.jackson.databind.node.ObjectNode)new com.fasterxml.jackson.databind.ObjectMapper().readTree(json);
         tree.put("analyzerVersion","ts-server-v25");
+        var write=(com.fasterxml.jackson.databind.node.ObjectNode)tree.path("supabaseAnalysis").path("accesses").get(0).path("writeEvidence");write.remove("columnUpdate");
+        ((com.fasterxml.jackson.databind.node.ObjectNode)tree.path("supabaseAnalysis").path("tables").get(0)).remove("updatePrivileges");
+        assertThat(converter.convertToEntityAttribute(tree.toString()).supabaseAnalysis().accesses().get(0).writeEvidence().columnUpdate()).isNull();
+        assertThat(converter.convertToEntityAttribute(tree.toString()).supabaseAnalysis().tables().get(0).updatePrivileges()).isNull();
         ((com.fasterxml.jackson.databind.node.ObjectNode)tree.path("supabaseAnalysis").path("accesses").get(0)).remove("writeEvidence");
         assertThat(converter.convertToEntityAttribute(tree.toString()).supabaseAnalysis().accesses().get(0).writeEvidence()).isNull();
         assertThat(result.attachCoverage(new com.securedeploy.project.coverage.CoverageRecorder().snapshot()).analyzers())

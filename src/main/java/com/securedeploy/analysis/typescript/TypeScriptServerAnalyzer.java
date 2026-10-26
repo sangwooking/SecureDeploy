@@ -181,6 +181,17 @@ public class TypeScriptServerAnalyzer {
                 ||snapshot.tables().size()>200||snapshot.clients().size()>100||snapshot.accesses().size()>200||snapshot.findings().size()>200)throw new IllegalArgumentException("INVALID_RLS_RESPONSE");
         var locations=new ArrayList<ServerAnalysisSnapshot.Location>();
         snapshot.tables().forEach(t->{locations.add(t.location());locations.addAll(t.grantLocations());if(t.policies().size()>500||t.operations().size()>8)throw new IllegalArgumentException("INVALID_RLS_LIMIT");t.policies().forEach(p->locations.add(p.location()));});
+        snapshot.tables().forEach(t->{
+            if(t.updatePrivileges()==null)return;
+            if(t.updatePrivileges().size()!=2)throw new IllegalArgumentException("INVALID_COLUMN_PRIVILEGES");
+            var roles=new HashSet<String>();
+            for(var p:t.updatePrivileges()){
+                if(!roles.add(p.role())||!Set.of("anon","authenticated").contains(p.role())||!Set.of("DECLARATION_ONLY","UNKNOWN").contains(p.status())
+                        ||!Set.of("EXPLICIT_GRANT","NOT_ESTABLISHED","UNKNOWN").contains(p.tableGrant())||p.columns().size()>128
+                        ||p.columns().stream().anyMatch(c->c==null||c.length()>100)||new HashSet<>(p.columns()).size()!=p.columns().size()
+                        ||"UNKNOWN".equals(p.status())&&(!"UNKNOWN".equals(p.tableGrant())||!p.columns().isEmpty()))throw new IllegalArgumentException("INVALID_COLUMN_PRIVILEGES");
+            }
+        });
         snapshot.clients().forEach(c->locations.add(c.location()));
         snapshot.accesses().forEach(a->{locations.add(a.location());if(a.clientLocation()!=null)locations.add(a.clientLocation());if(a.policyLocation()!=null)locations.add(a.policyLocation());});
         snapshot.accesses().forEach(a->{
@@ -199,6 +210,23 @@ public class TypeScriptServerAnalyzer {
                         ||v.sourceLocations().size()>4||v.limitations().size()>10)throw new IllegalArgumentException("INVALID_WRITE_VALUE");
                 locations.add(v.location());locations.addAll(v.sourceLocations());
             });
+            var c=w.columnUpdate();
+            if(c!=null){
+                if(!"UPDATE".equals(a.operation())||!"column-update-v1".equals(c.analyzerVersion())||!Set.of("DECLARATION_ONLY","UNKNOWN").contains(c.status())
+                        ||c.roles().size()!=2||c.grantLocations().size()>8||c.limitations().size()>10)throw new IllegalArgumentException("INVALID_COLUMN_UPDATE");
+                var roleNames=new HashSet<String>();
+                for(var r:c.roles()){
+                    if(!roleNames.add(r.role())||!Set.of("anon","authenticated").contains(r.role())||!Set.of("EXPLICIT_GRANT","NOT_ESTABLISHED","UNKNOWN").contains(r.tableGrant())
+                            ||r.fields().size()!=w.dataFields().size())throw new IllegalArgumentException("INVALID_COLUMN_UPDATE");
+                    for(int i=0;i<r.fields().size();i++){
+                        var field=r.fields().get(i);var origin=w.dataFields().get(i);
+                        if(!Objects.equals(field.name(),origin.name())||!Objects.equals(field.source(),origin.source())
+                                ||!Set.of("TABLE_GRANT","COLUMN_GRANT","NOT_ESTABLISHED","UNKNOWN").contains(field.grant())
+                                ||"UNKNOWN".equals(c.status())&&!"UNKNOWN".equals(field.grant()))throw new IllegalArgumentException("INVALID_COLUMN_FIELD");
+                    }
+                }
+                locations.addAll(c.grantLocations());
+            }
         });
         snapshot.accesses().forEach(a->{
             var e=a.authorizationEvidence();if(e==null)return;
@@ -232,7 +260,7 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v27".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v28".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200

@@ -1,5 +1,17 @@
 # Bounded server analysis runtime
 
+Version ts-server-v28 preserves RLS v3 row-policy meaning and adds optional
+column-update-v1 declaration evidence. Explicit UPDATE(column, ...) GRANT/REVOKE
+is tracked separately from table privileges. Table REVOKE also clears that role's
+column grants; column REVOKE does not remove table privileges. Direct and PUBLIC
+grants add. Existing static request write fields are matched per anon/authenticated
+role, never inferred as the runtime role. NOT_ESTABLISHED is not denial proof.
+Column SELECT/INSERT, role membership, grant options, dynamic SQL and incomplete
+migrations remain unsupported/UNKNOWN. No protected-property intent is inferred
+from names, and no new protected-property Finding or automatic fix is added.
+Column state is bounded to 32 grant roles and 64 column entries per role/table;
+existing token, step, output, memory and process limits remain unchanged.
+
 Version ts-server-v6 additionally tracks known new Error().stack to returned responses. Only a direct
 literal new Error throw and its catch without finally are precisely modeled; general catch values and
 masking remain uncertain. Logging alone is not HTTP error exposure. Missing fetch AbortSignal does

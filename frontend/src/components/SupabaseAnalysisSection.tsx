@@ -23,6 +23,7 @@ const labels: Record<string,string>={
   COLUMN_FILTER:'행의 컬럼 조건 · 사용자 소유권 확인 아님',
   ALLOW:'행 제한 없는 조건',DENY:'선언상 허용 경로 없음',UNKNOWN:'확인 불가',NOT_ESTABLISHED:'명시적 GRANT 미확인',
   EXPLICIT_GRANT:'명시적 GRANT 확인',CLIENT_DECLARATION_LINKED:'Client 생성 선언 연결',CLIENT_ORIGIN_UNKNOWN:'Client 출처 미확인',
+  TABLE_GRANT:'테이블 UPDATE 허용 선언',COLUMN_GRANT:'컬럼 UPDATE 허용 선언',DECLARATION_ONLY:'저장소 선언 근거만 확인',
   PUBLIC_KEY_NAME_HINT:'공개용 키 이름 단서 · 실제 키 미확인',SERVER_KEY_NAME_HINT:'서버용 키 이름 단서 · 실제 DB 역할 미확인',
   ENVIRONMENT_REFERENCE_UNKNOWN:'환경값 참조 · 키 종류 미확인',TABLE_DECLARATION_FOUND:'테이블 선언 연결',POLICY_CONTEXT_MISSING:'정책 문맥 미확인',
   PARSED:'지원 선언 구문 확인',PARTIAL:'일부 범위 확인',PARSE_FAILED:'파일 파싱 실패',LIMIT_EXCEEDED:'자원 제한',NOT_RUN:'미검사',
@@ -72,6 +73,14 @@ export function SupabaseAnalysisSection({snapshot,compact=false}:{snapshot?:Supa
             {a.writeEvidence.filters.map((v,j)=><div key={'f'+j}><p>{v.name} · {v.operator} · {text(v.source)}</p><p className="finding-location">{v.location.filePath}:{v.location.line}</p>
               {v.sourceLocations.map((l,k)=><p className="finding-location" key={k}>값 출처: {l.filePath}:{l.line}</p>)}</div>)}
             <p>값의 출처만 확인했습니다. 사용자 입력 사용 자체는 취약점이 아니며, 필터나 사용자 ID가 있어도 실제 소유권·운영 DB 보호를 보증하지 않습니다.</p>
+            {a.writeEvidence.columnUpdate?<details className="technical-details"><summary>필드별 UPDATE 권한 선언</summary>
+              <p>행 소유권 제한과 컬럼 수정 권한은 별개입니다. 테이블 전체 UPDATE 권한은 컬럼 REVOKE만으로 제거되지 않습니다.</p>
+              {a.writeEvidence.columnUpdate.roles.map(r=><div key={r.role}><p>{r.role} · 테이블 권한: {text(r.tableGrant)}</p>
+                <ul>{r.fields.map(f=><li key={f.name}>{f.name} · {text(f.source)} · {text(f.grant)}</li>)}</ul></div>)}
+              <p>GRANT 미확인은 접근 거부 증명이 아닙니다. 역할 상속·소유자·관리자·SELECT 등 쿼리 전제와 운영 적용 상태는 미확인입니다.</p>
+              <p>보호 대상 필드라는 서비스 요구사항은 확인하지 않았습니다. 필드명만으로 취약점이나 안전성을 판단하지 않습니다.</p>
+              {a.writeEvidence.columnUpdate.grantLocations.map((l,j)=><p className="finding-location" key={j}>권한 선언: {l.filePath}:{l.line}</p>)}
+            </details>:<p>필드별 UPDATE 권한은 미검사이거나 이전 이력에 기록되지 않았습니다.</p>}
             <p>이 쓰기 위치와 아래 연결된 정책의 USING·WITH CHECK를 함께 검토하세요. 사용자 전용 데이터라면 격리 환경에서 사용자 A·B의 생성·변경·삭제와 소유자 변경을 각각 확인한 뒤 재검사하세요.</p>
             <details><summary>미확인 사유 코드</summary><ul>{[...new Set([...a.writeEvidence.limitations,...a.writeEvidence.dataFields.flatMap(v=>v.limitations),...a.writeEvidence.filters.flatMap(v=>v.limitations)])].map(l=><li key={l}>{l}</li>)}</ul></details>
           </details>:['INSERT','UPDATE','DELETE'].includes(a.operation)&&<p>쓰기 값·행 필터의 출처는 미검사이거나 이전 이력에 기록되지 않았습니다. 안전으로 판단하지 않습니다.</p>}

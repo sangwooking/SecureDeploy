@@ -2,6 +2,14 @@ const {test}=require('node:test');const assert=require('node:assert/strict');con
 const {SupabaseAnalysisSection}=require('./load-component.cjs')('SupabaseAnalysisSection');
 const fixture=require('./supabase-fixture.cjs');
 const render=snapshot=>renderToStaticMarkup(React.createElement(SupabaseAnalysisSection,{snapshot}));
+test('column ACL declarations remain separate from row protection, requirements and runtime denial',()=>{
+ const f=fixture(),l=f.accesses[0].location;
+ f.accesses[0].writeEvidence={status:'LOCAL_VALUE_ORIGIN_EVIDENCE',operationLocation:l,dataStatus:'STATIC_FIELDS',dataFields:[],filterStatus:'STATIC_FILTERS',filters:[],limitations:[],
+  columnUpdate:{status:'DECLARATION_ONLY',analyzerVersion:'column-update-v1',roles:[{role:'authenticated',tableGrant:'EXPLICIT_GRANT',fields:[{name:'<img src=x>',source:'REQUEST_CONTROLLED',grant:'TABLE_GRANT'},{name:'ordinary',source:'SERVER_CONTROLLED',grant:'NOT_ESTABLISHED'}]}],grantLocations:[l],limitations:[]}};
+ const h=render(f);for(const s of ['필드별 UPDATE 권한 선언','테이블 UPDATE 허용 선언','컬럼 REVOKE','접근 거부 증명이 아닙니다','서비스 요구사항','SELECT','권한 선언:'])assert.ok(h.includes(s),s);
+ assert.ok(h.includes('&lt;img'));assert.ok(!h.includes('<img'));
+ delete f.accesses[0].writeEvidence.columnUpdate;assert.ok(render(f).includes('이전 이력에 기록되지 않았습니다'));
+});
 test('RLS findings explain users, operations, declaration evidence and safe local verification',()=>{
  const h=render(fixture());for(const s of ['사용자별 수정 권한','authenticated','UPDATE','NOT_COMPARED','USING','WITH CHECK','사용자 A·B','운영 DB','점수·배포 판단'])assert.ok(h.includes(s),s);
 });

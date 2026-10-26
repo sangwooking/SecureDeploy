@@ -1,6 +1,7 @@
 import path from 'node:path';
 import {authResultEvidence} from './auth-result-evidence.mjs';
 import {writeOrigins} from './write-origin.mjs';
+import {columnUpdateEvidence} from './column-update.mjs';
 
 // Declaration provenance only. No target evaluation, session validation or database access.
 export function linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports,prepareWritePass}) {
@@ -252,6 +253,8 @@ export function linkSupabaseEvidence({ts,modules,snapshot,tick,sourceImports,pre
         charge();const matches=(sites.get(id(access.location))??[]).filter(s=>s.node.arguments[0]?.text===access.table.slice(7));
         if(matches.length!==1)continue;
         const e=observeWrites(matches[0].mod,matches[0].node,access);if(!e)continue;
+        const columnUpdate=columnUpdateEvidence({...access,writeEvidence:e},snapshot.tables,charge);
+        if(columnUpdate)e.columnUpdate=columnUpdate;
         const size=Buffer.byteLength(JSON.stringify(e))+24;
         if(outputBytes+size>275000){snapshot.limitations.push('WRITE_EVIDENCE_OUTPUT_LIMIT');break;}
         access.writeEvidence=e;outputBytes+=size;
