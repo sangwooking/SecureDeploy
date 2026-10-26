@@ -82,9 +82,10 @@ if __name__=='__main__':
     for pair in s['regressions']:regression+=compare(read(Path(pair['before'])),read(Path(pair['after'])))
     old_plan=read(Path(s['oldTruth']));old_db=read(Path(s['oldDatabase']));old_before=original_metrics(old_plan,read(Path(s['oldBefore'])),old_db);old_after=original_metrics(old_plan,read(Path(s['oldAfter'])),old_db)
     if old_before['counts']!=old_after['counts']:raise ValueError('ORIGINAL_METRICS_CHANGED')
+    product_rows=product(s['products'],plan,after)
     result=dict(schemaVersion=1,baseline=BASELINE,implementationCommit=s['implementationCommit'],worker='ts-server-v28',rowPolicyAnalyzer='supabase-rls-v3',columnAnalyzer='column-update-v1',
       truthSha256=hashlib.sha256(Path(s['truth']).read_bytes()).hexdigest(),gradeA=0,independentReview=False,newProductionVulnerabilityTP=0,
-      before=before,after=after,original36=dict(before=old_before,after=old_after,product=original_product(s['oldProducts'],read(Path(s['oldAfter'])))),product=product(s['products'],plan,after),
+      before=before,after=after,original36=dict(before=old_before,after=old_after,product=original_product(s['oldProducts'],read(Path(s['oldAfter'])))),product=product_rows,productCoverageCounts=dict(Counter(r['coverage'] for r in product_rows)),
       regression=regression,oracle=db,oracleRepeatedIdentically=True,firstOracleReceiptSha256=hashlib.sha256(Path(s['firstDatabase']).read_bytes()).hexdigest(),
       resources=read(Path(s['resources'])),tests=s['tests'],sourceExecuted=False,externalSqlExecuted=False,userDatabaseModified=False,paidAiCalls=0,riskFormulaChanged=False,databaseMigration=False,
       failureCasePack=[dict(caseIds=[r['caseId'] for r in after['rows'] if r['label']=='TP'],
@@ -97,6 +98,7 @@ if __name__=='__main__':
         'Validation uses Server Functions and renamed schema fields, but the same author and scenario family; not independent projects or blind holdout.',
         'Inherited privileges, owners/admins, grantor/column existence, deployed state and actual DB roles remain unknown. NOT_ESTABLISHED is not denial.',
         'Column SELECT/INSERT and all query prerequisites are not implemented. DELETE is not a column privilege.',
+        'Two FAILED Coverage ledgers represent deliberately injected missing SQL marked LIMIT_EXCEEDED by the evaluation acquisition plan, not Worker crashes or newly exhausted execution budgets. Their Worker/RLS snapshots remain PARTIAL/UNKNOWN. Score 100 does not certify whole-project safety.',
         'The initial 288 oracle results are retained; 24 checks for the exact already-frozen broad SQL packet were added without modifying truth or sources.',
         'No new Grade A pair was acquired, no operating Supabase/HTTP attack or live GitHub App was tested. Mock provider tests do not validate a real AI model.'])
     write(a.output,result);print(dict(before=before['counts'],after=after['counts'],columnMatches=after['declarationMatches'],knownColumnDeclarations=after['declarationKnown'],oracle=db['matched'],regressionProjects=len(regression)))
