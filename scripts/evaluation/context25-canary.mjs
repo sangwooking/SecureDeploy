@@ -14,11 +14,17 @@ try{
  await start(a);await start(b);
  const base=`http://127.0.0.1:${a.address().port}/`,other=`http://127.0.0.1:${b.address().port}/`;
  assert.equal(await read(new URL(other,base)),'b');
+ const prefix='http://a.example.invalid';
+ assert.ok('http://a.example.invalid.other.invalid/'.startsWith(prefix));
+ assert.notEqual(new URL('http://a.example.invalid.other.invalid/').hostname,new URL(prefix).hostname);
+ const changed=new URL(base);assert.equal(changed.hostname,'127.0.0.1');changed.href=other;
+ assert.equal(await read(changed),'b');
+ assert.equal(await read({hostname:'127.0.0.1',port:b.address().port,path:'/'}),'b');
  const fixed=token=>{if(token!=='approved')throw Error('DESTINATION_REJECTED');return new URL(base);};
  assert.throws(()=>fixed(other),/DESTINATION_REJECTED/);
  assert.equal(await read(fixed('approved')),'a');
- assert.deepEqual(hits,{a:1,b:1});
- console.log(JSON.stringify({ssrf:{absoluteInputReplacedBase:true,unapprovedTokenRejected:true,normalTargetPreserved:true,hits}}));
+ assert.deepEqual(hits,{a:1,b:3});
+ console.log(JSON.stringify({ssrf:{absoluteInputReplacedBase:true,prefixIsNotHostCheck:true,hrefMutationChangesTarget:true,optionsAndCallbackSendRequest:true,unapprovedTokenRejected:true,normalTargetPreserved:true,hits}}));
 }finally{await new Promise(ok=>a.close(ok));await new Promise(ok=>b.close(ok));}
 if(process.argv[2]){
  const html=`<!doctype html><div id="box"></div><script>

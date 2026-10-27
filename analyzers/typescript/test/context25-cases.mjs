@@ -42,13 +42,16 @@ for(const [id,truth,body,setup]of [
  ['allowed','NORMAL',"const u=new URL(req.body.url);if(u.protocol!=='http:'||u.hostname!=='a.example.invalid')return;http.get(u);"],
  ['sequential-allowed','NORMAL',"const u=new URL(req.body.url);if(u.protocol!=='http:')return;if(u.hostname!=='a.example.invalid')return;http.get(u);"],
  ['fake','NORMAL',"const other={get(x){return x}};other.get(req.body.url);"],
- ['options','UNKNOWN','http.get({hostname:req.body.host,path:"/"});'],
+ ['options','RISK','http.get({hostname:req.body.host,path:"/"});'],
  ['extra-options','UNKNOWN',"http.get(req.body.url,{lookup:externalLookup});"],
- ['callback','UNKNOWN','http.get(req.body.url,()=>{});'],
+ ['callback','RISK','http.get(req.body.url,()=>{});'],
  ['mutated','UNKNOWN','http.get=external;http.get(req.body.url);'],
  ['hostname-only','UNKNOWN',"const u=new URL(req.body.url);if(u.hostname!=='a.example.invalid')return;http.get(u);"],
- ['prefix','UNKNOWN',"if(!req.body.url.startsWith('http://a.example.invalid'))return;http.get(req.body.url);"],
- ['guard-mutation','UNKNOWN',"const u=new URL(req.body.url);if(u.protocol!=='http:'||u.hostname!=='a.example.invalid')return;u.href=req.body.other;http.get(u);"],
+ ['prefix','RISK',"if(!req.body.url.startsWith('http://a.example.invalid'))return;http.get(req.body.url);"],
+ ['guard-mutation','RISK',"const u=new URL(req.body.url);if(u.protocol!=='http:'||u.hostname!=='a.example.invalid')return;u.href=req.body.other;http.get(u);"],
  ['request-not-get','UNKNOWN','http.request(req.body.url);'],
-])ssrf25Cases.push({id:'ssrf-'+id,truth,...(id==='allowed'?{knownGap:'Logical OR guard still merges the native receiver conservatively; normal truth is retained, not TN.'}:{}),input:server(body,setup),grade:'B_SAME_AUTHOR_NOT_BLIND'});
+])ssrf25Cases.push({id:'ssrf-'+id,truth,
+ ...(id==='allowed'?{knownGap:'Logical OR guard still merges the native receiver conservatively; normal truth is retained, not TN.'}:{}),
+ ...(['options','callback','prefix','guard-mutation'].includes(id)?{deferredRisk:true}:{}),
+ input:server(body,setup),grade:'B_SAME_AUTHOR_NOT_BLIND'});
 export const sqlBranch25={files:[{filePath:'server.cjs',content:"const app=require('express')();const E=require('sequelize');const db=new E('unused');app.post('/',(req,res)=>{const field=req.body.order==='name'?'name':'id';db.query({query:'SELECT '+field+' FROM items'});});"}],nodeManifests:[{filePath:'package.json',express:'4.18.0',sequelize:'6.37.5'}]};

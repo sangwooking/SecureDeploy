@@ -12,10 +12,11 @@ for(const c of xss25Cases)test('HTML context25 '+c.id,()=>{
 });
 for(const c of ssrf25Cases)test('SSRF context25 '+c.id,()=>{
  const r=analyze(c.input),high=r.findings.filter(f=>f.ruleId==='TS_SSRF_INPUT_FLOW'&&f.confidence==='HIGH');
- assert.equal(high.length,c.truth==='RISK'?1:0,JSON.stringify(r.httpUses));
+ assert.equal(high.length,c.truth==='RISK'&&!c.deferredRisk?1:0,JSON.stringify(r.httpUses));
  if(c.truth==='NORMAL'&&c.id!=='ssrf-fake'&&!c.knownGap)assert.ok(r.httpUses.some(u=>['FIXED_DESTINATION','ALLOWLISTED_DESTINATION'].includes(u.kind)));
  if(c.knownGap)assert.equal(r.httpUses.length,0);
  if(c.truth==='UNKNOWN')assert.ok(!r.httpUses.some(u=>['FIXED_DESTINATION','ALLOWLISTED_DESTINATION'].includes(u.kind)));
+ if(c.deferredRisk)assert.ok(!r.httpUses.some(u=>['FIXED_DESTINATION','ALLOWLISTED_DESTINATION'].includes(u.kind)),'Known misses must not acquire a safe destination fact');
 });
 test('inert conditional choices do not invalidate an unchanged SQL receiver',()=>{
  const r=analyze(sqlBranch25);assert.ok(r.nodeUses.some(u=>u.ruleId==='JS_SEQUELIZE_SQL_INPUT_FLOW'&&u.kind==='STATIC_OR_DATA_ONLY'));

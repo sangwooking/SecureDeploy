@@ -41,6 +41,17 @@ def classify(case, result):
     return 'TN_REVIEWED_STATIC_CONTROL' if inspected and uses and any(u['kind'] in ['STATIC_OR_DATA_ONLY', 'STATIC_OR_STRING_FILTER', 'SANITIZE_FILTER_DECLARED'] for u in uses) and not any(u['kind'] in ['UNKNOWN', 'FLOW_UNRESOLVED'] for u in uses) else 'NORMAL_DEFERRED_NOT_TN'
 
 
+def expected(case, worker):
+    if case['truth'] == 'RISK':
+        return 'TP_STATIC_CONTRACT'
+    if case['truth'] == 'UNKNOWN':
+        return 'NOT_INSPECTED' if case['id'].endswith(('dynamic-wrapper', 'creation-only')) else 'UNKNOWN'
+    # Preserve the frozen v35 gap, but require the v36 inert-choice fix to remain effective.
+    if case.get('knownGap') and worker == 'ts-server-v35':
+        return 'NORMAL_DEFERRED_NOT_TN'
+    return 'TN_REVIEWED_STATIC_CONTROL'
+
+
 def evaluate(repo, baseline, output):
     node = shutil.which('node')
     fixture = repo / 'analyzers/typescript/test/injection24-cases.mjs'
@@ -72,8 +83,7 @@ def evaluate(repo, baseline, output):
     write(outside(output), result)
     print(json.dumps({k: v for k, v in result.items() if k != 'rows'}))
     for c, row in zip(cases, rows):
-        expected = 'TP_STATIC_CONTRACT' if c['truth'] == 'RISK' else ('NOT_INSPECTED' if c['id'].endswith(('dynamic-wrapper', 'creation-only')) else 'UNKNOWN') if c['truth'] == 'UNKNOWN' else 'NORMAL_DEFERRED_NOT_TN' if c.get('knownGap') else 'TN_REVIEWED_STATIC_CONTROL'
-        if row['after']['decision'] != expected:
+        if row['after']['decision'] != expected(c, row['after']['worker']):
             raise ValueError('NEW_CONTROL_CONTRACT_FAILED:' + c['id'])
 
 

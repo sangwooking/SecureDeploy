@@ -1,0 +1,1046 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "885366254efcf73fcfd2dbfd9bb612c78060ebf0",
+  "productCommit": "87c7f59d4c946c08198cb0a7757febc8735334b1",
+  "workerBefore": "ts-server-v35",
+  "workerAfter": "ts-server-v36",
+  "stringContext": "string-context-v7",
+  "rls": "v4",
+  "columnContract": "column-update-v1",
+  "casesSha256": "2cce9433581f07e67d29aab1f69a515ce6eadc82ef2a1edb31ecf63143bd0f2c",
+  "grade": "B_SAME_AUTHOR_NONBLIND",
+  "newOriginalApplicationTP": 0,
+  "newOfficialPatchedPair": 0,
+  "controls": {
+    "before": {
+      "xss": {
+        "TP": 5,
+        "FP": 7,
+        "FN": 0,
+        "TN": 3,
+        "UNKNOWN": 6,
+        "NORMAL_DEFERRED": 0,
+        "UNEXPECTED_CANDIDATE": 0,
+        "FALSE_SAFE_OBSERVATION": 0
+      },
+      "ssrf": {
+        "TP": 0,
+        "FP": 0,
+        "FN": 12,
+        "TN": 1,
+        "UNKNOWN": 4,
+        "NORMAL_DEFERRED": 5,
+        "UNEXPECTED_CANDIDATE": 0,
+        "FALSE_SAFE_OBSERVATION": 0
+      },
+      "sqlConditional": [
+        {
+          "ruleId": "JS_SERVER_ENTRY_CONTEXT",
+          "kind": "ENTRY_REGISTERED"
+        }
+      ]
+    },
+    "after": {
+      "xss": {
+        "TP": 5,
+        "FP": 1,
+        "FN": 0,
+        "TN": 9,
+        "UNKNOWN": 6,
+        "NORMAL_DEFERRED": 0,
+        "UNEXPECTED_CANDIDATE": 0,
+        "FALSE_SAFE_OBSERVATION": 0
+      },
+      "ssrf": {
+        "TP": 8,
+        "FP": 0,
+        "FN": 4,
+        "TN": 5,
+        "UNKNOWN": 4,
+        "NORMAL_DEFERRED": 1,
+        "UNEXPECTED_CANDIDATE": 0,
+        "FALSE_SAFE_OBSERVATION": 0
+      },
+      "sqlConditional": [
+        {
+          "ruleId": "JS_SERVER_ENTRY_CONTEXT",
+          "kind": "ENTRY_REGISTERED"
+        },
+        {
+          "ruleId": "JS_SEQUELIZE_SQL_INPUT_FLOW",
+          "kind": "STATIC_OR_DATA_ONLY"
+        }
+      ]
+    }
+  },
+  "controlResults": [
+    {
+      "id": "xss-static",
+      "truth": "NORMAL",
+      "before": "TN",
+      "after": "TN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-choices",
+      "truth": "NORMAL",
+      "before": "FP",
+      "after": "TN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-alias",
+      "truth": "NORMAL",
+      "before": "FP",
+      "after": "TN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-true",
+      "truth": "NORMAL",
+      "before": "FP",
+      "after": "TN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-false",
+      "truth": "NORMAL",
+      "before": "FP",
+      "after": "TN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-nested",
+      "truth": "NORMAL",
+      "before": "FP",
+      "after": "TN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-anchors",
+      "truth": "NORMAL",
+      "before": "FP",
+      "after": "TN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-jsx-text",
+      "truth": "NORMAL",
+      "before": "TN",
+      "after": "TN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-text-content",
+      "truth": "NORMAL",
+      "before": "TN",
+      "after": "TN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-purified",
+      "truth": "NORMAL",
+      "before": "FP",
+      "after": "FP",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-location",
+      "truth": "RISK",
+      "before": "TP",
+      "after": "TP",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-alias-source",
+      "truth": "RISK",
+      "before": "TP",
+      "after": "TP",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-mixed",
+      "truth": "RISK",
+      "before": "TP",
+      "after": "TP",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-concat",
+      "truth": "RISK",
+      "before": "TP",
+      "after": "TP",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-after-sanitize",
+      "truth": "RISK",
+      "before": "TP",
+      "after": "TP",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-unknown-sanitizer",
+      "truth": "UNKNOWN",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-unknown-props",
+      "truth": "UNKNOWN",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-custom-container",
+      "truth": "UNKNOWN",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-script-text",
+      "truth": "UNKNOWN",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-active-literal",
+      "truth": "UNKNOWN",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "xss-purify-config",
+      "truth": "UNKNOWN",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN",
+      "afterScope": "JSX_PATTERN_CONTEXT_NOT_SOURCE_DOM_FLOW",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-get",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "TP",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-alias",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "TP",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-helper",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "TP",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-absolute-base",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "TP",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-host",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "TP",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-https",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "TP",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-esm",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "TP",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-mixed-alias",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "TP",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-fixed",
+      "truth": "NORMAL",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-fixed-path",
+      "truth": "NORMAL",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-choices",
+      "truth": "NORMAL",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-allowed",
+      "truth": "NORMAL",
+      "before": "NORMAL_DEFERRED",
+      "after": "NORMAL_DEFERRED",
+      "afterScope": "NO_TARGET_HTTP_OBSERVATION",
+      "knownGap": "Logical OR guard still merges the native receiver conservatively; normal truth is retained, not TN."
+    },
+    {
+      "id": "ssrf-sequential-allowed",
+      "truth": "NORMAL",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-fake",
+      "truth": "NORMAL",
+      "before": "TN",
+      "after": "TN",
+      "afterScope": "NO_TARGET_HTTP_OBSERVATION",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-options",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "FN",
+      "afterScope": "OVERLOAD_NOT_SUPPORTED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-extra-options",
+      "truth": "UNKNOWN",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN",
+      "afterScope": "OVERLOAD_NOT_SUPPORTED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-callback",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "FN",
+      "afterScope": "OVERLOAD_NOT_SUPPORTED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-mutated",
+      "truth": "UNKNOWN",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN",
+      "afterScope": "NO_TARGET_HTTP_OBSERVATION",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-hostname-only",
+      "truth": "UNKNOWN",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-prefix",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "FN",
+      "afterScope": "OBSERVED",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-guard-mutation",
+      "truth": "RISK",
+      "before": "FN",
+      "after": "FN",
+      "afterScope": "NO_TARGET_HTTP_OBSERVATION",
+      "knownGap": null
+    },
+    {
+      "id": "ssrf-request-not-get",
+      "truth": "UNKNOWN",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN",
+      "afterScope": "NO_TARGET_HTTP_OBSERVATION",
+      "knownGap": null
+    }
+  ],
+  "limitations": [
+    "Same-author nonblind Grade B controls; no original CVE success claimed",
+    "XSS counts reconcile the existing lexical JSX rule with AST exclusions, not Source-to-DOM flow or final Backend findings",
+    "DOMPurify normal assumes a supported secure version/default configuration and no unsafe hooks; engine does not verify this contract",
+    "SSRF fixed/allowlisted describes URL construction only, not DNS/redirect/IP/network safety",
+    "Baseline GET contract is unsupported: its risk misses are target-set FN, not failures within the old supported API scope",
+    "No target source execution; no runtime compatibility or whole-project safety guarantee",
+    "Four initial UNKNOWN labels corrected to known risk misses after same-author semantic review; initial aggregates retained for audit, not final accuracy",
+    "Controls authored during development, not prospectively preregistered"
+  ],
+  "ownedCanary": {
+    "domBeforeExecution": true,
+    "domAfterTextPreservedNoHandler": true,
+    "absoluteInputReplacedBase": true,
+    "fixedTokenRejectedOtherTarget": true,
+    "normalTargetPreserved": true,
+    "externalTargetExecuted": false,
+    "prefixIsNotHostCheck": true,
+    "hrefMutationChangesTarget": true,
+    "optionsAndCallbackSendRequest": true,
+    "loopbackRequests": 4
+  },
+  "profileSingleSample": {
+    "oldSpaceLimitMiB": 192,
+    "before": {
+      "elapsedMs": 172.054416,
+      "maxRssBytes": 148193280
+    },
+    "after": {
+      "elapsedMs": 183.691042,
+      "maxRssBytes": 145735680
+    },
+    "limitations": "43 same-author controls, two iterations each; not production throughput or causal performance proof; input source text unchanged during subsequent ground-truth correction"
+  },
+  "applications": [
+    {
+      "project": "Zenyonmz--todo-demo",
+      "sha": "9f6b219ffbeadebe05a18783852e9fcdf075b0a5",
+      "planSha256": "152751c57a1e16e1621f24cfd57e876722c4a1cd21ca4a0797fee17569adac76",
+      "entries": 3,
+      "selected": 11,
+      "parsed": 10,
+      "score": 100,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        294,
+        217
+      ],
+      "parentHeapUsedBytes": [
+        65688440,
+        75125624
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "salmandotweb--nextjs-supabase-boilerplate",
+      "sha": "5d9ebfb75cd29732d4dea0882bebb0f6f47b189a",
+      "planSha256": "ddf7c827dee7873f295c4317d72aab2d30fd3fe5cedf2866ca77fa2e80293d46",
+      "entries": 1,
+      "selected": 36,
+      "parsed": 36,
+      "score": 100,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        587,
+        457
+      ],
+      "parentHeapUsedBytes": [
+        97732288,
+        76168320
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "imbhargav5--nextbase-nextjs-supabase-starter",
+      "sha": "00ad2da857b84322ff359db098cbf1cb4f4b7282",
+      "planSha256": "ddf7c827dee7873f295c4317d72aab2d30fd3fe5cedf2866ca77fa2e80293d46",
+      "entries": 6,
+      "selected": 100,
+      "parsed": 92,
+      "score": 37,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        511,
+        485
+      ],
+      "parentHeapUsedBytes": [
+        132791424,
+        103380168
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "vercel--nextjs-subscription-payments",
+      "sha": "bdd0813206e47e6b218d42f15a7976c8a0d3c3eb",
+      "planSha256": "5d16d077ca980f3717a49d744bd639ae4b283a470a824a960bb7c8a644cce79b",
+      "entries": 14,
+      "selected": 58,
+      "parsed": 56,
+      "score": 100,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        526,
+        444
+      ],
+      "parentHeapUsedBytes": [
+        110537360,
+        66930432
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "mckaywrigley--chatbot-ui",
+      "sha": "81328b61d2a4ab597a7a057be70e785cf756d9f8",
+      "planSha256": "5d16d077ca980f3717a49d744bd639ae4b283a470a824a960bb7c8a644cce79b",
+      "entries": 19,
+      "selected": 100,
+      "parsed": 76,
+      "score": 0,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        776,
+        695
+      ],
+      "parentHeapUsedBytes": [
+        136176976,
+        182459896
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "Razikus--supabase-nextjs-template",
+      "sha": "d519bf18d747bc0956346910414db68adb5a45bf",
+      "planSha256": "31a610ca26d7e6c0b8be4a895a2145ed48d67387d5ac6349b78799a1228f1134",
+      "entries": 1,
+      "selected": 83,
+      "parsed": 79,
+      "score": 100,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        415,
+        300
+      ],
+      "parentHeapUsedBytes": [
+        97056640,
+        125368192
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "makerkit--nextjs-saas-starter-kit-lite",
+      "sha": "9ff430df9c58516add0136bd01ed800ce551675e",
+      "planSha256": "31a610ca26d7e6c0b8be4a895a2145ed48d67387d5ac6349b78799a1228f1134",
+      "entries": 0,
+      "selected": 100,
+      "parsed": 99,
+      "score": 44,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        559,
+        514
+      ],
+      "parentHeapUsedBytes": [
+        123817424,
+        115816624
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "nglguarino--echoverse-11labs",
+      "sha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "entries": 4,
+      "selected": 70,
+      "parsed": 70,
+      "score": 86,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        702,
+        509
+      ],
+      "parentHeapUsedBytes": [
+        123307936,
+        97130816
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": [
+        [
+          "TS_SENSITIVE_DATA_EXPOSURE",
+          "supabase/functions/get-secret/index.ts",
+          30,
+          12
+        ]
+      ]
+    },
+    {
+      "project": "LellaSriHarsha--power-platform-hub",
+      "sha": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "entries": 1,
+      "selected": 69,
+      "parsed": 69,
+      "score": 86,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        485,
+        451
+      ],
+      "parentHeapUsedBytes": [
+        118102336,
+        138025280
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "TinyikoMamban--workflowai-pro",
+      "sha": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "entries": 1,
+      "selected": 89,
+      "parsed": 87,
+      "score": 86,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        563,
+        546
+      ],
+      "parentHeapUsedBytes": [
+        74696704,
+        92453848
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "Adriano-Digital2024--CopyMonster",
+      "sha": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "entries": 20,
+      "selected": 100,
+      "parsed": 33,
+      "score": 16,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        822,
+        810
+      ],
+      "parentHeapUsedBytes": [
+        116088320,
+        137200816
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "appsecco--dvna",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "planSha256": "654470a58d8a7e4e19f95347b58bd35a493d56c0dfd8dcbdfd6bbba43af0467b",
+      "entries": 30,
+      "selected": 14,
+      "parsed": 14,
+      "score": 79,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        610,
+        491
+      ],
+      "parentHeapUsedBytes": [
+        68331376,
+        81962864
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": [
+        [
+          "JS_SEQUELIZE_SQL_INPUT_FLOW",
+          "core/appHandler.js",
+          11,
+          2
+        ],
+        [
+          "JS_SHELL_COMMAND_INPUT_FLOW",
+          "core/appHandler.js",
+          39,
+          2
+        ]
+      ]
+    },
+    {
+      "project": "appsecco--dvna",
+      "sha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "planSha256": "8416b7e5da80d5e932e607e4e053d958d6f77129c5a40b331ccabe0a9ad4619c",
+      "entries": 28,
+      "selected": 16,
+      "parsed": 16,
+      "score": 93,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        601,
+        500
+      ],
+      "parentHeapUsedBytes": [
+        71687904,
+        83222240
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "vercel--next.js",
+      "sha": "2998a2e801caab665d603daefc7445c04309285a",
+      "planSha256": "c5d538025606ab7ba21c46b1bdad498e750345f64750d30e623ac32b17f728f7",
+      "entries": 0,
+      "selected": 44,
+      "parsed": 44,
+      "score": 100,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        489,
+        395
+      ],
+      "parentHeapUsedBytes": [
+        82942968,
+        56088264
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": []
+    },
+    {
+      "project": "snyk-labs--nodejs-goof",
+      "sha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "planSha256": "d57b7dfba3acf1a6fab7b276b5e4c54365c9c58e5132204e4a4e5a2b3522537b",
+      "entries": 15,
+      "selected": 10,
+      "parsed": 10,
+      "score": 23,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        695,
+        491
+      ],
+      "parentHeapUsedBytes": [
+        68137136,
+        205553744
+      ],
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "repeatIdentical": true,
+      "findings": [
+        [
+          "JS_MONGOOSE_SELECTOR_INPUT_FLOW",
+          "routes/index.js",
+          52,
+          5
+        ],
+        [
+          "JS_SHELL_COMMAND_INPUT_FLOW",
+          "routes/index.js",
+          174,
+          5
+        ]
+      ]
+    }
+  ],
+  "allRlsTablesUnchanged": true,
+  "evaluatorSha256": "8e23c26a998de2f4adfc5e5aecda07da1ef6b460fec213da0a2ff4fd1f17601b",
+  "currentSourceHashes": {
+    "analyzer.mjs": "6202d3404e5922a1078096ff05553f6cd849989eb0925eed68cdad36ed673ae9",
+    "node-server.mjs": "682bf1be8becf0eca44a96fa9074706df37841dbb15a3e1a144fa21379ef267d",
+    "static-display-context.mjs": "3fa26973df684dc442b20cb03c516a19aca97c7d5f1c68c93987f8dc233abb2a",
+    "url-context.mjs": "5e562096977718e8215670af7c1f7dfb37f49560a44b1bcf5c78e51a9f1f8f09"
+  },
+  "tests": {
+    "worker": {
+      "tests": 811,
+      "failed": 0
+    },
+    "backend": {
+      "tests": 706,
+      "failed": 0,
+      "skipped": 9
+    },
+    "python": 117,
+    "evaluationPython": 250,
+    "evaluationJavaScript": 3,
+    "frontend": 165,
+    "frontendBuild": "PASS"
+  },
+  "liveGithubAppRun": false,
+  "paidAiCalls": 0,
+  "userDatabaseModified": false,
+  "serverRestarted": false,
+  "curationReview": {
+    "reviewer": "SAME_AUTHOR_NONBLIND_NOT_OWNER_APPROVAL",
+    "originalFixtureCommit": "87c7f59d4c946c08198cb0a7757febc8735334b1",
+    "originalCasesSha256": "018fbef1cd82e81858a30ea3fee8b7384baeafc1a2d8e836df859c994aaef9ae",
+    "initialAggregatesNotFinalAccuracy": {
+      "before": {
+        "xss": {
+          "TP": 5,
+          "FP": 7,
+          "FN": 0,
+          "TN": 3,
+          "UNKNOWN": 6,
+          "NORMAL_DEFERRED": 0,
+          "UNEXPECTED_CANDIDATE": 0,
+          "FALSE_SAFE_OBSERVATION": 0
+        },
+        "ssrf": {
+          "TP": 0,
+          "FP": 0,
+          "FN": 8,
+          "TN": 1,
+          "UNKNOWN": 8,
+          "NORMAL_DEFERRED": 5,
+          "UNEXPECTED_CANDIDATE": 0,
+          "FALSE_SAFE_OBSERVATION": 0
+        },
+        "sqlConditional": [
+          {
+            "ruleId": "JS_SERVER_ENTRY_CONTEXT",
+            "kind": "ENTRY_REGISTERED"
+          }
+        ]
+      },
+      "after": {
+        "xss": {
+          "TP": 5,
+          "FP": 1,
+          "FN": 0,
+          "TN": 9,
+          "UNKNOWN": 6,
+          "NORMAL_DEFERRED": 0,
+          "UNEXPECTED_CANDIDATE": 0,
+          "FALSE_SAFE_OBSERVATION": 0
+        },
+        "ssrf": {
+          "TP": 8,
+          "FP": 0,
+          "FN": 0,
+          "TN": 5,
+          "UNKNOWN": 8,
+          "NORMAL_DEFERRED": 1,
+          "UNEXPECTED_CANDIDATE": 0,
+          "FALSE_SAFE_OBSERVATION": 0
+        },
+        "sqlConditional": [
+          {
+            "ruleId": "JS_SERVER_ENTRY_CONTEXT",
+            "kind": "ENTRY_REGISTERED"
+          },
+          {
+            "ruleId": "JS_SEQUELIZE_SQL_INPUT_FLOW",
+            "kind": "STATIC_OR_DATA_ONLY"
+          }
+        ]
+      }
+    },
+    "inputSourceTextChanged": false,
+    "analysisEngineChanged": false,
+    "corrections": [
+      {
+        "id": "ssrf-options",
+        "from": "UNKNOWN",
+        "to": "RISK",
+        "reason": "Explicit hostname option is attacker controlled; unsupported overload is not unknown ground truth"
+      },
+      {
+        "id": "ssrf-callback",
+        "from": "UNKNOWN",
+        "to": "RISK",
+        "reason": "Inert callback does not prevent builtin GET request; unsupported overload remains a risk miss"
+      },
+      {
+        "id": "ssrf-prefix",
+        "from": "UNKNOWN",
+        "to": "RISK",
+        "reason": "String prefix accepts a distinct hostname; guard weakness has known static semantics"
+      },
+      {
+        "id": "ssrf-guard-mutation",
+        "from": "UNKNOWN",
+        "to": "RISK",
+        "reason": "Later href assignment replaces the previously checked destination"
+      }
+    ]
+  },
+  "supportMetrics": {
+    "ssrfKnownRiskTargets": 12,
+    "ssrfTP": 8,
+    "ssrfFN": 4,
+    "unsupportedOverloadRiskMisses": 2,
+    "declaredOneArgumentFlowRiskMisses": 2,
+    "declaredOneArgumentRiskRecall": "8/10",
+    "fullAuthoredRiskRecall": "8/12",
+    "candidatePrecision": "8/8",
+    "normalDeferred": 1,
+    "independentExternalAccuracyClaim": false
+  }
+}

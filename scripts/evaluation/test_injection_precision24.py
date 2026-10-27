@@ -1,10 +1,16 @@
 import unittest
 from pathlib import Path
 import tempfile
-from injection_precision24 import classify, safe_file
+from injection_precision24 import classify, safe_file, expected
 
 
 class InjectionPrecision24Test(unittest.TestCase):
+    def test_old_gap_expectation_is_versioned_without_changing_truth(self):
+        case = dict(truth='NORMAL', knownGap='historical inert-choice receiver loss')
+        self.assertEqual(expected(case, 'ts-server-v35'), 'NORMAL_DEFERRED_NOT_TN')
+        self.assertEqual(expected(case, 'ts-server-v36'), 'TN_REVIEWED_STATIC_CONTROL')
+        self.assertEqual(case['truth'], 'NORMAL')
+
     def case(self, truth='RISK'):
         return dict(track='SQL', truth=truth, input=dict(files=[dict(filePath='server.cjs')]))
 
