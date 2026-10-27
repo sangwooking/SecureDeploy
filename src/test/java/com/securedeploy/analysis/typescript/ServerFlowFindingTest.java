@@ -9,6 +9,23 @@ import static com.securedeploy.analysis.typescript.TypeScriptServerAnalyzerTest.
 class ServerFlowFindingTest {
     final TypeScriptServerAnalyzer analyzer = new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties());
 
+    @Test void hrefReplacementReachesSnapshotAndGuideWithoutReclassifyingOldSnapshots() {
+        String prefix="const app=require('express')();const http=require('node:http');app.post('/',(req,res)=>{const u=new URL(req.body.url);if(u.protocol!=='http:'||u.hostname!=='a.example.invalid')return;";
+        var changed=analyzer.analyze(project(prefix+"u.href=req.body.other;http.get(u);});"));
+        assertThat(changed.validatedFindings()).hasSize(1);
+        var finding=changed.validatedFindings().get(0);
+        assertThat(finding.ruleId()).isEqualTo("TS_SSRF_INPUT_FLOW");
+        assertThat(finding.priority().name()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(finding.comparisonPolicy()).isEqualTo("NOT_COMPARED");
+        assertThat(finding.recommendedAction()).contains("마지막 URL 변경 이후");
+        assertThat(finding.evidence().get(0).source().column()).isGreaterThan(150);
+        assertThat(changed.httpUses().get(0).defenses()).isEmpty();
+        var converter=new ServerAnalysisConverter();
+        assertThat(converter.convertToEntityAttribute(converter.convertToDatabaseColumn(changed))).isEqualTo(changed);
+        for(String suffix:List.of("http.get(u);});","u.href='http://fixed.example.invalid/';http.get(u);});"))
+            assertThat(analyzer.analyze(project(prefix+suffix)).validatedFindings()).isEmpty();
+    }
+
     @Test void builtinGetConnectsRequestInputWithoutPromotingUnsupportedOverloads() {
         String start="const app=require('express')();const http=require('node:http');app.post('/',(req,res)=>{";
         var risky=analyzer.analyze(project(start+"http.get(new URL(req.body.url,'http://fixed.example.invalid/'));});"));
@@ -74,7 +91,7 @@ class ServerFlowFindingTest {
         String start = "export default { fetch(request,env) { let id = new URL(request.url).searchParams.get('id'); ";
         var unsafe = analyzer.analyze(project(start + "return env.DB.prepare(id + (id = '0')).all(); }}"));
         var safe = analyzer.analyze(project(start + "return env.DB.prepare((id = '0') + id).all(); }}"));
-        assertThat(unsafe.analyzerVersion()).isEqualTo("ts-server-v39");
+        assertThat(unsafe.analyzerVersion()).isEqualTo("ts-server-v40");
         assertThat(unsafe.validatedFindings()).hasSize(1).allSatisfy(f -> {
             assertThat(f.priority().name()).isEqualTo("REVIEW_REQUIRED");
             assertThat(f.comparisonPolicy()).isEqualTo("NOT_COMPARED");
@@ -85,8 +102,8 @@ class ServerFlowFindingTest {
     @Test void v2SnapshotsRemainImmutableAndAreNotReconnectedByTheNewAnalyzer() {
         var converter = new ServerAnalysisConverter();
         var snapshot = analyzer.analyze(project(UNSAFE));
-        for(String version:List.of("ts-server-v2","ts-server-v24","ts-server-v25","ts-server-v26","ts-server-v27","ts-server-v28","ts-server-v29","ts-server-v30","ts-server-v31","ts-server-v32","ts-server-v33","ts-server-v34","ts-server-v35","ts-server-v36","ts-server-v37","ts-server-v38")){
-            String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v39",version);
+        for(String version:List.of("ts-server-v2","ts-server-v24","ts-server-v25","ts-server-v26","ts-server-v27","ts-server-v28","ts-server-v29","ts-server-v30","ts-server-v31","ts-server-v32","ts-server-v33","ts-server-v34","ts-server-v35","ts-server-v36","ts-server-v37","ts-server-v38","ts-server-v39")){
+            String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v40",version);
             var old = converter.convertToEntityAttribute(previous);
             assertThat(old.analyzerVersion()).isEqualTo(version);
             assertThat(converter.convertToDatabaseColumn(old)).isEqualTo(previous);

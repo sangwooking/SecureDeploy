@@ -12,9 +12,10 @@ for(const c of xss25Cases)test('HTML context25 '+c.id,()=>{
 });
 for(const c of ssrf25Cases)test('SSRF context25 '+c.id,()=>{
  const r=analyze(c.input),high=r.findings.filter(f=>f.ruleId==='TS_SSRF_INPUT_FLOW'&&f.confidence==='HIGH');
- assert.equal(high.length,c.truth==='RISK'&&!c.deferredRisk?1:0,JSON.stringify(r.httpUses));
+ const repaired30=c.id==='ssrf-guard-mutation';
+ assert.equal(high.length,c.truth==='RISK'&&(!c.deferredRisk||repaired30)?1:0,JSON.stringify(r.httpUses));
  if(c.truth==='NORMAL'&&c.id!=='ssrf-fake'&&!c.knownGap)assert.ok(r.httpUses.some(u=>['FIXED_DESTINATION','ALLOWLISTED_DESTINATION'].includes(u.kind)));
- if(c.knownGap)assert.equal(r.httpUses.length,0);
+ if(c.knownGap)assert.ok(r.httpUses.some(u=>u.kind==='ALLOWLISTED_DESTINATION'));
  if(c.truth==='UNKNOWN')assert.ok(!r.httpUses.some(u=>['FIXED_DESTINATION','ALLOWLISTED_DESTINATION'].includes(u.kind)));
  if(c.deferredRisk)assert.ok(!r.httpUses.some(u=>['FIXED_DESTINATION','ALLOWLISTED_DESTINATION'].includes(u.kind)),'Known misses must not acquire a safe destination fact');
 });

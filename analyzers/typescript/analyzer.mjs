@@ -15,7 +15,7 @@ import {tsPaths} from './ts-paths.mjs';
 import {objectData} from './object-data.mjs';
 import {fileAccess} from './file-access.mjs';
 
-export const VERSION = 'ts-server-v39';
+export const VERSION = 'ts-server-v40';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -44,6 +44,11 @@ function union(...values) {
   const trace = allTrace.slice(0, 20);
   const same = values.length && values.every(v => v === values[0]);
   if (same) return values[0];
+  // Forked, untouched HTTP bindings retain their native contract, never a changed receiver.
+  if (['node-http', 'node-http-get'].includes(values[0]?.native) && values[0].ref?.nodeIdentity
+      && values.every(v => !v.unknown && !v.ref?.unknown && v.native === values[0].native
+        && v.nativeMod === values[0].nativeMod && v.ref?.nodeIdentity === values[0].ref.nodeIdentity
+        && v.ref.properties.size === 0)) return values[0];
   const pathChoices=values.every(v=>!v?.unknown&&!v?.ref&&(hasConstant(v)&&typeof v.constant==='string'||v?.filePathChoices))
     ?[...new Set(values.flatMap(v=>v.filePathChoices??[v.constant]))]:undefined;
   const refs = values.filter(v => v?.ref).map(v => v.ref);
@@ -53,6 +58,9 @@ function union(...values) {
     checks: Object.fromEntries(Object.entries(refs[0].checks ?? {}).filter(([key, check]) =>
       refs.every(r => JSON.stringify(r.checks?.[key]) === JSON.stringify(check)))) } : refs[0];
   if (sameUrl) {
+    mergedRef.http = joinDestinations(values);
+    mergedRef.hrefReplaced = refs.some(r => r.hrefReplaced);
+    mergedRef.trace = union(...refs.map(r => ({trace: r.trace ?? []}))).trace;
     mergedRef.queryPartial = refs.some(r => r.queryPartial);
     mergedRef.queryTrace = union(...refs.map(r => ({trace: r.queryTrace ?? []}))).trace;
     mergedRef.properties = new Map([...new Set(refs.flatMap(r => [...r.properties.keys()]))]
@@ -342,12 +350,13 @@ export function analyze(input, overrides = {}) {
     }
     if (base.ref?.http && base.tag === 'url') {
       const uncertain = base.unknown || base.ref.unknown;
-      if (key === 'searchParams') return value('query', base.trace, { unknown: uncertain, ref: base.ref });
-      if (key === 'href') return value('urlText', base.trace, { unknown: uncertain, destination: destinationOf(base) });
+      const trace = base.ref.hrefReplaced ? base.ref.trace : base.trace;
+      if (key === 'searchParams') return value('query', trace, { unknown: uncertain, ref: base.ref });
+      if (key === 'href') return value('urlText', trace, { unknown: uncertain, destination: destinationOf(base) });
       if (base.ref.properties.has(key)) return { ...base.ref.properties.get(key), unknown: uncertain || base.ref.properties.get(key).unknown };
       if (['hostname', 'host', 'protocol', 'pathname', 'search', 'hash', 'port'].includes(key))
-        return value('input', base.trace, { unknown: uncertain, urlMember: key, destination: unresolvedDestination() });
-      return { ...unknown(), trace: base.trace };
+        return value('input', trace, { unknown: uncertain, urlMember: key, destination: unresolvedDestination() });
+      return { ...unknown(), trace };
     }
     if (base.tag === 'outboundRequest' && key === 'url') return value('urlText', base.trace, { destination: destinationOf(base), unknown: base.unknown || base.ref?.unknown });
     if (base.ref?.properties?.has(key)) return { ...base.ref.properties.get(key), unknown: base.ref.unknown || base.ref.properties.get(key).unknown };
@@ -423,6 +432,16 @@ export function analyze(input, overrides = {}) {
           if (receiver.ref?.http && receiver.tag === 'url') {
             note(mod, 'URL_PROPERTY_WRITE');
             const ref = target.forkRefs?.get(receiver.ref) ?? receiver.ref;
+            if (hasConstant(key) && key.constant === 'href' && !receiver.unknown && !ref.unknown) {
+              // href replaces the full URL: prior host/protocol checks no longer protect it.
+              const guardedSourceReuse = ref.checks?.protocol && ref.checks?.hostname && ref.trace?.length
+                && v.trace.some(t => JSON.stringify(t) === JSON.stringify(ref.trace[0]));
+              ref.http = v.ref ? unresolvedDestination() : constructedUrl(v);
+              ref.unknown = Boolean(v.unknown || v.ref || guardedSourceReuse);
+              ref.trace = v.trace; ref.checks = {}; ref.properties.clear(); ref.hrefReplaced = true;
+              if (guardedSourceReuse) note(mod, 'URL_GUARDED_SOURCE_REUSE_UNKNOWN');
+              note(mod, 'URL_HREF_REPLACED'); return;
+            }
             if (hasConstant(key) && ['pathname', 'search', 'hash'].includes(key.constant)) {
               ref.properties.set(key.constant, v.ref ? { ...unknown(), trace: v.trace } : v);
               if (key.constant === 'search') { ref.queryTrace = v.trace; ref.queryPartial = true; }
@@ -940,7 +959,8 @@ export function analyze(input, overrides = {}) {
     const limits = ['REDIRECT_DNS_REACHABILITY_NOT_VERIFIED', 'PATH_FEASIBILITY_NOT_VERIFIED'];
     if (destination.kind === 'ALLOWLISTED_DESTINATION') limits.push('PORT_POLICY_NOT_VERIFIED');
     if (destination.kind === 'UNRESOLVED_DESTINATION') { limits.push('DESTINATION_FLOW_UNRESOLVED'); note(mod, 'DESTINATION_FLOW_UNRESOLVED'); }
-    const trace = union(input, {trace: input.ref?.trace ?? []}).trace.map(l => l.kind === 'SQL_STRING_CONSTRUCTION' ? {...l, kind: 'URL_STRING_CONSTRUCTION'} : l);
+    const trace = (input.ref?.hrefReplaced ? input.ref.trace : union(input, {trace: input.ref?.trace ?? []}).trace)
+      .map(l => l.kind === 'SQL_STRING_CONSTRUCTION' ? {...l, kind: 'URL_STRING_CONSTRUCTION'} : l);
     const usage = { ...destination, location: loc(node, mod, 'HTTP_REQUEST_CALL', fn), trace,
       defenses, limitations: limits };
     append(result.httpUses, usage, mod);
