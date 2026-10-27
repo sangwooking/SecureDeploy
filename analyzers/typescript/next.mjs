@@ -1,7 +1,7 @@
 import path from 'node:path';
 
 // Conventions are declarations, not proof of a deployed endpoint or invocation.
-export function nextEntries({ts, modules, input, tick, note}) {
+export function nextEntries({ts, modules, input, tick, note,wrapper}) {
   const directive=(statements,name)=>{
     for(const s of statements??[]) {
       if(!ts.isExpressionStatement(s)||!ts.isStringLiteral(s.expression))break;
@@ -48,11 +48,25 @@ export function nextEntries({ts, modules, input, tick, note}) {
       const rootApp=[...modules.keys()].some(p=>p.startsWith(root+'app/'));
       const route=new RegExp('^'+(rootApp?'app':'(?:src/)?app')+'/(?:[^/]+/)*route\\.[jt]s$').test(relative);
       if(/^(?:src\/)?app\//.test(relative))note(mod,'NEXT_ROUTING_CONFIG_AND_MIDDLEWARE_NOT_VERIFIED');
+      const registrations=new Map();
+      if(route&&wrapper)for(const s of mod.ast.statements){
+        tick(mod);
+        if(!ts.isVariableStatement(s)||!(s.declarationList.flags&ts.NodeFlags.Const)
+            ||!s.modifiers?.some(m=>m.kind===ts.SyntaxKind.ExportKeyword))continue;
+        for(const d of s.declarationList.declarations){
+          if(!ts.isIdentifier(d.name)||!['GET','POST','PATCH','PUT','DELETE','HEAD','OPTIONS'].includes(d.name.text)
+              ||mod.exports.has(d.name.text)||!d.initializer)continue;
+          if(writes.has(d.name.text)||mod.syntaxIndex.exportWrites.has(d.name.text)){note(mod,'NEXT_MUTABLE_EXPORT_NOT_SUPPORTED');continue;}
+          const fn=wrapper(d.initializer,mod,d.name.text);
+          if(fn){mod.exports.set(d.name.text,fn);registrations.set(d.name.text,d);}
+          else note(mod,'NEXT_WRAPPED_HANDLER_UNKNOWN');
+        }
+      }
       for(const [name,fn] of mod.exports) {
         if(writes.has(name)){note(mod,'NEXT_MUTABLE_EXPORT_NOT_SUPPORTED');continue;}
         if(route&&['GET','POST','PATCH','PUT','DELETE','HEAD','OPTIONS'].includes(name)) {
           const paramNames=[...relative.matchAll(/\[(?:\[)?(?:\.\.\.)?([A-Za-z_$][\w$]*)\](?:\])?/g)].map(m=>m[1]);
-          mod.entries.push({fn,kind:'NEXT_ROUTE_HANDLER',paramNames});
+          mod.entries.push({fn,kind:'NEXT_ROUTE_HANDLER',paramNames,registrationNode:registrations.get(name)});
           note(mod,'NEXT_ROUTE_AUTHORIZATION_NOT_VERIFIED');
         } else if(server||fn.node.body&&ts.isBlock(fn.node.body)&&directive(fn.node.body.statements,'use server')) {
           if(+version[1]<14||!fn.node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword)){note(mod,'NEXT_SERVER_FUNCTION_CONTRACT_NOT_SUPPORTED');continue;}

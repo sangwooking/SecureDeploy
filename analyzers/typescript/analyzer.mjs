@@ -15,8 +15,9 @@ import {tsPaths} from './ts-paths.mjs';
 import {objectData} from './object-data.mjs';
 import {fileAccess} from './file-access.mjs';
 import {exportLinks} from './export-links.mjs';
+import {wrapperLinks} from './wrapper-links.mjs';
 
-export const VERSION = 'ts-server-v41';
+export const VERSION = 'ts-server-v42';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -1067,6 +1068,9 @@ export function analyze(input, overrides = {}) {
       if (truth(condition) === false) return node.elseStatement ? statement(node.elseStatement, state) : { values: [], stops: false };
       state.context.checks.push(loc(node.expression, mod, 'CONDITIONAL_CHECK', fn));
       const a = fork(state), b = fork(state);
+      if(state.context.wrapperFlow){
+        a.uncertain=b.uncertain=true;note(mod,'WRAPPER_CONDITIONAL_EXECUTION_UNKNOWN');
+      }
       if(state.nodeMode&&state.context.setup)a.uncertain=b.uncertain=true;
       if(state.nodeMode&&state.context.setup)a.uncertain=b.uncertain=true;
       // A validator we cannot model may restrict this input; do not promote it as an unguarded path.
@@ -1214,7 +1218,8 @@ export function analyze(input, overrides = {}) {
   }});
   phase='ENTRY_DISCOVERY';
   denoEntries({ts,modules,resolve,claimFunction,tick,note,input});
-  nextEntries({ts,modules,input,tick,note});
+  const wrappers=wrapperLinks({ts,unwrap,resolve,stable:exportSupport.stable,claimFunction,tick,note,limits,constant,value,loc});
+  nextEntries({ts,modules,input,tick,note,wrapper:wrappers.build});
   let requestEvidenceBytes=Buffer.byteLength(JSON.stringify(precomputedSupabase));
   for(const access of precomputedSupabase.accesses){
     const evidence=access.authorizationEvidence,at=evidence?.enclosingFunction,mod=at&&modules.get(at.filePath);
@@ -1240,21 +1245,25 @@ export function analyze(input, overrides = {}) {
   for (const mod of modules.values()) for (const entry of mod.entries) {
     const context = { entry: loc(entry.registrationNode ?? entry.fn.node, mod, entry.kind, entry.fn), checks: [], defenses: [], resources: [] };
     try {
+      if(entry.fn.wrapper)append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'CALLBACK_BOUND',
+        operation:'STATIC_NEXT_WRAPPER_BINDING',location:context.entry,trace:entry.fn.wrapperLocations,
+        limitations:['STATIC_CREATION_NOT_RUNTIME_INVOCATION_PROOF','NOT_AUTHENTICATION_OR_SANITIZATION_PROOF']},mod);
       // Runtime require() must use this same graph as captured module values.
       const isolate = entryState(() => tick(mod), canonicalFunctions);
       Object.defineProperty(context, 'isolate', {value: isolate});
+      Object.defineProperty(context, 'wrapperFlow', {value:!!entry.fn.wrapper});
       Object.defineProperty(context, 'webSecurity', {value:nodeSupport.webEntry(entry.web,isolate)});
       Object.defineProperty(context, 'rateSecurity', {value:nodeSupport.rateEntry(entry.rate,isolate)});
       if(entry.kind.startsWith('NEXT_'))note(mod,'NEXT_CORS_CSRF_COOKIE_CONTRACT_NOT_EVALUATED');
-      const entryFn = entry.fn.nodeMode ? isolate(entry.fn) : entry.fn;
+      const entryFn = entry.fn.nodeMode||entry.fn.closure ? isolate(entry.fn) : entry.fn;
       if(entry.fn.nodeMode)note(mod,'MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED');
       if(entry.registration){context.checks.push(entry.registration);note(mod,'EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED');}
       const returned = invoke(entryFn, entry.kind === 'NEXT_ROUTE_HANDLER' ? [value('request'),value('nextContext',[],{paramNames:entry.paramNames})]
         : entry.kind==='NEXT_SERVER_FUNCTION'?entry.fn.node.parameters.map(p=>value('input',[loc(p,mod,'SERVER_FUNCTION_ARGUMENT',entry.fn)]))
         : entry.kind === 'WORKER_FETCH' || entry.kind === 'DENO_HTTP_HANDLER' ? [value('request'), value('env')] : entry.kind==='EXPRESS_HANDLER'
         ?[value('express-request'),value('express-response'),unknown()]:[value('context')], 0, context, new Set(),!!entry.uncertain);
-      if (returned.responseLocations?.length) observeExposure(returned, entry.fn.node, { mod, fn: entry.fn, uncertain: false }, 'HTTP_RESPONSE_RETURN');
-      observeEnvironmentResponses(returned,{mod,fn:entry.fn});
+      if (returned.responseLocations?.length) observeExposure(returned, entry.fn.node, { mod:entry.fn.mod, fn: entry.fn, uncertain: false }, 'HTTP_RESPONSE_RETURN');
+      observeEnvironmentResponses(returned,{mod:entry.fn.mod,fn:entry.fn});
     } catch { note(mod, 'ANALYSIS_BUDGET_EXCEEDED'); }
     for (const field of ['checks', 'defenses', 'resources']) {
       context[field] = context[field].filter((item, i, all) => all.findIndex(other => JSON.stringify(item) === JSON.stringify(other)) === i);

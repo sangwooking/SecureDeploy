@@ -20,7 +20,7 @@ class RateLimitFlowTest {
     }
     @Test void corroboratedPolicyFailureGroupsSharedConfigurationWithoutRiskPromotion() {
         var r=analyzer.analyze(input("{limit:3,skip:()=>true}"));
-        assertThat(r.analyzerVersion()).isEqualTo("ts-server-v41");
+        assertThat(r.analyzerVersion()).isEqualTo("ts-server-v42");
         assertThat(r.validatedFindings()).hasSize(1);var f=r.validatedFindings().get(0);
         assertThat(f.ruleId()).isEqualTo("JS_RATE_LIMIT_BYPASS_REVIEW");
         assertThat(f.priority().name()).isEqualTo("REVIEW_REQUIRED");assertThat(f.comparisonPolicy()).isEqualTo("NOT_COMPARED");

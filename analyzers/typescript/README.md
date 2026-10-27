@@ -1,5 +1,24 @@
 # Bounded server analysis runtime
 
+## Next request wrapper summaries (v42)
+
+An exported const App Router handler may reference a static function or call a
+source-resolved synchronous factory whose sole statement returns one function.
+Factory parameters must be distinct identifiers without defaults/rest; arguments
+are known functions or primitive literals. Nested factories share the existing
+depth/step/function limits. Side-effectful/async/generator factories, mutable or
+ambiguous bindings, dynamic targets and uninspected external wrappers stay UNKNOWN.
+No target initializer runs. Cached plans contain syntax only; captured bindings
+are fresh and cloned by the existing per-request state isolator.
+
+The returned function's body uses existing argument, object, return and Sink
+contracts. Unknown conditions in newly linked wrappers retain unresolved flow;
+wrapper names never establish authentication or sanitization. Existing nodeUses
+record static creation/returned-function locations separately from Source/Sink
+evidence. A link is not runtime invocation, protection or exploit proof.
+Wrapped Server Functions, React.cache, package exports and general Promise/event
+semantics are not added. RLS, Risk, Rule IDs and resource caps are unchanged.
+
 ## Static named export links (v41)
 
 Existing registered requests can reach top-level functions exported through
