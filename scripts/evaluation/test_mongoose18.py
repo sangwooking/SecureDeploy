@@ -3,6 +3,8 @@ from mongoose18 import classify
 
 
 class MongooseContractMetrics(unittest.TestCase):
+    def test_removed_callback_api_is_not_a_valid_query_candidate(self):
+        self.assertEqual(classify(dict(findings=[],files=[],nodeUses=[dict(ruleId='JS_MONGOOSE_SELECTOR_INPUT_FLOW',kind='CALLBACK_VERSION_UNSUPPORTED')])), 'CALLBACK_VERSION_UNSUPPORTED')
     def test_absence_without_contract_is_not_a_normal_result(self):
         self.assertEqual(classify(dict(findings=[], nodeUses=[], files=[])), 'NOT_SUPPORTED_OR_NOT_APPLICABLE')
 

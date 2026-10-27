@@ -1,5 +1,14 @@
 # Bounded server analysis runtime
 
+Version ts-server-v30 recognizes version-declared Mongoose 4.x-6.x callback
+execution requests for find/findOne and exec(callback). Functions must have a
+resolved static origin and optional argument positions must be unambiguous.
+Mongoose 7.x-8.x callbacks are recorded as unsupported; ambiguous versions or
+callbacks remain UNKNOWN. Bodies are not invoked or traced, and unmodeled
+callback effects make subsequent code in that entry uncertain. One Query's
+repeated/mixed execution is not counted as another finding. RLS, columns,
+Risk and historical snapshots are unchanged.
+
 Version ts-server-v29 adds bounded Mongoose selector evidence; RLS v3 and
 column-update-v1 meanings are unchanged. Mongoose support covers declared
 4.x-8.x APIs, explicit flat String/Number/Boolean/Date Schema/model registration (and same-instance

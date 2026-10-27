@@ -17,6 +17,8 @@ def classify(result):
     states = [u['kind'] for u in result.get('nodeUses', []) if u['ruleId'] == RULE]
     if findings:
         return 'REVIEW_CANDIDATE'
+    if 'CALLBACK_VERSION_UNSUPPORTED' in states:
+        return 'CALLBACK_VERSION_UNSUPPORTED'
     for state in ('UNKNOWN', 'SANITIZE_FILTER_DECLARED', 'STATIC_OR_STRING_FILTER'):
         if state in states:
             return state
@@ -40,11 +42,14 @@ def run(node, args, packet=None):
     return json.loads(p.stdout)
 
 
-def evaluate(repo, baseline, output, prepare_root=None):
+def evaluate(repo, baseline, output, prepare_root=None, case_set='mongoose18'):
     node = shutil.which('node')
-    casefile = repo/'analyzers/typescript/test/mongoose-cases.mjs'
-    cases = run(node, ['--allow-fs-read='+str(casefile), '--input-type=module', '-e',
-                      'import {mongooseCases} from '+json.dumps(casefile.as_uri())+';console.log(JSON.stringify(mongooseCases));'])
+    filename,symbol={'mongoose18':('mongoose-cases.mjs','mongooseCases'),
+                     'callback19':('mongoose-callback-cases.mjs','callbackCases')}[case_set]
+    casefile = repo/'analyzers/typescript/test'/filename
+    allowed=casefile if case_set=='mongoose18' else casefile.parent
+    cases = run(node, ['--allow-fs-read='+str(allowed), '--input-type=module', '-e',
+                      'import {'+symbol+'} from '+json.dumps(casefile.as_uri())+';console.log(JSON.stringify('+symbol+'));'])
     rows = []
     for c in cases:
         observations = {}
@@ -101,9 +106,10 @@ if __name__ == '__main__':
     p.add_argument('--baseline', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--prepare-root', type=Path)
+    p.add_argument('--case-set',choices=['mongoose18','callback19'],default='mongoose18')
     a = p.parse_args()
     # The public tool cannot overwrite tracked files or retained external sources.
     for dest in (a.output, a.prepare_root):
         if dest and (dest.resolve().is_relative_to(a.repo.resolve()) or dest.resolve().is_relative_to(a.baseline.resolve())):
             raise ValueError('OUTPUT_MUST_BE_OUTSIDE_CHECKOUTS')
-    evaluate(a.repo.resolve(), a.baseline.resolve(), a.output, a.prepare_root)
+    evaluate(a.repo.resolve(), a.baseline.resolve(), a.output, a.prepare_root,a.case_set)

@@ -58,9 +58,37 @@ export function mongooseContracts(api) {
     for(const child of [...v.ref.properties.values()].slice(0,40))trackFilter(child,state,versions,seen,depth+1);
     return versions;
   }
-  function consume(query,node,state) {
+  const callback=v=>v?.tag==='function'&&!!v.target&&!v.unknown&&!v.ref?.unknown;
+  const projection=v=>!v||literal(v)&&(v.constant===null||typeof v.constant==='string');
+  function executionUnknown(query,node,state,reason) {
+    note(state.mod,reason);
+    if(state.context.setup)return;
+    append(result.nodeUses,{ruleId:rule,kind:reason==='MONGOOSE_CALLBACK_VERSION_UNSUPPORTED'?'CALLBACK_VERSION_UNSUPPORTED':'UNKNOWN',
+      operation:query.ref.operation,location:query.ref.createdAt,
+      trace:[...scan(query.ref.properties.get('@filter'),state).trace,loc(node,state.mod,'MONGOOSE_UNVERIFIED_EXECUTION_REQUEST',state.fn)].slice(0,20),
+      limitations:[reason,'NO_SUPPORTED_QUERY_EXECUTION_PROOF']},state.mod);
+  }
+  function callbackExecution(query,node,state,fn) {
+    const version=query.ref.properties.get('@model')?.ref?.mongooseMajor??0;
+    if(!version||version>=7){
+      query.ref.properties.set('@executionInvalid',constant(true));
+      executionUnknown(query,node,state,version>=7?'MONGOOSE_CALLBACK_VERSION_UNSUPPORTED':'MONGOOSE_CALLBACK_VERSION_UNKNOWN');
+      return false;
+    }
+    consume(query,node,state,fn);
+    note(state.mod,'MONGOOSE_CALLBACK_BODY_NOT_ANALYZED');
+    // Callback effects may occur after this request. Do not execute the body or
+    // retain certainty for subsequent code when those effects were not modeled.
+    const body=fn.target.node.body;
+    if(!body||!ts.isBlock(body)||body.statements.length){state.uncertain=true;note(state.mod,'MONGOOSE_CALLBACK_EFFECTS_UNKNOWN');}
+    return true;
+  }
+  function consume(query,node,state,fn) {
     if(query?.tag!=='mongoose-query'||state.context.setup)return;
     const ref=query.ref,model=ref.properties.get('@model'),filter=ref.properties.get('@filter');
+    if(ref.properties.has('@executionInvalid')){executionUnknown(query,node,state,'MONGOOSE_EXECUTION_CONTRACT_UNKNOWN');return;}
+    if(ref.executionRequested){executionUnknown(query,node,state,'MONGOOSE_REPEAT_OR_MIXED_EXECUTION_UNKNOWN');return;}
+    ref.executionRequested=true;
     const proof=scan(filter,state),option=ref.properties.get('@sanitize')??model?.ref?.originParent?.properties.get('@sanitize');
     const version=model?.ref?.mongooseMajor??0,hasOption=literal(option)&&option.constant===true;
     const filterObject=filter?.tag==='object'&&filter.ref&&!filter.unknown&&!filter.ref.unknown;
@@ -73,11 +101,19 @@ export function mongooseContracts(api) {
     const status=unresolved?'UNKNOWN':!proof.trace.length?'STATIC_OR_STRING_FILTER'
       :hasOption&&!proof.trusted&&rootProtected?'SANITIZE_FILTER_DECLARED'
       :hasOption&&!proof.trusted&&!rootProtected?'UNKNOWN':'SELECTOR_INPUT_CANDIDATE';
-    const location=ref.createdAt,execution=loc(node,state.mod,'MONGOOSE_QUERY_EXECUTION_REQUEST',state.fn);
-    const trace=[...proof.trace,...(model?.ref?.origin??[]),execution].slice(0,20);
+    const location=ref.createdAt,execution=loc(node,state.mod,fn?'MONGOOSE_CALLBACK_EXECUTION_REQUEST':'MONGOOSE_QUERY_EXECUTION_REQUEST',state.fn);
+    const trace=[...proof.trace,...(model?.ref?.origin??[]),
+      ...(fn?[loc(fn.target.node,fn.target.mod,'MONGOOSE_CALLBACK_REFERENCE',fn.target)]:[]),execution].slice(0,20);
     const limitations=['STATIC_SELECTOR_NOT_RUNTIME_EXPLOIT_PROOF','DECLARED_VERSION_NOT_INSTALLED_VERSION',
       'SCHEMA_CAST_HOOKS_MIDDLEWARE_AND_DATABASE_NOT_VERIFIED',
+      ...(fn?['MONGOOSE_CALLBACK_BODY_NOT_ANALYZED']:[]),
       ...(status==='UNKNOWN'?['MONGOOSE_SELECTOR_CONTRACT_UNKNOWN']:[]),
+      ...(!valid(model)||schema&&!valid(schema)?['MONGOOSE_MODEL_ORIGIN_UNRESOLVED']:[]),
+      ...(state.uncertain?['MONGOOSE_REQUEST_PATH_UNRESOLVED']:[]),
+      ...(proof.uncertain?['MONGOOSE_FILTER_FLOW_UNRESOLVED']:[]),
+      ...(configUnknown?['MONGOOSE_PROTECTION_UNRESOLVED']:[]),
+      ...(filterChanged?['MONGOOSE_FILTER_MUTATION_UNKNOWN']:[]),
+      ...(!version?['MONGOOSE_DECLARED_VERSION_UNKNOWN']:[]),
       ...(proof.trusted?['MONGOOSE_TRUSTED_EXCEPTION']:[]),
       ...(hasOption&&version<6?['SANITIZE_FILTER_VERSION_UNSUPPORTED']:[]),
       ...(hasOption&&!rootProtected?['ROOT_FILTER_SANITIZATION_NOT_PROVEN']:[])];
@@ -138,18 +174,29 @@ export function mongooseContracts(api) {
       query.ref.properties.set('@model',receiver);query.ref.properties.set('@filter',args[0]??constant(null));
       query.ref.filterVersions=trackFilter(args[0],state);
       query.ref.operation=method;query.ref.createdAt=loc(node,state.mod,'MONGOOSE_QUERY_FILTER',state.fn);
-      const opt=options(args[2]);if(opt.setting)query.ref.properties.set('@sanitize',opt.setting);
-      const projection=args[1];
-      const projectionKnown=!projection||literal(projection)&&(projection.constant===null||typeof projection.constant==='string');
-      if(!opt.known||!projectionKnown||args.length>3)query.ref.properties.set('@optionsUnknown',constant(true));
+      const fn=args.length>=2&&callback(args.at(-1))?args.at(-1):undefined;
+      const ordinary=fn?args.slice(0,-1):args;
+      const opt=options(ordinary[2]);if(opt.setting)query.ref.properties.set('@sanitize',opt.setting);
+      const argumentsKnown=ordinary.length>=1&&ordinary.length<=3&&projection(ordinary[1])&&opt.known;
+      if(!argumentsKnown)query.ref.properties.set('@optionsUnknown',constant(true));
       if(!state.context.setup)append(result.nodeUses,{ruleId:rule,kind:'QUERY_CREATED_EXECUTION_NOT_OBSERVED',operation:method,
-        location:query.ref.createdAt,trace:scan(args[0],state).trace,limitations:['AWAIT_OR_EXEC_REQUIRED','MODEL_SCHEMA_RUNTIME_NOT_VERIFIED']},state.mod);
+        location:query.ref.createdAt,trace:scan(args[0],state).trace,limitations:['AWAIT_EXEC_OR_SUPPORTED_CALLBACK_REQUIRED','MODEL_SCHEMA_RUNTIME_NOT_VERIFIED']},state.mod);
+      if(fn&&argumentsKnown){
+        if(!callbackExecution(query,node,state,fn))return {value:unknown()};
+      }else if(!argumentsKnown){
+        query.ref.properties.set('@executionInvalid',constant(true));executionUnknown(query,node,state,'MONGOOSE_CALLBACK_OR_ARGUMENT_UNKNOWN');
+      }
       return {value:query};
     }
     if(receiver?.tag==='mongoose-query'){
       if(method==='setOptions'&&args.length===1){const opt=options(args[0]);if(opt.setting)receiver.ref.properties.set('@sanitize',opt.setting);
         if(!opt.known)receiver.ref.properties.set('@optionsUnknown',constant(true));return {value:receiver};}
       if(method==='exec'&&args.length===0){consume(receiver,node,state);return {value:unknown()};}
+      if(method==='exec'){
+        if(args.length===1&&callback(args[0]))callbackExecution(receiver,node,state,args[0]);
+        else {receiver.ref.properties.set('@executionInvalid',constant(true));executionUnknown(receiver,node,state,'MONGOOSE_CALLBACK_OR_ARGUMENT_UNKNOWN');}
+        return {value:unknown()};
+      }
       receiver.ref.unknown=true;note(state.mod,'MONGOOSE_QUERY_CHAIN_UNKNOWN');return {value:unknown()};
     }
     if(['find','findOne'].includes(method)&&receiver?.unknown&&!state.context.setup){

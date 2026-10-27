@@ -52,15 +52,15 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
                 &&f.confidence().equals("HIGH")&&f.disposition().equals("REVIEW_REQUIRED")
                 &&snapshot.nodeUses().stream().anyMatch(u->u.ruleId().equals(f.ruleId())&&u.kind().equals("SELECTOR_INPUT_CANDIDATE")
                     &&u.location().equals(f.sink())&&u.trace().equals(f.flow())))
-            .collect(java.util.stream.Collectors.toMap(ServerAnalysisSnapshot.Finding::sink,f->f,(a,b)->a,LinkedHashMap::new))
-            .values().stream().map(f->new ServerFlowFinding(identity(snapshot.analyzerVersion(),f.ruleId(),f.sink()),
-                "TYPESCRIPT_DATA_FLOW",snapshot.analyzerVersion(),f.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",f.sink(),List.of(f),
-                f.flow().stream().filter(l->l.kind().equals("MONGOOSE_QUERY_EXECUTION_REQUEST")).toList(),
+            .collect(java.util.stream.Collectors.groupingBy(ServerAnalysisSnapshot.Finding::sink,LinkedHashMap::new,java.util.stream.Collectors.toList()))
+            .values().stream().map(group->{var f=group.get(0);return new ServerFlowFinding(identity(snapshot.analyzerVersion(),f.ruleId(),f.sink()),
+                "TYPESCRIPT_DATA_FLOW",snapshot.analyzerVersion(),f.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",f.sink(),List.copyOf(group),
+                group.stream().flatMap(e->e.flow().stream()).filter(l->Set.of("MONGOOSE_QUERY_EXECUTION_REQUEST","MONGOOSE_CALLBACK_EXECUTION_REQUEST").contains(l.kind())).distinct().toList(),
                 "사용자가 보낸 객체가 데이터 조회 조건에 영향을 줄 수 있습니다",
-                "정적으로 연결된 요청 입력이 Mongoose 조회 조건에 전달되고 await 또는 exec 요청이 확인됐습니다. 실제 실행·설치 버전·스키마 변환·미들웨어·공격 성공은 확인하지 않았습니다. 높은 Confidence는 정적 전달 근거의 확신도입니다.",
+                "정적으로 연결된 요청 입력이 Mongoose 조회 조건에 전달되고 await·exec 또는 지원 버전의 콜백 실행 요청이 확인됐습니다. 실제 실행·설치 버전·스키마 변환·미들웨어·공격 성공은 확인하지 않았습니다. 높은 Confidence는 정적 전달 근거의 확신도입니다.",
                 f.recommendation(),List.of("입력과 모델 선언, 쿼리 및 방어 설정 위치를 검토하세요.",
                     "로컬에서 정상 문자열과 객체형 입력을 비교하고 실제 설치 버전·sanitizeFilter·trusted 예외를 확인하세요.",
-                    "수정 후 같은 프로젝트를 재검사하세요. 점수·배포 판단 및 해결 건수와는 별도입니다."))).toList();
+                    "수정 후 같은 프로젝트를 재검사하세요. 점수·배포 판단 및 해결 건수와는 별도입니다."));}).toList();
     }
 
     private static List<ServerFlowFinding> connectNode(ServerAnalysisSnapshot snapshot) {
