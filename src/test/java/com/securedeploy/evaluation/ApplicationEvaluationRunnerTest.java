@@ -31,4 +31,17 @@ class ApplicationEvaluationRunnerTest {
         var p=new ObjectMapper().readTree("{\"files\":[]}");
         assertThatThrownBy(()->ApplicationEvaluationRunner.verify(allowed,temp,p)).hasMessageContaining("IDENTITY");
     }
+    @Test void canonicalFileSpellingStillRequiresTheExactContentHash()throws Exception {
+        Path source=Files.createDirectory(temp.resolve("source"));Path file=source.resolve("MixedCase.js");
+        Files.writeString(file,"static fixture, never executed");
+        Assumptions.assumeTrue(Files.isRegularFile(source.resolve("mixedcase.js")),"Requires case-insensitive filesystem alias");
+        var p=new ObjectMapper().valueToTree(Map.of("files",List.of(Map.of("path","mixedcase.js","sha256",BenchmarkEngineRunner.hash(Files.readAllBytes(file))))));
+        ApplicationEvaluationRunner.verify(temp,source,p);
+        var duplicate=new ObjectMapper().valueToTree(Map.of("files",List.of(
+                Map.of("path","MixedCase.js","sha256",BenchmarkEngineRunner.hash(Files.readAllBytes(file))),
+                Map.of("path","mixedcase.js","sha256",BenchmarkEngineRunner.hash(Files.readAllBytes(file))))));
+        assertThatThrownBy(()->ApplicationEvaluationRunner.verify(temp,source,duplicate)).hasMessageContaining("HASH");
+        Files.writeString(file,"changed");
+        assertThatThrownBy(()->ApplicationEvaluationRunner.verify(temp,source,p)).hasMessageContaining("HASH");
+    }
 }

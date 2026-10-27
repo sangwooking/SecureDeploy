@@ -112,13 +112,13 @@ public final class ApplicationEvaluationRunner {
             Path path=source.resolve(f.path("path").asText()).normalize();
             if(!path.startsWith(source)||!Files.isRegularFile(path,LinkOption.NOFOLLOW_LINKS)||!path.toRealPath().startsWith(source))throw new IllegalArgumentException("SOURCE_PATH");
             long size=Files.size(path);total+=size;
-            if(size>4_000_000||total>128_000_000||!expected.add(path)||!BenchmarkEngineRunner.hash(Files.readAllBytes(path)).equals(f.path("sha256").asText()))throw new IllegalArgumentException("SOURCE_HASH_OR_LIMIT");
+            if(size>4_000_000||total>128_000_000||!expected.add(path.toRealPath())||!BenchmarkEngineRunner.hash(Files.readAllBytes(path)).equals(f.path("sha256").asText()))throw new IllegalArgumentException("SOURCE_HASH_OR_LIMIT");
         }
         try(var paths=Files.walk(source)) {
             var iterator=paths.iterator();int count=0;
             while(iterator.hasNext()) {
                 var path=iterator.next();
-                if(++count>50000||Files.isSymbolicLink(path)||!Files.isDirectory(path)&&!expected.contains(path))throw new IllegalArgumentException("UNEXPECTED_SOURCE");
+                if(++count>50000||Files.isSymbolicLink(path)||!Files.isDirectory(path)&&!expected.contains(path.toRealPath()))throw new IllegalArgumentException("UNEXPECTED_SOURCE");
             }
         }
     }
