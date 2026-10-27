@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "method": "POST_RESULT_NONBLIND_SOURCE_REVIEW_NOT_INDEPENDENT_TRUTH",
+  "cases": [
+    {
+      "caseId": "papermark-help-query-not-http-destination",
+      "projectId": "papermark--papermark",
+      "sites": [{"filePath": "app/api/help/route.ts", "line": 3}, {"filePath": "app/api/help/route.ts", "line": 5}, {"filePath": "app/api/help/route.ts", "line": 8}],
+      "sourceReview": "GET reads q; the outbound URL instead uses a declared public marketing configuration. q is used later in article filtering, not in this fetch destination.",
+      "allVersions": "One unresolved HTTP destination observation with no request-input trace at this Sink; no structural SSRF Finding. No added module/wrapper link.",
+      "boundary": "The configuration, response.json and filter callbacks remain unverified. This scoped normal data-use distinction is not a whole-project TN."
+    },
+    {
+      "caseId": "cloudflare-request-to-static-schema-query",
+      "projectId": "democra-ai--cloudflare-auth-kit",
+      "sites": [{"filePath": "src/index.ts", "line": 142}, {"filePath": "src/index.ts", "line": 147}, {"filePath": "src/index.ts", "line": 26}],
+      "sourceReview": "fetch calls ensureSchema with an object containing env.DB; ensureSchema prepares a literal schema query and calls all().",
+      "allVersions": "STATIC_QUERY with executionObserved=true in ensureSchema. Request/parameter/object and supported D1 operation already connect in v40; SQL input trace is empty.",
+      "boundary": "This is a preserved static-query control, not a new TP or proof that schema initialization succeeds in production."
+    },
+    {
+      "caseId": "cloudflare-sdk-callback-and-returned-handler-gap",
+      "projectId": "democra-ai--cloudflare-auth-kit",
+      "sites": [{"filePath": "src/index.ts", "line": 10}, {"filePath": "src/index.ts", "line": 347}, {"filePath": "src/index.ts", "line": 352}, {"filePath": "src/studio-api.ts", "line": 118}, {"filePath": "src/studio-api.ts", "line": 119}],
+      "sourceReview": "A module initializer creates studioApi; Better Auth Studio receives an apiHandler callback that forwards context and Request to the returned handler.",
+      "allVersions": "Main fetch is registered but src/studio-api.ts has zero reached functions. CALLBACK_FLOW_UNSUPPORTED and unresolved calls remain; static imports alone do not establish SDK dispatch.",
+      "boundary": "v42's Next exported-handler summary does not apply to this Worker initializer/SDK callback. No CVE truth or confirmed FN; do not invoke all callbacks as HTTP entries."
+    },
+    {
+      "caseId": "next-checkout-alias-and-unselected-helper",
+      "projectId": "openstarterkit--nextjs-saas-starter-kit",
+      "sites": [{"filePath": "src/app/api/checkout/route.ts", "line": 2}, {"filePath": "src/app/api/checkout/route.ts", "line": 9}, {"filePath": "src/app/api/checkout/route.ts", "line": 19}, {"filePath": "src/lib/auth/index.ts", "line": 35}],
+      "sourceReview": "POST calls getCurrentUser, returns 401 on absence, then reads request.json and uses priceId in application/Prisma/Stripe logic. The source includes authentication checks; missing analyzer evidence is not missing authentication.",
+      "allVersions": "POST is reached, but TS_PATH_TARGET_AMBIGUOUS and TS_PATH_TARGET_NOT_INSPECTED block aliases. No src/lib helper is in the 100 parsed inputs. The inventory contains both directory src/lib/auth and file src/lib/auth/index.ts; the frozen resolver counts both as candidates.",
+      "boundary": "TypeScript 6.0.3 virtual-file resolution chooses src/lib/auth/index.ts. Removing false ambiguity alone would still leave helper selection and external Auth/Prisma/Stripe semantics unresolved."
+    },
+    {
+      "caseId": "next-external-destructured-auth-handler",
+      "projectId": "openstarterkit--nextjs-saas-starter-kit",
+      "sites": [{"filePath": "src/app/api/auth/[...all]/route.ts", "line": 1}, {"filePath": "src/app/api/auth/[...all]/route.ts", "line": 7}],
+      "sourceReview": "GET and POST are destructured from the external Better Auth toNextJsHandler factory result.",
+      "allVersions": "File parses but has zero registered entries and zero reached functions. v42's local pure factory returning one function does not cover an external object-returning factory.",
+      "boundary": "This is an unsupported registration contract, not evidence that authentication is absent or vulnerable."
+    },
+    {
+      "caseId": "next-cover-parameter-regex-and-file-read",
+      "projectId": "openstarterkit--nextjs-saas-starter-kit",
+      "sites": [{"filePath": "src/app/blog/covers/[file]/route.ts", "line": 49}, {"filePath": "src/app/blog/covers/[file]/route.ts", "line": 53}, {"filePath": "src/app/blog/covers/[file]/route.ts", "line": 60}],
+      "sourceReview": "GET reads route params, rejects names outside the explicit slug.svg regex, then joins the configured covers directory and reads the file.",
+      "allVersions": "ROUTE_PARAMETER and FILE_PATH_JOIN reach NODE_FILE_READ as UNRESOLVED_RESOURCE with executionObserved=true. No HIGH structural candidate. This partial Source-to-resource observation already exists in v40.",
+      "boundary": "Retain the regex protection as source evidence; dynamic root, regex modeling, aliases and runtime filesystem remain unresolved. Do not call this a confirmed path traversal or whole-project TN."
+    }
+  ],
+  "legacyWarningReview": {
+    "projectId": "openstarterkit--nextjs-saas-starter-kit",
+    "ruleId": "HARDCODED_FRONTEND_SECRET",
+    "sites": [{"filePath": "src/app/api/webhooks/stripe/route.test.ts", "line": 93}, {"filePath": "src/app/api/webhooks/stripe/route.test.ts", "line": 123}, {"filePath": "src/app/api/webhooks/stripe/route.test.ts", "line": 148}],
+    "findingCountAllVersions": 3,
+    "classification": "LEGACY_TEST_FIXTURE_FALSE_POSITIVE_CANDIDATES_NOT_NEW_V42_WARNINGS",
+    "evidence": "Vitest file with mocked DB/email and deliberately wrong/test webhook signing values; not demonstrated real credentials or frontend disclosure. Do not output the values.",
+    "runtimeBoundary": "No build, actual key validity check, network call or frontend bundle inspection was performed. Do not pool these review candidates into global FP statistics."
+  }
+}

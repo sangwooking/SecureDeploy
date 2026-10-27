@@ -19,6 +19,17 @@ def archive(rows):
     return stream.getvalue()
 
 class ApplicationIntakeTests(unittest.TestCase):
+    def test_explicit_license_scope_exclusion_is_component_bounded_and_recorded(self):
+        with tempfile.TemporaryDirectory()as folder:
+            p=Path(folder)/'source'
+            data=archive([('LICENSE',b'AGPL',None),('ee/route.ts',b'private()',None),('app/(ee)/page.ts',b'private()',None),('eel/route.ts',b'public()',None)])
+            result=app.unpack(data,p,'example/demo',SHA,['ee','app/(ee)'])
+            self.assertEqual({f['path']for f in result['files']},{'LICENSE','eel/route.ts'})
+            self.assertEqual(result['omissionCounts'],{'LICENSE_SCOPE_EXCLUDED':2})
+    def test_license_scope_exclusion_rejects_root_traversal_and_unbounded_lists(self):
+        for prefixes in [['.'],['../outside'],['/outside'],['a']*17,'ee']:
+            with tempfile.TemporaryDirectory()as folder,self.assertRaises(ValueError):
+                app.unpack(archive([('LICENSE',b'MIT',None)]),Path(folder)/'source','example/demo',SHA,prefixes)
     def unpack(self,rows):
         with tempfile.TemporaryDirectory()as folder:
             p=Path(folder)/'source'

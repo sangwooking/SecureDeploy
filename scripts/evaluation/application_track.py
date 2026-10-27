@@ -32,7 +32,11 @@ def write(path, data):
     write_metadata(path,data)
 
 
-def unpack(data, destination, repository, sha):
+def unpack(data, destination, repository, sha, excluded_prefixes=()):
+    if not isinstance(excluded_prefixes,(list,tuple)) or len(excluded_prefixes)>16:
+        raise ValueError('LICENSE_EXCLUSION_LIMIT')
+    prefixes=[str(relative(p)) for p in excluded_prefixes]
+    if any(p=='.' for p in prefixes):raise ValueError('LICENSE_EXCLUSION_ROOT')
     if len(data)>MAX_COMPRESSED:raise ValueError('ARCHIVE_COMPRESSED_LIMIT')
     stream=zlib.decompressobj(31)
     expanded=stream.decompress(data,MAX_EXPANDED+1)
@@ -53,7 +57,8 @@ def unpack(data, destination, repository, sha):
             if member.isdir():continue
             discovered+=1
             reason=None
-            if not member.isfile():reason='SYMLINK_HARDLINK_OR_SPECIAL_NOT_FOLLOWED'
+            if any(name==p or name.startswith(p+'/') for p in prefixes):reason='LICENSE_SCOPE_EXCLUDED'
+            elif not member.isfile():reason='SYMLINK_HARDLINK_OR_SPECIAL_NOT_FOLLOWED'
             elif any(p in IGNORED for p in parts[1:-1]):reason='DIRECTORY_POLICY'
             elif member.size>MAX_FILE:reason='ACQUISITION_FILE_SIZE_LIMIT'
             elif Path(name).suffix.lower() in BINARY:reason='BINARY_ASSET_NOT_ANALYZED'
@@ -96,7 +101,7 @@ def collect(selection, output):
                 data=response.read(MAX_COMPRESSED+1)
             total+=len(data)
             if total>128_000_000:raise ValueError('BATCH_DOWNLOAD_LIMIT')
-            project.update(unpack(data,root/'sources'/project['projectId'],repo,sha))
+            project.update(unpack(data,root/'sources'/project['projectId'],repo,sha,candidate.get('excludedSourcePrefixes',())))
             project['collectionStatus']='COLLECTED_WITH_EXPLICIT_OMISSIONS' if project['omitted']else'COLLECTED'
             project['sourceUrl']=url
         except Exception as error:
