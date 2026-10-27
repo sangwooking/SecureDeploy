@@ -5,7 +5,8 @@ import {fieldCases,fieldInput} from './field-cases.mjs';
 const rule='JS_MONGOOSE_SELECTOR_INPUT_FLOW';
 for(const c of fieldCases)test('field scoped validation: '+c.id,()=>{
   const r=analyze(c.input),fs=r.findings.filter(f=>f.ruleId===rule),uses=r.nodeUses.filter(u=>u.ruleId===rule);
-  assert.equal(fs.length,c.truth==='RISK'?1:0,JSON.stringify({uses,files:r.files}));
+  assert.equal(fs.length,c.truth==='RISK'&&!c.knownGap?1:0,JSON.stringify({uses,files:r.files}));
+  if(c.knownGap)assert.ok(uses.some(u=>u.kind===c.expectedState),c.knownGap);
   if(c.truth==='NORMAL')assert.ok(uses.some(u=>u.kind==='STATIC_OR_STRING_FILTER'));
   if(c.truth==='UNKNOWN')assert.ok(uses.some(u=>u.kind==='UNKNOWN')||r.files.some(f=>f.limitations.some(l=>/UNKNOWN|UNRESOLVED/.test(l))));
   if(c.truth==='CREATED')assert.ok(uses.some(u=>u.kind==='QUERY_CREATED_EXECUTION_NOT_OBSERVED'));

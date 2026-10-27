@@ -66,7 +66,8 @@ def evaluate(repo, baseline, output, prepare_root=None, case_set='mongoose18'):
                 findings=[f for f in a['findings'] if f['ruleId'] == RULE],
                 uses=[u for u in a['nodeUses'] if u['ruleId'] == RULE],
                 budget=a['supabaseAnalysis']['budgetUsage'])
-        rows.append(dict(caseId=c['id'], truth=c['truth'], sourceSha256=digest(c['input']), **observations))
+        rows.append(dict(caseId=c['id'], truth=c['truth'], sourceSha256=digest(c['input']),
+            **({key:c[key] for key in ('knownGap','expectedState') if key in c}), **observations))
     result = dict(grade='B_AUTHORED_DEVELOPMENT_NOT_INDEPENDENT', cases=len(rows), rows=rows,
                   before=dict(Counter(r['before']['state'] for r in rows)),
                   after=dict(Counter(r['after']['state'] for r in rows)),
