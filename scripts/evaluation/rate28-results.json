@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "c9fb56a2d9b1db008dd6c4c169a7296e197ebef3",
+  "workerBefore": "ts-server-v38",
+  "workerAfter": "ts-server-v39",
+  "implementationCommits": ["ec8157b", "de18581"],
+  "frozenControlCommit": "fb55a7c",
+  "frozenControlSha256": "0fa9da35ea25eb4ddf4356cc324a91880cc8a52ee8be407b14ca24f066d75a5d",
+  "grade": "B_SAME_AUTHOR_NONBLIND",
+  "independentReview": false,
+  "controls": {
+    "total": 32, "risk": 10, "normal": 10, "unknown": 12,
+    "before": {"FN": 10, "NORMAL_DEFERRED": 10, "UNKNOWN": 12},
+    "after": {"TP": 3, "FN": 7, "TN": 7, "NORMAL_DEFERRED": 3, "UNKNOWN": 12},
+    "falsePositives": 0, "repeatIdentical": true,
+    "tpMeaning": "Authored explicit limiter bypass connected to supported server work; not proven attack, cost, intent violation or production vulnerability",
+    "tnMeaning": "Pinned local default stop/zero-block contract, not complete automation prevention",
+    "remainingFn": ["other-route", "too-late", "conditional", "header-key", "upstash-ignored", "upstash-inverted", "upstash-stale"],
+    "normalDeferred": ["multiple", "public-none", "custom-handler"],
+    "separateValidation": "Relative module policy and corrected Upstash guard tested separately; no independent source or new accuracy denominator"
+  },
+  "contract": {
+    "expressRateLimitDeclaredVersion": "7.5.0",
+    "installedVersionVerified": false,
+    "supported": ["proven require/default/named import", "static limit/max/windowMs", "default MemoryStore declaration", "static literal return skip", "direct exceeded handler next", "default handler stop", "route-local and component mount ordering", "global constant vs declared IP vs unverified header/user key", "static passOnStoreError declaration"],
+    "unknown": ["dynamic callbacks and options", "custom Store or actual Redis connection", "router inheritance and ambiguous prior dispatch", "case/trailing-slash mount ambiguity", "proxy IP normalization", "actual identity", "multi-instance state", "business budget and external WAF"],
+    "upstash": "SDK import recorded as unsupported; no SDK result-to-branch or Next execution contract added",
+    "newRuleId": "JS_RATE_LIMIT_BYPASS_REVIEW",
+    "cwe": "CWE-799",
+    "relatedNotImplementedCwe": ["CWE-307", "CWE-770", "CWE-400"],
+    "owaspContext": ["API4:2023", "API6:2023"],
+    "asvs": "v5.0.0-6.1.1 is a documentation/threat-model guidance reference, not an automatically verified compliance claim"
+  },
+  "realApps": {
+    "inputs": 15, "uniqueProjectIds": 14, "runsPerInput": 2,
+    "sourcePlanAndShaVerified": true, "repeatIdentical": true,
+    "legacyFindingsScoreRiskScaPreserved": true, "rlsClientsTablesFindingsPreserved": true,
+    "retainedManifestsWithTargetRateSdk": 0, "newRealVulnerabilityTP": 0,
+    "rateObservationsPerReplay": {"RATE_LIMIT_APPLICATION_UNKNOWN": 1},
+    "truth": "Grade C target rate-abuse TP/FP/FN/TN not scored without ground truth",
+    "authenticationAndCost": "Existing auth and HTTP evidence preserved; no new login/OTP, billable API or business-flow ground truth established",
+    "beforeElapsedMsRange": [213, 838], "afterElapsedMsRange": [208, 827],
+    "afterParentHeapSampleBytesRange": [57590784, 129349120]
+  },
+  "ownedHttpLab": {"checks": 15, "requests": 10, "workExecutions": 7, "fakeClock": true, "fakeStore": true, "realLimiterPackageExecuted": false, "distributedDeploymentVerified": false, "scope": "budget, 429/no work, A/B controlled identifiers, reset, fail-open/closed, broken/fixed handler; no real authentication or paid API"},
+  "resources": {
+    "scope": "Three frozen selected-source packets, two fresh processes per engine; not whole backend or a performance guarantee",
+    "heapLimitMiB": 192, "limitsRaised": false,
+    "serialBeforeWallMsRange": [179.49, 226.55], "serialAfterWallMsRange": [182.29, 241.66],
+    "serialBeforeMaximumRssBytes": 168689664, "serialAfterMaximumRssBytes": 163676160,
+    "initialOverlappingOwnTestsAfterWallMsRange": [181.17, 492.56], "initialAfterMaximumRssBytes": 183992320,
+    "protocolCaveat": "Initial noisy measurements retained; serial follow-up after own jobs stopped, host OS load uncontrolled. One packet about 17ms slower; no performance improvement claim",
+    "failures": 0, "timeouts": 0
+  },
+  "tests": {"workerPassed": 935, "backendTotal": 714, "backendFailures": 0, "backendSkipped": 9, "finalRelatedBackend": "PASS", "frontendPassed": 166, "frontendBuild": "PASS", "evaluationPythonPassed": 250, "pythonWorkerPassed": 117, "reactMockBrowserWidths": [1440, 390, 320], "liveGitHub": false},
+  "regression": {"injection24Cases": 67, "xssFp": 1, "ssrfFn": 4, "pathFn": 6, "uploadTypeExecutionSupport": false, "corsFn": 5, "csrfFn": 3, "cookieNormalDeferred": 3, "rlsColumnIntentSemanticsChanged": false},
+  "policy": {"priority": "REVIEW_REQUIRED", "comparison": "NOT_COMPARED", "riskScoreBlockingFormulaChanged": false, "productApiOrDbMigration": false, "automaticFixExpanded": false, "existingBackendRestarted": false, "userDatabaseModified": false, "paidAiCalls": 0, "targetSourceExecuted": false},
+  "sources": [
+    "https://api-security.owasp.org/editions/2023/en/0xa4-unrestricted-resource-consumption/",
+    "https://api-security.owasp.org/editions/2023/en/0xa6-unrestricted-access-to-sensitive-business-flows/",
+    "https://raw.githubusercontent.com/OWASP/ASVS/v5.0.0/5.0/en/0x15-V6-Authentication.md",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Bot_Management_and_Anti-Automation_Cheat_Sheet.html",
+    "https://cwe.mitre.org/data/definitions/799.html", "https://cwe.mitre.org/data/definitions/307.html", "https://cwe.mitre.org/data/definitions/770.html", "https://cwe.mitre.org/data/definitions/400.html",
+    "https://express-rate-limit.mintlify.app/reference/configuration", "https://express-rate-limit.mintlify.app/reference/changelog",
+    "https://raw.githubusercontent.com/express-rate-limit/express-rate-limit/v7.5.0/source/lib.ts", "https://raw.githubusercontent.com/express-rate-limit/express-rate-limit/v6.11.2/source/lib.ts",
+    "https://expressjs.com/en/guide/behind-proxies/",
+    "https://upstash.com/docs/redis/sdks/ratelimit-ts/gettingstarted", "https://upstash.com/docs/redis/sdks/ratelimit-ts/features",
+    "https://raw.githubusercontent.com/upstash/ratelimit-js/v2.0.5/src/ratelimit.ts",
+    "https://nextjs.org/docs/app/api-reference/file-conventions/route",
+    "https://developers.cloudflare.com/waf/rate-limiting-rules/", "https://vercel.com/docs/vercel-firewall/vercel-waf/rate-limiting", "https://redis.io/docs/latest/commands/incr/"
+  ]
+}

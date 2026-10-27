@@ -73,3 +73,17 @@ test('earlier overlapping routes and case or trailing-slash mount ambiguity do n
   assert.equal(hits(p).length,0);assert.ok(r.nodeUses.some(u=>u.kind==='RATE_LIMIT_APPLICATION_UNKNOWN'));
  }
 });
+test('relative policy module preserves provenance and work locations without executing its code',()=>{
+ const p=packet('{limit:3,skip:()=>true}');
+ p.files[0].content=p.files[0].content.replace("const rateLimit=require('express-rate-limit');","const policy=require('./policy.cjs');")
+  .replace('app.use(rateLimit({limit:3,skip:()=>true}));','app.use(policy);');
+ p.files.push({filePath:'policy.cjs',content:"const {rateLimit}=require('express-rate-limit');module.exports=rateLimit({limit:3,skip:()=>true});"});
+ const f=hits(p);assert.equal(f.length,1);assert.equal(f[0].source.filePath,'policy.cjs');assert.equal(f[0].sink.filePath,'server.cjs');
+});
+test('correct Upstash success exit is deferred, never silently counted as supported protection',()=>{
+ const p=structuredClone(rate28Cases.find(c=>c.id==='upstash-ignored').input);
+ p.files[0].content=p.files[0].content.replace("await limiter.limit('owned');","const result=await limiter.limit('owned');if(!result.success)return new Response('blocked',{status:429});");
+ const r=analyze(p);assert.equal(hits(p).length,0);
+ assert.ok(r.files.some(f=>f.limitations.includes('UPSTASH_RATE_LIMIT_EXECUTION_CONTRACT_NOT_SUPPORTED')));
+ assert.ok(!r.nodeUses.some(u=>u.kind==='RATE_LIMIT_DEFAULT_STOP_BOUND'));
+});
