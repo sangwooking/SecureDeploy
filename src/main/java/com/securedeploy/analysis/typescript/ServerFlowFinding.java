@@ -56,8 +56,8 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
             .values().stream().map(group->{var f=group.get(0);return new ServerFlowFinding(identity(snapshot.analyzerVersion(),f.ruleId(),f.sink()),
                 "TYPESCRIPT_DATA_FLOW",snapshot.analyzerVersion(),f.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",f.sink(),List.copyOf(group),
                 group.stream().flatMap(e->e.flow().stream()).filter(l->Set.of("MONGOOSE_QUERY_EXECUTION_REQUEST","MONGOOSE_CALLBACK_EXECUTION_REQUEST").contains(l.kind())).distinct().toList(),
-                "사용자가 보낸 객체가 데이터 조회 조건에 영향을 줄 수 있습니다",
-                "정적으로 연결된 요청 입력이 Mongoose 조회 조건에 전달되고 await·exec 또는 지원 버전의 콜백 실행 요청이 확인됐습니다. 실제 실행·설치 버전·스키마 변환·미들웨어·공격 성공은 확인하지 않았습니다. 높은 Confidence는 정적 전달 근거의 확신도입니다.",
+                "입력값이 데이터 검색 조건을 바꿀 가능성이 있습니다",
+                "요청값이 데이터베이스 검색 조건에 전달되는 코드 경로를 확인했습니다. 예상한 문자열 대신 객체가 들어오면 데이터 조회나 로그인 조건에 영향을 줄 가능성이 있습니다. 일부 입력의 검사는 해당 필드의 근거이며 다른 입력까지 보호하지 않습니다. 실제 실행·설치 버전·스키마 변환·미들웨어·공격 성공은 확인하지 않았습니다. 높은 Confidence는 정적 전달 근거의 확신도입니다.",
                 f.recommendation(),List.of("입력과 모델 선언, 쿼리 및 방어 설정 위치를 검토하세요.",
                     "로컬에서 정상 문자열과 객체형 입력을 비교하고 실제 설치 버전·sanitizeFilter·trusted 예외를 확인하세요.",
                     "수정 후 같은 프로젝트를 재검사하세요. 점수·배포 판단 및 해결 건수와는 별도입니다."));}).toList();

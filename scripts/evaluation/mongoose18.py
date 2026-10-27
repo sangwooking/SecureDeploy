@@ -45,7 +45,8 @@ def run(node, args, packet=None):
 def evaluate(repo, baseline, output, prepare_root=None, case_set='mongoose18'):
     node = shutil.which('node')
     filename,symbol={'mongoose18':('mongoose-cases.mjs','mongooseCases'),
-                     'callback19':('mongoose-callback-cases.mjs','callbackCases')}[case_set]
+                     'callback19':('mongoose-callback-cases.mjs','callbackCases'),
+                     'field20':('field-cases.mjs','fieldCases')}[case_set]
     casefile = repo/'analyzers/typescript/test'/filename
     allowed=casefile if case_set=='mongoose18' else casefile.parent
     cases = run(node, ['--allow-fs-read='+str(allowed), '--input-type=module', '-e',
@@ -87,7 +88,7 @@ def evaluate(repo, baseline, output, prepare_root=None, case_set='mongoose18'):
                 files = []
                 deps = c['input']['nodeManifests'][0]
                 sources = [dict(filePath='package.json', content=json.dumps({'dependencies': {
-                    'mongoose': deps['mongoose'], 'express': deps['express']}})), *c['input']['files']]
+                    **{name: deps[name] for name in ('mongoose','express','validator') if name in deps}}})), *c['input']['files']]
                 for file in sources:
                     data = file['content'].encode()
                     destination = folder/file['filePath']
@@ -106,7 +107,7 @@ if __name__ == '__main__':
     p.add_argument('--baseline', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--prepare-root', type=Path)
-    p.add_argument('--case-set',choices=['mongoose18','callback19'],default='mongoose18')
+    p.add_argument('--case-set',choices=['mongoose18','callback19','field20'],default='mongoose18')
     a = p.parse_args()
     # The public tool cannot overwrite tracked files or retained external sources.
     for dest in (a.output, a.prepare_root):

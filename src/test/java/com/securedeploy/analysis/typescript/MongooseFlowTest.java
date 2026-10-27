@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
 class MongooseFlowTest {
+    static final String FIELD_PREFIX="const app=require('express')();const m=require('mongoose');const checks=require('validator');const Model=m.model('Account',new m.Schema({login:String,pass:String}));app.post('/',(req,res)=>{";
     final TypeScriptServerAnalyzer analyzer=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties());
     ServerAnalysisSnapshot analyze(String body,String version) {
         var sources=Map.of("package.json","{\"dependencies\":{\"mongoose\":\""+version+"\",\"express\":\"4.18.0\"}}",
@@ -17,7 +18,7 @@ class MongooseFlowTest {
     }
     @Test void modelOriginAndConsumedInputProduceSupplementalFindingWithExactEvidence() {
         var result=analyze("const email=req.body.email;await Model.findOne({email});","6.13.0");
-        assertThat(result.analyzerVersion()).isEqualTo("ts-server-v30");
+        assertThat(result.analyzerVersion()).isEqualTo("ts-server-v31");
         assertThat(result.validatedFindings()).hasSize(1).allSatisfy(f->{
             assertThat(f.ruleId()).isEqualTo("JS_MONGOOSE_SELECTOR_INPUT_FLOW");
             assertThat(f.priority().name()).isEqualTo("REVIEW_REQUIRED");
@@ -63,5 +64,35 @@ class MongooseFlowTest {
         assertThat(result.validatedFindings()).hasSize(1);
         assertThat(result.validatedFindings().get(0).evidence()).hasSize(2);
         assertThat(result.validatedFindings().get(0).evidence().stream().map(f->f.source().column()).distinct().count()).isEqualTo(2);
+    }
+    ServerAnalysisSnapshot fields(String body,String validatorVersion) {
+        var sources=Map.of("package.json","{\"dependencies\":{\"mongoose\":\"4.2.4\",\"express\":\"4.18.0\",\"validator\":\""+validatorVersion+"\"}}",
+            "server.cjs",FIELD_PREFIX+body+"});");
+        var files=sources.entrySet().stream().map(e->new ProjectFile(Path.of(e.getKey()),e.getKey(),
+            e.getKey().endsWith(".json")?ProjectFileType.PACKAGE_JSON:ProjectFileType.JAVASCRIPT,e.getValue().lines().toList())).toList();
+        return analyzer.analyze(new ProjectStructure(Path.of("/not-readable"),files));
+    }
+    @Test void fieldScopedFormatEvidenceReachesUserFindingWithoutCertifyingAnotherField() {
+        String body="if(checks.isEmail(req.body.contact)){Model.findOne({login:req.body.contact,pass:req.body.credential},()=>{});}";
+        var result=fields(body,"^13.5.2");
+        assertThat(result.validatedFindings()).hasSize(1);
+        var finding=result.validatedFindings().get(0);
+        var evidence=finding.evidence().get(0);
+        assertThat(evidence.source().kind()).isEqualTo("HTTP_FIELD_SOURCE");
+        assertThat(evidence.source().column()).isEqualTo(FIELD_PREFIX.length()+1+body.indexOf("req.body.credential"));
+        assertThat(evidence.defenses()).anyMatch(l->l.kind().equals("FIELD_EMAIL_ACCEPTED_BRANCH"));
+        assertThat(finding.recommendedAction()).contains("typeof value !== \"string\"","입력 필드마다","현재 저장 방식이나 공격 성공을 확인한 것은 아닙니다");
+        assertThat(finding.comparisonPolicy()).isEqualTo("NOT_COMPARED");
+        assertThat(finding.priority().name()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(fields(body,"latest").validatedFindings()).isEmpty();
+        assertThat(fields(body,"latest").nodeUses()).anyMatch(u->u.kind().equals("UNKNOWN"));
+    }
+    @Test void perFieldPrimitiveGuardsAndFormatOnlyHaveDifferentOutcomes() {
+        var strings=fields("if(typeof req.body.contact!=='string')return;if(typeof req.body.credential!=='string')return;Model.findOne({login:req.body.contact,pass:req.body.credential},()=>{});","13.5.2");
+        assertThat(strings.validatedFindings()).isEmpty();
+        assertThat(strings.nodeUses()).anyMatch(u->u.kind().equals("STATIC_OR_STRING_FILTER"));
+        var format=fields("if(checks.isEmail(req.body.contact)){Model.findOne({login:req.body.contact},()=>{});}","13.5.2");
+        assertThat(format.validatedFindings()).isEmpty();
+        assertThat(format.nodeUses()).anyMatch(u->u.kind().equals("UNKNOWN"));
     }
 }

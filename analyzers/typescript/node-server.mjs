@@ -3,6 +3,7 @@ import {constructorSummaries} from './constructor-summary.mjs';
 import {sequelizeContracts} from './sequelize.mjs';
 import {moduleResolution} from './module-resolution.mjs';
 import {mongooseContracts} from './mongoose.mjs';
+import {fieldValidation} from './field-validation.mjs';
 
 // Library contracts over AST values only. Never require/import/eval target modules.
 export function nodeServer(api) {
@@ -44,12 +45,14 @@ export function nodeServer(api) {
   const summaries=constructorSummaries({...api,functionValue,object,validMongo});
   const sequelize=sequelizeContracts({...api,object,native,findModule,observe});
   const mongoose=mongooseContracts({...api,object,native});
+  const fields=fieldValidation({...api,native});
   function findModule(mod,spec,mode='require') { return resolver.resolve(mod,spec,mode); }
   function dependency(mod,spec,mode='require') {
     if(spec==='express')return native('express',mod);
     if(spec==='mongodb')return native('mongodb',mod);
     if(spec==='sequelize')return native('sequelize',mod);
     if(spec==='mongoose')return mongoose.dependency(mod);
+    if(spec==='validator')return fields.dependency(mod);
     if(['child_process','node:child_process'].includes(spec))return native('node-child-process',mod);
     if(['http','node:http','https','node:https'].includes(spec))return native('node-http',mod);
     const target=findModule(mod,spec,mode);
@@ -109,13 +112,15 @@ export function nodeServer(api) {
       return base.ref.properties.get(key);
     }
     if(base.tag==='express-request') {
-      if(['query','body','params'].includes(key))return value('input',[loc(node,state.mod,'EXPRESS_'+key.toUpperCase(),state.fn)],{inputShape:key==='params'?'STRING_MAP':undefined});
+      if(['query','body','params'].includes(key))return value('input',[loc(node,state.mod,'EXPRESS_'+key.toUpperCase(),state.fn)],{inputShape:key==='params'?'STRING_MAP':undefined,
+        fieldOrigin:fields.root(base,key,node,state),fieldValidationUncertain:base.fieldValidationUncertain});
       if(['user','session'].includes(key)){
         state.context.checks.push(loc(node,state.mod,'PRINCIPAL_CONTEXT_UNVERIFIED',state.fn));return {...unknown(),principal:true};
       }
       return unknown();
     }
     if(base.tag==='express-response')return native('response-'+key,state.mod);
+    const field=fields.read(base,key,node,state);if(field)return field;
   }
   function write(receiver,key,v,state) {
     if(!state.nodeMode||!literal(key)||!receiver.ref)return false;
@@ -161,6 +166,7 @@ export function nodeServer(api) {
   }
   function call(node,callee,receiver,args,state,global,callable) {
     if(!state.nodeMode)return;
+    const validation=fields.call(node,receiver,args,state);if(validation)return validation;
     const rawQuery=sequelize.call(node,receiver,args,state,callable);if(rawQuery)return rawQuery;
     const selector=mongoose.call(node,callee,receiver,args,state,global,callable);if(selector)return selector;
     const method=ts.isPropertyAccessExpression(callee)?callee.name.text:undefined;
@@ -351,5 +357,7 @@ export function nodeServer(api) {
     }
     for(const route of routes)if(![...reachable].some(app=>app.routes.includes(route)))note(route.target.mod,'UNMOUNTED_ROUTER_NOT_ANALYZED');
   }
-  return {property,write,call,construct,discover,functionValue,awaitValue:mongoose.consume};
+  return {property,write,call,construct,discover,functionValue,awaitValue:mongoose.consume,
+    applyFields:fields.apply,typeOfField:fields.typeName,compareFields:fields.compare,refineFields:fields.refine,
+    invalidateFields:fields.invalidate,mergeFields:fields.merge,escapeFields:fields.escape};
 }

@@ -36,7 +36,7 @@ final class NodeManifestMetadata {
                 else if(main.isTextual()&&valid(main.asText())){
                     metadata.put("mainStatus","STATIC");metadata.put("main",main.asText());addSeed(seeds,p,main.asText());
                 } else complete=false;
-                for(String name:List.of("express","mongodb","next","sequelize","mongoose")) {
+                for(String name:List.of("express","mongodb","next","sequelize","mongoose","validator")) {
                     var v=doc.path("dependencies").path(name);
                     if(v.isTextual()&&v.asText().length()<=80&&v.asText().matches("[~^]?[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?"))metadata.put(name,v.asText());
                 }

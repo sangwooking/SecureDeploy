@@ -29,9 +29,13 @@ export function mongooseContracts(api) {
     tick(state.mod);
     if(!v||depth>3||seen.has(v))return {trace:[],uncertain:true,trusted:false};
     seen.add(v);
-    if(v.selectorString||!v.unknown&&(['STRING','STRING_MAP'].includes(v.inputShape)||v.tag==='numeric'||v.tag==='boolean')||literal(v)&&!v.ref)
-      return {trace:[],uncertain:!!v.traceTruncated,trusted:!!v.selectorTrusted};
-    const own={trace:v.trace??[],uncertain:!!v.unknown||!!v.ref?.unknown,trusted:!!v.selectorTrusted||!!v.ref?.selectorTrusted};
+    const validations=v.fieldDefenses??[];
+    if(v.selectorString||!v.fieldValidationUncertain&&(v.fieldString||!v.unknown&&(['STRING','STRING_MAP'].includes(v.inputShape)||v.tag==='numeric'||v.tag==='boolean'))||literal(v)&&!v.ref)
+      return {trace:[],uncertain:!!v.traceTruncated,trusted:!!v.selectorTrusted,validations};
+    if(v.fieldEmail&&!v.fieldValidationUncertain)return {trace:[],uncertain:false,trusted:false,validations,formatOnly:true};
+    const own={trace:v.trace??[],uncertain:!!v.unknown||!!v.ref?.unknown||!!v.fieldValidationUncertain,trusted:!!v.selectorTrusted||!!v.ref?.selectorTrusted,validations,formatOnly:false};
+    if(state.fieldGuardUsed&&v.fieldOrigin?.parts.length===2&&own.trace.length)
+      own.trace=[v.fieldOrigin.source,...own.trace].filter((v,i,a)=>a.findIndex(w=>JSON.stringify(w)===JSON.stringify(v))===i).slice(0,20);
     if(v.ref?.properties){
       const children=[];
       for(const [key,child]of v.ref.properties){
@@ -41,6 +45,8 @@ export function mongooseContracts(api) {
       }
       own.trace=union({trace:own.trace},...children.map(c=>({trace:c.trace}))).trace;
       own.uncertain||=children.some(c=>c.uncertain);own.trusted||=children.some(c=>c.trusted);
+      own.formatOnly=children.some(c=>c.formatOnly);
+      own.validations=children.flatMap(c=>c.validations??[]).filter((v,i,a)=>a.findIndex(w=>JSON.stringify(w)===JSON.stringify(v))===i).slice(0,10);
     }
     return own;
   }
@@ -101,8 +107,9 @@ export function mongooseContracts(api) {
       ||!!model?.ref?.originParent?.properties.get('@callbackEffectsUnknown');
     const schema=model?.ref?.properties.get('@schema');
     const filterChanged=(ref.filterVersions??[]).some(v=>v.ref.unknown||(v.ref.mongooseRevision??0)!==v.revision);
-    const unresolved=!valid(query)||!valid(model)||schema&&!valid(schema)||!version||state.uncertain||proof.uncertain||configUnknown||filterChanged;
-    const status=unresolved?'UNKNOWN':!proof.trace.length?'STATIC_OR_STRING_FILTER'
+    const fieldUnknown=!!state.context.fieldScopeEscape||!!state.fieldGuardUsed&&!!state.fieldUnsafe;
+    const unresolved=!valid(query)||!valid(model)||schema&&!valid(schema)||!version||state.uncertain||proof.uncertain||configUnknown||filterChanged||fieldUnknown;
+    const status=unresolved?'UNKNOWN':!proof.trace.length?(proof.formatOnly?'UNKNOWN':'STATIC_OR_STRING_FILTER')
       :hasOption&&!proof.trusted&&rootProtected?'SANITIZE_FILTER_DECLARED'
       :hasOption&&!proof.trusted&&!rootProtected?'UNKNOWN':'SELECTOR_INPUT_CANDIDATE';
     const location=ref.createdAt,execution=loc(node,state.mod,fn?'MONGOOSE_CALLBACK_EXECUTION_REQUEST':'MONGOOSE_QUERY_EXECUTION_REQUEST',state.fn);
@@ -118,6 +125,8 @@ export function mongooseContracts(api) {
       ...(configUnknown?['MONGOOSE_PROTECTION_UNRESOLVED']:[]),
       ...(filterChanged?['MONGOOSE_FILTER_MUTATION_UNKNOWN']:[]),
       ...(!version?['MONGOOSE_DECLARED_VERSION_UNKNOWN']:[]),
+      ...(fieldUnknown?['FIELD_VALIDATION_SCOPE_UNKNOWN']:[]),
+      ...(proof.formatOnly?['EMAIL_FORMAT_NOT_PRIMITIVE_STRING_OR_FULL_QUERY_DEFENSE']:[]),
       ...(proof.trusted?['MONGOOSE_TRUSTED_EXCEPTION']:[]),
       ...(hasOption&&version<6?['SANITIZE_FILTER_VERSION_UNSUPPORTED']:[]),
       ...(hasOption&&!rootProtected?['ROOT_FILTER_SANITIZATION_NOT_PROVEN']:[])];
@@ -125,9 +134,9 @@ export function mongooseContracts(api) {
     if(status==='UNKNOWN')note(state.mod,'MONGOOSE_SELECTOR_CONTRACT_UNKNOWN');
     if(status!=='SELECTOR_INPUT_CANDIDATE'||trace.length>=20)return;
     append(result.findings,{ruleId:rule,kind:'CWE-943',confidence:'HIGH',disposition:'REVIEW_REQUIRED',
-      source:proof.trace[0],sink:location,flow:trace,defenses:[],limitations,
-      message:'사용자가 보낸 객체 형태의 값이 데이터 조회 조건에 전달될 가능성이 있습니다.',
-      recommendation:'요청 필드의 타입을 검증하고 필요한 값만 명시적인 문자열 등으로 제한하세요. 선언 버전에서 지원되는 sanitizeFilter와 trusted 예외를 확인하고, 로컬에서 객체형 입력·정상 문자열 입력을 비교한 뒤 재검사하세요. 실제 DB 접근과 공격 성공은 별도 검증이 필요합니다.'},state.mod);
+      source:proof.trace[0],sink:location,flow:trace,defenses:proof.validations??[],limitations,
+      message:'요청에서 받은 값이 데이터베이스 검색 조건에 사용됩니다. 문자열 대신 객체가 들어오면 조건이 의도와 다르게 해석될 가능성이 있습니다.',
+      recommendation:'검색에 사용하는 입력 필드마다 서버에서 타입과 허용 범위를 확인하세요. 예: typeof value !== "string"이면 요청을 거부하고, 필요한 길이·형식도 제한하세요. 한 필드의 형식 검사가 다른 필드까지 보호하지는 않습니다. 사용자 객체를 그대로 넘기지 말고 쿼리 연산자는 서버에서 고정하세요. 비밀번호를 다룬다면 저장·비교 구조를 확인하고 안전한 해시 기반 인증을 사용하세요. 현재 저장 방식이나 공격 성공을 확인한 것은 아닙니다. 로컬에서 정상 문자열·객체 입력·검사 실패 시 종료를 비교하고, 지원 버전의 sanitizeFilter와 trusted 예외를 검토한 뒤 재검사하세요.'},state.mod);
   }
   function call(node,callee,receiver,args,state,global,callable) {
     const method=ts.isPropertyAccessExpression(callee)?callee.name.text:undefined;
