@@ -38,7 +38,8 @@ export function authResultEvidence({ts,charge,binding,escaped,index,location,fnO
       const r=origin(variable.initializer,depth+1,seen);return r?{...r,fields:[...r.fields,...path]}:null;
     }
     const identity=n=>{const o=origin(n);return o?.awaited&&JSON.stringify(o.fields)===JSON.stringify(expected);};
-    const valueOrigin=value&&origin(value),valueIsUserId=!!valueOrigin?.awaited&&JSON.stringify(valueOrigin.fields)===JSON.stringify([...expected,method==='getClaims'?'sub':'id']);
+    const identityId=n=>{const o=n&&origin(n);return !!o?.awaited&&JSON.stringify(o.fields)===JSON.stringify([...expected,method==='getClaims'?'sub':'id']);};
+    const valueIsUserId=!!value&&identityId(value);
     if(session)return valueIsUserId?{status:'SESSION_READ_UNVERIFIED',valueIsUserId:true}:null;
     function rejectsAbsent(n){
       charge();n=peel(n);
@@ -63,10 +64,24 @@ export function authResultEvidence({ts,charge,binding,escaped,index,location,fnO
     const filters=[];let chain=access;
     while(ts.isPropertyAccessExpression(chain.parent)&&chain.parent.expression===chain&&ts.isCallExpression(chain.parent.parent)){
       charge();chain=chain.parent.parent;
-      if(chain.expression.name.text!=='eq'||!ts.isStringLiteral(chain.arguments[0]??{})||filters.length>=4)continue;
-      const value=peel(chain.arguments[1]);
-      if(value&&ts.isPropertyAccessExpression(value)&&value.name.text===(call.expression.name.text==='getUser'?'id':'sub')&&identity(value.expression))
-        filters.push(location(chain,mod,'IDENTITY_RESULT_ID_FILTER_OBSERVED'));
+      if(filters.length>=4)continue;
+      const method=chain.expression.name.text,args=chain.arguments;
+      let values=[];
+      if(method==='eq'&&args.length===2&&ts.isStringLiteral(args[0]))values=[args[1]];
+      else if(method==='match'&&args.length===1){
+        const object=peel(args[0]);
+        if(!ts.isObjectLiteralExpression(object)||object.properties.length>16)continue;
+        const keys=[];
+        for(const p of object.properties){
+          charge();
+          if(!ts.isPropertyAssignment(p)&&!ts.isShorthandPropertyAssignment(p))break;
+          if(!ts.isIdentifier(p.name)&&!ts.isStringLiteral(p.name)||['__proto__','prototype','constructor'].includes(p.name.text)||keys.includes(p.name.text))break;
+          keys.push(p.name.text);values.push(ts.isShorthandPropertyAssignment(p)?p.name:p.initializer);
+        }
+        // Spread, computed and duplicate fields may override the identity value.
+        if(keys.length!==object.properties.length)values=[];
+      }
+      if(values.some(identityId))filters.push(location(chain,mod,'IDENTITY_RESULT_ID_FILTER_OBSERVED'));
     }
     return {status:'IDENTITY_RESULT_GUARD_OBSERVED',guardLocation:location(guard,mod,'IDENTITY_RESULT_ABSENCE_EXIT'),userIdFilters:filters,...(value?{valueIsUserId}:{}),
       limitations:['LOCAL_SYNTAX_NOT_AUTH_SUCCESS_PROOF','IDENTITY_FIELDS_AND_MIDDLEWARE_NOT_RUNTIME_VERIFIED','APPLICATION_FILTER_NOT_DATABASE_AUTHORIZATION']};

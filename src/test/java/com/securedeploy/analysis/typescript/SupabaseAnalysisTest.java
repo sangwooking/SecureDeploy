@@ -9,6 +9,23 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
 class SupabaseAnalysisTest {
+    @Test void localIdentityAliasesAndMatchPersistAsEvidenceNotAuthorizationOrNewFindings(){
+        for(String filter:List.of("eq('user_id',identity)","match({user_id:identity})")){
+            String path="app/api/records/route.ts",code="import {createClient} from '@supabase/supabase-js';const db=createClient('https://example.invalid',process.env.ANON_KEY);export async function GET(req){const {data:{user}}=await db.auth.getUser();if(!user)return;const identity=user.id;return db.from('records').select()."+filter+";}";
+            var files=List.of(new ProjectFile(Path.of(path),path,ProjectFileType.TYPESCRIPT,code.lines().toList()),
+                    new ProjectFile(Path.of("package.json"),"package.json",ProjectFileType.PACKAGE_JSON,List.of("{\"dependencies\":{\"next\":\"15.2.0\"}}")));
+            var result=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties()).analyze(new ProjectStructure(Path.of("/not-executed"),files));
+            var e=result.supabaseAnalysis().accesses().get(0).authorizationEvidence();
+            assertThat(e.requestEntry()).isNotNull();assertThat(e.effectiveRole()).isEqualTo("UNKNOWN");
+            assertThat(e.state()).isEqualTo("UNKNOWN");
+            assertThat(e.authChecks().get(0).resultEvidence().userIdFilters()).hasSize(1);
+            assertThat(result.validatedFindings()).isEmpty();assertThat(result.supabaseAnalysis().findings()).isEmpty();
+            var converter=new ServerAnalysisConverter();String saved=converter.convertToDatabaseColumn(result);
+            assertThat(saved).doesNotContain(code);assertThat(converter.convertToEntityAttribute(saved)).isEqualTo(result);
+            assertThat(result.attachCoverage(new com.securedeploy.project.coverage.CoverageRecorder().snapshot()).analyzers())
+                    .anyMatch(a->a.analyzer().equals("SUPABASE_RLS")&&a.fileStatuses().get("IDENTITY_ID_FILTERS_OBSERVED")==1);
+        }
+    }
     @Test void localWriteOriginsPersistWithoutValuesAndLegacySnapshotsStayUnrecorded() throws Exception {
         String path="app/api/records/route.ts",code="import {createClient} from '@supabase/supabase-js';const db=createClient('https://example.invalid',process.env.ANON_KEY);export async function POST(req){const body=await req.json();return db.from('records').update({title:body.title,fixed:'private-placeholder'}).eq('id',body.id);}";
         var files=new ArrayList<>(project(broad).analysisFiles());
