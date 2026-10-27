@@ -23,6 +23,7 @@ test('shared builtin mutation, type-only imports, descriptor options and resourc
   "const fsp=require('fs/promises');fs.promises.readFile=external;fsp.readFile(req.query.name);",
   "fs.createReadStream(req.query.name,{fd:3});",
   "fs.readFileSync({path:req.query.name});",
+  "new fs.promises.readFile(req.query.name);",
  ]){
   const c=file26Cases[0].input;const files=[{filePath:'server.cjs',content:c.files[0].content.replace('fs.readFileSync(req.query.name);',body)}];
   assert.equal(analyze({files}).findings.filter(f=>f.ruleId==='JS_FILE_PATH_INPUT_FLOW').length,0);

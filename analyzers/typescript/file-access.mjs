@@ -33,6 +33,7 @@ export function fileAccess(api){
  }
  function call(node,callable,args,state){
   if(!callable?.fileNative)return;
+  if(!ts.isCallExpression(node)){note(state.mod,'FILE_API_CALL_FORM_UNSUPPORTED');return {value:unknown()};}
   const n=callable.fileNative,at=kind=>loc(node,state.mod,kind,state.fn);
   if(callable.unknown||callable.ref?.unknown){note(state.mod,'FILE_API_ORIGIN_UNKNOWN');return {value:unknown()};}
   if(!n.includes(':')){note(state.mod,'FILE_MODULE_NOT_CALLABLE');return {value:unknown()};}
