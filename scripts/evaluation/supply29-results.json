@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "b5f2ef131b643f124220e75f6a624cefcc402877",
+  "implementationCommit": "b57a31b",
+  "frozenControlCommit": "623fd5a",
+  "frozenControlsSha256": {
+    "Supply29ControlsTest.java": "5fcd456d1ef3f8dc611d729d7ee8021e15420be0b107eba37bf92313211e0925",
+    "Alias29ControlsTest.java": "e5854c3de97ee60ee694af202524524373c42fe97f06936ecd95afad0e1fda4b"
+  },
+  "versions": {"worker": "ts-server-v39", "deploymentBefore": "deployment-v1", "deploymentAfter": "deployment-v2", "rls": "rls-v4", "column": "column-update-v1", "intent13Changed": false},
+  "grade": "B_SAME_AUTHOR_NONBLIND",
+  "independentReview": false,
+  "docker": {
+    "total": 14, "risk": 6, "normal": 4, "unknown": 4,
+    "before": {"TP": 4, "FN": 2, "FP": 1, "TN": 1, "NORMAL_DEFERRED": 2, "UNKNOWN": 4},
+    "after": {"TP": 5, "FN": 1, "FP": 0, "TN": 4, "NORMAL_DEFERRED": 0, "UNKNOWN": 4},
+    "remainingFn": ["ARG credential flow"],
+    "implemented": ["bounded logical ENV declarations and physical key locations", "empty credential value exclusion", "credential key versus value text", "sanitized Dockerfile declaration coverage"],
+    "preserved": ["default final-stage USER inheritance", "unknown registry default user", "Compose privileged, host network, capability, socket, host bind and port declarations"],
+    "limitations": ["No image build, layers, cache, SBOM or registry inspection", "No full ARG/RUN secret or COPY/dockerignore flow", "Compose target, user overrides, profiles and external merges are not resolved", "Read-only socket mount does not prove daemon API isolation", "cap_drop, read_only, environment and secrets do not certify whole-container safety"],
+    "normalMeaning": "Only the asserted property has a positive declaration proof; not whole-image safety"
+  },
+  "ci": {
+    "total": 12, "risk": 4, "normal": 4, "unknown": 4,
+    "before": {"TP": 0, "FN": 4, "FP": 1, "TN": 0, "NORMAL_DEFERRED": 3, "UNKNOWN": 4},
+    "after": {"TP": 3, "FN": 1, "FP": 0, "TN": 4, "NORMAL_DEFERRED": 0, "UNKNOWN": 4},
+    "remainingFn": ["environment data later passed to eval"],
+    "newRuleIds": ["CI_UNTRUSTED_PR_EXECUTION", "CI_SCRIPT_EXPRESSION"],
+    "implemented": ["bounded YAML node parsing without object construction", "workflow versus job permission override", "declared actions/checkout@v4 PR head and later simple project operation", "direct supported event expression in run", "real run/uses scope for legacy patterns", "local action is not an unpinned remote action"],
+    "limitations": ["Organization defaults, actual token/secrets, environment approvals and runner isolation unknown", "External Action bodies and reusable workflows not loaded", "Dynamic conditions, matrix, needs, custom shell and external Action side effects unknown", "Legacy secret echo/curl pipe within run remain partial heuristics", "No Actions or shell execution"],
+    "tpMeaning": "Authored declaration risk candidate, not proven exploitation or repository compromise"
+  },
+  "sca": {
+    "frozenMockOsvCases": 3,
+    "samePackageVersionAliasAdvisoriesBeforeAfter": [2, 1],
+    "twoInstalledVersionsAdvisoriesBeforeAfter": [4, 2],
+    "conflictingFixMetadataAdvisoriesBeforeAfter": [2, 2],
+    "conflictingFixMetadataStatus": "PARTIAL_WITH_WARNING",
+    "preserved": ["all source file paths", "package/ecosystem/installed-version identity", "unrelated advisories", "withdrawn exclusion", "npm lock v2/v3 dependency context", "PyPI, Maven and Gradle parser contracts", "CVSS/EPSS/KEV policy", "OSV introduced/fixed/last_affected event metadata"],
+    "newIntegrityGuard": "Package/ecosystem mismatch retains query advisory ID but removes uncorroborated severity/fixes and records UNKNOWN warning",
+    "versionJudgment": "Exact-version OSV query; no new local range comparator or lexicographic version ordering",
+    "fixGuidance": "Official fixed metadata is not a universal safe upgrade, compatibility or reachability proof; no package installation or automatic update",
+    "liveAdvisoryAccuracyMeasured": false,
+    "cisaKevPublicAccess": "HTTP_403_NOT_VERIFIED",
+    "runtimeReachability": "UNKNOWN",
+    "truth": "Mock data identifiers and fixes are synthetic; not real-CVE TP/TN or live-feed freshness evidence"
+  },
+  "realApps": {
+    "inputs": 15, "uniqueProjectIds": 14, "runsPerInput": 2,
+    "sourcePlanAndShaVerified": true, "repeatIdentical": true,
+    "javaPythonTypescriptScaPreserved": true, "rlsClientsTablesFindingsPreserved": true,
+    "otherLegacyRulesPreserved": true,
+    "auditedRuleDelta": {"project": "imbhargav5/nextbase-nextjs-supabase-starter", "removedLocalActionUnpinnedWarnings": 5, "scoreBeforeAfter": [37, 72], "shouldFixBeforeAfter": [5, 0]},
+    "otherInputsScoreRiskPreserved": true,
+    "newRealVulnerabilityTP": 0,
+    "newOfficialVulnerableFixedPairs": 0,
+    "truth": "Grade C for Docker/CI/SCA without target ground truth; no whole-project TP/FP/FN/TN assigned",
+    "afterElapsedMsRange": [211, 835], "afterParentHeapUsedBytesRange": [54732912, 138333568],
+    "externalLookups": false, "userDatabase": "ISOLATED_H2"
+  },
+  "resources": {"limitsRaised": false, "deploymentFiles": 50, "deploymentCharacters": 1000000, "deploymentDeadlineMs": 2000, "perConfigCharacters": 100000, "yamlDepth": 32, "yamlWork": 5000, "perFileObservations": 200, "aliasPairComparisons": 50000, "scope": "Parent heap samples are not peak RSS or a performance improvement claim; unchanged Worker v39 limits retained"},
+  "tests": {"backendTotal": 728, "backendFailures": 0, "backendSkipped": 9, "workerPassed": 935, "frontendPassed": 167, "frontendBuild": "PASS", "evaluationPythonPassed": 250, "pythonWorkerPassed": 117, "realReactMockApiWidths": [1440, 390, 320], "liveGitHub": false},
+  "policy": {"newPriority": "REVIEW_REQUIRED", "comparison": "NOT_COMPARED", "riskScoreBlockingFormulaChanged": false, "weakDockerDeclarationConfidence": "MEDIUM_NOT_ACTUAL_CREDENTIAL_PROOF", "pastSnapshotsRecalculated": false, "comparisonFingerprintIncludesScaImplementation": true, "apiDbSchemaChanged": false, "automaticFixExpanded": false, "protectedServerRestarted": false, "userDatabaseModified": false, "paidAiCalls": 0, "targetExecutedOrBuilt": false, "deployed": false},
+  "mapping": {"owaspTop10": ["2025-A02", "2025-A03", "2025-A08"], "asvsReferences": ["v5.0.0-13.2.2", "v5.0.0-13.3.1", "v5.0.0-13.3.2", "v5.0.0-15.2.1", "v5.0.0-15.2.4", "v5.0.0-15.2.5"], "newCiCwe": {"CI_UNTRUSTED_PR_EXECUTION": "CWE-829", "CI_SCRIPT_EXPRESSION": "CWE-78"}, "meaning": "Context and remediation references only, not compliance certification"},
+  "audit30Priorities": ["Cross-domain P0-P2 false-positive/false-negative audit without changing original truth", "Docker ARG/RUN secret flow and actual mount/runtime-context limits", "CI environment-to-shell and reusable/dynamic workflow gaps", "SCA alias conflicts, unresolved versions, live-feed availability and package versus advisory counts", "Keep existing XSS FP1, SSRF FN4, path FN6, CORS FN5, CSRF FN3 and rate FN7 visible", "urisai/runwhen reanalysis only in separately authorized later scope"],
+  "sources": [
+    "https://top10.owasp.org/2025/",
+    "https://raw.githubusercontent.com/OWASP/ASVS/v5.0.0/5.0/en/0x22-V13-Configuration.md",
+    "https://raw.githubusercontent.com/OWASP/ASVS/v5.0.0/5.0/en/0x24-V15-Secure-Coding-and-Architecture.md",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Software_Supply_Chain_Security_Cheat_Sheet.html",
+    "https://raw.githubusercontent.com/moby/buildkit/master/frontend/dockerfile/docs/reference.md",
+    "https://docs.docker.com/build/building/best-practices/", "https://docs.docker.com/build/building/secrets/", "https://docs.docker.com/reference/compose-file/services/", "https://docs.docker.com/reference/build-checks/",
+    "https://docs.github.com/en/actions/reference/security/secure-use", "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax", "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows", "https://docs.github.com/en/actions/tutorials/authenticate-with-github_token", "https://scorecard.dev/",
+    "https://google.github.io/osv.dev/api/", "https://ossf.github.io/osv-schema/", "https://github.com/github/advisory-database", "https://www.first.org/epss/",
+    "https://docs.npmjs.com/cli/v11/configuring-npm/package-lock-json/", "https://packaging.python.org/en/latest/specifications/version-specifiers/", "https://maven.apache.org/pom.html", "https://docs.gradle.org/current/userguide/dependency_versions.html",
+    "https://cwe.mitre.org/data/definitions/78.html", "https://cwe.mitre.org/data/definitions/829.html"
+  ]
+}
