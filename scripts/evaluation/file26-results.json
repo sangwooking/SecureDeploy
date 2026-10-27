@@ -1,0 +1,805 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "840f0601a3aee217556e92104b2c246860753ecb",
+  "frozenControlsCommit": "651acc076fc7dd8da71fb0787949a0474cf77109",
+  "productCommit": "e5a75bb204da29707837dcb450e9f0273a9cc87c",
+  "worker": "ts-server-v37",
+  "stringContext": "string-context-v7",
+  "rls": "supabase-rls-v4",
+  "columnContract": "column-update-v1",
+  "grade": "B_SAME_AUTHOR_NOT_INDEPENDENT",
+  "casesSha256": "f86cf5df5f4ddb235cbf2e74e4fd8524e402d4a53d4d479c83852686363e4a18",
+  "truthChangedSinceFrozenCommit": false,
+  "summary": {
+    "before": {
+      "PATH": {
+        "FN": 18,
+        "NORMAL_DEFERRED": 9,
+        "NORMAL_NO_FS_SINK": 1,
+        "UNKNOWN": 5
+      },
+      "UPLOAD_TYPE": {
+        "FN": 1,
+        "UNKNOWN": 5
+      }
+    },
+    "after": {
+      "PATH": {
+        "TP": 12,
+        "FN": 6,
+        "TN": 8,
+        "NORMAL_DEFERRED": 1,
+        "NORMAL_NO_FS_SINK": 1,
+        "UNKNOWN": 5
+      },
+      "UPLOAD_TYPE": {
+        "FN": 1,
+        "UNKNOWN": 5
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "path-read",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "4e86c8e3a1b97b04169fce24dae29fce2f2eae86a5a81429b865d1eb76f33b60",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "path-write",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "fd593349557e07ba22e29868a1bbb2fc37a0263c25b6367f72638d4b14205805",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "path-delete",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "df1671160d9e11e40eec862cc98c787ce1013d3180dcfdc88a0bbc9b9cdd26ad",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "path-join",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "133486d682c67ee26bf4401858ece7840dd44697777f31a379e6b2849d60a65f",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "path-resolve",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "b1621fc81d5b784e00a1634f0518d3652e3e492fa897a6c7aa8358a0551238c0",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "path-normalize",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "59c095201c444af4a26a707575c6f569ad8046deb612d006c9e9651729ffaab6",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "path-alias",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "4f26aedb261d3282052432073df83ec3ac7b6840c4a2639353fe8c1c100125da",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "path-helper",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "ebaf96e0aa2d81ed7048c7e6336851319dd62f5982fae4d07d344af305327c91",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "path-choice",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "268d24e7a9256f39f6cee4b334d97680062dcda185064d692f5fde8d96fef4c2",
+      "before": "FN",
+      "after": "FN"
+    },
+    {
+      "id": "path-overwrite-risk",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "90bb26ebc66c6af520225a65da99ec39cc3bd5374a461e8f1e202d3bcf94145f",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "path-rename",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "d72ec69f6f1ffde079c38513ee4c2a17f50cab7b05d592640c208ecc70874d2f",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "path-rename-target",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "391564a5ae9d127abf0a843e385f5c67b7d40d66e4fe60ef5f9e5f22c67902f6",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "path-prefix",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "a24cc5d1a739f8f07a2a3dc1aae5bf9a2bd5e40da01d78786f9be8fec3721c06",
+      "before": "FN",
+      "after": "FN"
+    },
+    {
+      "id": "path-replaced-after-check",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "c7f903a9de67568ed1892067bdd3cf332fd12f7f3f3887e48ecadd1e257cdecc",
+      "before": "FN",
+      "after": "FN"
+    },
+    {
+      "id": "path-fixed",
+      "track": "PATH",
+      "truth": "NORMAL",
+      "inputSha256": "2700067a94e17613e4216856668979082a786a9da0cc289c3f421053cccb9ef6",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN"
+    },
+    {
+      "id": "path-content-only",
+      "track": "PATH",
+      "truth": "NORMAL",
+      "inputSha256": "36fbb8313d6c79d93de6ac16c79337fb4f5b70b23478b5aea75c8d8b6789c137",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN"
+    },
+    {
+      "id": "path-overwrite-fixed",
+      "track": "PATH",
+      "truth": "NORMAL",
+      "inputSha256": "1250fa61df71fe0b2d66704adf1ae054fc17f33d136b817f5dbb88c015921b35",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN"
+    },
+    {
+      "id": "path-fixed-choice",
+      "track": "PATH",
+      "truth": "NORMAL",
+      "inputSha256": "9aa91da7ef83d887ebfc3581c6ea0fb2451c3c756f130439096613a0dd8478ab",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN"
+    },
+    {
+      "id": "path-disconnected",
+      "track": "PATH",
+      "truth": "NORMAL",
+      "inputSha256": "2799462975e8b980d085b85a587db6d8424c6561c7061d2899129795ab0d0131",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN"
+    },
+    {
+      "id": "path-relative-guard",
+      "track": "PATH",
+      "truth": "NORMAL",
+      "inputSha256": "4bd19449663b21281c4e47a44965165958b7e8e9b4e601fdef80d3cae51ae588",
+      "before": "NORMAL_DEFERRED",
+      "after": "NORMAL_DEFERRED"
+    },
+    {
+      "id": "path-constant-map",
+      "track": "PATH",
+      "truth": "NORMAL",
+      "inputSha256": "6b46a0d65c297d67d9be52188447464b278fcb5edc0f842f6ece79e8d3c7e720",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN"
+    },
+    {
+      "id": "path-lookalike",
+      "track": "PATH",
+      "truth": "NORMAL",
+      "inputSha256": "e34492db8b064b8209ffa82acd45c742b0c57919243484ee82fbc0e17fe43d30",
+      "before": "NORMAL_NO_FS_SINK",
+      "after": "NORMAL_NO_FS_SINK"
+    },
+    {
+      "id": "path-basename",
+      "track": "PATH",
+      "truth": "UNKNOWN",
+      "inputSha256": "2ce4757b88ae95425f4fca952e7cdc8a902168c622509eca1190bfd7a0422a51",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "id": "path-win32-basename",
+      "track": "PATH",
+      "truth": "UNKNOWN",
+      "inputSha256": "006f3f5bb262b033fc7c6321ac200f6a2177275c78cf1538623fef9524869080",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "id": "path-sanitizer",
+      "track": "PATH",
+      "truth": "UNKNOWN",
+      "inputSha256": "07388023899568e84a6bf2f925d827ee10da568a265439660069fa42a1fa0084",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "id": "path-mutated-api",
+      "track": "PATH",
+      "truth": "UNKNOWN",
+      "inputSha256": "96c4036fab715e683b2d41e917d9f8666d62ef4ba399038fa3389f9906acc4f6",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "id": "path-dynamic-storage",
+      "track": "PATH",
+      "truth": "UNKNOWN",
+      "inputSha256": "578b8a7657f1fdacd912e06631b56ae27ee8f79e8f9e069af3ddacbc37e2bdc5",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "id": "path-realpath",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "90993d0ccc4a8b16ac58577ad816ccf31b76687c0511ae02318a82811fda6d58",
+      "before": "FN",
+      "after": "FN"
+    },
+    {
+      "id": "path-originalname",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "d02c5fe7eff8a8a2ebbc7cef7450f9a66a5c28412271186dccf28273dc798563",
+      "before": "FN",
+      "after": "FN"
+    },
+    {
+      "id": "path-generated-file",
+      "track": "PATH",
+      "truth": "NORMAL",
+      "inputSha256": "01996241a668c204785e0d7b98df16220a14b42c91cf2408e6dcd8184c9415f7",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN"
+    },
+    {
+      "id": "upload-executed",
+      "track": "UPLOAD_TYPE",
+      "truth": "RISK",
+      "inputSha256": "79366b3f37943c50df3b9ce0f0b030656ea926948f9b090578cc8c474f63ee38",
+      "before": "FN",
+      "after": "FN"
+    },
+    {
+      "id": "upload-mime-only",
+      "track": "UPLOAD_TYPE",
+      "truth": "UNKNOWN",
+      "inputSha256": "ba29071b0177ca6511720274eef9d905da1073a1414c29283f391728e06a1507",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "id": "upload-public-name",
+      "track": "UPLOAD_TYPE",
+      "truth": "UNKNOWN",
+      "inputSha256": "660e8ba4e4ec1cc0c64e5e21637eabf1882164d17acc3e628cf259261463393f",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "id": "upload-external-limit",
+      "track": "UPLOAD_TYPE",
+      "truth": "UNKNOWN",
+      "inputSha256": "e4b72df4c4db1958ba32682255b523267b02668e13c7ea8282194a3dcd29887b",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "id": "upload-custom-storage",
+      "track": "UPLOAD_TYPE",
+      "truth": "UNKNOWN",
+      "inputSha256": "4311a54f22801bb7409e2cc1c5897e2da917b25fe2e8d4f904a4bd476a4a6f32",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "id": "upload-archive",
+      "track": "UPLOAD_TYPE",
+      "truth": "UNKNOWN",
+      "inputSha256": "e31b6b6649a15c4cc7a07f7cdd319b2267b3e4d49380672fa753229785e96d17",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "id": "next-field",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "b91be5dfad8458174be47ae7f282077b5c2566b2984af381559cd41076be3819",
+      "before": "FN",
+      "after": "TP"
+    },
+    {
+      "id": "next-fixed",
+      "track": "PATH",
+      "truth": "NORMAL",
+      "inputSha256": "2dbe03e5bc4d89a2cc72130cf3f45134f437a63871be9e918606f8a1bef3a04b",
+      "before": "NORMAL_DEFERRED",
+      "after": "TN"
+    },
+    {
+      "id": "next-filename",
+      "track": "PATH",
+      "truth": "RISK",
+      "inputSha256": "f777417b1a6b91262aa75a262d987a31a4a249346b109fa78825ca32fb6a50c6",
+      "before": "FN",
+      "after": "FN"
+    }
+  ],
+  "findingContract": {
+    "ruleId": "JS_FILE_PATH_INPUT_FLOW",
+    "cwe": "CWE-22",
+    "relatedTaxonomy": [
+      "CWE-23",
+      "CWE-73"
+    ],
+    "priority": "REVIEW_REQUIRED",
+    "comparisonPolicy": "NOT_COMPARED",
+    "riskFormulaChanged": false,
+    "legacyScoreIntegration": false
+  },
+  "uploadContract": {
+    "Multer": "MIDDLEWARE_AND_STORAGE_UNVERIFIED",
+    "NextFileMetadata": "FILE_TYPE_UNVERIFIED",
+    "CWE434": "NOT_SUPPORTED",
+    "CWE400": "NOT_SUPPORTED",
+    "missingLimitIsNotProofOfNoLimit": true
+  },
+  "applications": [
+    {
+      "project": "Zenyonmz--todo-demo",
+      "sha": "9f6b219ffbeadebe05a18783852e9fcdf075b0a5",
+      "planSha256": "152751c57a1e16e1621f24cfd57e876722c4a1cd21ca4a0797fee17569adac76",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 100,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        300,
+        214
+      ]
+    },
+    {
+      "project": "salmandotweb--nextjs-supabase-boilerplate",
+      "sha": "5d9ebfb75cd29732d4dea0882bebb0f6f47b189a",
+      "planSha256": "ddf7c827dee7873f295c4317d72aab2d30fd3fe5cedf2866ca77fa2e80293d46",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 100,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        575,
+        462
+      ]
+    },
+    {
+      "project": "imbhargav5--nextbase-nextjs-supabase-starter",
+      "sha": "00ad2da857b84322ff359db098cbf1cb4f4b7282",
+      "planSha256": "ddf7c827dee7873f295c4317d72aab2d30fd3fe5cedf2866ca77fa2e80293d46",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 37,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        511,
+        485
+      ]
+    },
+    {
+      "project": "vercel--nextjs-subscription-payments",
+      "sha": "bdd0813206e47e6b218d42f15a7976c8a0d3c3eb",
+      "planSha256": "5d16d077ca980f3717a49d744bd639ae4b283a470a824a960bb7c8a644cce79b",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 100,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        526,
+        432
+      ]
+    },
+    {
+      "project": "mckaywrigley--chatbot-ui",
+      "sha": "81328b61d2a4ab597a7a057be70e785cf756d9f8",
+      "planSha256": "5d16d077ca980f3717a49d744bd639ae4b283a470a824a960bb7c8a644cce79b",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 0,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        768,
+        687
+      ]
+    },
+    {
+      "project": "Razikus--supabase-nextjs-template",
+      "sha": "d519bf18d747bc0956346910414db68adb5a45bf",
+      "planSha256": "31a610ca26d7e6c0b8be4a895a2145ed48d67387d5ac6349b78799a1228f1134",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 100,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        451,
+        320
+      ]
+    },
+    {
+      "project": "makerkit--nextjs-saas-starter-kit-lite",
+      "sha": "9ff430df9c58516add0136bd01ed800ce551675e",
+      "planSha256": "31a610ca26d7e6c0b8be4a895a2145ed48d67387d5ac6349b78799a1228f1134",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 44,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        535,
+        506
+      ]
+    },
+    {
+      "project": "nglguarino--echoverse-11labs",
+      "sha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 86,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        738,
+        521
+      ]
+    },
+    {
+      "project": "LellaSriHarsha--power-platform-hub",
+      "sha": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 86,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        474,
+        451
+      ]
+    },
+    {
+      "project": "TinyikoMamban--workflowai-pro",
+      "sha": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 86,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        564,
+        551
+      ]
+    },
+    {
+      "project": "Adriano-Digital2024--CopyMonster",
+      "sha": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "planSha256": "2419ae1241daad75a3f70965f9e1514a38e2b90c09ad6a9799e8214f6ec33b71",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 16,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        838,
+        819
+      ]
+    },
+    {
+      "project": "appsecco--dvna",
+      "sha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "planSha256": "654470a58d8a7e4e19f95347b58bd35a493d56c0dfd8dcbdfd6bbba43af0467b",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 79,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        596,
+        486
+      ]
+    },
+    {
+      "project": "appsecco--dvna",
+      "sha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "planSha256": "8416b7e5da80d5e932e607e4e053d958d6f77129c5a40b331ccabe0a9ad4619c",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 93,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        620,
+        498
+      ]
+    },
+    {
+      "project": "vercel--next.js",
+      "sha": "2998a2e801caab665d603daefc7445c04309285a",
+      "planSha256": "c5d538025606ab7ba21c46b1bdad498e750345f64750d30e623ac32b17f728f7",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 100,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        485,
+        394
+      ]
+    },
+    {
+      "project": "snyk-labs--nodejs-goof",
+      "sha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "planSha256": "d57b7dfba3acf1a6fab7b276b5e4c54365c9c58e5132204e4a4e5a2b3522537b",
+      "repeatIdentical": true,
+      "legacyUnchanged": {
+        "raw": true,
+        "filtered": true,
+        "securityScore": true,
+        "risk": true,
+        "sca": true
+      },
+      "structuralFindingsExactlyUnchanged": true,
+      "score": 23,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "elapsedMs": [
+        654,
+        488
+      ]
+    }
+  ],
+  "newOriginalApplicationTP": 0,
+  "newOfficialPatchedPair": 0,
+  "independentReview": false,
+  "ownedCanary": {
+    "directoryEscapeObserved": true,
+    "relativeGuardRejectsEscape": true,
+    "normalReadPreserved": true,
+    "symlinkLimitDemonstrated": true,
+    "serverNamePreservesBytes": true,
+    "typeSignatureSizeControlsReject": true,
+    "cleanupVerified": true,
+    "targetSourceExecuted": false,
+    "fullImageValidation": false,
+    "toctouProtectionVerified": false
+  },
+  "profileSingleSample": {
+    "oldSpaceLimitMiB": 192,
+    "before": {
+      "elapsedMs": 167.534083,
+      "peakRssBytes": 145522688
+    },
+    "after": {
+      "elapsedMs": 173.959791,
+      "peakRssBytes": 146866176
+    },
+    "productionPerformanceClaim": false
+  },
+  "tests": {
+    "worker": 853,
+    "backend": {
+      "tests": 709,
+      "failures": 0,
+      "skipped": 9
+    },
+    "python": 117,
+    "evaluationPython": 250,
+    "evaluationJavaScript": 4,
+    "frontend": 165,
+    "frontendBuild": "PASS"
+  },
+  "engineSourceHashes": {
+    "analyzers/typescript/analyzer.mjs": "ba680c38727e19f45fac39c86b5e8edc7c3e461c0ba77dccba0d335672125a62",
+    "analyzers/typescript/node-server.mjs": "dd8644156e0e3a2d86cf9c0ad320b9c5dab3f590445ecec796147d1093438650",
+    "analyzers/typescript/file-access.mjs": "6a5e427ad41b7db4821177b9df6d8ace3f71f2f4cc06df80bb5c468b8a6f1905",
+    "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java": "3378c2985bede24a6037226d274d5af6ff42af34210b2c1f3a70d374f20447fb",
+    "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java": "cecedc47bdb3538c8209edf17d18056287613dd64516e52b22f2b10c74cb83e1"
+  },
+  "standards": {
+    "ASVS": "5.0.0 V5 5.3.2 bounded path control; 5.1.1, 5.2.1-5.2.6 and 5.3.1 remain upload requirements, not implemented guarantees",
+    "ASVSUrl": "https://github.com/OWASP/ASVS/blob/v5.0.0/5.0/en/0x14-V5-File-Handling.md",
+    "OWASPUrl": "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html",
+    "NodePinnedUrl": "https://github.com/nodejs/node/blob/v22.14.0/doc/api/fs.md",
+    "NodePathUrl": "https://nodejs.org/api/path.html",
+    "MulterReviewedUrl": "https://github.com/expressjs/multer/blob/v2.0.2/storage/disk.js",
+    "NextReviewedUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/route",
+    "NodeCurrentDocs": "26.12.1",
+    "NextCurrentDocs": "16.4.3",
+    "MulterCurrentDocs": "2.5.0",
+    "installedTargetVersionsVerified": false
+  },
+  "limitations": [
+    "Only trusted SecureDeploy analyzer modules imported; target code is parsed, never executed",
+    "Known risky unsupported paths remain FN; normal without an observation remains deferred",
+    "Lexical path evidence does not prove symlink, permissions, containment intent or runtime exploitability",
+    "CWE-434 and CWE-400 require distinct type/execution/resource evidence, not just an upload declaration",
+    "No fresh live GitHub App, OSV or whole-product browser E2E",
+    "No product UI or auto-patch expansion; no DB migration; user DB and existing server untouched",
+    "Actual retained apps had zero new file-resource observations, so no original TP or TN is claimed",
+    "Known risky paths: six PATH FN plus one upload execution FN remain, not UNKNOWN relabels"
+  ],
+  "evaluatorSha256": "a297d52e24331e3f074a9f750b6c30fe0a76c530c70a78b1b7c7f24b7493ab17",
+  "operations": {
+    "userDatabaseModified": false,
+    "serverRestarted": false,
+    "protectedServerPid": 99387,
+    "paidAiCalls": 0,
+    "deploymentPerformed": false,
+    "oldLimitsIncreased": false,
+    "freshLiveGithubApp": false,
+    "wholeProductBrowserE2E": false
+  },
+  "originalSourceChecks": [
+    {
+      "project": "mckaywrigley--chatbot-ui",
+      "file": "app/api/retrieval/process/route.ts",
+      "sha256": "25f9360d73bcc936e80a874dd25027681c4ccb5e8cec8a27398265bfa8065708",
+      "fact": "FormData file_id is DB/object-storage access, not a proven local fs sink"
+    },
+    {
+      "project": "Adriano-Digital2024--CopyMonster",
+      "file": "supabase/functions/meta-webhook/index.ts",
+      "sha256": "6ac11ae23a0872b6ec06768771904ef4c4ca5eb17b3acc7b3a0049d809ae4e58",
+      "fact": "Outbound FormData is not automatically an inbound upload path"
+    },
+    {
+      "project": "snyk-labs--nodejs-goof",
+      "file": "routes/index.js",
+      "sha256": "a13d03f614346d07173ca0a4bb0917c35c8690ba5e14cdd3d091aa3810ea6d22",
+      "fact": "Fixed backup.txt read inside archive path has no full-app resource observation; not counted TN. Archive traversal contract unsupported"
+    }
+  ],
+  "remainingPathMisses": [
+    "path-choice",
+    "path-prefix",
+    "path-replaced-after-check",
+    "path-realpath",
+    "path-originalname",
+    "next-filename"
+  ],
+  "constructorFormAudit": {
+    "falseCandidateReproduced": true,
+    "candidateAfter": 0,
+    "contract": "Only CallExpression, never constructor forms"
+  }
+}
