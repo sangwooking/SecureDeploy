@@ -14,8 +14,9 @@ import { regexFlow } from './regex-flow.mjs';
 import {tsPaths} from './ts-paths.mjs';
 import {objectData} from './object-data.mjs';
 import {fileAccess} from './file-access.mjs';
+import {exportLinks} from './export-links.mjs';
 
-export const VERSION = 'ts-server-v40';
+export const VERSION = 'ts-server-v41';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -287,7 +288,12 @@ export function analyze(input, overrides = {}) {
             mod.imports.set(e.name.text, { spec, exported: e.propertyName?.text ?? e.name.text,typeOnly:!!s.importClause.isTypeOnly||!!e.isTypeOnly });
           else if (bindings) note(mod, 'NAMESPACE_IMPORT_UNSUPPORTED');
         }
-        if (ts.isFunctionDeclaration(s) && s.name && s.body) { mod.declared.add(s.name.text); register(s.name.text, s, exported); }
+        if (ts.isFunctionDeclaration(s) && s.name && s.body) {
+          mod.declared.add(s.name.text);
+          const isDefault=s.modifiers?.some(m=>m.kind===ts.SyntaxKind.DefaultKeyword);
+          const fn=register(s.name.text,s,exported&&!isDefault);
+          if(exported&&isDefault&&fn)mod.exports.set('default',fn);
+        }
         if (ts.isVariableStatement(s)) for (const d of s.declarationList.declarations) {
           if (!ts.isIdentifier(d.name)) continue;
           mod.declared.add(d.name.text);
@@ -326,14 +332,28 @@ export function analyze(input, overrides = {}) {
   const sourceImports=tsPaths({ts,input,modules,note,charge:()=>{
     charged();if(astNodes>=limits.maxNodes)throw Error('AST_CONFIG_LIMIT');astNodes++;
   }});
+  const exportSupport=exportLinks({ts,tick,note,limits});
+  const sourceInventory=new Set([...(input.nodeSourceInventory??[]),...result.files.map(f=>f.filePath)]);
+  function sourceModule(mod,spec) {
+    if(typeof spec!=='string'||spec.length>240||/[\\\0?#%]/.test(spec))return;
+    if(!spec.startsWith('.'))return sourceImports.target(mod,spec);
+    const base=path.posix.normalize(path.posix.join(path.posix.dirname(mod.filePath),spec));
+    if(base==='..'||base.startsWith('../')||path.posix.isAbsolute(base)){note(mod,'MODULE_EXPORT_PATH_OUTSIDE_INPUT');return;}
+    // Source mapping for bundled Worker/Next code, not Node's runtime ESM resolver.
+    for(const p of [...new Set([base,base.replace(/\.js$/,'.ts'),base+'.ts',base+'.js',base+'/index.ts',base+'/index.js'])]){
+      tick(mod);
+      if(sourceInventory.has(p)){
+        const target=modules.get(p);if(!target)note(mod,'MODULE_EXPORT_TARGET_NOT_INSPECTED');
+        return target;
+      }
+    }
+  }
   function resolve(mod, name) {
     if (mod.functions.has(name)) return mod.functions.get(name);
-    const imported = mod.imports.get(name);
-    if (!imported) return undefined;
-    if(!imported.spec.startsWith('.'))return sourceImports.target(mod,imported.spec)?.exports.get(imported.exported);
-    const base = path.posix.normalize(path.posix.join(path.posix.dirname(mod.filePath), imported.spec));
-    for (const c of [base, base.replace(/\.js$/, '.ts'), `${base}.ts`, `${base}.js`, `${base}/index.ts`, `${base}/index.js`])
-      if (modules.get(c)?.exports.has(imported.exported)) return modules.get(c).exports.get(imported.exported);
+    const imported=mod.imports.get(name);
+    if(!imported||imported.typeOnly)return;
+    const target=sourceModule(mod,imported.spec);if(!target)return;
+    return target.exports.get(imported.exported)??exportSupport.functionAt(target,imported.exported,sourceModule);
   }
   function property(base, key, node, state) {
     const { mod, fn } = state;

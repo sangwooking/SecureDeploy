@@ -1,5 +1,32 @@
 # Bounded server analysis runtime
 
+## Static named export links (v41)
+
+Existing registered requests can reach top-level functions exported through
+`export { local }`, aliases and explicit `export { name } from './module'` chains.
+Named default functions may be forwarded as `default`. Type-only exports are not
+runtime values. Mutable, ambiguous, missing, cyclic, wildcard and namespace
+bindings remain unsupported or UNKNOWN; syntax plans never cache request values.
+
+Worker/Next source mapping stops at the first inventoried candidate, even when
+that file was not parsed. It does not select another file because an export is
+missing. Node continues to use its separate runtime-oriented resolver: explicit
+ESM extensions and supported CommonJS directory contracts are not interchangeable.
+Node forwarding modules must have no runtime initialization beyond declarations
+and explicit exports; unknown initialization order is not treated as a valid link.
+
+This does not add HTTP registration conventions, Pages middleware scope, package
+exports/imports, conditional exports, wildcard barrels, class/event initialization
+or general Promise execution. Existing depth, AST, step, output, file, time and
+memory budgets apply. Parsing, static module references, reached functions and
+Source/Sink evidence remain different measurements. No whole-project safety or
+complete call graph is claimed. Finding IDs, RLS v4, Deployment v2 and Risk formulas
+are unchanged; new reached candidates retain REVIEW_REQUIRED/NOT_COMPARED.
+
+Contracts: [TypeScript modules](https://www.typescriptlang.org/docs/handbook/2/modules.html),
+[module resolution](https://www.typescriptlang.org/docs/handbook/modules/reference),
+[Node ESM](https://nodejs.org/download/release/v26.9.0/docs/api/esm.html).
+
 Version ts-server-v30 recognizes version-declared Mongoose 4.x-6.x callback
 execution requests for find/findOne and exec(callback). Functions must have a
 resolved static origin and optional argument positions must be unambiguous.

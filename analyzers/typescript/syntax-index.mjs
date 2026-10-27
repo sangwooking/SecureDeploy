@@ -1,8 +1,13 @@
 // Reuse the already bounded parse walk. These are syntax facts, not execution or trust proofs.
 export function syntaxIndex() {
-  return {declarations:new Map(),bindings:new Set(),writes:new Set(),nodes:[],typeOnly:new Set(),dependencies:[],argumentUses:new Map(),argumentReferenceIncomplete:new Set(),aliases:new Map()};
+  return {declarations:new Map(),bindings:new Set(),writes:new Set(),exportWrites:new Set(),nodes:[],typeOnly:new Set(),dependencies:[],argumentUses:new Map(),argumentReferenceIncomplete:new Set(),aliases:new Map()};
 }
 export function indexSyntax(ts,n,index) {
+  if(ts.isDeleteExpression(n)||(ts.isPrefixUnaryExpression(n)||ts.isPostfixUnaryExpression(n))
+      &&[ts.SyntaxKind.PlusPlusToken,ts.SyntaxKind.MinusMinusToken].includes(n.operator)){
+    let x=n.expression??n.operand;while(ts.isPropertyAccessExpression(x)||ts.isElementAccessExpression(x))x=x.expression;
+    if(ts.isIdentifier(x))index.exportWrites.add(x.text);
+  }
   if(ts.isVariableDeclaration(n)&&ts.isIdentifier(n.name)&&n.initializer){
     const values=ts.isObjectLiteralExpression(n.initializer)?n.initializer.properties.flatMap(p=>ts.isShorthandPropertyAssignment(p)?[p.name]:ts.isPropertyAssignment(p)?[p.initializer]:[]):[n.initializer];
     for(const value of values)if(ts.isIdentifier(value)){

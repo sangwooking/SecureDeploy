@@ -6,6 +6,7 @@ import {mongooseContracts} from './mongoose.mjs';
 import {fieldValidation} from './field-validation.mjs';
 import {webSecurity} from './web-security.mjs';
 import {rateLimiting} from './rate-limit.mjs';
+import {exportLinks} from './export-links.mjs';
 
 // Library contracts over AST values only. Never require/import/eval target modules.
 export function nodeServer(api) {
@@ -13,6 +14,7 @@ export function nodeServer(api) {
   const loaded=new Map(), loading=new Set(), apps=[], routes=[];
   const httpModules=new Map();
   const resolver=moduleResolution(api);
+  const exportsSupport=exportLinks(api);
   const object=tag=>value(tag,[],{ref:{properties:new Map(),trace:[],unknown:false,nodeIdentity:{}}});
   const literal=v=>v?.tag==='constant'&&!v.unknown;
   const context=()=>({setup:true,checks:[],defenses:[],resources:[]});
@@ -99,6 +101,10 @@ export function nodeServer(api) {
         tick(mod);
         if(ts.isVariableStatement(s)||ts.isExpressionStatement(s)||ts.isIfStatement(s)||ts.isThrowStatement(s)||ts.isReturnStatement(s)) {
           if(statement(s,state).stops){state.context.unresolved=true;note(mod,'NODE_INITIALIZATION_STOPPED_OR_UNRESOLVED');break;}
+        }else if(ts.isExportDeclaration(s)){
+          if(!s.isTypeOnly&&(!s.exportClause||!ts.isNamedExports(s.exportClause))){
+            state.uncertain=true;state.context.unresolved=true;note(mod,'MODULE_WILDCARD_OR_NAMESPACE_EXPORT_NOT_SUPPORTED');
+          }
         }else if(!ts.isImportDeclaration(s)&&!ts.isFunctionDeclaration(s)&&!ts.isExportAssignment(s)&&!ts.isEmptyStatement(s)){
           state.uncertain=true;state.context.unresolved=true;note(mod,'NODE_INITIALIZATION_STRUCTURE_UNKNOWN');
         }
@@ -106,6 +112,27 @@ export function nodeServer(api) {
         if(s.modifiers?.some(m=>m.kind===ts.SyntaxKind.ExportKeyword)) {
           if(ts.isFunctionDeclaration(s)&&s.body){const isDefault=s.modifiers.some(m=>m.kind===ts.SyntaxKind.DefaultKeyword);const name=s.name?.text??'default';exports.ref.properties.set(isDefault?'default':name,state.vars.get(name)??functionValue(s,state,name));}
           if(ts.isVariableStatement(s))for(const d of s.declarationList.declarations)if(ts.isIdentifier(d.name))exports.ref.properties.set(d.name.text,state.vars.get(d.name.text)??unknown());
+        }
+      }
+      if(mod.ast.statements.some(ts.isExportDeclaration)){
+        const mixed=mod.syntaxIndex?.writes.has('module')||mod.syntaxIndex?.writes.has('exports');
+        const pureForward=mod.ast.statements.every(s=>ts.isExportDeclaration(s)||ts.isFunctionDeclaration(s)
+          ||ts.isInterfaceDeclaration(s)||ts.isTypeAliasDeclaration(s)||ts.isEmptyStatement(s)
+          ||ts.isImportDeclaration(s)&&s.importClause?.isTypeOnly);
+        for(const [name,binding]of exportsSupport.plan(mod).entries){
+          if(binding?.origin==='declaration')continue;
+          if(!binding||mixed){exports.ref.properties.set(name,unknown());note(mod,'MODULE_EXPORT_BINDING_UNKNOWN');continue;}
+          let forwarded;
+          if(binding.spec){
+            if(pureForward){
+              const target=findModule(mod,binding.spec,'import');
+              const loadedTarget=target?load(target):unknown();
+              forwarded=loadedTarget.ref?.properties.get(binding.imported);
+            }else note(mod,'MODULE_REEXPORT_INITIALIZATION_ORDER_UNKNOWN');
+          }else if(exportsSupport.stable(mod,binding.local))forwarded=state.vars.get(binding.local);
+          else note(mod,'MODULE_EXPORT_MUTATION_UNKNOWN');
+          exports.ref.properties.set(name,forwarded??unknown());
+          if(forwarded&&!forwarded.unknown)note(mod,'STATIC_EXPORT_VALUE_LINK');
         }
       }
       const exported=module.ref.properties.get('exports')??unknown();loaded.set(mod,exported);return exported;

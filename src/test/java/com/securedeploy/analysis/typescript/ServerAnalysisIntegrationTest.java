@@ -38,6 +38,40 @@ class ServerAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void namedExportChainPersistsRealSourceSinkAndDoesNotPromoteRisk() throws Exception {
+        String token=signup();
+        var sources=Map.of(
+                "worker.ts","import {query} from './api';export default {async fetch(request,env){const id=new URL(request.url).searchParams.get('id');return query(env.DB,id);}};",
+                "api.ts","export {query} from './service';",
+                "service.ts","function query(db,id){return db.prepare('SELECT * FROM records WHERE id='+id).all();}export {query};");
+        var unsafe=uploadSources(token,sources);
+        var snapshot=unsafe.path("serverAnalysis");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v41");
+        assertThat(snapshot.path("validatedFindings")).hasSize(1);
+        var finding=snapshot.at("/validatedFindings/0");
+        assertThat(finding.path("ruleId").asText()).isEqualTo("TS_SQL_INPUT_FLOW");
+        assertThat(finding.path("priority").asText()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(finding.path("comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        assertThat(finding.at("/evidence/0/source/filePath").asText()).isEqualTo("worker.ts");
+        assertThat(finding.at("/evidence/0/sink/filePath").asText()).isEqualTo("service.ts");
+        assertThat(snapshot.at("/files").findValuesAsText("parseStatus")).containsOnly("PARSED");
+        assertThat(unsafe.path("securityScore").asInt()).isEqualTo(100);
+        assertThat(unsafe.path("vulnerabilityCount").asInt()).isZero();
+        assertThat(detail(token,unsafe.path("reviewId").asLong()).path("serverAnalysis")).isEqualTo(snapshot);
+        mvc.perform(get("/api/reviews/"+unsafe.path("reviewId").asLong()).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+        var safeSources=new HashMap<>(sources);
+        safeSources.put("service.ts","function query(db,id){return db.prepare('SELECT * FROM records WHERE id=?').bind(id).all();}export {query};");
+        var safe=uploadSources(token,safeSources);
+        assertThat(safe.at("/serverAnalysis/validatedFindings")).isEmpty();
+        assertThat(safe.at("/serverAnalysis/sqlUses").findValuesAsText("kind")).contains("PARAMETERIZED_QUERY");
+        assertThat(safe.path("securityScore")).isEqualTo(unsafe.path("securityScore"));
+        assertThat(safe.at("/riskAssessment/prioritySummary")).isEqualTo(unsafe.at("/riskAssessment/prioritySummary"));
+        var unknownSources=new HashMap<>(sources);unknownSources.put("api.ts","export * from './service';");
+        var unresolved=uploadSources(token,unknownSources);
+        assertThat(unresolved.at("/serverAnalysis/validatedFindings")).isEmpty();
+        assertThat(unresolved.path("serverAnalysis").toString()).contains("MODULE_WILDCARD_OR_NAMESPACE_EXPORT_NOT_SUPPORTED");
+    }
+
     @Test void sequelizeRawQueryPersistsWithSourceAndSinkAcrossAllIntakes() throws Exception {
         String token=signup();
         var sources=Map.of("package.json","{\"dependencies\":{\"express\":\"4.21.2\",\"sequelize\":\"4.13.10\"}}", "server.cjs",
