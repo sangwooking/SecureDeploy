@@ -1,0 +1,309 @@
+{
+  "schemaVersion": 1,
+  "baseline": "1956a2d4c8035a4dbba76c3c9a350d46a6e6125c",
+  "productCommit": "32d12bd",
+  "worker": "ts-server-v34",
+  "rls": "supabase-rls-v4",
+  "columnAnalyzer": "column-update-v1",
+  "grade": "B_AUTHORED_NOT_INDEPENDENT",
+  "staticContracts": {
+    "population": 14,
+    "before": {
+      "TP": 4,
+      "FP": 0,
+      "FN": 4,
+      "TN": 6
+    },
+    "after": {
+      "TP": 8,
+      "FP": 0,
+      "FN": 0,
+      "TN": 6
+    },
+    "metricMeaning": "BROAD_WRITE_DECLARATION_REVIEW_NOT_REAL_APP_VULNERABILITY_DETECTION",
+    "repeatIdentical": true,
+    "baselineGateExit": 2,
+    "newGateExit": 0,
+    "cases": [
+      {
+        "id": "column-broad",
+        "sqlSha256": "068cb629a5b232985fb6ddced443bdfdac07276b752ad25a2a8c3e3133bd13c0",
+        "expectedCandidate": true,
+        "beforeCandidate": false,
+        "afterCandidate": true
+      },
+      {
+        "id": "column-owner-fixed",
+        "sqlSha256": "8107184b56b4e4a19cfe75412803fd28ff4b0ab962206cd3ef7ae582ad458fa9",
+        "expectedCandidate": false,
+        "beforeCandidate": false,
+        "afterCandidate": false
+      },
+      {
+        "id": "table-owner",
+        "sqlSha256": "4d98481bc3c482e984557402882a5b153ad967f1ed587c1b15fe174d13787e78",
+        "expectedCandidate": false,
+        "beforeCandidate": false,
+        "afterCandidate": false
+      },
+      {
+        "id": "table-broad",
+        "sqlSha256": "c11665407e4f22e47602f6c5cf716421f71a82424f0c93cbf31e26b982ba8f96",
+        "expectedCandidate": true,
+        "beforeCandidate": true,
+        "afterCandidate": true
+      },
+      {
+        "id": "column-revoke",
+        "sqlSha256": "95ce327209ffef5cb7bea47def9ac056f36a1412a78502a87416f8d10a894495",
+        "expectedCandidate": false,
+        "beforeCandidate": false,
+        "afterCandidate": false
+      },
+      {
+        "id": "table-survives-column-revoke",
+        "sqlSha256": "7486b2b1266be32d62b7360de47e784190be4bf33a60eddca5cb67233b4a2694",
+        "expectedCandidate": true,
+        "beforeCandidate": true,
+        "afterCandidate": true
+      },
+      {
+        "id": "public-column",
+        "sqlSha256": "cfd746ab7b9af9e5ae30b150794b686d53ea42e8bd5781565609136f95a2f952",
+        "expectedCandidate": true,
+        "beforeCandidate": false,
+        "afterCandidate": true
+      },
+      {
+        "id": "restrictive-owner",
+        "sqlSha256": "657005cd4b309d7d00a8273c63c92df62e526c30707d50ddfcba83a9325a5c93",
+        "expectedCandidate": false,
+        "beforeCandidate": false,
+        "afterCandidate": false
+      },
+      {
+        "id": "restrictive-alone",
+        "sqlSha256": "0fd88fe404d8d1f33c5cd3194694121ecbc7c6ac3d84db51c92576b176175aaa",
+        "expectedCandidate": false,
+        "beforeCandidate": false,
+        "afterCandidate": false
+      },
+      {
+        "id": "permissive-widens",
+        "sqlSha256": "199551de707cd0f3ab7eb59dea1d3d15f26a28f3f6ed0e03226ab6ea7a5c5a9e",
+        "expectedCandidate": true,
+        "beforeCandidate": false,
+        "afterCandidate": true
+      },
+      {
+        "id": "omitted-check",
+        "sqlSha256": "71d4b269952d9ebd47db1e7e8a421bc8702685f5d1e10de9ee65eca2fb263944",
+        "expectedCandidate": false,
+        "beforeCandidate": false,
+        "afterCandidate": false
+      },
+      {
+        "id": "open-new-row",
+        "sqlSha256": "b7a0708c0be348dbf549d01e889f8ce0d7b91a470cd4d355d9e210c8a5403352",
+        "expectedCandidate": true,
+        "beforeCandidate": true,
+        "afterCandidate": true
+      },
+      {
+        "id": "open-old-row",
+        "sqlSha256": "b40dd319e24a3552f3a94adb30bfbc67104cd44bb4894b831bb9b90c13e4d4be",
+        "expectedCandidate": true,
+        "beforeCandidate": true,
+        "afterCandidate": true
+      },
+      {
+        "id": "rls-disabled",
+        "sqlSha256": "4c667ac973a89169734557906b888bf116308fb18692aa03a33de84ab50f72ab",
+        "expectedCandidate": true,
+        "beforeCandidate": false,
+        "afterCandidate": true
+      }
+    ]
+  },
+  "controlledRuntime": {
+    "postgres": "16.14 (Homebrew)",
+    "main": {
+      "total": 448,
+      "matched": 448
+    },
+    "exceptions": {
+      "total": 8,
+      "matched": 8
+    },
+    "prerequisites": {
+      "total": 13,
+      "matched": 13
+    },
+    "historical560PreservedNotNewlyRun": true,
+    "authUid": "CURRENT_SETTING_STUB_NOT_SUPABASE_AUTH",
+    "tcpListening": false,
+    "userDatabaseAccessed": false,
+    "externalSqlExecuted": false,
+    "clusterRemoved": true,
+    "rawAuthoredReceiptSha256": "ff2898e532e1ae4f8dc51030538ede4cca1c99b4bdaafcba34fb791341997e59",
+    "independentReview": false,
+    "requirements": "AUTHORED_NOT_PROJECT_OWNER_APPROVED"
+  },
+  "originalApplications": {
+    "inputs": 15,
+    "allRepeatIdentical": true,
+    "legacyUnchanged": true,
+    "rlsTablesAndFindingIdentitiesUnchanged": true,
+    "newVerifiedVulnerabilityTP": 0
+  },
+  "h2": {
+    "planSha256": "78e11ed3769d5ee56445f6e1410accf55633cf292ce748879f0fe6381b0aac7d",
+    "rows": [
+      {
+        "id": "broad",
+        "before": {
+          "policyCandidates": 0,
+          "score": 100,
+          "risk": "REVIEW_REQUIRED",
+          "coverage": "PARTIAL",
+          "authorizationState": "UNKNOWN",
+          "effectiveRole": "UNKNOWN"
+        },
+        "after": {
+          "policyCandidates": 1,
+          "score": 100,
+          "risk": "REVIEW_REQUIRED",
+          "coverage": "PARTIAL",
+          "authorizationState": "BROAD_ACCESS_REVIEW",
+          "effectiveRole": "UNKNOWN"
+        },
+        "repeatIdentical": true
+      },
+      {
+        "id": "fixed",
+        "before": {
+          "policyCandidates": 0,
+          "score": 100,
+          "risk": "REVIEW_REQUIRED",
+          "coverage": "PARTIAL",
+          "authorizationState": "UNKNOWN",
+          "effectiveRole": "UNKNOWN"
+        },
+        "after": {
+          "policyCandidates": 0,
+          "score": 100,
+          "risk": "REVIEW_REQUIRED",
+          "coverage": "PARTIAL",
+          "authorizationState": "CONFIRMED_POLICY_EVIDENCE",
+          "effectiveRole": "UNKNOWN"
+        },
+        "repeatIdentical": true
+      },
+      {
+        "id": "unknown",
+        "before": {
+          "policyCandidates": 0,
+          "score": 100,
+          "risk": "REVIEW_REQUIRED",
+          "coverage": "FAILED",
+          "authorizationState": "UNKNOWN",
+          "effectiveRole": "UNKNOWN"
+        },
+        "after": {
+          "policyCandidates": 0,
+          "score": 100,
+          "risk": "REVIEW_REQUIRED",
+          "coverage": "FAILED",
+          "authorizationState": "UNKNOWN",
+          "effectiveRole": "UNKNOWN"
+        },
+        "repeatIdentical": true
+      }
+    ]
+  },
+  "tests": {
+    "worker": 698,
+    "backend": {
+      "total": 702,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9
+    },
+    "evaluationTools": 244,
+    "frontend": 165,
+    "frontendBuild": "PASS",
+    "newBrowserE2e": false,
+    "newLiveGitHubE2e": false
+  },
+  "regressions": {
+    "mongoose18": 35,
+    "callback19": 53,
+    "field20": 36,
+    "access21": 26,
+    "secret22": 90,
+    "classificationAndIdentityEvidencePreserved": true
+  },
+  "resources": {
+    "applicationElapsedMs": [
+      221,
+      913
+    ],
+    "maxSampledParentHeapBytes": 179639808,
+    "workerRssBytes": {
+      "before": [
+        128253952,
+        129875968
+      ],
+      "after": [
+        129826816,
+        129236992
+      ]
+    },
+    "singleControlSteps": {
+      "before": 109,
+      "after": 109
+    },
+    "limitsRaised": false
+  },
+  "secret22Accounting": {
+    "samePopulation": 90,
+    "before": {
+      "TP": 15,
+      "FN": 18,
+      "FP": 4,
+      "TN": 16,
+      "NORMAL_DEFERRED_NOT_TN": 10,
+      "UNKNOWN": 22,
+      "UNEXPECTED_CANDIDATE": 5
+    },
+    "after": {
+      "TP": 32,
+      "FN": 1,
+      "FP": 0,
+      "TN": 30,
+      "UNKNOWN": 27
+    },
+    "oldRecordsChanged": false
+  },
+  "protected": {
+    "intent13Sha256": "93fe972e3b9177c01317a815607679cf270e91405859e9ca8d21f979bacc3c2e",
+    "oldOracle11Sha256": "966d3453c1e9eb19e3761053351bda49bd799d4cc993bc386a628a285b3b9698",
+    "secret22Sha256": "45ee4d57edd4de51a6fd34360950c21ea6d175f498b51d61aea05cdbfeeb573b",
+    "serverPid": 99387,
+    "serverWorker": "v28",
+    "serverRestarted": false,
+    "localMain": "15070416",
+    "userDatabaseModified": false,
+    "paidAiCalls": 0,
+    "deployed": false
+  },
+  "limitations": [
+    "Source declaration, authored requirements and controlled runtime are separate dimensions.",
+    "Static operation grant includes column UPDATE capability; tableGrant/columns retain exact scope.",
+    "No actual Supabase JWT/PostgREST or production role verification.",
+    "CONFIRMED_POLICY_EVIDENCE is not runtime authentication, complete ACL or ownership invariance.",
+    "No new independently verified real-application vulnerability TP.",
+    "13 final prerequisite probes run once; main448 and exceptions8 repeated.",
+    "Role inheritance, complex functions/views/triggers remain unsupported or UNKNOWN."
+  ]
+}

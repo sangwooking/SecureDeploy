@@ -69,7 +69,31 @@ def static(repo):
         rows.append(dict(id=c['id'], sqlSha256=c['sqlSha256'], expectedCandidate=c['expectedCandidate'],
                          candidate=operation['candidate'], operation=operation, updatePrivileges=s['tables'][0]['updatePrivileges'],
                          findings=len(s['findings']), repeatIdentical=True))
-    return dict(worker=runs[0]['analyzerVersion'], rls=s['analyzerVersion'], rows=rows)
+    return dict(worker=runs[0]['analyzerVersion'], rls=s['analyzerVersion'], rows=rows,
+                total=len(rows), matched=sum(r['candidate'] == r['expectedCandidate'] for r in rows))
+
+
+def export(root):
+    root = outside(root)
+    if root.exists():
+        raise ValueError('NEW_EXPORT_REQUIRED')
+    projects = []
+    for name, case, omitted in [('broad', cases()[0], False), ('fixed', cases()[1], False), ('unknown', cases()[0], True)]:
+        source = "import {createClient} from '@supabase/supabase-js';const db=createClient('https://example.invalid',process.env.SUPABASE_ANON_KEY);export async function PATCH(req){const body=await req.json();return db.from('notes').update({body:body.body}).eq('id',body.id);}"
+        contents = {'app/api/notes/route.ts': source, 'package.json': json.dumps({'dependencies': {'next': '15.3.0'}}),
+                    'supabase/migrations/001_notes.sql': case['sql']}
+        inventory = []
+        for path, text in contents.items():
+            dest = root / 'sources' / name / path
+            dest.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+            data = text.encode()
+            dest.write_bytes(data)
+            dest.chmod(0o600)
+            inventory.append(dict(path=path, bytes=len(data), sha256=hashlib.sha256(data).hexdigest()))
+        projects.append(dict(projectId=name, commitSha='AUTHORED_NOT_UPSTREAM_' + case['sqlSha256'], files=inventory,
+                             collectionStatus='COLLECTED_AUTHORED_GRADE_B', omitted=[dict(filePath='supabase/migrations/002_missing.sql', kind='FILE', status='LIMIT_EXCEEDED', reason='AUTHORED_MISSING_MIGRATION')] if omitted else []))
+    write(root / 'application-plan.json', dict(schemaVersion=1, projects=projects))
+    return dict(projects=len(projects), grade='B_AUTHORED_NOT_UPSTREAM_FIX', targetExecuted=False)
 
 
 def database():
@@ -165,8 +189,49 @@ def database():
                     exceptions.append(dict(force=force, role=role, operation=operation, expectedRows=count,
                                            sqlstate=r['sqlstate'], returned=got, state=state,
                                            match=r['sqlstate'] is None and got == ([2] if count else []) and state[0]['body'] == 'a' and state[1]['body'] == expected_body))
+        prerequisites = []
+        updates = 'CREATE POLICY u ON public.notes FOR UPDATE TO authenticated USING(true) WITH CHECK(true);'
+        setups = [
+            ('no-select-grant', 'GRANT UPDATE(body) ON public.notes TO authenticated;', [
+                ("UPDATE public.notes SET body='changed';", 2, []),
+                ("UPDATE public.notes SET body='changed' WHERE id=1;", '42501', []),
+                ("UPDATE public.notes SET body='changed' RETURNING body;", '42501', [])]),
+            ('column-select', 'GRANT UPDATE(body),SELECT(body) ON public.notes TO authenticated;CREATE POLICY r ON public.notes FOR SELECT TO authenticated USING(true);', [
+                ("UPDATE public.notes SET body='changed' RETURNING body;", 2, ['changed', 'changed']),
+                ("UPDATE public.notes SET body='changed' RETURNING id;", '42501', []),
+                ("UPDATE public.notes SET body='changed' WHERE id=1;", '42501', []),
+                ("UPDATE public.notes SET body='changed' WHERE body='a' RETURNING body;", 1, ['changed'])]),
+            ('no-select-policy', 'GRANT SELECT,UPDATE(body) ON public.notes TO authenticated;', [
+                ("UPDATE public.notes SET body='changed';", 2, []),
+                ("UPDATE public.notes SET body='changed' WHERE id=1;", 0, []),
+                ("UPDATE public.notes SET body='changed' RETURNING id;", 0, [])]),
+            ('owner-select-policy', 'GRANT SELECT,UPDATE ON public.notes TO authenticated;CREATE POLICY r ON public.notes FOR SELECT TO authenticated USING(auth.uid()=owner_id);', [
+                ("UPDATE public.notes SET body='changed' WHERE id=1 RETURNING id;", 1, ['1']),
+                ("UPDATE public.notes SET body='changed' WHERE id=2 RETURNING id;", 0, []),
+                (f"UPDATE public.notes SET owner_id='{B}' WHERE id=1 RETURNING id;", '42501', [])]),
+        ]
+        for name, acl, probes in setups:
+            sql('DROP TABLE public.notes;' + BASE + acl + updates)
+            for q, expected, returned in probes:
+                sql(f"TRUNCATE public.notes;INSERT INTO public.notes VALUES(1,'{A}','a','member'),(2,'{B}','b','member');")
+                before = json.loads(sql('SELECT jsonb_agg(n ORDER BY id) FROM public.notes n;')['lines'][0])
+                r = sql(q, 'authenticated', A)
+                lines = r.get('lines', [])
+                tag = re.fullmatch(r'UPDATE (\d+)', lines[-1]) if lines else None
+                count = int(tag[1]) if tag else None
+                got = lines[:-1] if tag else lines
+                after = json.loads(sql('SELECT jsonb_agg(n ORDER BY id) FROM public.notes n;')['lines'][0])
+                wanted = [dict(row) for row in before]
+                if isinstance(expected, int) and expected:
+                    for row in wanted[:expected]:
+                        row['body'] = 'changed'
+                matched = r['sqlstate'] == expected if isinstance(expected, str) else r['sqlstate'] is None and count == expected
+                prerequisites.append(dict(case=name, query=q, expected=expected, sqlstate=r['sqlstate'], affectedRows=count,
+                                          returned=got, before=before, after=after,
+                                          match=matched and got == returned and after == wanted))
         return dict(postgres=version, total=len(rows), matched=sum(r['match'] for r in rows), rows=rows,
                     exceptionChecks=exceptions, exceptionMatched=sum(r['match'] for r in exceptions),
+                    prerequisiteChecks=prerequisites, prerequisiteMatched=sum(r['match'] for r in prerequisites),
                     authUid='CURRENT_SETTING_STUB_NOT_SUPABASE_AUTH', userDatabaseAccessed=False, tcpListening=False,
                     externalSqlExecuted=False, requirements='AUTHORED_NOT_OWNER_APPROVED', clusterRemoved=True)
     finally:
@@ -177,12 +242,15 @@ def database():
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
-    p.add_argument('mode', choices=['static', 'database'])
+    p.add_argument('mode', choices=['static', 'database', 'export'])
     p.add_argument('--repo', type=Path)
     p.add_argument('--output', type=Path, required=True)
     args = p.parse_args()
+    if args.mode == 'export':
+        print(json.dumps(export(args.output)))
+        raise SystemExit(0)
     r = static(args.repo.resolve()) if args.mode == 'static' else database()
     write(outside(args.output), r)
-    print(json.dumps({k: v for k, v in r.items() if k not in ['rows', 'exceptionChecks']}))
-    if args.mode == 'database' and (r['matched'] != r['total'] or r['exceptionMatched'] != len(r['exceptionChecks'])):
+    print(json.dumps({k: v for k, v in r.items() if k not in ['rows', 'exceptionChecks', 'prerequisiteChecks']}))
+    if r['matched'] != r['total'] or args.mode == 'database' and (r['exceptionMatched'] != len(r['exceptionChecks']) or r['prerequisiteMatched'] != len(r['prerequisiteChecks'])):
         raise SystemExit(2)
