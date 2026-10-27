@@ -177,6 +177,25 @@ export function displayContexts(files, rows, deadline, translationContextComplet
         }
         return value!==undefined&&value.length<=250000?value:undefined;
       };
+      const closedChoices=(original,seen=new Set(),depth=0)=>{
+        tick();const n=unwrap(original);if(!n||depth>12||seen.has(n))return;
+        seen=new Set([...seen,n]);
+        const fixed=staticText(n);if(fixed!==undefined)return [fixed];
+        if(ts.isIdentifier(n)){
+          const d=declarationFor(n);
+          if(d&&ts.isVariableDeclaration(d)&&(d.parent.flags&ts.NodeFlags.Const)&&d.end<n.pos)
+            return closedChoices(d.initializer,seen,depth+1);
+        }
+        if(ts.isConditionalExpression(n)){
+          const c=unwrap(n.condition);
+          if(c.kind===ts.SyntaxKind.TrueKeyword||c.kind===ts.SyntaxKind.FalseKeyword)
+            return closedChoices(c.kind===ts.SyntaxKind.TrueKeyword?n.whenTrue:n.whenFalse,seen,depth+1);
+          const a=closedChoices(n.whenTrue,seen,depth+1),b=closedChoices(n.whenFalse,seen,depth+1);
+          if(a&&b){const choices=[...new Set([...a,...b])];
+            if(choices.length<=8&&choices.reduce((sum,s)=>sum+s.length,0)<=250000)return choices;
+          }
+        }
+      };
       row.excludedRedirectLines=[];row.excludedHtmlLines=[];row.htmlContexts=[];
       for(const n of nodes){
         tick();
@@ -195,7 +214,8 @@ export function displayContexts(files, rows, deadline, translationContextComplet
           &&ts.isPropertyAssignment(object.properties[0])&&name(object.properties[0].name)==='__html'
           &&passiveContainer&&!n.parent.properties.some(p=>ts.isJsxSpreadAttribute(p));
         const content=exact?unwrap(member(object,'__html')):undefined;
-        const fixed=staticText(content);let safe=fixed!==undefined&&passiveHtml(fixed,tick);
+        const fixed=staticText(content),choices=closedChoices(content);
+        let safe=!!choices&&choices.every(text=>passiveHtml(text,tick));
         if(!safe&&!providerMutation&&content&&ts.isCallExpression(content)&&ts.isIdentifier(content.expression)&&content.arguments.length===1&&ts.isStringLiteral(content.arguments[0])&&providers.length===1){
           const bound=unique(content.expression.text);
           const declaration=bound&&ts.isBindingElement(bound)?bound.parent.parent:undefined;

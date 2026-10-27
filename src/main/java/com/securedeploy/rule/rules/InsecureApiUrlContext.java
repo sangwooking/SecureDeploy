@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 /** Shared bounded string-context reconciliation; missing evidence never removes a warning. */
 @Component
 public final class InsecureApiUrlContext {
-    private static final String VERSION = "string-context-v6";
+    private static final String VERSION = "string-context-v7";
     private final TypeScriptAnalysisProperties properties;
     private final Semaphore capacity = new Semaphore(2);
     private final ObjectMapper mapper = new ObjectMapper();

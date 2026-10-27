@@ -9,6 +9,15 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
 class DisplayContextIntegrationTest {
+    @Test void closedPassiveChoicesSuppressOnlyTheirOwnWarning() {
+        String start="const View=()=> <div dangerouslySetInnerHTML={{__html:";
+        assertThat(scan(start+"flag?'<b>A</b>':'<p>B</p>'}}/>;","",true)).isEmpty();
+        var mixed=scan(start+"flag?'<b>A</b>':location.hash}}/>;","",true);
+        assertThat(mixed).hasSize(1);
+        assertThat(mixed.get(0).ruleId()).isEqualTo("REACT_DANGEROUS_HTML");
+        assertThat(mixed.get(0).analysisNote()).contains("SOURCE_LINK=NOT_ESTABLISHED");
+        assertThat(scan(start+"true?'<b>A</b>':'<img src=x onerror=run()>'}}/>;","",true)).isEmpty();
+    }
     private final String provider="""
             import i18n from 'i18next';
             const words={en:{translation:{

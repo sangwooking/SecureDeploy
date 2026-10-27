@@ -14,7 +14,7 @@ import { regexFlow } from './regex-flow.mjs';
 import {tsPaths} from './ts-paths.mjs';
 import {objectData} from './object-data.mjs';
 
-export const VERSION = 'ts-server-v35';
+export const VERSION = 'ts-server-v36';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -529,6 +529,11 @@ export function analyze(input, overrides = {}) {
     if (ts.isConditionalExpression(node)) {
       const condition = expr(node.condition, state), decision = truth(condition);
       if (decision !== undefined) return expr(decision ? node.whenTrue : node.whenFalse, state);
+      // Literals and reads of already-bound values cannot mutate the heap.
+      const inert=n=>{n=unwrap(n);return ts.isStringLiteralLike(n)||ts.isNumericLiteral(n)
+        ||ts.isIdentifier(n)&&state.vars.has(n.text)
+        ||[ts.SyntaxKind.TrueKeyword,ts.SyntaxKind.FalseKeyword,ts.SyntaxKind.NullKeyword].includes(n.kind);};
+      if(inert(node.whenTrue)&&inert(node.whenFalse))return union(expr(node.whenTrue,state),expr(node.whenFalse,state));
       const a = fork(state), b = fork(state);
       guardBranches(node.condition, condition, a, b);
       const left = expr(node.whenTrue, a), right = expr(node.whenFalse, b);
@@ -1176,7 +1181,7 @@ export function analyze(input, overrides = {}) {
   writePass?.();
   phase='ENTRY_DISCOVERY';
   entryContracts({ts,modules,tick,note,loc,append,result});
-  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse});
+  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp});
   nodeSupport.discover();
   phase='FLOW';
   for (const mod of modules.values()) for (const entry of mod.entries) {

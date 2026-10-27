@@ -7,8 +7,7 @@ for(const c of injection24Cases)test('injection precision: '+c.id,()=>{
  const r=analyze(c.input),hits=target(r,c);
  assert.equal(hits.length,c.truth==='RISK'?1:0,JSON.stringify(r.nodeUses));
  if(hits.length){assert.equal(hits[0].disposition,'REVIEW_REQUIRED');assert.ok(hits[0].source);assert.ok(hits[0].sink);}
- if(c.truth==='NORMAL'&&!c.knownGap)assert.ok(r.nodeUses.some(u=>['STATIC_OR_DATA_ONLY','STATIC_OR_STRING_FILTER','SANITIZE_FILTER_DECLARED'].includes(u.kind)),JSON.stringify(r.nodeUses));
- if(c.knownGap)assert.ok(!r.nodeUses.some(u=>u.ruleId==='JS_SEQUELIZE_SQL_INPUT_FLOW'));
+ if(c.truth==='NORMAL')assert.ok(r.nodeUses.some(u=>['STATIC_OR_DATA_ONLY','STATIC_OR_STRING_FILTER','SANITIZE_FILTER_DECLARED'].includes(u.kind)),JSON.stringify(r.nodeUses));
  if(c.truth==='UNKNOWN'){
   const rule=c.track==='SQL'?'JS_SEQUELIZE_SQL_INPUT_FLOW':'JS_MONGOOSE_SELECTOR_INPUT_FLOW';
   assert.ok(!r.nodeUses.some(u=>u.ruleId===rule&&['STATIC_OR_DATA_ONLY','STATIC_OR_STRING_FILTER','SANITIZE_FILTER_DECLARED'].includes(u.kind)));

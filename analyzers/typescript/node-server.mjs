@@ -9,6 +9,7 @@ import {fieldValidation} from './field-validation.mjs';
 export function nodeServer(api) {
   const {ts,modules,limits,result,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames}=api;
   const loaded=new Map(), loading=new Set(), apps=[], routes=[];
+  const httpModules=new Map();
   const resolver=moduleResolution(api);
   const object=tag=>value(tag,[],{ref:{properties:new Map(),trace:[],unknown:false,nodeIdentity:{}}});
   const literal=v=>v?.tag==='constant'&&!v.unknown;
@@ -54,7 +55,11 @@ export function nodeServer(api) {
     if(spec==='mongoose')return mongoose.dependency(mod);
     if(spec==='validator')return fields.dependency(mod);
     if(['child_process','node:child_process'].includes(spec))return native('node-child-process',mod);
-    if(['http','node:http','https','node:https'].includes(spec))return native('node-http',mod);
+    if(['http','node:http','https','node:https'].includes(spec)){
+      const key=spec.replace(/^node:/,'');
+      if(!httpModules.has(key))httpModules.set(key,native('node-http',mod));
+      return httpModules.get(key);
+    }
     const target=findModule(mod,spec,mode);
     if(!target){
       note(mod,'NODE_MODULE_RESOLUTION_UNKNOWN');
@@ -106,6 +111,7 @@ export function nodeServer(api) {
     if(base.native==='mongodb'&&key==='MongoClient')return native('mongo-client',base.nativeMod,base.ref);
     if(base.native==='express'&&key==='Router')return native('router',base.nativeMod,base.ref);
     if(base.native==='sequelize'&&['Sequelize','default'].includes(key))return native('sequelize',base.nativeMod,base.ref);
+    if(base.native==='node-http'&&key==='get')return native('node-http-get',base.nativeMod,base.ref);
     if(base.native==='node-child-process'&&['exec','execSync','execFile','execFileSync','spawn','spawnSync'].includes(key))return native('node-child-'+key,base.nativeMod,base.ref);
     if(base.tag==='express-router'&&key==='locals'){
       if(!base.ref.properties.has(key))base.ref.properties.set(key,object('express-locals'));
@@ -169,6 +175,16 @@ export function nodeServer(api) {
     const validation=fields.call(node,receiver,args,state);if(validation)return validation;
     const rawQuery=sequelize.call(node,receiver,args,state,callable);if(rawQuery)return rawQuery;
     const selector=mongoose.call(node,callee,receiver,args,state,global,callable);if(selector)return selector;
+    if(callable?.native==='node-http-get'&&ts.isCallExpression(node)){
+      if(callable.unknown||callable.ref?.unknown){note(state.mod,'NODE_HTTP_GET_ORIGIN_UNKNOWN');return {value:unknown()};}
+      const destination=args[0]??unknown();
+      const supported=args.length===1&&(['input','url','urlText','constant'].includes(destination.tag)
+        ||!destination.ref&&(typeof destination.urlPrefix==='string'||destination.destination));
+      if(!supported)note(state.mod,'NODE_HTTP_GET_OVERLOAD_UNSUPPORTED');
+      if(!state.context.setup)api.observeHttp({...destination,unknown:destination.unknown||!supported},node,state);
+      note(state.mod,'NODE_HTTP_GET_REQUEST_NOT_RUNTIME_SUCCESS');
+      return {value:unknown()};
+    }
     const method=ts.isPropertyAccessExpression(callee)?callee.name.text:undefined;
     if(global&&ts.isIdentifier(callee)&&callee.text==='require'&&ts.isCallExpression(node))
       return {value:args.length===1&&literal(args[0])&&typeof args[0].constant==='string'
