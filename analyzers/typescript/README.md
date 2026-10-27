@@ -20,7 +20,7 @@ exports/imports, conditional exports, wildcard barrels, class/event initializati
 or general Promise execution. Existing depth, AST, step, output, file, time and
 memory budgets apply. Parsing, static module references, reached functions and
 Source/Sink evidence remain different measurements. No whole-project safety or
-complete call graph is claimed. Finding IDs, RLS v4, Deployment v2 and Risk formulas
+complete call graph is claimed. Rule IDs, RLS v4, Deployment v2 and Risk formulas
 are unchanged; new reached candidates retain REVIEW_REQUIRED/NOT_COMPARED.
 
 Contracts: [TypeScript modules](https://www.typescriptlang.org/docs/handbook/2/modules.html),
