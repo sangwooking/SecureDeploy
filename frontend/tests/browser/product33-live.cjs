@@ -138,6 +138,9 @@ function expiredToken(user) {
       assert.equal(await page.locator('#source-code').inputValue(), files['static/example.html'].toString('utf8'));
       assert.equal(await page.locator('.source-edit-pane script').count(), 0);
       assert.equal(await page.evaluate(() => window.__sourceExecuted), undefined);
+      await pane(page, '코드');
+      assert.ok(await page.locator('#source-code').isVisible());
+      await page.screenshot({ path: path.join(output, `editor-${width}.png`), fullPage: true });
       for (const endpoint of [base, `${base}/files/${file.id}`, `${base}/files/${file.id}/diff`, `${base}/patches`, `${base}/patches/not-owned`])
         await call('GET', endpoint, b.accessToken, undefined, 404);
       for (const [method, endpoint, data] of [

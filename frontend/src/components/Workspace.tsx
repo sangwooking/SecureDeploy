@@ -15,6 +15,7 @@ export function Workspace({ session, onLogout }: { session: AuthResponse; onLogo
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [revision, setRevision] = useState(0);
+  const [notice, setNotice] = useState('');
   const [policy, setPolicy] = useState<UploadPolicy | null>(null);
   const [policyError, setPolicyError] = useState('');
   const [policyRetry, setPolicyRetry] = useState(0);
@@ -45,6 +46,9 @@ export function Workspace({ session, onLogout }: { session: AuthResponse; onLogo
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [route.page, revision]);
+  useEffect(() => {
+    if (route.page === 'projects' && notice && !loading) document.getElementById('workspace-main')?.focus();
+  }, [route.page, notice, loading]);
   const currentPage = route.page === 'project' ? 'projects' : route.page;
   return <main className="app-shell"><a className="skip-link" href="#workspace-main" onClick={event => { event.preventDefault(); document.getElementById('workspace-main')?.focus(); }}>본문으로 이동</a><section className="workspace">
     <header className="masthead"><div><p className="eyebrow">프로젝트 보안 관리</p><h1><a className="brand-link" href="#/dashboard">SecureDeploy</a></h1></div>
@@ -57,7 +61,9 @@ export function Workspace({ session, onLogout }: { session: AuthResponse; onLogo
         {loading && <p role="status">내 프로젝트를 불러오고 있습니다.</p>}
         {error && <div><p role="alert" className="error-message">{error}</p><button className="secondary-button" onClick={() => setRevision(value => value + 1)}>다시 불러오기</button></div>}
         {data && (route.page === 'dashboard' ? <WorkspaceSummary data={data} name={session.user.name} /> : <>
-          <header className="section-heading page-heading"><div><p className="eyebrow">프로젝트</p><h2>내 프로젝트 ({data.projectCount})</h2></div><a className="primary-button" href="#/new">새 프로젝트 등록</a></header><ProjectList projects={data.projects} />
+          <header className="section-heading page-heading"><div><p className="eyebrow">프로젝트</p><h2>내 프로젝트 ({data.projectCount})</h2></div><div className="project-list-actions"><button className="secondary-button" onClick={() => setRevision(value => value + 1)}>새로고침</button><a className="primary-button" href="#/new">새 프로젝트 등록</a></div></header>
+          {notice && <p role="status" className="feedback-message feedback-success">{notice}</p>}
+          <ProjectList projects={data.projects} onDeleted={() => { setNotice('프로젝트와 연결된 분석 기록을 삭제했습니다.'); setRevision(value => value + 1); }} />
         </>)}
       </>}
       {route.page === 'new' && <NewProjectAnalysis policy={policy} policyError={policyError} retryPolicy={() => setPolicyRetry(value => value + 1)}

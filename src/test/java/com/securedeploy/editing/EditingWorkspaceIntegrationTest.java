@@ -72,6 +72,32 @@ class EditingWorkspaceIntegrationTest {
         mvc.perform(get("/api/editing-workspaces/unknown")).andExpect(status().isUnauthorized());
         mvc.perform(put("/api/editing-workspaces/a/files/b").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content("x".repeat(1024*1024+1))).andExpect(status().isPayloadTooLarge());
     }
+    @Test void projectDeletionRefusesOpenWorkspaceWithoutMutatingItAndPreservesSecurityStatuses() throws Exception {
+        long projectId = reviews.findById(reviewId).orElseThrow().getProject().getId();
+        var workspace = create();
+        String base = "/api/editing-workspaces/" + workspace.path("id").asText();
+        String project = "/api/projects/" + projectId;
+        var before = mvc.perform(get("/api/reviews/" + reviewId).header("Authorization", "Bearer " + owner))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
+        try {
+            mvc.perform(delete(project)).andExpect(status().isUnauthorized());
+            mvc.perform(delete(project).header("Authorization", "Bearer " + other)).andExpect(status().isForbidden());
+            mvc.perform(delete("/api/projects/" + Long.MAX_VALUE).header("Authorization", "Bearer " + owner))
+                    .andExpect(status().isNotFound());
+            mvc.perform(delete(project).header("Authorization", "Bearer " + owner)).andExpect(status().isConflict());
+            var current = json.readTree(mvc.perform(get(base).header("Authorization", "Bearer " + owner))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+            assertEquals(workspace, current);
+            assertArrayEquals(before, mvc.perform(get("/api/reviews/" + reviewId).header("Authorization", "Bearer " + owner))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        } finally {
+            mvc.perform(delete(base).header("Authorization", "Bearer " + owner)).andExpect(status().isOk());
+        }
+        mvc.perform(delete(project).header("Authorization", "Bearer " + owner)).andExpect(status().isOk());
+        assertFalse(projects.existsById(projectId));
+        assertFalse(reviews.existsById(reviewId));
+        mvc.perform(delete(project).header("Authorization", "Bearer " + owner)).andExpect(status().isNotFound());
+    }
     @Test void githubMockAcquisitionUsesStoredRevisionAndRevokedAccessFails() throws Exception {
         var review=reviews.findById(reviewId).orElseThrow(); var project=review.getProject();
         var github = new ReviewEntity("github",ReviewSourceType.GITHUB,"https://github.com/fixture/editor",1,0,100,"READY"); github.assignProject(project);

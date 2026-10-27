@@ -3,7 +3,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict');
 const fixture=require('../result-fixture.cjs'),workspaceFixture=require('./workspace-fixture.cjs');
 const origin=process.env.FRONTEND_URL||'http://localhost:5173',baseline=process.env.CAPTURE_BASELINE==='1';
-(async()=>{const browser=await chromium.launch();try{for(const width of [1440,390,320]){
+(async()=>{const browser=await chromium.launch();try{for(const width of [1440,1280,768,390,320]){
  const page=await browser.newPage({viewport:{width,height:1000}}),errors=[],outbound=[];
  const result=fixture();result.projectName='보안 점검 서비스';
  const data=workspaceFixture('/api/workspace',result),base=data.projects[0];
@@ -22,7 +22,7 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173',baseline=process.
   assert.deepEqual(await rows.first().locator('dd').allTextContents(),['2','7','13']);
   for(const i of [1,2])assert.deepEqual(await rows.nth(i).locator('dd').allTextContents(),['미평가','미평가','미평가']);
   assert.deepEqual(await rows.first().locator('dt').allTextContents(),['반드시 처리','배포 전 확인','수정 권장']);
-  for(const row of await rows.all()){assert.equal(await row.locator('a').count(),1);assert.equal(await row.locator('button,details,p').count(),0);}
+  for(const row of await rows.all()){assert.equal(await row.locator('a:visible').count(),1);assert.equal(await row.locator('summary').count(),1);assert.equal(await row.locator('p').count(),0);}
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  }
  await page.screenshot({path:`/private/tmp/securedeploy-project-list-${baseline?'before':'after'}-${width}.png`,fullPage:true});
@@ -30,4 +30,4 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173',baseline=process.
  await page.getByRole('navigation',{name:'프로젝트 메뉴'}).waitFor();assert.ok(page.url().includes('/projects/7/overview'));
  await page.getByRole('navigation',{name:'프로젝트 메뉴'}).getByRole('link',{name:'발견된 문제',exact:true}).click();await page.getByRole('navigation',{name:'분석 결과 메뉴'}).waitFor();
  assert.deepEqual(errors,[]);assert.deepEqual(outbound,[]);await page.close();
-}console.log(JSON.stringify({passed:true,baseline,widths:[1440,390,320],transport:'MOCK_ONLY',nameLinkKeyboardNavigation:true}));}finally{await browser.close();}})().catch(e=>{console.error(e.stack);process.exitCode=1;});
+}console.log(JSON.stringify({passed:true,baseline,widths:[1440,1280,768,390,320],transport:'MOCK_ONLY',nameLinkKeyboardNavigation:true}));}finally{await browser.close();}})().catch(e=>{console.error(e.stack);process.exitCode=1;});

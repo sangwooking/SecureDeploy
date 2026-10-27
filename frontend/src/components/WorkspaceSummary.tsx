@@ -2,6 +2,7 @@ import type { WorkspaceResponse, WorkspaceProject } from '../types/workspace';
 import type { ReviewHistoryResponse, ProgressAssessment } from '../types/securityReview';
 import { deploymentLabels } from './reviewPresentation';
 import { projectLink } from './workspaceRoute';
+import { ProjectManagement } from './ProjectManagement';
 
 export function reviewStatus(review?: ReviewHistoryResponse | null): string {
   return !review ? '분석 결과 없음' : review.riskSummary ? deploymentLabels[review.riskSummary.deploymentAssessment] : '위험 평가 미저장';
@@ -25,11 +26,13 @@ export function ProgressBrief({ progress }: { progress: WorkspaceProject['latest
   </p>{progress.status === 'PARTIAL' && <p>일부 범위는 비교하지 못했습니다. 확인 불가는 해결로 처리하지 않습니다.</p>}</div>;
 }
 
-export function ProjectList({ projects }: { projects: WorkspaceProject[] }) {
+export function ProjectList({ projects, onDeleted }: { projects: WorkspaceProject[]; onDeleted?: () => void }) {
   if (!projects.length) return <div className="empty-state"><p>아직 관리 중인 프로젝트가 없습니다.</p><a href="#/new">새 프로젝트 분석</a></div>;
   return <div className="workspace-project-list">{projects.map(project => <article className="workspace-project-row" key={project.projectId}>
-    <h3><a href={projectLink(project.projectId)}>{project.name}</a></h3>
+    <div className="project-row-identity"><h3><a href={projectLink(project.projectId)} title={project.name}>{project.name}</a></h3>
+      <span className="project-row-status">{reviewStatus(project.latestReview)}</span></div>
     <PriorityCounts assessment={project.latestReview?.riskSummary} compact />
+    <ProjectManagement project={project} onDeleted={onDeleted} />
   </article>)}</div>;
 }
 

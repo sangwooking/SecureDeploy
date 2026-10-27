@@ -14,6 +14,7 @@ import com.securedeploy.project.coverage.CoverageException;
 import com.securedeploy.project.coverage.CoverageSummary;
 import com.securedeploy.project.service.ProjectScanner;
 import com.securedeploy.project.service.ProjectService;
+import com.securedeploy.project.service.ProjectLifecycleGuard;
 import com.securedeploy.review.dto.ReviewHistoryResponse;
 import com.securedeploy.review.dto.SecurityReviewResponse;
 import com.securedeploy.review.model.ReviewSourceType;
@@ -62,7 +63,30 @@ public class SecurityReviewFacade {
     private final com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer typeScriptAnalyzer;
     private final com.securedeploy.analysis.python.PythonServerAnalyzer pythonAnalyzer;
     private final com.securedeploy.analysis.javaflow.JavaSqlAnalyzer javaAnalyzer;
+    private final ProjectLifecycleGuard lifecycle;
 
+    public SecurityReviewFacade(UploadService uploadService, ZipExtractService zipExtractService,
+            GitHubRepositoryService gitHubRepositoryService, ProjectScanner projectScanner,
+            VulnerabilityRuleEngine ruleEngine, FalsePositiveAnalyzer falsePositiveAnalyzer,
+            SecurityReviewService securityReviewService, ReviewPersistenceService reviewPersistenceService,
+            SnippetCollector snippetCollector, ProjectService projectService, CurrentUserService currentUserService,
+            ScaService scaService, ThreatIntelligenceService threatIntelligenceService,
+            com.securedeploy.ai.remediation.RemediationSnapshotService remediationService,
+            SecuritySliceCollector sliceCollector, SemanticSnapshotService semanticService,
+            com.securedeploy.project.progress.ComparisonContextCollector comparisonCollector,
+            com.securedeploy.project.progress.ReviewProgressService progressService,
+            com.securedeploy.github.app.PrivateGitHubSourceService privateGitHubSources,
+            com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer typeScriptAnalyzer,
+            com.securedeploy.analysis.python.PythonServerAnalyzer pythonAnalyzer,
+            com.securedeploy.analysis.javaflow.JavaSqlAnalyzer javaAnalyzer) {
+        this(uploadService, zipExtractService, gitHubRepositoryService, projectScanner, ruleEngine,
+                falsePositiveAnalyzer, securityReviewService, reviewPersistenceService, snippetCollector,
+                projectService, currentUserService, scaService, threatIntelligenceService, remediationService,
+                sliceCollector, semanticService, comparisonCollector, progressService, privateGitHubSources,
+                typeScriptAnalyzer, pythonAnalyzer, javaAnalyzer, new ProjectLifecycleGuard());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
     public SecurityReviewFacade(UploadService uploadService, ZipExtractService zipExtractService,
                                 GitHubRepositoryService gitHubRepositoryService,
                                 ProjectScanner projectScanner, VulnerabilityRuleEngine ruleEngine,
@@ -80,7 +104,8 @@ public class SecurityReviewFacade {
                                 com.securedeploy.github.app.PrivateGitHubSourceService privateGitHubSources,
                                 com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer typeScriptAnalyzer,
                                 com.securedeploy.analysis.python.PythonServerAnalyzer pythonAnalyzer,
-                                com.securedeploy.analysis.javaflow.JavaSqlAnalyzer javaAnalyzer) {
+                                com.securedeploy.analysis.javaflow.JavaSqlAnalyzer javaAnalyzer,
+                                ProjectLifecycleGuard lifecycle) {
         this.uploadService = uploadService;
         this.zipExtractService = zipExtractService;
         this.gitHubRepositoryService = gitHubRepositoryService;
@@ -103,6 +128,7 @@ public class SecurityReviewFacade {
         this.typeScriptAnalyzer = typeScriptAnalyzer;
         this.pythonAnalyzer = pythonAnalyzer;
         this.javaAnalyzer = javaAnalyzer;
+        this.lifecycle = lifecycle == null ? new ProjectLifecycleGuard() : lifecycle;
     }
 
     public SecurityReviewResponse reviewUploadedZip(MultipartFile file) {
@@ -110,15 +136,22 @@ public class SecurityReviewFacade {
     }
 
     public SecurityReviewResponse reviewUploadedZip(MultipartFile file, ScanMode scanMode) {
-        UploadedArchive archive = uploadService.saveZip(file);
-
-        try {
-            ExtractedProject extractedProject = zipExtractService.extract(archive);
-            AnalysisOutcome outcome = reviewProject(extractedProject.projectName(), extractedProject.projectRoot(), scanMode, extractedProject.sourceExclusions());
-            ProjectEntity project = projectService.resolveOrCreateProjectForZip(currentUserService.currentUserId(), extractedProject.projectName());
-            return saveWithRemediation(project, outcome, ReviewSourceType.ZIP, null, scanMode);
-        } finally {
-            FileUtils.deleteRecursively(archive.workspacePath());
+        Long userId = currentUserService.currentUserId();
+        try (var acquisition = lifecycle.zipAcquisition(userId)) {
+            UploadedArchive archive = uploadService.saveZip(file);
+            ProjectLifecycleGuard.Lease lease = null;
+            try {
+                ExtractedProject extractedProject = zipExtractService.extract(archive);
+                lease = lifecycle.zip(userId, extractedProject.projectName());
+                acquisition.close();
+                AnalysisOutcome outcome = reviewProject(extractedProject.projectName(), extractedProject.projectRoot(), scanMode, extractedProject.sourceExclusions());
+                ProjectEntity project = projectService.resolveOrCreateProjectForZip(userId, extractedProject.projectName());
+                return saveWithRemediation(project, outcome, ReviewSourceType.ZIP, null, scanMode);
+            } finally {
+                var cleanupLease = lease == null ? acquisition : lease;
+                try { cleanupLease.cleanup(archive.workspacePath(), () -> FileUtils.deleteRecursively(archive.workspacePath())); }
+                finally { if (lease != null) lease.close(); }
+            }
         }
     }
 
@@ -127,14 +160,17 @@ public class SecurityReviewFacade {
     }
 
     public SecurityReviewResponse reviewGitHubRepository(String repositoryUrl, ScanMode scanMode) {
-        ClonedRepository clonedRepository = gitHubRepositoryService.clonePublicRepository(repositoryUrl);
+        Long userId = currentUserService.currentUserId();
+        try (var lease = lifecycle.github(userId, repositoryUrl)) {
+            ClonedRepository clonedRepository = gitHubRepositoryService.clonePublicRepository(repositoryUrl);
 
-        try {
-            AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot(), scanMode, clonedRepository.sourceExclusions());
-            ProjectEntity project = projectService.resolveOrCreateProjectForGithub(currentUserService.currentUserId(), clonedRepository.repositoryUrl());
-            return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), scanMode, clonedRepository.sourceMetadata());
-        } finally {
-            FileUtils.deleteRecursively(clonedRepository.workspacePath());
+            try {
+                AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot(), scanMode, clonedRepository.sourceExclusions());
+                ProjectEntity project = projectService.resolveOrCreateProjectForGithub(userId, clonedRepository.repositoryUrl());
+                return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), scanMode, clonedRepository.sourceMetadata());
+            } finally {
+                lease.cleanup(clonedRepository.workspacePath(), () -> FileUtils.deleteRecursively(clonedRepository.workspacePath()));
+            }
         }
     }
 
@@ -145,14 +181,17 @@ public class SecurityReviewFacade {
 
     public SecurityReviewResponse reviewUploadedZip(Long projectId, MultipartFile file, ScanMode scanMode) {
         ProjectEntity project = projectService.findOwnedProjectForRescan(projectId, currentUserService.currentUserId(), ReviewSourceType.ZIP);
-        UploadedArchive archive = uploadService.saveZip(file);
+        try (var lease = lifecycle.work(projectId)) {
+            project = projectService.findOwnedProjectForRescan(projectId, currentUserService.currentUserId(), ReviewSourceType.ZIP);
+            UploadedArchive archive = uploadService.saveZip(file);
 
-        try {
-            ExtractedProject extractedProject = zipExtractService.extract(archive);
-            AnalysisOutcome outcome = reviewProject(extractedProject.projectName(), extractedProject.projectRoot(), scanMode, extractedProject.sourceExclusions());
-            return saveWithRemediation(project, outcome, ReviewSourceType.ZIP, null, scanMode);
-        } finally {
-            FileUtils.deleteRecursively(archive.workspacePath());
+            try {
+                ExtractedProject extractedProject = zipExtractService.extract(archive);
+                AnalysisOutcome outcome = reviewProject(extractedProject.projectName(), extractedProject.projectRoot(), scanMode, extractedProject.sourceExclusions());
+                return saveWithRemediation(project, outcome, ReviewSourceType.ZIP, null, scanMode);
+            } finally {
+                lease.cleanup(archive.workspacePath(), () -> FileUtils.deleteRecursively(archive.workspacePath()));
+            }
         }
     }
 
@@ -162,21 +201,24 @@ public class SecurityReviewFacade {
 
     public SecurityReviewResponse reviewGitHubRepository(Long projectId, String repositoryUrl, ScanMode scanMode) {
         ProjectEntity project = projectService.findOwnedProjectForRescan(projectId, currentUserService.currentUserId(), ReviewSourceType.GITHUB);
-        if (project.getGithubRepositoryId() != null) {
-            return reviewConnectedGitHub(projectId, project.getGithubInstallationId(), project.getGithubRepositoryId(), scanMode);
-        }
-        String requested = gitHubRepositoryService.validateAndNormalizeUrl(repositoryUrl).replaceFirst("\\.git$", "");
-        String registered = gitHubRepositoryService.validateAndNormalizeUrl(project.getRepositoryUrl()).replaceFirst("\\.git$", "");
-        if (!requested.equalsIgnoreCase(registered)) {
-            throw new SecureDeployException(HttpStatus.BAD_REQUEST, "등록된 GitHub 저장소만 다시 검사할 수 있습니다.");
-        }
-        ClonedRepository clonedRepository = gitHubRepositoryService.clonePublicRepository(project.getRepositoryUrl());
+        try (var lease = lifecycle.work(projectId)) {
+            project = projectService.findOwnedProjectForRescan(projectId, currentUserService.currentUserId(), ReviewSourceType.GITHUB);
+            if (project.getGithubRepositoryId() != null) {
+                return reviewConnectedGitHub(projectId, project.getGithubInstallationId(), project.getGithubRepositoryId(), scanMode);
+            }
+            String requested = gitHubRepositoryService.validateAndNormalizeUrl(repositoryUrl).replaceFirst("\\.git$", "");
+            String registered = gitHubRepositoryService.validateAndNormalizeUrl(project.getRepositoryUrl()).replaceFirst("\\.git$", "");
+            if (!requested.equalsIgnoreCase(registered)) {
+                throw new SecureDeployException(HttpStatus.BAD_REQUEST, "등록된 GitHub 저장소만 다시 검사할 수 있습니다.");
+            }
+            ClonedRepository clonedRepository = gitHubRepositoryService.clonePublicRepository(project.getRepositoryUrl());
 
-        try {
-            AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot(), scanMode, clonedRepository.sourceExclusions());
-            return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), scanMode, clonedRepository.sourceMetadata());
-        } finally {
-            FileUtils.deleteRecursively(clonedRepository.workspacePath());
+            try {
+                AnalysisOutcome outcome = reviewProject(clonedRepository.repositoryName(), clonedRepository.repositoryRoot(), scanMode, clonedRepository.sourceExclusions());
+                return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clonedRepository.repositoryUrl(), scanMode, clonedRepository.sourceMetadata());
+            } finally {
+                lease.cleanup(clonedRepository.workspacePath(), () -> FileUtils.deleteRecursively(clonedRepository.workspacePath()));
+            }
         }
     }
 
@@ -191,12 +233,15 @@ public class SecurityReviewFacade {
             if (!Long.valueOf(repositoryId).equals(project.getGithubRepositoryId()))
                 throw com.securedeploy.github.app.GitHubAppException.denied();
         }
-        ClonedRepository clone = privateGitHubSources.collect(userId, installationId, repositoryId);
-        try {
-            AnalysisOutcome outcome = reviewProject(clone.repositoryName(), clone.repositoryRoot(), scanMode, clone.sourceExclusions());
-            ProjectEntity project = projectService.resolveConnectedGitHubProject(userId, projectId, clone.sourceMetadata());
-            return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clone.repositoryUrl(), scanMode, clone.sourceMetadata());
-        } finally { FileUtils.deleteRecursively(clone.workspacePath()); }
+        try (var lease = projectId == null ? lifecycle.connected(userId, repositoryId) : lifecycle.work(projectId)) {
+            if (projectId != null) projectService.findOwnedProjectForRescan(projectId, userId, ReviewSourceType.GITHUB);
+            ClonedRepository clone = privateGitHubSources.collect(userId, installationId, repositoryId);
+            try {
+                AnalysisOutcome outcome = reviewProject(clone.repositoryName(), clone.repositoryRoot(), scanMode, clone.sourceExclusions());
+                ProjectEntity project = projectService.resolveConnectedGitHubProject(userId, projectId, clone.sourceMetadata());
+                return saveWithRemediation(project, outcome, ReviewSourceType.GITHUB, clone.repositoryUrl(), scanMode, clone.sourceMetadata());
+            } finally { lease.cleanup(clone.workspacePath(), () -> FileUtils.deleteRecursively(clone.workspacePath())); }
+        }
     }
 
     private SecurityReviewResponse saveWithRemediation(ProjectEntity project, AnalysisOutcome outcome,
@@ -207,11 +252,13 @@ public class SecurityReviewFacade {
     private SecurityReviewResponse saveWithRemediation(ProjectEntity project, AnalysisOutcome outcome,
             ReviewSourceType type, String repositoryUrl, ScanMode scanMode,
             com.securedeploy.github.model.GitHubSourceSnapshot source) {
-        var response = source == null ? outcome.response() : outcome.response().withSourceMetadata(source.analyzedNow());
-        var saved = reviewPersistenceService.saveReview(project, response, type, repositoryUrl,
-                outcome.snippetGroup(), outcome.intelligence(), scanMode, outcome.comparisonContext());
-        var guided = remediationService.complete(saved, outcome.snippetGroup(), scanMode == ScanMode.AI_ENHANCED);
-        return progressService.complete(semanticService.complete(guided, scanMode, outcome.slices()));
+        try (var lease = lifecycle.work(project.getId())) {
+            var response = source == null ? outcome.response() : outcome.response().withSourceMetadata(source.analyzedNow());
+            var saved = reviewPersistenceService.saveReview(project, response, type, repositoryUrl,
+                    outcome.snippetGroup(), outcome.intelligence(), scanMode, outcome.comparisonContext());
+            var guided = remediationService.complete(saved, outcome.snippetGroup(), scanMode == ScanMode.AI_ENHANCED);
+            return progressService.complete(semanticService.complete(guided, scanMode, outcome.slices()));
+        }
     }
 
     public SecurityReviewResponse findReviewDetail(Long reviewId) {

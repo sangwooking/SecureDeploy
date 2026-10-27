@@ -3,6 +3,7 @@ package com.securedeploy.editing;
 import com.securedeploy.auth.service.*;
 import com.securedeploy.global.error.SecureDeployException;
 import com.securedeploy.persistence.entity.ReviewEntity;
+import com.securedeploy.project.service.ProjectLifecycleGuard;
 import com.securedeploy.review.model.ReviewSourceType;
 import jakarta.annotation.PreDestroy;
 import java.io.*;
@@ -43,17 +44,21 @@ public class EditingWorkspaceService {
     private static final class State {
         final String id = UUID.randomUUID().toString();
         final long user, review;
+        final long project;
+        final ProjectLifecycleGuard.Lease lease;
         final Instant created, expires;
         final String source, identity;
         final List<StoredFile> files;
         final Map<String,WorkspacePatch.Session> patches = new LinkedHashMap<>();
         long revision = 1;
-        State(long user, long review, Instant now, String source, String identity, List<SourceArchive.Entry> entries) {
+        State(long user, long review, long project, ProjectLifecycleGuard.Lease lease, Instant now,
+                String source, String identity, List<SourceArchive.Entry> entries) {
             this.user = user; this.review = review; this.created = now; this.expires = now.plusSeconds(1800);
+            this.project = project; this.lease = lease;
             this.source = source; this.identity = identity;
             this.files = entries.stream().sorted(Comparator.comparing(SourceArchive.Entry::path)).map(StoredFile::new).toList();
         }
-        void clear() { files.forEach(StoredFile::clear); patches.clear(); }
+        void clear() { try { files.forEach(StoredFile::clear); patches.clear(); } finally { lease.close(); } }
     }
     private final Map<String, State> states = new HashMap<>();
     private final Set<Long> creating = new HashSet<>();
@@ -63,17 +68,31 @@ public class EditingWorkspaceService {
     private final ResponsePatchValidator responsePatches;
     private final Clock clock;
     private final ScheduledExecutorService expiry;
+    private final ProjectLifecycleGuard lifecycle;
+    private boolean closed;
 
+    public EditingWorkspaceService(ReviewAccessService reviews, CurrentUserService users, EditingSourceService sources,
+            ResponsePatchValidator responsePatches) {
+        this(reviews, users, sources, responsePatches, new ProjectLifecycleGuard());
+    }
     @org.springframework.beans.factory.annotation.Autowired
-    public EditingWorkspaceService(ReviewAccessService reviews, CurrentUserService users, EditingSourceService sources,ResponsePatchValidator responsePatches) {
-        this(reviews, users, sources, Clock.systemUTC(),responsePatches);
+    public EditingWorkspaceService(ReviewAccessService reviews, CurrentUserService users, EditingSourceService sources,
+            ResponsePatchValidator responsePatches, ProjectLifecycleGuard lifecycle) {
+        this(reviews, users, sources, Clock.systemUTC(), responsePatches, lifecycle);
     }
     EditingWorkspaceService(ReviewAccessService reviews, CurrentUserService users, EditingSourceService sources, Clock clock) {
-        this(reviews,users,sources,clock,new ResponsePatchValidator(new com.securedeploy.analysis.typescript.TypeScriptAnalysisProperties()));
+        this(reviews, users, sources, clock, new ProjectLifecycleGuard());
     }
-    private EditingWorkspaceService(ReviewAccessService reviews, CurrentUserService users, EditingSourceService sources, Clock clock,ResponsePatchValidator responsePatches) {
+    EditingWorkspaceService(ReviewAccessService reviews, CurrentUserService users, EditingSourceService sources,
+            Clock clock, ProjectLifecycleGuard lifecycle) {
+        this(reviews, users, sources, clock,
+                new ResponsePatchValidator(new com.securedeploy.analysis.typescript.TypeScriptAnalysisProperties()), lifecycle);
+    }
+    private EditingWorkspaceService(ReviewAccessService reviews, CurrentUserService users, EditingSourceService sources,
+            Clock clock, ResponsePatchValidator responsePatches, ProjectLifecycleGuard lifecycle) {
         this.reviews = reviews; this.users = users; this.sources = sources; this.clock = clock;
         this.responsePatches=responsePatches;
+        this.lifecycle = lifecycle == null ? new ProjectLifecycleGuard() : lifecycle;
         expiry = Executors.newSingleThreadScheduledExecutor(r -> { var t = new Thread(r, "editing-expiry"); t.setDaemon(true); return t; });
         expiry.scheduleWithFixedDelay(this::expire, 15, 15, TimeUnit.SECONDS);
     }
@@ -83,6 +102,7 @@ public class EditingWorkspaceService {
         if (review.getSourceType() == ReviewSourceType.WORKSPACE)
             throw fail(HttpStatus.CONFLICT, "수정본 Review에는 원본 전체가 보관되지 않습니다. 기존 작업 공간을 이용하거나 다운로드한 ZIP으로 새 분석을 시작해 주세요.");
         synchronized (this) {
+            if (closed) throw fail(HttpStatus.SERVICE_UNAVAILABLE, "작업 공간을 사용할 수 없습니다.");
             expire();
             if (creating.contains(user) || states.values().stream().anyMatch(s -> s.user == user))
                 throw fail(HttpStatus.CONFLICT, "열려 있는 수정 작업 공간을 먼저 닫아 주세요.");
@@ -91,7 +111,10 @@ public class EditingWorkspaceService {
         }
         List<SourceArchive.Entry> entries = null;
         boolean complete = false;
+        ProjectLifecycleGuard.Lease lease = null;
         try {
+            lease = lifecycle.work(review.getProject().getId());
+            reviews.findAccessibleReviewWithVulnerabilities(reviewId, "분석 결과에 접근할 수 없습니다.");
             String source, identity;
             if (review.getSourceType() == ReviewSourceType.ZIP) {
                 if (zip == null || zip.isEmpty() || zip.getSize() > SourceArchive.MAX_BYTES) throw SourceArchive.invalid();
@@ -106,13 +129,20 @@ public class EditingWorkspaceService {
             }
             // Recheck ownership after acquisition; deleting a Review must not create an orphan session.
             reviews.findAccessibleReviewWithVulnerabilities(reviewId, "분석 결과에 접근할 수 없습니다.");
-            var state = new State(user, reviewId, Instant.now(clock), source, identity, entries);
-            synchronized (this) { states.put(state.id, state); }
-            complete = true;
-            return describe(state);
+            var state = new State(user, reviewId, review.getProject().getId(), lease, Instant.now(clock), source, identity, entries);
+            synchronized (this) {
+                if (closed) throw fail(HttpStatus.SERVICE_UNAVAILABLE, "작업 공간을 사용할 수 없습니다.");
+                var result = describe(state);
+                states.put(state.id, state);
+                complete = true;
+                return result;
+            }
         } finally {
             synchronized (this) { creating.remove(user); }
-            if (!complete && entries != null) entries.forEach(e -> Arrays.fill(e.bytes(), (byte) 0));
+            if (!complete) {
+                if (entries != null) entries.forEach(e -> Arrays.fill(e.bytes(), (byte) 0));
+                if (lease != null) lease.close();
+            }
         }
     }
     public synchronized Workspace get(String id) { return describe(owned(id)); }
@@ -334,6 +364,9 @@ public class EditingWorkspaceService {
         owned(id);
         return action.get();
     }
+    synchronized ProjectLifecycleGuard.Lease retainScanLease(String id) {
+        return lifecycle.work(owned(id).project);
+    }
     private List<SourceArchive.Entry> currentEntries(State state, boolean copy) {
         return state.files.stream().map(f -> new SourceArchive.Entry(f.original.path(), copy ? f.current().clone() : f.current(),
                 f.original.directory(), f.original.mode())).toList();
@@ -398,6 +431,6 @@ public class EditingWorkspaceService {
         var iterator = states.values().iterator();
         while (iterator.hasNext()) { var state = iterator.next(); if (!state.expires.isAfter(Instant.now(clock))) { iterator.remove(); state.clear(); } }
     }
-    @PreDestroy public synchronized void shutdown() { expiry.shutdownNow(); states.values().forEach(State::clear); states.clear(); }
+    @PreDestroy public synchronized void shutdown() { closed = true; expiry.shutdownNow(); states.values().forEach(State::clear); states.clear(); }
     private SecureDeployException fail(HttpStatus status, String message) { return new SecureDeployException(status, message); }
 }

@@ -30,7 +30,7 @@ test('dashboard rows show saved policy while coverage is fetched only in the res
   assert.ok(!html.includes('<img')); assert.ok(!html.includes('PARTIAL'));
   assert.equal(JSON.stringify(project), before);
   const compact = renderToStaticMarkup(React.createElement(ProjectList, { projects: [project] }));
-  assert.ok(!compact.includes('policy-ready')); assert.ok(!compact.includes('프로젝트 열기'));
+  assert.ok(!compact.includes('policy-ready')); assert.ok(compact.includes('project-menu-trigger'));
 });
 test('missing dashboard review stays unassessed without fabricated score or coverage', () => {
   const html = renderToStaticMarkup(React.createElement(RecentProjects, { projects: [{ projectId: 1, name: 'Empty', latestReview: null }] }));

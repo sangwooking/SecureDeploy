@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { deleteProject, deleteReview, fetchProjectDetail, fetchProjectReviews, fetchReviewDetail, reviewGithubRepository, uploadZipForReview } from '../api/securityReviewApi';
+import { deleteReview, fetchProjectDetail, fetchProjectReviews, fetchReviewDetail, reviewGithubRepository, uploadZipForReview } from '../api/securityReviewApi';
 import type { ProjectDetail } from '../types/workspace';
 import type { ReviewHistoryResponse, ScanMode, SecurityReviewResponse } from '../types/securityReview';
 import type { UploadPolicy } from '../types/uploadPolicy';
@@ -10,6 +10,7 @@ import { ProjectReviewResult } from './ProjectReviewResult';
 import { RescanForm } from './RescanForm';
 import { GitHubSourceInfo } from './GitHubSourceInfo';
 import { ReviewSummaryPanel } from './ReviewSummaryPanel';
+import { ProjectManagement } from './ProjectManagement';
 
 export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDeleted }: {
   route: Extract<WorkspaceRoute, { page: 'project' }>; policy: UploadPolicy | null; policyError: string;
@@ -41,13 +42,6 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
     return () => { cancelled = true; };
   }, [route.projectId, route.reviewId, revision]);
 
-  const removeProject = async () => {
-    if (!data || !window.confirm(`“${data.project.name}” 프로젝트와 모든 분석 이력을 삭제할까요? 이 작업은 되돌릴 수 없습니다.`)) return;
-    setBusy(true); setError('');
-    try { await deleteProject(route.projectId); if (active.current) { setData(null); onDeleted(); } }
-    catch (e) { if (active.current) setError(e instanceof Error ? e.message : '삭제하지 못했습니다.'); }
-    finally { if (active.current) setBusy(false); }
-  };
   const removeReview = async (review: ReviewHistoryResponse) => {
     if (!window.confirm(`분석 #${review.reviewId}을 삭제할까요? 프로젝트는 유지됩니다.`)) return;
     setBusy(true); setError('');
@@ -132,7 +126,7 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
         {project.repositoryUrl && <div><dt>GitHub URL</dt><dd>{project.repositoryUrl}</dd></div>}
         <div><dt>생성일</dt><dd>{dateLabel(project.createdAt)}</dd></div><div><dt>최근 분석</dt><dd>{dateLabel(project.latestReview?.createdAt)}</dd></div></dl>
       <p>프로젝트를 삭제하면 연결된 분석 결과도 모두 삭제됩니다.</p>
-      <button className="delete-button" disabled={busy} onClick={() => void removeProject()}>프로젝트 삭제</button>
+      <ProjectManagement project={project} onDeleted={onDeleted} variant="settings" />
     </section>}
   </section>;
 }

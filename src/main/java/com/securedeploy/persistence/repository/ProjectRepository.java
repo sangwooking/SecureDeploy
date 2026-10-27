@@ -14,6 +14,11 @@ public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
     @org.springframework.data.jpa.repository.Query("select p from ProjectEntity p where p.id = :id")
     Optional<ProjectEntity> findForReviewCreation(@org.springframework.data.repository.query.Param("id") Long id);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.QueryHints(@jakarta.persistence.QueryHint(name = "jakarta.persistence.lock.timeout", value = "0"))
+    @org.springframework.data.jpa.repository.Query("select p from ProjectEntity p where p.id = :id")
+    Optional<ProjectEntity> findForDeletion(@org.springframework.data.repository.query.Param("id") Long id);
+
     List<ProjectEntity> findAllByOrderByUpdatedAtDesc();
 
     List<ProjectEntity> findAllByUserIdOrderByUpdatedAtDesc(Long userId);

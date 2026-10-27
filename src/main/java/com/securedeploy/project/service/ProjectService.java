@@ -21,11 +21,19 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final ProjectLifecycleGuard lifecycle;
 
-    public ProjectService(ProjectRepository projectRepository, ReviewRepository reviewRepository, UserRepository userRepository) {
+    public ProjectService(ProjectRepository projects, ReviewRepository reviews, UserRepository users) {
+        this(projects, reviews, users, new ProjectLifecycleGuard());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ProjectService(ProjectRepository projectRepository, ReviewRepository reviewRepository, UserRepository userRepository,
+            ProjectLifecycleGuard lifecycle) {
         this.projectRepository = projectRepository;
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
+        this.lifecycle = lifecycle == null ? new ProjectLifecycleGuard() : lifecycle;
     }
 
     @Transactional
@@ -77,8 +85,10 @@ public class ProjectService {
 
     @Transactional
     public ProjectEntity resolveOrCreateProjectForZip(String projectName) {
-        return projectRepository.findFirstByNameAndSourceTypeOrderByUpdatedAtDesc(projectName, ReviewSourceType.ZIP)
-                .orElseGet(() -> projectRepository.save(new ProjectEntity(projectName, ReviewSourceType.ZIP, null)));
+        try (var lease = lifecycle.zip(null, projectName)) {
+            return projectRepository.findFirstByNameAndSourceTypeOrderByUpdatedAtDesc(projectName, ReviewSourceType.ZIP)
+                    .orElseGet(() -> projectRepository.save(new ProjectEntity(projectName, ReviewSourceType.ZIP, null)));
+        }
     }
 
     @Transactional
@@ -86,14 +96,18 @@ public class ProjectService {
         if (userId == null) {
             throw new SecureDeployException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
-        return projectRepository.findFirstByNameAndSourceTypeAndUserIdOrderByUpdatedAtDesc(projectName, ReviewSourceType.ZIP, userId)
-                .orElseGet(() -> createUserProject(userId, projectName, ReviewSourceType.ZIP, null));
+        try (var lease = lifecycle.zip(userId, projectName)) {
+            return projectRepository.findFirstByNameAndSourceTypeAndUserIdOrderByUpdatedAtDesc(projectName, ReviewSourceType.ZIP, userId)
+                    .orElseGet(() -> createUserProject(userId, projectName, ReviewSourceType.ZIP, null));
+        }
     }
 
     @Transactional
     public ProjectEntity resolveOrCreateProjectForGithub(String repositoryUrl) {
-        return projectRepository.findByRepositoryUrl(repositoryUrl)
-                .orElseGet(() -> projectRepository.save(new ProjectEntity(resolveRepositoryName(repositoryUrl), ReviewSourceType.GITHUB, repositoryUrl)));
+        try (var lease = lifecycle.github(null, repositoryUrl)) {
+            return projectRepository.findByRepositoryUrl(repositoryUrl)
+                    .orElseGet(() -> projectRepository.save(new ProjectEntity(resolveRepositoryName(repositoryUrl), ReviewSourceType.GITHUB, repositoryUrl)));
+        }
     }
 
     @Transactional
@@ -102,11 +116,13 @@ public class ProjectService {
             throw new SecureDeployException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
         String canonical = com.securedeploy.github.model.GitHubRepositoryUrl.parse(repositoryUrl).canonicalUrl();
-        var matches = projectRepository.findAllByUserIdOrderByUpdatedAtDesc(userId).stream()
-                .filter(p -> p.getSourceType() == ReviewSourceType.GITHUB && p.getGithubRepositoryId() == null && sameRepository(p.getRepositoryUrl(), canonical)).toList();
-        if (matches.size() > 1) throw new SecureDeployException(HttpStatus.CONFLICT,
-                "같은 GitHub 저장소로 등록된 프로젝트가 여러 개입니다. 내 프로젝트에서 재검사할 대상을 선택해 주세요.");
-        return matches.isEmpty() ? createUserProject(userId, resolveRepositoryName(canonical), ReviewSourceType.GITHUB, canonical) : matches.get(0);
+        try (var lease = lifecycle.github(userId, canonical)) {
+            var matches = projectRepository.findAllByUserIdOrderByUpdatedAtDesc(userId).stream()
+                    .filter(p -> p.getSourceType() == ReviewSourceType.GITHUB && p.getGithubRepositoryId() == null && sameRepository(p.getRepositoryUrl(), canonical)).toList();
+            if (matches.size() > 1) throw new SecureDeployException(HttpStatus.CONFLICT,
+                    "같은 GitHub 저장소로 등록된 프로젝트가 여러 개입니다. 내 프로젝트에서 재검사할 대상을 선택해 주세요.");
+            return matches.isEmpty() ? createUserProject(userId, resolveRepositoryName(canonical), ReviewSourceType.GITHUB, canonical) : matches.get(0);
+        }
     }
 
     private boolean sameRepository(String existing, String canonical) {
@@ -119,14 +135,16 @@ public class ProjectService {
             com.securedeploy.github.model.GitHubSourceSnapshot source) {
         if (userId == null || source.repositoryId() == null || source.installationId() == null)
             throw com.securedeploy.github.app.GitHubAppException.denied();
-        ProjectEntity project = projectId == null
-                ? projectRepository.findByUserIdAndGithubRepositoryId(userId, source.repositoryId())
-                    .orElseGet(() -> createUserProject(userId, source.repository(), ReviewSourceType.GITHUB, source.canonicalRepositoryUrl()))
-                : findOwnedProjectForRescan(projectId, userId, ReviewSourceType.GITHUB);
-        if (projectId != null && !source.repositoryId().equals(project.getGithubRepositoryId()))
-            throw com.securedeploy.github.app.GitHubAppException.denied();
-        project.bindGitHubRepository(source.repositoryId(), source.installationId(), Boolean.TRUE.equals(source.privateRepository()), source.canonicalRepositoryUrl());
-        return projectRepository.save(project);
+        try (var lease = lifecycle.connected(userId, source.repositoryId())) {
+            ProjectEntity project = projectId == null
+                    ? projectRepository.findByUserIdAndGithubRepositoryId(userId, source.repositoryId())
+                        .orElseGet(() -> createUserProject(userId, source.repository(), ReviewSourceType.GITHUB, source.canonicalRepositoryUrl()))
+                    : findOwnedProjectForRescan(projectId, userId, ReviewSourceType.GITHUB);
+            if (projectId != null && !source.repositoryId().equals(project.getGithubRepositoryId()))
+                throw com.securedeploy.github.app.GitHubAppException.denied();
+            project.bindGitHubRepository(source.repositoryId(), source.installationId(), Boolean.TRUE.equals(source.privateRepository()), source.canonicalRepositoryUrl());
+            return projectRepository.save(project);
+        }
     }
 
 
@@ -144,9 +162,18 @@ public class ProjectService {
             throw new SecureDeployException(HttpStatus.FORBIDDEN, "이 프로젝트를 삭제할 권한이 없습니다.");
         }
 
-        reviewRepository.findAllByProjectIdOrderByCreatedAtDesc(projectId)
-                .forEach(reviewRepository::delete);
-        projectRepository.delete(project);
+        try (var lease = lifecycle.deletion(project)) {
+            // Serialize against ReviewPersistenceService before enumerating dependent reviews.
+            try {
+                project = projectRepository.findForDeletion(projectId)
+                        .orElseThrow(() -> new SecureDeployException(HttpStatus.NOT_FOUND, "프로젝트를 찾을 수 없습니다."));
+            } catch (org.springframework.dao.PessimisticLockingFailureException conflict) {
+                throw new SecureDeployException(HttpStatus.CONFLICT, "프로젝트에서 다른 작업이 진행 중입니다. 잠시 후 다시 시도해 주세요.");
+            }
+            reviewRepository.findAllByProjectIdOrderByCreatedAtDesc(projectId)
+                    .forEach(reviewRepository::delete);
+            projectRepository.delete(project);
+        }
     }
 
     @Transactional(readOnly = true)

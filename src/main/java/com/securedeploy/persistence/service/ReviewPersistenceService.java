@@ -11,6 +11,7 @@ import com.securedeploy.persistence.entity.ReviewSnippetEntity;
 import com.securedeploy.persistence.entity.VulnerabilityEntity;
 import com.securedeploy.persistence.repository.ProjectRepository;
 import com.securedeploy.persistence.repository.ReviewRepository;
+import com.securedeploy.project.service.ProjectLifecycleGuard;
 import com.securedeploy.review.dto.ReviewHistoryResponse;
 import com.securedeploy.review.dto.SecurityReviewResponse;
 import com.securedeploy.review.dto.VulnerabilityResultResponse;
@@ -29,13 +30,22 @@ public class ReviewPersistenceService {
     private final ProjectRepository projectRepository;
     private final ReviewAccessService reviewAccessService;
     private final RiskPrioritizationEngine riskEngine;
+    private final ProjectLifecycleGuard lifecycle;
 
+    public ReviewPersistenceService(ReviewRepository reviews, ProjectRepository projects,
+            ReviewAccessService access, RiskPrioritizationEngine risk) {
+        this(reviews, projects, access, risk, new ProjectLifecycleGuard());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
     public ReviewPersistenceService(ReviewRepository reviewRepository, ProjectRepository projectRepository,
-                                    ReviewAccessService reviewAccessService, RiskPrioritizationEngine riskEngine) {
+                                    ReviewAccessService reviewAccessService, RiskPrioritizationEngine riskEngine,
+                                    ProjectLifecycleGuard lifecycle) {
         this.reviewRepository = reviewRepository;
         this.projectRepository = projectRepository;
         this.reviewAccessService = reviewAccessService;
         this.riskEngine = riskEngine;
+        this.lifecycle = lifecycle == null ? new ProjectLifecycleGuard() : lifecycle;
     }
 
     @Transactional
@@ -67,50 +77,52 @@ public class ReviewPersistenceService {
     public SecurityReviewResponse saveReview(ProjectEntity project, SecurityReviewResponse response, ReviewSourceType sourceType,
             String repositoryUrl, SnippetGroup snippetGroup, ThreatIntelligenceSnapshot intelligence,
             com.securedeploy.review.model.ScanMode scanMode, com.securedeploy.project.progress.ComparisonContext context) {
-        ReviewEntity review = new ReviewEntity(
-                response.projectName(),
-                sourceType,
-                repositoryUrl,
-                response.scannedFileCount(),
-                response.vulnerabilityCount(),
-                response.securityScore(),
-                response.deploymentStatus()
-        );
-        review.assignScanMode(scanMode);
-        review.attachSourceMetadata(response.sourceMetadata());
-        review.attachCoverage(response.coverage());
-        review.attachServerAnalysis(response.serverAnalysis());
+        try (var lease = project == null ? null : lifecycle.work(project.getId())) {
+            ReviewEntity review = new ReviewEntity(
+                    response.projectName(),
+                    sourceType,
+                    repositoryUrl,
+                    response.scannedFileCount(),
+                    response.vulnerabilityCount(),
+                    response.securityScore(),
+                    response.deploymentStatus()
+            );
+            review.assignScanMode(scanMode);
+            review.attachSourceMetadata(response.sourceMetadata());
+            review.attachCoverage(response.coverage());
+            review.attachServerAnalysis(response.serverAnalysis());
 
-        if (project != null) {
-            ProjectEntity managedProject = projectRepository.findForReviewCreation(project.getId())
-                    .orElseThrow(() -> new SecureDeployException(HttpStatus.NOT_FOUND, "프로젝트를 찾을 수 없습니다."));
-            managedProject.touch();
-            review.assignProject(managedProject);
-            if (context != null) {
-                if (context.workspaceScan() != null) review.attachComparisonContext(context);
-                else {
-                    Long baseline = reviewRepository.findTopByProjectIdOrderByCreatedAtDescIdDesc(project.getId())
-                            .map(ReviewEntity::getId).orElse(null);
-                    review.attachComparisonContext(context.withBaseline(baseline));
+            if (project != null) {
+                ProjectEntity managedProject = projectRepository.findForReviewCreation(project.getId())
+                        .orElseThrow(() -> new SecureDeployException(HttpStatus.NOT_FOUND, "프로젝트를 찾을 수 없습니다."));
+                managedProject.touch();
+                review.assignProject(managedProject);
+                if (context != null) {
+                    if (context.workspaceScan() != null) review.attachComparisonContext(context);
+                    else {
+                        Long baseline = reviewRepository.findTopByProjectIdOrderByCreatedAtDescIdDesc(project.getId())
+                                .map(ReviewEntity::getId).orElse(null);
+                        review.attachComparisonContext(context.withBaseline(baseline));
+                    }
                 }
             }
+
+            response.vulnerabilities().stream()
+                    .map(this::toEntity)
+                    .forEach(review::addVulnerability);
+
+            addSnippets(review, snippetGroup == null ? SnippetGroup.empty() : snippetGroup);
+            review.attachSca(response.sca());
+
+            ReviewEntity savedReview = reviewRepository.save(review);
+            // Identity-generated finding IDs link the immutable snapshot to the saved cards.
+            var assessedFindings = java.util.stream.IntStream.range(0, response.vulnerabilities().size())
+                    .mapToObj(index -> response.vulnerabilities().get(index)
+                            .withVulnerabilityId(savedReview.getVulnerabilities().get(index).getId())).toList();
+            savedReview.attachRiskAssessment(riskEngine.assess(assessedFindings, response.sca(), intelligence));
+            reviewRepository.flush();
+            return findReviewDetail(savedReview.getId());
         }
-
-        response.vulnerabilities().stream()
-                .map(this::toEntity)
-                .forEach(review::addVulnerability);
-
-        addSnippets(review, snippetGroup == null ? SnippetGroup.empty() : snippetGroup);
-        review.attachSca(response.sca());
-
-        ReviewEntity savedReview = reviewRepository.save(review);
-        // Identity-generated finding IDs link the immutable snapshot to the saved cards.
-        var assessedFindings = java.util.stream.IntStream.range(0, response.vulnerabilities().size())
-                .mapToObj(index -> response.vulnerabilities().get(index)
-                        .withVulnerabilityId(savedReview.getVulnerabilities().get(index).getId())).toList();
-        savedReview.attachRiskAssessment(riskEngine.assess(assessedFindings, response.sca(), intelligence));
-        reviewRepository.flush();
-        return findReviewDetail(savedReview.getId());
     }
 
     @Transactional(readOnly = true)

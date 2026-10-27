@@ -23,6 +23,9 @@ class EditingWorkspaceServiceTest {
     @BeforeEach void setup() {
         when(users.currentUserId()).thenAnswer(i -> user.get());
         var review = new ReviewEntity("fixture", ReviewSourceType.ZIP, null, 1, 0, 100, "READY");
+        var project = mock(com.securedeploy.persistence.entity.ProjectEntity.class);
+        when(project.getId()).thenReturn(1L);
+        review.assignProject(project);
         when(reviews.findAccessibleReviewWithVulnerabilities(anyLong(), anyString())).thenReturn(review);
         var clock = new Clock() { public ZoneId getZone() { return ZoneOffset.UTC; } public Clock withZone(ZoneId zone) { return this; } public Instant instant() { return now.get(); } };
         service = new EditingWorkspaceService(reviews, users, sources, clock);
@@ -105,7 +108,11 @@ class EditingWorkspaceServiceTest {
         assertThrows(RuntimeException.class,()->service.get(w.id()));
         assertThrows(RuntimeException.class,()->service.get(w.id()));
         reset(reviews);
-        when(reviews.findAccessibleReviewWithVulnerabilities(anyLong(),anyString())).thenReturn(new ReviewEntity("fixture",ReviewSourceType.ZIP,null,1,0,100,"READY"));
+        var replacement = new ReviewEntity("fixture",ReviewSourceType.ZIP,null,1,0,100,"READY");
+        var project = mock(com.securedeploy.persistence.entity.ProjectEntity.class);
+        when(project.getId()).thenReturn(1L);
+        replacement.assignProject(project);
+        when(reviews.findAccessibleReviewWithVulnerabilities(anyLong(),anyString())).thenReturn(replacement);
         var other=open("b");
         when(reviews.findAccessibleReviewWithVulnerabilities(anyLong(),anyString())).thenThrow(new RuntimeException("review unavailable"));
         assertDoesNotThrow(()->service.delete(other.id()));

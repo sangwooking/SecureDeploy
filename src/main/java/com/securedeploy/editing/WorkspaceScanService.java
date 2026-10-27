@@ -28,7 +28,10 @@ public class WorkspaceScanService {
         volatile Long review;
         volatile Thread runner;
         volatile boolean finalizing;
-        Job(EditingWorkspaceService.ScanInput input, Instant deadline) {
+        final com.securedeploy.project.service.ProjectLifecycleGuard.Lease lease;
+        Job(EditingWorkspaceService.ScanInput input, Instant deadline,
+                com.securedeploy.project.service.ProjectLifecycleGuard.Lease lease) {
+            this.lease = lease;
             user = input.userId();
             var p = input.provenance();
             // Polling retains only bounded identity facts; the complete file manifest belongs to the saved Review.
@@ -91,7 +94,10 @@ public class WorkspaceScanService {
                 || calls.getOrDefault(user, List.of()).size() >= 4)
             throw fail(HttpStatus.TOO_MANY_REQUESTS, "수정본 검사 사용 한도 또는 동시 검사 한도에 도달했습니다. 잠시 후 확인해 주세요.");
         var input = workspaces.captureScan(id, request.revision());
-        var job = new Job(input, now.plus(timeout));
+        com.securedeploy.project.service.ProjectLifecycleGuard.Lease lease;
+        try { lease = workspaces.retainScanLease(id); }
+        catch (RuntimeException failure) { input.close(); throw failure; }
+        var job = new Job(input, now.plus(timeout), lease);
         job.message = "저장된 수정본을 STANDARD로 검사하고 있습니다.";
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         active = job; jobs.put(job.id, job);
@@ -104,7 +110,7 @@ public class WorkspaceScanService {
                 finally { SecurityContextHolder.clearContext(); }
             });
         } catch (RejectedExecutionException stopped) {
-            input.close(); active = null; jobs.remove(job.id); calls.get(user).remove(now);
+            input.close(); job.lease.close(); active = null; jobs.remove(job.id); calls.get(user).remove(now);
             throw fail(HttpStatus.SERVICE_UNAVAILABLE, "검사 실행기를 사용할 수 없습니다.");
         }
         return job.view();
@@ -159,11 +165,13 @@ public class WorkspaceScanService {
             Thread.interrupted();
             if (lease != null) {
                 try { lease.close(); } catch (java.io.IOException cleanupFailure) {
+                    job.lease.retainAfterCleanupFailure();
                     job.message = "검사 임시 파일 정리를 완료하지 못했습니다. 관리자 확인이 필요합니다.";
                 }
             }
             job.runner = null;
             synchronized (this) { if (active == job) active = null; }
+            job.lease.close();
         }
     }
     private void guard(Job job) {

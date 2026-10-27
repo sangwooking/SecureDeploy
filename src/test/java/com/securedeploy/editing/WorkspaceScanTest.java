@@ -29,6 +29,7 @@ class WorkspaceScanTest {
     EditingWorkspaceService workspaces;
     WorkspaceScanService scans;
     EditingWorkspaceService.Workspace workspace;
+    final com.securedeploy.project.service.ProjectLifecycleGuard lifecycle = new com.securedeploy.project.service.ProjectLifecycleGuard();
     final Clock clock = new Clock() {
         public ZoneId getZone() { return ZoneOffset.UTC; }
         public Clock withZone(ZoneId z) { return this; }
@@ -38,6 +39,9 @@ class WorkspaceScanTest {
         when(users.currentUserId()).thenAnswer(i -> user.get());
         when(reviews.findAccessibleReviewWithVulnerabilities(anyLong(), anyString())).thenReturn(review);
         when(review.getSourceType()).thenReturn(ReviewSourceType.GITHUB);
+        var project = mock(com.securedeploy.persistence.entity.ProjectEntity.class);
+        when(project.getId()).thenReturn(1L);
+        when(review.getProject()).thenReturn(project);
         when(review.getProjectName()).thenReturn("synthetic");
         when(review.getRepositoryUrl()).thenReturn("https://github.com/fixture/scan");
         when(review.getSourceMetadata()).thenReturn(new GitHubSourceSnapshot("fixture", "scan", "https://github.com/fixture/scan",
@@ -45,7 +49,7 @@ class WorkspaceScanTest {
         when(sources.github(anyLong(), any())).thenAnswer(i -> List.of(
                 new SourceArchive.Entry("application.properties", "debug=true\r\n".getBytes(StandardCharsets.UTF_8), false, 0100644),
                 new SourceArchive.Entry("assets/data.bin", new byte[]{0, 1, 2}, false, 0100644)));
-        workspaces = new EditingWorkspaceService(reviews, users, sources, clock);
+        workspaces = new EditingWorkspaceService(reviews, users, sources, clock, lifecycle);
         scans = new WorkspaceScanService(workspaces, users, reviews, facade, persistence, clock, Duration.ofSeconds(120));
         workspace = workspaces.create(4, null);
         when(persistence.save(any(), any(), any())).thenAnswer(i -> {
@@ -105,7 +109,10 @@ class WorkspaceScanTest {
         var entered=new CountDownLatch(1);var release=new CountDownLatch(1);
         when(facade.analyzeWorkspace(anyString(),any())).thenAnswer(i->{entered.countDown();release.await(2,TimeUnit.SECONDS);return null;});
         var job=scans.start(workspace.id(),request());assertTrue(entered.await(2,TimeUnit.SECONDS));
-        workspaces.delete(workspace.id());release.countDown();assertEquals("FAILED",await(job.id()).state());verifyNoInteractions(persistence);
+        workspaces.delete(workspace.id());
+        var project = review.getProject();
+        assertThrows(com.securedeploy.global.error.SecureDeployException.class, () -> lifecycle.deletion(project));
+        release.countDown();assertEquals("FAILED",await(job.id()).state());verifyNoInteractions(persistence);
     }
     @Test void expiryDuringAnalysisPreventsResultSave() throws Exception {
         var entered=new CountDownLatch(1);var release=new CountDownLatch(1);
@@ -130,7 +137,16 @@ class WorkspaceScanTest {
         for(int i=0;i<150&&scans.get(job.id()).state().equals("RUNNING");i++)Thread.sleep(10);
         assertEquals("TIMED_OUT",scans.get(job.id()).state());
         save("debug=false\n");assertThrows(RuntimeException.class,()->scans.start(workspace.id(),request()));
-        release.countDown();Thread.sleep(50);verifyNoInteractions(persistence);
+        workspaces.delete(workspace.id());
+        scans.close();
+        assertThrows(com.securedeploy.global.error.SecureDeployException.class, () -> lifecycle.deletion(review.getProject()));
+        release.countDown();
+        boolean released = false;
+        for (int i = 0; i < 200; i++) {
+            try (var deletion = lifecycle.deletion(review.getProject())) { released = true; break; }
+            catch (com.securedeploy.global.error.SecureDeployException busy) { Thread.sleep(10); }
+        }
+        assertTrue(released);verifyNoInteractions(persistence);
     }
     @Test void scanSnapshotBuffersAreWipedWhenClosedButOriginalSurvives() {
         var input=workspaces.captureScan(workspace.id(),workspace.revision());var bytes=input.entries().get(0).bytes();input.close();
