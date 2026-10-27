@@ -64,3 +64,12 @@ test('nested Router policy inheritance is unknown, not a claimed absence or comp
  assert.ok(r.nodeUses.some(u=>u.kind==='RATE_LIMIT_APPLICATION_UNKNOWN'));
  assert.ok(!r.nodeUses.some(u=>u.kind==='RATE_LIMIT_DEFAULT_STOP_BOUND'));
 });
+test('earlier overlapping routes and case or trailing-slash mount ambiguity do not prove dispatch',()=>{
+ for(const transform of [
+  s=>s.replace("app.post('/work'","app.post('/work',(req,res)=>res.end('first'));app.post('/work'"),
+  s=>s.replace('app.use(rateLimit(',"app.use('/WORK',rateLimit("),
+  s=>s.replace('app.use(rateLimit(',"app.use('/work/',rateLimit("),
+ ]){const p=packet('{skip:()=>true}');p.files[0].content=transform(p.files[0].content);const r=analyze(p);
+  assert.equal(hits(p).length,0);assert.ok(r.nodeUses.some(u=>u.kind==='RATE_LIMIT_APPLICATION_UNKNOWN'));
+ }
+});

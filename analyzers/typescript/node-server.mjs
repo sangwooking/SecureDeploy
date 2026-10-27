@@ -248,7 +248,7 @@ export function nodeServer(api) {
         const handler=args.at(-1);
         if(!handler.target||handler.unknown){note(state.mod,'EXPRESS_HANDLER_UNKNOWN');return {value:receiver};}
         if(routes.length>=limits.maxResults){note(state.mod,'EXPRESS_REGISTRATION_LIMIT');return {value:receiver};}
-        const route={target:handler.target,location:loc(node,state.mod,'EXPRESS_REGISTRATION',state.fn),uncertain:state.uncertain,middleware:args.length>2,setupContext:state.context,web:web.route(receiver,args,node,state,method),rate:rate.route(receiver,args,node,state)};
+        const route={target:handler.target,location:loc(node,state.mod,'EXPRESS_REGISTRATION',state.fn),uncertain:state.uncertain,middleware:args.length>2,setupContext:state.context,web:web.route(receiver,args,node,state,method),rate:rate.route(receiver,args,node,state,method)};
         receiver.routes.push(route);routes.push(route);return {value:receiver};
       }
       if(method==='use') {

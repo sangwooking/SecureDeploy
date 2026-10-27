@@ -73,13 +73,22 @@ export function rateLimiting(api){
   if(mid?.tag==='rate-middleware'&&args.length<=2&&typeof mount==='string'&&/^\/[\w/-]*$/.test(mount))entries.push({middleware:mid,mount,location:loc(node,state.mod,'RATE_LIMIT_MOUNT',state.fn)});
   else receiver.rateUnknown=true;
  }
- function route(receiver,args,node,state){
+ function route(receiver,args,node,state,method){
   const path=scalar(args[0])?args[0].constant:undefined,policies=[...stack(receiver)];let uncertain=!!receiver.rateUnknown||!!state.uncertain;
+  const simple=typeof path==='string'&&/^\/[\w/-]*$/.test(path);
+  const prior=receiver.rateRoutes??(receiver.rateRoutes={paths:new Map(),opaque:new Set(),methods:new Set()});
+  const key=simple?path.toLowerCase().replace(/\/$/,''):undefined;
+  const overlaps=methods=>{for(const m of methods){tick(state.mod);if(m===method||m==='all'||method==='all'||m==='get'&&method==='head')return true;}return false;};
+  if(overlaps(prior.opaque)||overlaps(simple?prior.paths.get(key)??[]:prior.methods))uncertain=true;
+  prior.methods.add(method);
+  if(simple){if(!prior.paths.has(key))prior.paths.set(key,new Set());prior.paths.get(key).add(method);}else prior.opaque.add(method);
   for(const mid of args.slice(1,-1)){
    tick(state.mod);if(policies.length>=50){uncertain=true;note(state.mod,'RATE_LIMIT_SCOPE_LIMIT');break;}
    if(mid?.tag==='rate-middleware')policies.push({middleware:mid,mount:'/',location:loc(node,state.mod,'RATE_LIMIT_ROUTE_MOUNT',state.fn)});else uncertain=true;
   }
-  if(typeof path!=='string'||!/^\/[\w/-]*$/.test(path))uncertain=true;
+  if(!simple)uncertain=true;
+  for(const p of policies){tick(state.mod);if(p.mount!=='/'&&p.mount.endsWith('/'))uncertain=true;
+   if(typeof path==='string'&&p.mount!==path&&(path.toLowerCase()===p.mount.toLowerCase()||path.toLowerCase().startsWith(p.mount.toLowerCase()+'/')))uncertain=true;}
   return {policies:policies.filter(p=>typeof path==='string'&&(p.mount==='/'||path===p.mount||path.startsWith(p.mount+'/'))),uncertain,owner:receiver,registration:loc(node,state.mod,'RATE_LIMIT_REQUEST_REGISTRATION',state.fn)};
  }
  function entry(scope,isolate){
