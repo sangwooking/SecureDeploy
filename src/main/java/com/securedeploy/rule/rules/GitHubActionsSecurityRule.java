@@ -24,11 +24,12 @@ public class GitHubActionsSecurityRule implements VulnerabilityRule {
         }
 
         List<RuleMatch> matches = new ArrayList<>();
+        var scope=com.securedeploy.analysis.deployment.WorkflowInspector.scriptScope(file);
         List<String> lines = file.lines();
         for (int index = 0; index < lines.size(); index++) {
             String line = lines.get(index);
-            addUnpinnedAction(file, matches, line, index + 1);
-            if (isSecretEcho(line)) {
+            if(!scope.parsed()||scope.usesLines().contains(index+1))addUnpinnedAction(file, matches, line, index + 1);
+            if ((!scope.parsed()||scope.runLines().contains(index+1))&&isSecretEcho(line)) {
                 matches.add(new RuleMatch(
                         "GITHUB_ACTIONS_SECRET_ECHO",
                         RuleCategory.CI_CD_SECURITY,
@@ -40,7 +41,7 @@ public class GitHubActionsSecurityRule implements VulnerabilityRule {
                         DevOpsEvidenceSanitizer.maskSecrets(line.strip())
                 ));
             }
-            if (isCurlPipe(line)) {
+            if ((!scope.parsed()||scope.runLines().contains(index+1))&&isCurlPipe(line)) {
                 matches.add(new RuleMatch(
                         "GITHUB_ACTIONS_CURL_PIPE",
                         RuleCategory.CI_CD_SECURITY,
@@ -76,6 +77,7 @@ public class GitHubActionsSecurityRule implements VulnerabilityRule {
         }
         String action = matcher.group(1).strip();
         String lower = action.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("./")) return;
         if (COMMIT_SHA.matcher(lower).find()) {
             return;
         }

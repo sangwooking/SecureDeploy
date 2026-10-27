@@ -155,6 +155,9 @@ public class FalsePositiveAnalyzer {
                     "minified JavaScript 파일에서 탐지되어 원본 소스 기준 재확인이 필요합니다.");
         }
 
+        if(match.ruleId().equals("DOCKER_SECRET_ENV")&&match.analysisNote()!=null&&match.analysisNote().startsWith("DOCKER_ENV_DECLARATION_REVIEW:")) {
+            return FalsePositiveDecision.keep(match.severity(),FalsePositiveRisk.MEDIUM,DetectionConfidence.MEDIUM,match.analysisNote());
+        }
         return FalsePositiveDecision.keep(match.severity(), FalsePositiveRisk.LOW, DetectionConfidence.HIGH,
                 "오탐을 강하게 시사하는 경로, 값 패턴, 문맥이 발견되지 않았습니다.");
     }

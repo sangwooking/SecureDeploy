@@ -21,6 +21,16 @@ public class DockerSecretEnvRule implements VulnerabilityRule {
         }
 
         List<RuleMatch> matches = new ArrayList<>();
+        var parsed=DockerEnvironment.inspect(file);
+        if(parsed.complete()) {
+            parsed.declarations().stream().filter(d->!d.kind().equals("EMPTY")).map(DockerEnvironment.Declaration::line).distinct().forEach(line->matches.add(new RuleMatch(
+                    "DOCKER_SECRET_ENV",RuleCategory.CONTAINER_SECURITY,Severity.HIGH,file.relativePath(),line,
+                    "Dockerfile ENV에 비밀정보 이름의 설정이 선언되어 있습니다. 리터럴·외부 참조를 구분해 실제 자격증명과 이미지 포함 여부를 확인하세요.",
+                    "ENV와 ARG로 비밀값을 전달하지 말고 필요한 빌드 단계의 BuildKit secret mount 또는 런타임 비밀 저장소를 검토하세요. mount의 내용을 복사하거나 출력하면 다시 노출될 수 있습니다.",
+                    "ENV credential setting; name and value omitted",com.securedeploy.rule.model.FalsePositiveRisk.MEDIUM,com.securedeploy.rule.model.DetectionConfidence.MEDIUM,
+                    "DOCKER_ENV_DECLARATION_REVIEW: 비밀정보 이름의 ENV 선언 근거이며 실제 자격증명·최종 이미지 포함은 미검증입니다.")));
+            return matches;
+        }
         List<String> lines = file.lines();
         for (int index = 0; index < lines.size(); index++) {
             String line = lines.get(index);

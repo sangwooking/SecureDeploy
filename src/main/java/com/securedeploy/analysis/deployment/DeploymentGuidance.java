@@ -5,6 +5,8 @@ import java.util.*;
 final class DeploymentGuidance {
     private DeploymentGuidance() { }
     static final Map<String, List<String>> TEXT = Map.ofEntries(
+        Map.entry("CI_UNTRUSTED_PR_EXECUTION",List.of("외부 PR 코드와 권한 있는 실행 선언이 연결됩니다","pull_request_target·PR head checkout·저장된 token 권한 또는 secret 전달 선언과 프로젝트 실행을 연결했습니다. 실제 권한·secret 존재·승인·공격 성공은 미검증입니다 (CWE-829).","미승인 PR 코드는 권한·배포 secret이 없는 별도 작업에서 검사하세요. trusted base 코드와 권한 작업을 분리하고 필요한 permissions만 지정하세요. checkout의 자격증명 보존과 실행 순서를 함께 검토하세요.")),
+        Map.entry("CI_SCRIPT_EXPRESSION",List.of("요청자가 정할 수 있는 값이 CI 실행 스크립트에 삽입됩니다","이벤트 텍스트 표현식이 run 스크립트 생성 과정에 직접 포함됩니다. 실제 입력값·실행·공격 성공은 확인하지 않았습니다 (CWE-78).","GitHub 표현식을 run 문자열에 직접 삽입하지 말고 env에 데이터로 전달한 뒤 인수를 따옴표로 감싸세요. env 분리 후에도 eval·간접 shell 실행을 사용하면 다시 위험해질 수 있습니다. 로컬 정적 검토와 정상 작업을 확인하세요.")),
         Map.entry("COMPOSE_SOCKET", List.of("컨테이너에 Docker 제어 소켓을 연결합니다", "소켓을 통해 호스트의 컨테이너를 제어할 가능성이 있습니다. 읽기 전용 마운트만으로 API 호출을 차단한다고 보증하지 않습니다.", "소켓 연결을 제거하거나 필요한 작업만 허용하는 별도 중계 서비스를 검토하세요.")),
         Map.entry("COMPOSE_CAPABILITY", List.of("컨테이너에 넓은 시스템 권한을 추가합니다", "추가된 권한으로 컨테이너 격리 효과가 약해질 수 있습니다.", "cap_add를 줄이고 실제 필요한 권한만 허용하세요.")),
         Map.entry("COMPOSE_PORT_BINDING", List.of("서비스 포트를 넓은 주소 범위에 공개하는 선언입니다", "호스트 바인딩이 생략되었거나 전체 주소로 지정됐습니다. 방화벽·실제 외부 접근은 확인하지 않았습니다.", "외부 공개가 필요 없다면 loopback 또는 필요한 인터페이스만 바인딩하고 방화벽을 확인하세요.")),

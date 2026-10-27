@@ -9,10 +9,7 @@ public class OsvAdvisoryMapper {
     public DependencyVulnerability map(String id, JsonNode data, DependencyComponent component, List<String> paths) {
         List<JsonNode> affected = new ArrayList<>();
         data.path("affected").forEach(a -> {
-            if (component.ecosystem().osvName().equals(a.path("package").path("ecosystem").asText())
-                    && component.packageName().equals(component.ecosystem() == ScaEcosystem.PYPI
-                        ? com.securedeploy.sca.parser.PythonRequirement.normalizeName(a.path("package").path("name").asText())
-                        : a.path("package").path("name").asText())) affected.add(a);
+            if (matchesPackage(a,component)) affected.add(a);
         });
         var severity = severityMapper.map(data, affected);
         Set<String> fixes = new LinkedHashSet<>();
@@ -40,4 +37,10 @@ public class OsvAdvisoryMapper {
                 List.copyOf(fixes), nullable(data, "published"), nullable(data, "modified"), references, paths, List.copyOf(ranges));
     }
     private String nullable(JsonNode node, String field) { return node.hasNonNull(field) ? node.get(field).asText() : null; }
+    static boolean matchesPackage(JsonNode affected,DependencyComponent component) {
+        return component.ecosystem().osvName().equals(affected.path("package").path("ecosystem").asText())
+                && component.packageName().equals(component.ecosystem()==ScaEcosystem.PYPI
+                ?com.securedeploy.sca.parser.PythonRequirement.normalizeName(affected.path("package").path("name").asText())
+                :affected.path("package").path("name").asText());
+    }
 }

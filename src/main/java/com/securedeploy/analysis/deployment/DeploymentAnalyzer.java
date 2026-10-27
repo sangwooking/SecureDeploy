@@ -11,8 +11,8 @@ public final class DeploymentAnalyzer {
         if (python != null) files.addAll(python.files());
         int parsed = 0, omitted = 0;
         long chars = 0, deadline = System.nanoTime() + 2_000_000_000L;
-        for (var file : project.analysisFiles().stream().sorted(Comparator.comparing(ProjectFile::relativePath)).toList()) {
-            if (file.type() != ProjectFileType.DOCKER_COMPOSE && file.type() != ProjectFileType.CLOUDFLARE_CONFIG) continue;
+        for (var file : project.analysisFiles().stream().sorted(Comparator.comparingInt((ProjectFile f)->f.type()==ProjectFileType.DOCKER_COMPOSE||f.type()==ProjectFileType.CLOUDFLARE_CONFIG?0:1).thenComparing(ProjectFile::relativePath)).toList()) {
+            if (!Set.of(ProjectFileType.DOCKER_COMPOSE,ProjectFileType.CLOUDFLARE_CONFIG,ProjectFileType.DOCKERFILE,ProjectFileType.GITHUB_ACTIONS).contains(file.type())) continue;
             long length = file.lines().stream().mapToLong(s -> s.length() + 1L).sum();
             String path = CoverageRecorder.safePath(file.relativePath());
             if (++parsed > 50 || chars + length > 1_000_000 || System.nanoTime() > deadline || path.equals("[redacted-path]")) {
@@ -21,14 +21,14 @@ public final class DeploymentAnalyzer {
                 continue;
             }
             chars += length;
-            files.add(file.type() == ProjectFileType.DOCKER_COMPOSE ? ComposeInspector.inspect(file) : WranglerInspector.inspect(file));
+            files.add(switch(file.type()) {case DOCKER_COMPOSE->ComposeInspector.inspect(file);case DOCKERFILE->DockerfileInspector.inspect(file);case GITHUB_ACTIONS->WorkflowInspector.inspect(file);default->WranglerInspector.inspect(file);});
         }
         var limits = new ArrayList<>(List.of("DECLARATIONS_ONLY_RUNTIME_AND_OVERRIDES_UNKNOWN", "SUPPLEMENTAL_REVIEW_NOT_RISK_OR_SCORE"));
         if (omitted > 50) limits.add("OMITTED_CONFIG_DETAILS:" + (omitted - 50));
         if (python == null && project.analysisFiles().stream().anyMatch(f -> f.type() == ProjectFileType.PYTHON)) limits.add("DJANGO_SETTINGS_NOT_RUN");
         int candidates = files.stream().mapToInt(f -> (int) f.observations().stream().filter(o -> DeploymentGuidance.TEXT.containsKey(o.ruleId())).count()).sum();
         if (candidates > 300) limits.add("CONFIG_FINDING_LIMIT");
-        return new DeploymentSnapshot(1, "deployment-v1", files.isEmpty() && !limits.contains("DJANGO_SETTINGS_NOT_RUN") ? "NOT_APPLICABLE" : "PARTIAL",
+        return new DeploymentSnapshot(1, "deployment-v2", files.isEmpty() && !limits.contains("DJANGO_SETTINGS_NOT_RUN") ? "NOT_APPLICABLE" : "PARTIAL",
                 List.copyOf(files), DeploymentGuidance.findings(files), List.copyOf(limits));
     }
 }

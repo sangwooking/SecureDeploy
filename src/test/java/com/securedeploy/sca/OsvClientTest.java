@@ -146,4 +146,21 @@ class OsvClientTest {
         assertThat(mapped.score()).isNull();
         assertThat(mapped.severity()).isNull();
     }
+    @Test void mismatchedEcosystemDetailsRetainQueryIdButCannotSupplySeverityOrFix() {
+        server.expect(requestTo("https://api.osv.dev/v1/querybatch")).andRespond(withSuccess("{\"results\":[{\"vulns\":[{\"id\":\"GHSA-offline-mismatch\"}]}]}",MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://api.osv.dev/v1/vulns/GHSA-offline-mismatch")).andRespond(withSuccess("""
+                {"id":"GHSA-offline-mismatch","severity":[{"type":"CVSS_V3","score":"9.8"}],
+                 "affected":[{"package":{"ecosystem":"PyPI","name":"example"},"ranges":[{"type":"ECOSYSTEM","events":[{"introduced":"0"},{"fixed":"9.9.9"}]}]}]}
+                """,MediaType.APPLICATION_JSON));
+        var r=client.lookup(List.of(dependency(ScaEcosystem.NPM,"example","1.0.0","package-lock.json")));
+        assertThat(r.findings()).hasSize(1);assertThat(r.findings().get(0).osvId()).isEqualTo("GHSA-offline-mismatch");
+        assertThat(r.incomplete()).isTrue();assertThat(r.findings().get(0).severity()).isNull();
+        assertThat(r.findings().get(0).fixedVersions()).isEmpty();assertThat(r.warnings()).isNotEmpty();server.verify();
+    }
+    @Test void withdrawnAdvisoryIsNotAnActiveVulnerability() {
+        server.expect(requestTo("https://api.osv.dev/v1/querybatch")).andRespond(withSuccess("{\"results\":[{\"vulns\":[{\"id\":\"GHSA-offline-withdrawn\"}]}]}",MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://api.osv.dev/v1/vulns/GHSA-offline-withdrawn")).andRespond(withSuccess("{\"id\":\"GHSA-offline-withdrawn\",\"withdrawn\":\"2026-01-01T00:00:00Z\"}",MediaType.APPLICATION_JSON));
+        var result=client.lookup(List.of(dependency(ScaEcosystem.NPM,"example","1.0.0","package-lock.json")));
+        assertThat(result.findings()).isEmpty();assertThat(result.analyzedIdentities()).hasSize(1);assertThat(result.incomplete()).isFalse();server.verify();
+    }
 }

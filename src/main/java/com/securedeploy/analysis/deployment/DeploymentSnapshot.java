@@ -20,7 +20,7 @@ public record DeploymentSnapshot(int schemaVersion, String analyzerVersion, Stri
         files.forEach(f -> counts.merge(f.format() + ":" + f.status(), 1, Integer::sum));
         var analyzers = new ArrayList<>(ledger.analyzers());
         analyzers.add(new CoverageLedger.Analyzer("DEPLOYMENT_CONFIG", status,
-                "Compose 서비스·Django 리터럴·Wrangler 환경별 선언 검사. 실제 활성 환경·override·네트워크 노출은 미검증. 기존 Risk와 별도 검토 항목입니다.", counts));
+                "Dockerfile·Compose·GitHub Actions·Django·Wrangler의 지원 선언 검사. 이미지·실행 workflow·활성 환경·override·운영 권한은 미검증. 기존 Risk와 별도 검토 항목입니다.", counts));
         return new CoverageLedger(ledger.schemaVersion(), ledger.policyVersion(),
                 "FAILED".equals(ledger.status()) ? "FAILED" : files.isEmpty() ? ledger.status() : "PARTIAL",
                 ledger.discoveredFiles(), ledger.selectedFiles(), ledger.unsupportedFiles(), ledger.excludedFiles(),

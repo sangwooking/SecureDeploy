@@ -24,3 +24,10 @@ test('untrusted API strings are escaped, never rendered as source HTML',()=>{
   const data=fixture();data.findings[0].reason='<img src=x onerror=alert(1)>';
   const html=render(data);assert.ok(!html.includes('<img'));assert.ok(html.includes('&lt;img'));
 });
+test('Docker and workflow boundaries stay declarations without offering unsupported patches',()=>{
+ const data=fixture();data.analyzerVersion='deployment-v2';
+ data.findings[0]={...data.findings[0],ruleId:'CI_UNTRUSTED_PR_EXECUTION',filePath:'.github/workflows/check.yml',title:'외부 PR 코드 실행 검토',reason:'CWE-829 · 실제 token·secret·승인은 미검증'};
+ data.files[0].format='GITHUB_ACTIONS';data.files[0].limitations=['WORKFLOW_DECLARATIONS_NOT_RUNNER_OR_ATTACK_PROOF','ORGANIZATION_TOKEN_SECRETS_AND_ENVIRONMENT_APPROVAL_UNKNOWN','IMAGE_CONTENTS_LAYERS_SBOM_AND_REGISTRY_NOT_INSPECTED'];
+ const html=render(data);for(const s of ['외부 PR 코드 실행 검토','.github/workflows/check.yml','Actions·shell을 실행하거나','digest는 패치 완료의 증명이 아닙니다','NOT_COMPARED'])assert.ok(html.includes(s),s);
+ assert.ok(!html.includes('자동 수정안 만들기'));assert.ok(!html.includes('AI 수정안 만들기'));
+});

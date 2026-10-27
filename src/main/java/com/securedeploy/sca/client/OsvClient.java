@@ -96,14 +96,21 @@ public class OsvClient implements VulnerabilityDataSource {
                 }
                 if (data == null) data = JsonNodeFactory.instance.objectNode();
                 if (data.hasNonNull("withdrawn")) continue;
+                if(data.has("affected")&&(!data.path("affected").isArray()
+                        ||!java.util.stream.StreamSupport.stream(data.path("affected").spliterator(),false).anyMatch(a->OsvAdvisoryMapper.matchesPackage(a,component)))) {
+                    String warning="OSV 조회 ID와 advisory의 생태계·패키지 근거가 일치하지 않습니다. ID만 보존하고 심각도·수정 버전은 미확인으로 남겼습니다.";
+                    if(!warnings.contains(warning))warnings.add(warning);
+                    data=JsonNodeFactory.instance.objectNode();
+                }
                 if (findings.size() >= 2000) {
                     warnings.add("SCA 결과 2000건 제한으로 일부 결과를 생략했습니다.");
-                    return new LookupResult(findings, completed, true, warnings);
+                    return new LookupResult(OsvAliasDeduplicator.merge(findings,warnings), completed, true, warnings);
                 }
                 findings.add(advisoryMapper.map(id, data, component, paths));
             }
         }
-        return new LookupResult(findings, completed, !warnings.isEmpty(), warnings);
+        var deduplicated=OsvAliasDeduplicator.merge(findings,warnings);
+        return new LookupResult(deduplicated, completed, !warnings.isEmpty(), warnings);
     }
 
     private JsonNode request(RestClient.RequestHeadersSpec<?> request, Budget budget) {
