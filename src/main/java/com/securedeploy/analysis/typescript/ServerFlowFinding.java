@@ -19,6 +19,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         findings.addAll(connectExposure(snapshot));
         findings.addAll(connectService(snapshot));
         findings.addAll(connectNode(snapshot));
+        findings.addAll(connectMongoose(snapshot));
         if (snapshot.httpUses() == null) return List.copyOf(findings);
         Map<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>> groups = new LinkedHashMap<>();
         for (var candidate : snapshot.findings()) {
@@ -43,6 +44,23 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
                         "로컬 Mock HTTP 테스트로 허용되지 않은 호스트·프로토콜·리다이렉트가 거부되는지 검증하세요. 운영 서버에 SSRF 요청을 보내지 마세요.",
                         "같은 프로젝트를 재검사하여 흐름 근거를 확인하세요. 이 항목은 기존 점수·배포 판정·해결 건수에 자동 합산되지 않습니다."))));
         return List.copyOf(findings);
+    }
+
+    private static List<ServerFlowFinding> connectMongoose(ServerAnalysisSnapshot snapshot) {
+        if(snapshot.nodeUses()==null)return List.of();
+        return snapshot.findings().stream().filter(f->f.ruleId().equals("JS_MONGOOSE_SELECTOR_INPUT_FLOW")
+                &&f.confidence().equals("HIGH")&&f.disposition().equals("REVIEW_REQUIRED")
+                &&snapshot.nodeUses().stream().anyMatch(u->u.ruleId().equals(f.ruleId())&&u.kind().equals("SELECTOR_INPUT_CANDIDATE")
+                    &&u.location().equals(f.sink())&&u.trace().equals(f.flow())))
+            .collect(java.util.stream.Collectors.toMap(ServerAnalysisSnapshot.Finding::sink,f->f,(a,b)->a,LinkedHashMap::new))
+            .values().stream().map(f->new ServerFlowFinding(identity(snapshot.analyzerVersion(),f.ruleId(),f.sink()),
+                "TYPESCRIPT_DATA_FLOW",snapshot.analyzerVersion(),f.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",f.sink(),List.of(f),
+                f.flow().stream().filter(l->l.kind().equals("MONGOOSE_QUERY_EXECUTION_REQUEST")).toList(),
+                "사용자가 보낸 객체가 데이터 조회 조건에 영향을 줄 수 있습니다",
+                "정적으로 연결된 요청 입력이 Mongoose 조회 조건에 전달되고 await 또는 exec 요청이 확인됐습니다. 실제 실행·설치 버전·스키마 변환·미들웨어·공격 성공은 확인하지 않았습니다. 높은 Confidence는 정적 전달 근거의 확신도입니다.",
+                f.recommendation(),List.of("입력과 모델 선언, 쿼리 및 방어 설정 위치를 검토하세요.",
+                    "로컬에서 정상 문자열과 객체형 입력을 비교하고 실제 설치 버전·sanitizeFilter·trusted 예외를 확인하세요.",
+                    "수정 후 같은 프로젝트를 재검사하세요. 점수·배포 판단 및 해결 건수와는 별도입니다."))).toList();
     }
 
     private static List<ServerFlowFinding> connectNode(ServerAnalysisSnapshot snapshot) {

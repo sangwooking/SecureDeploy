@@ -260,7 +260,7 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v28".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v29".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200
@@ -278,7 +278,7 @@ public class TypeScriptServerAnalyzer {
             locations.add(s.location()); locations.addAll(s.trace());
         });
         result.nodeUses().forEach(s->{
-            if(s.trace().size()>20||s.limitations().size()>20||!Set.of("JS_SEQUELIZE_SQL_INPUT_FLOW","JS_SHELL_COMMAND_INPUT_FLOW","JS_EVAL_INPUT_FLOW","JS_MONGO_WHERE_INPUT_FLOW","JS_MONGO_RESOURCE_ACCESS","JS_CONSTRUCTOR_EFFECT","JS_SERVER_ENTRY_CONTEXT").contains(s.ruleId()))throw new IllegalArgumentException("INVALID_NODE_USE");
+            if(s.trace().size()>20||s.limitations().size()>20||!Set.of("JS_MONGOOSE_SELECTOR_INPUT_FLOW","JS_SEQUELIZE_SQL_INPUT_FLOW","JS_SHELL_COMMAND_INPUT_FLOW","JS_EVAL_INPUT_FLOW","JS_MONGO_WHERE_INPUT_FLOW","JS_MONGO_RESOURCE_ACCESS","JS_CONSTRUCTOR_EFFECT","JS_SERVER_ENTRY_CONTEXT").contains(s.ruleId()))throw new IllegalArgumentException("INVALID_NODE_USE");
             locations.add(s.location());locations.addAll(s.trace());
         });
         result.authorizationContexts().forEach(c -> { locations.add(c.entry()); locations.addAll(c.checks()); locations.addAll(c.defenses()); locations.addAll(c.resources()); });

@@ -2,6 +2,7 @@ import path from 'node:path';
 import {constructorSummaries} from './constructor-summary.mjs';
 import {sequelizeContracts} from './sequelize.mjs';
 import {moduleResolution} from './module-resolution.mjs';
+import {mongooseContracts} from './mongoose.mjs';
 
 // Library contracts over AST values only. Never require/import/eval target modules.
 export function nodeServer(api) {
@@ -42,11 +43,13 @@ export function nodeServer(api) {
   };
   const summaries=constructorSummaries({...api,functionValue,object,validMongo});
   const sequelize=sequelizeContracts({...api,object,native,findModule,observe});
+  const mongoose=mongooseContracts({...api,object,native});
   function findModule(mod,spec,mode='require') { return resolver.resolve(mod,spec,mode); }
   function dependency(mod,spec,mode='require') {
     if(spec==='express')return native('express',mod);
     if(spec==='mongodb')return native('mongodb',mod);
     if(spec==='sequelize')return native('sequelize',mod);
+    if(spec==='mongoose')return mongoose.dependency(mod);
     if(['child_process','node:child_process'].includes(spec))return native('node-child-process',mod);
     if(['http','node:http','https','node:https'].includes(spec))return native('node-http',mod);
     const target=findModule(mod,spec,mode);
@@ -94,6 +97,7 @@ export function nodeServer(api) {
     }finally{loading.delete(mod);}
   }
   function property(base,key,node,state) {
+    const mongooseProperty=mongoose.property(base,key);if(mongooseProperty)return mongooseProperty;
     if(base.unknown||base.ref?.unknown)return;
     if(base.tag==='function')return base.ref?.properties.get(key)??unknown();
     if(base.native==='mongodb'&&key==='MongoClient')return native('mongo-client',base.nativeMod,base.ref);
@@ -120,6 +124,7 @@ export function nodeServer(api) {
     if(['node-module','node-exports','express-locals','node-instance','object','function'].includes(receiver.tag)&&!receiver.unknown&&!receiver.ref.unknown) {
       const ref=state.forkRefs?.get(receiver.ref)??receiver.ref;
       if(state.forkRefs&&ref.nodeIdentity)state.nodeMutations?.add(ref.nodeIdentity);
+      if(ref.mongooseTracked)ref.mongooseRevision=(ref.mongooseRevision??0)+1;
       ref.properties.set(String(key.constant),v);return true;
     }
     return false;
@@ -157,6 +162,7 @@ export function nodeServer(api) {
   function call(node,callee,receiver,args,state,global,callable) {
     if(!state.nodeMode)return;
     const rawQuery=sequelize.call(node,receiver,args,state,callable);if(rawQuery)return rawQuery;
+    const selector=mongoose.call(node,callee,receiver,args,state,global,callable);if(selector)return selector;
     const method=ts.isPropertyAccessExpression(callee)?callee.name.text:undefined;
     if(global&&ts.isIdentifier(callee)&&callee.text==='require'&&ts.isCallExpression(node))
       return {value:args.length===1&&literal(args[0])&&typeof args[0].constant==='string'
@@ -345,5 +351,5 @@ export function nodeServer(api) {
     }
     for(const route of routes)if(![...reachable].some(app=>app.routes.includes(route)))note(route.target.mod,'UNMOUNTED_ROUTER_NOT_ANALYZED');
   }
-  return {property,write,call,construct,discover,functionValue};
+  return {property,write,call,construct,discover,functionValue,awaitValue:mongoose.consume};
 }

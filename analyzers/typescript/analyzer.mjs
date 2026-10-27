@@ -13,7 +13,7 @@ import { syntaxIndex, indexSyntax } from './syntax-index.mjs';
 import { regexFlow } from './regex-flow.mjs';
 import {tsPaths} from './ts-paths.mjs';
 
-export const VERSION = 'ts-server-v28';
+export const VERSION = 'ts-server-v29';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -494,7 +494,11 @@ export function analyze(input, overrides = {}) {
       if (node.text === 'undefined' && !mod.declared.has(node.text) && !mod.imports.has(node.text)) return constant(undefined);
       return unknown();
     }
-    if (ts.isAwaitExpression(node)) return expr(node.expression, state);
+    if (ts.isAwaitExpression(node)) {
+      const v=expr(node.expression,state);
+      if(state.nodeMode&&v.tag==='mongoose-query'){nodeSupport.awaitValue(v,node,state);return unknown();}
+      return v;
+    }
     const environment=serverEnvironmentValue(node,state);
     if(environment)return environment;
     if (ts.isPropertyAccessExpression(node)) return property(expr(node.expression, state), node.name.text, node, state);
@@ -766,7 +770,11 @@ export function analyze(input, overrides = {}) {
         argument.ref.properties.clear();
       }
       note(mod, 'CALL_TARGET_UNRESOLVED');
-      return { ...incoming, unknown: true, environmentResponses:undefined, destination: unresolvedDestination(), urlPrefix: undefined };
+      const selectorString=state.nodeMode&&ts.isCallExpression(node)&&(global&&ts.isIdentifier(callee)&&callee.text==='String'&&args.length===1
+        ||ts.isPropertyAccessExpression(callee)&&callee.name.text==='toString'&&args.length===0
+          &&(receiverInput?.selectorString||receiverInput?.inputShape==='STRING'||hasConstant(receiverInput??unknown())&&typeof receiverInput.constant==='string'));
+      return { ...incoming, unknown: true, environmentResponses:undefined, destination: unresolvedDestination(), urlPrefix: undefined,
+        selectorString:selectorString||undefined,...(selectorString?{ref:undefined}:{}) };
     }
     if (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) {
       const operand = expr(node.operand, state);

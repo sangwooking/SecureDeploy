@@ -1,5 +1,17 @@
 # Bounded server analysis runtime
 
+Version ts-server-v29 adds bounded Mongoose selector evidence; RLS v3 and
+column-update-v1 meanings are unchanged. Mongoose support covers declared
+4.x-8.x APIs, explicit flat String/Number/Boolean/Date Schema/model registration (and same-instance
+registered-model lookup), CommonJS/ESM source links, and find/findOne consumed
+by await or direct exec(). Merely constructing a query is not execution.
+Input objects may produce REVIEW_REQUIRED/NOT_COMPARED candidates; runtime
+casts, plugins, middleware, installed versions and database access are unverified.
+String conversion evidence is local to this selector contract, not SQL/XSS safety.
+sanitizeFilter is considered only for declared 6.x-8.x and static field filters;
+unknown settings, trusted exceptions, whole untrusted filters and missing model
+registration remain UNKNOWN. Class/DB-event initialization is not supported.
+
 Version ts-server-v28 preserves RLS v3 row-policy meaning and adds optional
 column-update-v1 declaration evidence. Explicit UPDATE(column, ...) GRANT/REVOKE
 is tracked separately from table privileges. Table REVOKE also clears that role's
