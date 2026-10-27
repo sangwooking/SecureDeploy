@@ -101,3 +101,12 @@ tasks.register('editingBrowserServer', JavaExec) {
     maxHeapSize = '512m'
     environment = System.getenv().findAll { key, value -> key in ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'JAVA_HOME'] }
 }
+
+tasks.register('productReadinessServer', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.securedeploy.evaluation.ProductReadinessServer'
+    maxHeapSize = '512m'
+    environment = System.getenv().findAll { key, value -> key in ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'JAVA_HOME'] }
+    if (project.hasProperty('readinessLiveSca')) args 'LIVE_SCA'
+}
