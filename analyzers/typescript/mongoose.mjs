@@ -77,10 +77,13 @@ export function mongooseContracts(api) {
     }
     consume(query,node,state,fn);
     note(state.mod,'MONGOOSE_CALLBACK_BODY_NOT_ANALYZED');
-    // Callback effects may occur after this request. Do not execute the body or
-    // retain certainty for subsequent code when those effects were not modeled.
+    // Do not execute the callback or retain subsequent Mongoose protection
+    // certainty. Unrelated SQL/environment paths keep their existing contract.
     const body=fn.target.node.body;
-    if(!body||!ts.isBlock(body)||body.statements.length){state.uncertain=true;note(state.mod,'MONGOOSE_CALLBACK_EFFECTS_UNKNOWN');}
+    if(!body||!ts.isBlock(body)||body.statements.length){
+      query.ref.properties.get('@model')?.ref?.originParent?.properties.set('@callbackEffectsUnknown',constant(true));
+      note(state.mod,'MONGOOSE_CALLBACK_EFFECTS_UNKNOWN');
+    }
     return true;
   }
   function consume(query,node,state,fn) {
@@ -94,7 +97,8 @@ export function mongooseContracts(api) {
     const filterObject=filter?.tag==='object'&&filter.ref&&!filter.unknown&&!filter.ref.unknown;
     const rootProtected=filterObject&&[...filter.ref.properties.keys()].every(k=>typeof k==='string'&&!k.startsWith('$')&&!k.includes('.'));
     const configUnknown=!literal(option)||typeof option.constant!=='boolean'||hasOption&&version<6
-      ||!!model?.ref?.originParent?.properties.get('@trustedUnknown')||!!ref.properties.get('@optionsUnknown');
+      ||!!model?.ref?.originParent?.properties.get('@trustedUnknown')||!!ref.properties.get('@optionsUnknown')
+      ||!!model?.ref?.originParent?.properties.get('@callbackEffectsUnknown');
     const schema=model?.ref?.properties.get('@schema');
     const filterChanged=(ref.filterVersions??[]).some(v=>v.ref.unknown||(v.ref.mongooseRevision??0)!==v.revision);
     const unresolved=!valid(query)||!valid(model)||schema&&!valid(schema)||!version||state.uncertain||proof.uncertain||configUnknown||filterChanged;

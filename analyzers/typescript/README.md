@@ -5,7 +5,8 @@ execution requests for find/findOne and exec(callback). Functions must have a
 resolved static origin and optional argument positions must be unambiguous.
 Mongoose 7.x-8.x callbacks are recorded as unsupported; ambiguous versions or
 callbacks remain UNKNOWN. Bodies are not invoked or traced, and unmodeled
-callback effects make subsequent code in that entry uncertain. One Query's
+callback effects make subsequent Mongoose protection context uncertain. Unrelated
+SQL/environment contracts are not downgraded by this uncertainty. One Query's
 repeated/mixed execution is not counted as another finding. RLS, columns,
 Risk and historical snapshots are unchanged.
 

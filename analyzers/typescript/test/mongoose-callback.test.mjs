@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {analyze} from '../analyzer.mjs';
 import {callbackCases} from './mongoose-callback-cases.mjs';
+import {mongooseInput} from './mongoose-cases.mjs';
 const rule='JS_MONGOOSE_SELECTOR_INPUT_FLOW';
 for(const c of callbackCases)test('Mongoose callback contract: '+c.id,()=>{
   const r=analyze(c.input),findings=r.findings.filter(f=>f.ruleId===rule),uses=r.nodeUses.filter(u=>u.ruleId===rule);
@@ -22,4 +23,14 @@ for(const c of callbackCases)test('Mongoose callback contract: '+c.id,()=>{
     assert.ok(uses.some(u=>u.limitations.includes('MONGOOSE_REPEAT_OR_MIXED_EXECUTION_UNKNOWN')));
   }
   assert.deepEqual(analyze(c.input),r);
+});
+test('unmodeled callback effects do not suppress an unrelated existing environment response path',()=>{
+  const r=analyze(mongooseInput("Model.findOne({email:req.body.email},()=>{return;});res.json({value:process.env.API_SECRET});"));
+  assert.equal(r.findings.filter(f=>f.ruleId===rule).length,1);
+  assert.equal(r.findings.filter(f=>f.ruleId==='TS_SENSITIVE_DATA_EXPOSURE').length,1);
+});
+test('callback uncertainty stays inside its request graph',()=>{
+  const input=mongooseInput('Model.findOne({email:req.body.email},()=>{return;});');
+  input.files[0].content+="app.post('/other',async(req,res)=>{Model.findOne({email:req.body.email},()=>{});});";
+  const r=analyze(input);assert.equal(r.findings.filter(f=>f.ruleId===rule).length,2);
 });
