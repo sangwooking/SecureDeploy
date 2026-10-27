@@ -14,6 +14,10 @@ for(const c of accessCases)test('access-control evidence: '+c.id,()=>{
   assert.ok(e.requestEntry);assert.equal(access.clientStatus,'CLIENT_DECLARATION_LINKED');
   for(const l of filters){assert.equal(l.kind,'IDENTITY_RESULT_ID_FILTER_OBSERVED');assert.ok(l.line>0&&l.column>0);}
  }
+ if(c.id==='body-object-and-identity'){
+  assert.deepEqual(access.writeEvidence.filters.map(f=>f.source),['REQUEST_CONTROLLED','VERIFIED_USER_EVIDENCE']);
+  assert.equal(access.operation,'UPDATE');
+ }
  assert.deepEqual(analyze(c.input),r);
 });
 test('arbitrary columns do not acquire ownership meaning and missing SQL remains unknown',()=>{
