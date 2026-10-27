@@ -26,8 +26,19 @@ export function sequelizeContracts(api) {
     if(args.length<1||args.length>2){note(state.mod,'SEQUELIZE_QUERY_ARGUMENT_CONTRACT_UNKNOWN');return {value:unknown()};}
     const options=args[1],knownOptions=!options||options.tag==='object'&&!options.unknown&&!options.ref?.unknown
       &&![...options.ref.properties.keys()].some(k=>!['model','mapToModel','type','plain','raw','nest','bind','replacements','logging'].includes(k));
-    const sql=args[0],trace=[...sql.trace,...(receiver.ref.origin??[])];
-    api.observe({...sql,trace:sql.trace.length?trace.slice(0,20):[],unknown:sql.unknown||!knownOptions||trace.length>20},node,state,rule,'CWE-89','SEQUELIZE_RAW_QUERY');
+    let sql=args[0],knownQuery=true;
+    if(sql.tag==='object'){
+      const properties=sql.ref?.properties;
+      knownQuery=!sql.unknown&&!sql.ref?.unknown&&!!properties?.has('query')
+        &&[...properties.keys()].every(k=>['query','values','bind'].includes(k));
+      const has=(object,key)=>object?.ref?.properties.has(key);
+      if(has(sql,'values')&&has(options,'replacements')||has(sql,'bind')&&has(options,'bind')
+        ||(has(sql,'values')||has(options,'replacements'))&&(has(sql,'bind')||has(options,'bind')))knownQuery=false;
+      if(properties?.has('query'))sql=properties.get('query');
+      if(!knownQuery)note(state.mod,'SEQUELIZE_SQL_OBJECT_UNRESOLVED');
+    }
+    const trace=[...sql.trace,...(receiver.ref.origin??[])];
+    api.observe({...sql,trace:sql.trace.length?trace.slice(0,20):[],unknown:sql.unknown||!knownOptions||!knownQuery||trace.length>20},node,state,rule,'CWE-89','SEQUELIZE_RAW_QUERY');
     return {value:unknown()};
   }
 

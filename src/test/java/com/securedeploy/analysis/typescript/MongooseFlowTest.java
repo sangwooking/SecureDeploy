@@ -18,7 +18,7 @@ class MongooseFlowTest {
     }
     @Test void modelOriginAndConsumedInputProduceSupplementalFindingWithExactEvidence() {
         var result=analyze("const email=req.body.email;await Model.findOne({email});","6.13.0");
-        assertThat(result.analyzerVersion()).isEqualTo("ts-server-v34");
+        assertThat(result.analyzerVersion()).isEqualTo("ts-server-v35");
         assertThat(result.validatedFindings()).hasSize(1).allSatisfy(f->{
             assertThat(f.ruleId()).isEqualTo("JS_MONGOOSE_SELECTOR_INPUT_FLOW");
             assertThat(f.priority().name()).isEqualTo("REVIEW_REQUIRED");
@@ -41,6 +41,17 @@ class MongooseFlowTest {
         }
         assertThat(analyze("await Model.findOne(req.body);","latest").nodeUses()).anyMatch(u->u.kind().equals("UNKNOWN"));
         assertThat(analyze("await Model.findOne({email:req.body.email},null,{sanitizeFilter:true});","5.13.0").validatedFindings()).isEmpty();
+    }
+    @Test void repeatedFilterAliasesAreNotCyclesAndSafeAliasesRemainData(){
+        var risk=analyze("const x=req.body;await Model.findOne({email:x,another:x});","6.13.0");
+        assertThat(risk.validatedFindings()).hasSize(1);
+        assertThat(risk.validatedFindings().get(0).comparisonPolicy()).isEqualTo("NOT_COMPARED");
+        var safe=analyze("const x='fixed';await Model.findOne({email:x,another:x});","6.13.0");
+        assertThat(safe.validatedFindings()).isEmpty();
+        assertThat(safe.nodeUses()).anyMatch(u->u.kind().equals("STATIC_OR_STRING_FILTER"));
+        var converter=new ServerAnalysisConverter();String json=converter.convertToDatabaseColumn(risk);
+        assertThat(converter.convertToEntityAttribute(json)).isEqualTo(risk);
+        assertThat(json).doesNotContain("const x=req.body");
     }
     @Test void callbackExecutionIsVersionAwareAndRepeatsDoNotDuplicateTheUserWarning() {
         for(String version:List.of("4.13.0","5.13.0","6.13.0")){

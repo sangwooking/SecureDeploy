@@ -25,13 +25,15 @@ export function mongooseContracts(api) {
     if(base.native==='mongoose'&&key==='default')return base;
     if(base.native==='mongoose'&&key==='Schema')return {...native('mongoose-schema',base.nativeMod),ref:base.ref};
   }
-  function scan(v,state,depth=0,seen=new Set()) {
+  function scan(v,state,depth=0,seen=new Set(),budget={remaining:1024}) {
     tick(state.mod);
-    if(!v||depth>3||seen.has(v))return {trace:[],uncertain:true,trusted:false};
-    seen.add(v);
+    if(--budget.remaining<0){note(state.mod,'MONGOOSE_FILTER_SCAN_LIMIT');return {trace:[],uncertain:true,trusted:false};}
+    const identity=v?.ref??v;
+    if(!v||depth>3||seen.has(identity))return {trace:[],uncertain:true,trusted:false};
+    seen=new Set([...seen,identity]);
     const validations=v.fieldDefenses??[];
     if(v.selectorString||!v.fieldValidationUncertain&&(v.fieldString||!v.unknown&&(['STRING','STRING_MAP'].includes(v.inputShape)||v.tag==='numeric'||v.tag==='boolean'))||literal(v)&&!v.ref)
-      return {trace:[],uncertain:!!v.traceTruncated,trusted:!!v.selectorTrusted,validations};
+      return {trace:[],uncertain:!!v.traceTruncated,trusted:false,validations};
     if(v.fieldEmail&&!v.fieldValidationUncertain)return {trace:[],uncertain:false,trusted:false,validations,formatOnly:true};
     const own={trace:v.trace??[],uncertain:!!v.unknown||!!v.ref?.unknown||!!v.fieldValidationUncertain,trusted:!!v.selectorTrusted||!!v.ref?.selectorTrusted,validations,formatOnly:false};
     if(state.fieldGuardUsed&&v.fieldOrigin?.parts.length===2&&own.trace.length)
@@ -40,7 +42,7 @@ export function mongooseContracts(api) {
       const children=[];
       for(const [key,child]of v.ref.properties){
         if(children.length>=40)return {...own,uncertain:true};
-        const c=scan(child,state,depth+1,seen);if(typeof key!=='string'||key.startsWith('$')||key.includes('.')||key==='__proto__')c.uncertain=true;
+        const c=scan(child,state,depth+1,seen,budget);if(typeof key!=='string'||key.startsWith('$')||key.includes('.')||key==='__proto__')c.uncertain=true;
         children.push(c);
       }
       own.trace=union({trace:own.trace},...children.map(c=>({trace:c.trace}))).trace;
@@ -48,6 +50,7 @@ export function mongooseContracts(api) {
       own.formatOnly=children.some(c=>c.formatOnly);
       own.validations=children.flatMap(c=>c.validations??[]).filter((v,i,a)=>a.findIndex(w=>JSON.stringify(w)===JSON.stringify(v))===i).slice(0,10);
     }
+    own.trusted&&=!!own.trace.length;
     return own;
   }
   function options(v) {
