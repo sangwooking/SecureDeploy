@@ -49,6 +49,7 @@ export function nodeServer(api) {
   const fields=fieldValidation({...api,native});
   function findModule(mod,spec,mode='require') { return resolver.resolve(mod,spec,mode); }
   function dependency(mod,spec,mode='require') {
+    const fileModule=api.filesSupport.dependency(spec);if(fileModule)return fileModule;
     if(spec==='express')return native('express',mod);
     if(spec==='mongodb')return native('mongodb',mod);
     if(spec==='sequelize')return native('sequelize',mod);
@@ -105,6 +106,7 @@ export function nodeServer(api) {
     }finally{loading.delete(mod);}
   }
   function property(base,key,node,state) {
+    const fileProperty=api.filesSupport.property(base,key,node,state);if(fileProperty)return fileProperty;
     const mongooseProperty=mongoose.property(base,key);if(mongooseProperty)return mongooseProperty;
     if(base.unknown||base.ref?.unknown)return;
     if(base.tag==='function')return base.ref?.properties.get(key)??unknown();
@@ -118,6 +120,10 @@ export function nodeServer(api) {
       return base.ref.properties.get(key);
     }
     if(base.tag==='express-request') {
+      if(['file','files'].includes(key)){
+        note(state.mod,'UPLOAD_MIDDLEWARE_AND_STORAGE_NOT_VERIFIED');
+        return value('input',[loc(node,state.mod,'UPLOAD_FILE_UNVERIFIED',state.fn)],{unknown:true});
+      }
       if(['query','body','params'].includes(key))return value('input',[loc(node,state.mod,'EXPRESS_'+key.toUpperCase(),state.fn)],{inputShape:key==='params'?'STRING_MAP':undefined,
         fieldOrigin:fields.root(base,key,node,state),fieldValidationUncertain:base.fieldValidationUncertain});
       if(['user','session'].includes(key)){

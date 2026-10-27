@@ -4,6 +4,7 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {pathToFileURL,fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
 export async function evaluate(root){
  const {analyze}=await import(pathToFileURL(resolve(root,'analyzers/typescript/analyzer.mjs')));
  const rows=[];
@@ -29,6 +30,7 @@ export async function evaluate(root){
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const [baseline,output]=process.argv.slice(2);if(!baseline||!output)throw Error('TRUSTED_BASELINE_ROOT_AND_FRESH_OUTPUT_REQUIRED');
+ assert.equal(execFileSync('git',['rev-parse','HEAD'],{cwd:baseline,encoding:'utf8'}).trim(),'840f0601a3aee217556e92104b2c246860753ecb');
  const before=await evaluate(baseline),after=await evaluate(fileURLToPath(new URL('../../',import.meta.url)));
  const result={schemaVersion:1,baselineCommit:'840f0601a3aee217556e92104b2c246860753ecb',grade:'B_SAME_AUTHOR_NONBLIND',
   before,after,repeatIdentical:true,newOriginalApplicationTP:0,targetSourceExecuted:false,

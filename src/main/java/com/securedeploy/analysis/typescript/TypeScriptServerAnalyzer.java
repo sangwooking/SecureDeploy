@@ -129,7 +129,7 @@ public class TypeScriptServerAnalyzer {
             if (candidates.size() > sources.size() + omitted.size()) limitations.add("OMITTED_FILE_DETAILS_TRUNCATED");
             return new ServerAnalysisSnapshot(parsed.schemaVersion(), parsed.analyzerVersion(), parsed.parserVersion(),
                     selection.coverage().omittedFiles()==0 ? parsed.status() : "PARTIAL", List.copyOf(files), parsed.findings(), parsed.sqlUses(),
-                    parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses()).withExposureUses(parsed.exposureUses()).withNodeUses(parsed.nodeUses()).withSupabaseAnalysis(parsed.supabaseAnalysis());
+                    parsed.authorizationContexts(), List.copyOf(limitations), ServerFlowFinding.connect(parsed), parsed.httpUses()).withExposureUses(parsed.exposureUses()).withResourceUses(parsed.resourceUses()).withNodeUses(parsed.nodeUses()).withSupabaseAnalysis(parsed.supabaseAnalysis());
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
             return ServerAnalysisSnapshot.unavailable("UNAVAILABLE", unavailableFiles, "ANALYSIS_INTERRUPTED");
@@ -260,11 +260,12 @@ public class TypeScriptServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"ts-server-v36".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
+        if (result.schemaVersion() != 1 || !"ts-server-v37".equals(result.analyzerVersion()) || !"6.0.3".equals(result.parserVersion())
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.exposureUses() == null || result.exposureUses().size() > 200
                 || result.nodeUses() == null || result.nodeUses().size() > 200
+                || result.resourceUses() == null || result.resourceUses().size() > 200
                 || result.authorizationContexts().size() > 200) throw new IllegalArgumentException("INVALID_ANALYZER_RESPONSE");
         if (!result.files().stream().map(FileCoverage::filePath).collect(java.util.stream.Collectors.toSet()).equals(files.keySet()))
             throw new IllegalArgumentException("INVALID_ANALYZER_FILES");
@@ -280,6 +281,11 @@ public class TypeScriptServerAnalyzer {
         result.nodeUses().forEach(s->{
             if(s.trace().size()>20||s.limitations().size()>20||!Set.of("JS_MONGOOSE_SELECTOR_INPUT_FLOW","JS_SEQUELIZE_SQL_INPUT_FLOW","JS_SHELL_COMMAND_INPUT_FLOW","JS_EVAL_INPUT_FLOW","JS_MONGO_WHERE_INPUT_FLOW","JS_MONGO_RESOURCE_ACCESS","JS_CONSTRUCTOR_EFFECT","JS_SERVER_ENTRY_CONTEXT").contains(s.ruleId()))throw new IllegalArgumentException("INVALID_NODE_USE");
             locations.add(s.location());locations.addAll(s.trace());
+        });
+        result.resourceUses().forEach(s->{
+            if(!"JS_FILE_PATH_INPUT_FLOW".equals(s.ruleId())||!Set.of("STATIC_FILE_PATH","INPUT_IN_FILE_PATH","UNRESOLVED_RESOURCE").contains(s.kind())
+                    ||s.trace().size()>20||s.defenses().size()>20||s.limitations().size()>20)throw new IllegalArgumentException("INVALID_FILE_RESOURCE_USE");
+            locations.add(s.location());locations.addAll(s.trace());locations.addAll(s.defenses());
         });
         result.authorizationContexts().forEach(c -> { locations.add(c.entry()); locations.addAll(c.checks()); locations.addAll(c.defenses()); locations.addAll(c.resources()); });
         for (var location : locations) if (location == null || !files.containsKey(location.filePath()) || location.line() < 1

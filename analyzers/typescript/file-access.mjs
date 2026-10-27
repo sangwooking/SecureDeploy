@@ -1,0 +1,92 @@
+// Static built-in contracts only. Never touch the target filesystem or execute callbacks.
+import path from 'node:path';
+export function fileAccess(api){
+ const {ts,value,unknown,constant,union,step,loc,note,tick,append,result}=api;
+ const roots=new Map();
+ const known=v=>v?.tag==='constant'&&!v.unknown&&Object.hasOwn(v,'constant');
+ const native=(name,ref)=>value('file-native',[],{fileNative:name,ref:ref??{properties:new Map(),trace:[],unknown:false,nodeIdentity:{}}});
+ function dependency(spec){
+  const key=spec.replace(/^node:/,'');
+  if(!['fs','fs/promises','path','path/posix','path/win32'].includes(key))return;
+  const family=key.split('/')[0];
+  if(!roots.has(family))roots.set(family,native(family));
+  if(!roots.has(key))roots.set(key,native(key,roots.get(family).ref));return roots.get(key);
+ }
+ function imported(node,state){
+  const binding=state.mod.imports.get(node.text);if(!binding)return;
+  const root=dependency(binding.spec);if(!root)return;
+  if(binding.typeOnly||state.mod.syntaxIndex.writes.has(node.text)||state.mod.syntaxIndex.aliases.has(node.text)){
+   note(state.mod,'FILE_MODULE_BINDING_UNVERIFIED');return unknown();
+  }
+  const isolated=(state.context.isolate??(x=>x))(root);
+  return binding.exported==='default'?isolated:property(isolated,binding.exported,node,state)??unknown();
+ }
+ function property(base,key,node,state){
+  if(!base?.fileNative)return;
+  if(base.unknown||base.ref?.unknown||base.ref?.properties.has(key))return {...unknown(),trace:base.trace};
+  const n=base.fileNative;
+  if(n==='fs'&&key==='promises')return native('fs/promises',base.ref);
+  if(n==='path'&&['posix','win32'].includes(key))return native('path/'+key,base.ref);
+  if(n.startsWith('path')&&['join','resolve','normalize','basename','relative','isAbsolute','extname'].includes(key))return native(n+':'+key,base.ref);
+  if(['fs','fs/promises'].includes(n)&&['readFile','readFileSync','writeFile','writeFileSync','createReadStream','createWriteStream','unlink','unlinkSync','rename','renameSync','realpathSync','realpath'].includes(key))return native(n+':'+key,base.ref);
+  note(state.mod,'FILE_API_NOT_SUPPORTED');return unknown();
+ }
+ function call(node,callable,args,state){
+  if(!callable?.fileNative)return;
+  const n=callable.fileNative,at=kind=>loc(node,state.mod,kind,state.fn);
+  if(callable.unknown||callable.ref?.unknown){note(state.mod,'FILE_API_ORIGIN_UNKNOWN');return {value:unknown()};}
+  if(!n.includes(':')){note(state.mod,'FILE_MODULE_NOT_CALLABLE');return {value:unknown()};}
+  if(n.startsWith('path:')||n.startsWith('path/')){
+   const [family,method]=n.split(':');const incoming=union(...args);
+   const derived=step({...incoming,constant:undefined},at('FILE_PATH_'+method.toUpperCase()),state.mod);
+   if(['basename','relative','isAbsolute','extname'].includes(method)){
+    note(state.mod,'PATH_TRANSFORM_NOT_CONTAINMENT_PROOF');return {value:{...derived,unknown:true}};
+   }
+   const arity=method==='normalize'?args.length===1:args.length>0;
+   const primitive=args.every(a=>!a.ref&&(known(a)?typeof a.constant==='string':a.trace.length>0));
+   if(arity&&primitive&&args.every(a=>known(a)&&typeof a.constant==='string')){
+    // Do not let the analyzer host's OS/cwd choose a target runtime branch.
+    if(method!=='resolve'||family==='path/posix'&&args.some(a=>path.posix.isAbsolute(a.constant))
+        ||family==='path/win32'&&args.some(a=>/^(?:[A-Za-z]:[\\/]|\\\\[^\\]+\\[^\\]+)/.test(a.constant))){
+     const posix=path.posix[method](...args.map(a=>a.constant)),win=path.win32[method](...args.map(a=>a.constant));
+     if(posix===win||family!=='path')return {value:constant(family==='path/win32'?win:posix)};
+    }
+    return {value:value('fixed-path',[],{unknown:false})};
+   }
+   return {value:{...derived,tag:'path-input',unknown:derived.unknown||!arity||!primitive}};
+  }
+  const [family,method]=n.split(':');
+  if(!method){note(state.mod,'FILE_MODULE_NOT_CALLABLE');return {value:unknown()};}
+  if(method.startsWith('realpath')){
+   note(state.mod,'REALPATH_CONTAINMENT_AND_CALLBACK_NOT_VERIFIED');return {value:{...union(...args),unknown:true}};
+  }
+  const sync=method.endsWith('Sync'),promise=family==='fs/promises';
+  const stream=method.startsWith('create'),rename=method.startsWith('rename'),write=method.startsWith('write');
+  const core=rename||write?2:1,callback=!sync&&!promise&&!stream;
+  const options=(method.startsWith('readFile')||write||stream)&&args.length>core+(callback?1:0)?args[core]:undefined;
+  const optionsKnown=!options||known(options)&&typeof options.constant==='string';
+  const arity=args.length>=core+(callback?1:0)&&args.length<=core+(callback?1:0)+(method.startsWith('readFile')||write||stream?1:0)
+   &&(!callback||args.at(-1)?.tag==='function')&&!(promise&&(sync||stream));
+  for(const index of rename?[0,1]:[0]){
+   tick(state.mod);const p=args[index]??unknown();
+   const primitive=!p.ref&&(p.trace?.length>0||p.tag==='fixed-path'||p.filePathChoices?.length||known(p)&&typeof p.constant==='string');
+   const unresolved=p.unknown||state.uncertain||!arity||!optionsKnown||!primitive;
+   const kind=unresolved?'UNRESOLVED_RESOURCE':p.trace.length?'INPUT_IN_FILE_PATH':'STATIC_FILE_PATH';
+   const operation=rename?(index?'RENAME_TARGET':'RENAME_SOURCE'):method.startsWith('unlink')?'DELETE':write||method==='createWriteStream'?'WRITE':'READ';
+   const sink=at('NODE_FILE_'+operation);
+   const limitations=['SYMLINKS_PERMISSIONS_AND_RUNTIME_NOT_VERIFIED','FILESYSTEM_PLATFORM_NOT_VERIFIED',
+    ...(!arity||!optionsKnown?['FILE_OVERLOAD_NOT_SUPPORTED']:[]),...(unresolved?['RESOURCE_FLOW_UNRESOLVED']:[])];
+   if(state.context.setup){note(state.mod,'FILE_CALL_OUTSIDE_REQUEST_FLOW');continue;}
+   append(result.resourceUses,{ruleId:'JS_FILE_PATH_INPUT_FLOW',kind,location:sink,trace:p.trace,defenses:[],limitations,executionObserved:arity&&optionsKnown},state.mod);
+   state.context.resources.push(sink);
+   if(unresolved)note(state.mod,'FILE_PATH_FLOW_UNRESOLVED');
+   if(!p.trace.length||unresolved)continue;
+   append(result.findings,{ruleId:'JS_FILE_PATH_INPUT_FLOW',kind:'CWE-22',confidence:'HIGH',disposition:'REVIEW_REQUIRED',
+    source:p.trace[0],sink,flow:p.trace,defenses:[],limitations,
+    message:'사용자가 입력한 경로로 서버가 파일을 읽거나 변경할 가능성이 있습니다.',
+    recommendation:'사용자 경로 대신 서버의 고정 파일 ID를 사용하세요. 경로가 필요하면 실제 저장 기준과 경로 구성요소 경계를 검사하고, 심볼릭 링크·접근 권한·검증 후 변경을 별도로 확인하세요. 임시 디렉터리에서 정상 파일과 탈출 거부를 검증한 뒤 재검사하세요.'},state.mod);
+  }
+  return {value:unknown()};
+ }
+ return {dependency,imported,property,call};
+}

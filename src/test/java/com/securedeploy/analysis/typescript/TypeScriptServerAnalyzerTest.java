@@ -40,7 +40,7 @@ class TypeScriptServerAnalyzerTest {
                 source("service/package.json",ProjectFileType.PACKAGE_JSON,"{\"main\":\"./transport.cjs\"}"),
                 source("service/transport.cjs",ProjectFileType.JAVASCRIPT,"const express=require('express');module.exports=()=>{const app=express();app.post('/',(req,res)=>eval(req.body.code));return app;};"));
         var result=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties()).analyze(new ProjectStructure(Path.of("/unreadable"),sources));
-        assertThat(result.analyzerVersion()).isEqualTo("ts-server-v36");
+        assertThat(result.analyzerVersion()).isEqualTo("ts-server-v37");
         assertThat(result.validatedFindings()).hasSize(1);
         assertThat(result.validatedFindings().get(0).comparisonPolicy()).isEqualTo("NOT_COMPARED");
         assertThat(result.files()).filteredOn(f->f.filePath().equals("launch.js"))
@@ -63,7 +63,7 @@ class TypeScriptServerAnalyzerTest {
                 const envClean = Object.keys(process.env).every(key => ['LANG', '__CF_USER_TEXT_ENCODING'].includes(key));
                 let input = ''; for await (const chunk of process.stdin) input += chunk;
                 const files = JSON.parse(input).files.map(f => ({filePath:f.filePath, parseStatus:'PARSED',flowStatus:'NOT_SUPPORTED',entrypoints:0,functionsAnalyzed:0,limitations:[]}));
-                process.stdout.write(JSON.stringify({schemaVersion:1,analyzerVersion:'ts-server-v36',parserVersion:'6.0.3',status:'PARTIAL',files,findings:[],sqlUses:[],httpUses:[],exposureUses:[],nodeUses:[],authorizationContexts:[],limitations:[blocked && envClean ? 'ISOLATED' : 'ISOLATION_FAILED']}));
+                process.stdout.write(JSON.stringify({schemaVersion:1,analyzerVersion:'ts-server-v37',parserVersion:'6.0.3',status:'PARTIAL',files,findings:[],sqlUses:[],httpUses:[],exposureUses:[],nodeUses:[],resourceUses:[],authorizationContexts:[],limitations:[blocked && envClean ? 'ISOLATED' : 'ISOLATION_FAILED']}));
                 """.formatted(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(outside.toString()));
         var result = new TypeScriptServerAnalyzer(fixtureWorker(code)).analyze(project(UNSAFE));
         assertThat(result.limitations()).contains("ISOLATED").doesNotContain("ISOLATION_FAILED");

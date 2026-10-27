@@ -13,8 +13,9 @@ import { syntaxIndex, indexSyntax } from './syntax-index.mjs';
 import { regexFlow } from './regex-flow.mjs';
 import {tsPaths} from './ts-paths.mjs';
 import {objectData} from './object-data.mjs';
+import {fileAccess} from './file-access.mjs';
 
-export const VERSION = 'ts-server-v36';
+export const VERSION = 'ts-server-v37';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -43,6 +44,8 @@ function union(...values) {
   const trace = allTrace.slice(0, 20);
   const same = values.length && values.every(v => v === values[0]);
   if (same) return values[0];
+  const pathChoices=values.every(v=>!v?.unknown&&!v?.ref&&(hasConstant(v)&&typeof v.constant==='string'||v?.filePathChoices))
+    ?[...new Set(values.flatMap(v=>v.filePathChoices??[v.constant]))]:undefined;
   const refs = values.filter(v => v?.ref).map(v => v.ref);
   const sameUrl = refs.length && refs[0].identity && values.every(v => v?.ref?.identity === refs[0].identity);
   const mixedRefs = refs.length && !sameUrl && !values.every(v => v?.ref === refs[0]);
@@ -56,6 +59,7 @@ function union(...values) {
       .map(key => [key, union(...refs.map(r => r.properties.get(key) ?? unknown()))]));
   }
   const merged = { trace, unknown: allTrace.length > 20 || values.some(v => v?.unknown) || Boolean(mixedRefs),
+    filePathChoices:pathChoices?.length<=8&&pathChoices.reduce((n,s)=>n+s.length,0)<=1000?pathChoices:undefined,
     fieldValidationUncertain:values.some(v=>v?.fieldValidationUncertain||v?.fieldString||v?.fieldEmail||v?.fieldPredicate),
     shellRestricted: values.some(v=>v?.trace?.length)&&values.filter(v=>v?.trace?.length).every(v=>v.shellRestricted),
     exposures: values.flatMap(v => exposureSources(v)).slice(0, 20),
@@ -88,7 +92,7 @@ export function analyze(input, overrides = {}) {
     k in DEFAULTS && Number.isInteger(v) && v > 0).map(([k, v]) => [k, Math.min(v, DEFAULTS[k])])) };
   const deadline = Date.now() + limits.timeoutMs;
   const result = { schemaVersion: 1, analyzerVersion: VERSION, parserVersion: ts.version,
-    status: 'COMPLETE', files: [], findings: [], sqlUses: [], httpUses: [], exposureUses: [], nodeUses: [], authorizationContexts: [], limitations: [LIMITATION] };
+    status: 'COMPLETE', files: [], findings: [], sqlUses: [], httpUses: [], exposureUses: [], nodeUses: [], resourceUses: [], authorizationContexts: [], limitations: [LIMITATION] };
   const modules = new Map();
   let nodeSupport;
   const functionNodes=new WeakSet();
@@ -107,6 +111,7 @@ export function analyze(input, overrides = {}) {
     functionName: safeName(fn?.name ?? 'module'), kind });
   const regexSupport=regexFlow({ts,unwrap,expr,note,tick,loc,step,constant,unknown});
   const dataObjects=objectData({tick,note,step,loc,sources:exposureSources});
+  const filesSupport=fileAccess({ts,value,unknown,constant,union,step,loc,note,tick,append,result});
   function tick(mod) {
     try { charged(); } catch {
       mod.record.limitations.add(steps >= limits.maxSteps ? 'ANALYSIS_STEP_BUDGET_EXCEEDED' : 'ANALYSIS_TIME_BUDGET_EXCEEDED');
@@ -268,10 +273,10 @@ export function analyze(input, overrides = {}) {
         const exported = s.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword);
         if (ts.isImportDeclaration(s) && ts.isStringLiteral(s.moduleSpecifier)) {
           const spec = s.moduleSpecifier.text;
-          if (s.importClause?.name) mod.imports.set(s.importClause.name.text, { spec, exported: 'default' });
+          if (s.importClause?.name) mod.imports.set(s.importClause.name.text, { spec, exported: 'default',typeOnly:!!s.importClause.isTypeOnly });
           const bindings = s.importClause?.namedBindings;
           if (bindings && ts.isNamedImports(bindings)) for (const e of bindings.elements)
-            mod.imports.set(e.name.text, { spec, exported: e.propertyName?.text ?? e.name.text });
+            mod.imports.set(e.name.text, { spec, exported: e.propertyName?.text ?? e.name.text,typeOnly:!!s.importClause.isTypeOnly||!!e.isTypeOnly });
           else if (bindings) note(mod, 'NAMESPACE_IMPORT_UNSUPPORTED');
         }
         if (ts.isFunctionDeclaration(s) && s.name && s.body) { mod.declared.add(s.name.text); register(s.name.text, s, exported); }
@@ -324,6 +329,10 @@ export function analyze(input, overrides = {}) {
   }
   function property(base, key, node, state) {
     const { mod, fn } = state;
+    const fileProperty=filesSupport.property(base,key,node,state);if(fileProperty)return fileProperty;
+    if(base.inputShape==='FORM_FIELD'&&['name','type','size'].includes(key)){
+      note(mod,'FORMDATA_FILE_TYPE_NOT_VERIFIED');return {...base,unknown:true};
+    }
     if(base.externalObject&&['__proto__','prototype','constructor'].includes(key))return {...unknown(),trace:base.trace};
     if(state.nodeMode){const supported=regexSupport.property(base,key,node,state);if(supported)return supported;}
     if(state.nodeMode){const supported=nodeSupport.property(base,key,node,state);if(supported)return supported;}
@@ -502,6 +511,7 @@ export function analyze(input, overrides = {}) {
       const found = state.vars.get(node.text) ?? mod.constants.get(node.text);
       if (found?.uninitialized) { note(mod, 'LEXICAL_READ_BEFORE_INITIALIZATION'); return unknown(); }
       if (found) return state.nodeMode?nodeSupport.applyFields(found,state):found;
+      const fileBinding=filesSupport.imported(node,state);if(fileBinding)return fileBinding;
       const target = resolve(mod, node.text);
       if (target) return value('function', [], { target });
       if (node.text === 'undefined' && !mod.declared.has(node.text) && !mod.imports.has(node.text)) return constant(undefined);
@@ -654,6 +664,9 @@ export function analyze(input, overrides = {}) {
       const callable = receiverInput ? undefined : expr(callee, state);
       const global = ts.isIdentifier(callee) && !state.vars.has(callee.text) && !mod.imports.has(callee.text) && !mod.declared.has(callee.text);
       const args = (node.arguments ?? []).map(a => expr(a, state));
+      const fileMember=receiverInput?.fileNative&&ts.isPropertyAccessExpression(callee)?filesSupport.property(receiverInput,callee.name.text,callee,state):callable;
+      const fileCall=filesSupport.call(node,fileMember,args,state);
+      if(fileCall)return fileCall.value;
       const regexResult=regexSupport.call(node,callee,receiverInput,args,state);
       if(regexResult)return regexResult;
       const globalObject = name => ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) && callee.expression.text === name
@@ -756,9 +769,9 @@ export function analyze(input, overrides = {}) {
           exposures: hasConstant(args[0] ?? unknown()) && /^(authorization|cookie)$/i.test(args[0].constant) ? [loc(node, mod, 'AUTHENTICATION_HEADER', fn)] : [] });
         if (method === 'includes' && args[0]?.urlMember && ts.isArrayLiteralExpression(unwrap(callee.expression))
             && unwrap(callee.expression).elements.every(e => ts.isStringLiteral(e))) return value('boolean');
-        if (receiver.tag === 'request' && ['json', 'text', 'formData'].includes(method)) return value('input', [loc(node, mod, 'REQUEST_BODY', fn)], { unknown: receiver.unknown, inputShape: method === 'text' ? 'STRING' : undefined });
+        if (receiver.tag === 'request' && ['json', 'text', 'formData'].includes(method)) return value('input', [loc(node, mod, 'REQUEST_BODY', fn)], { unknown: receiver.unknown, inputShape: method === 'text' ? 'STRING' : method==='formData'?'FORM_DATA':undefined });
         if (receiver.tag === 'query' && ['get', 'getAll'].includes(method)) return value('input', receiver.trace.length || receiver.ref?.queryTrace?.length ? [loc(node, mod, 'QUERY_PARAMETER', fn)] : [], { unknown: receiver.unknown || receiver.ref?.unknown || receiver.ref?.queryPartial, inputShape: method === 'get' ? 'STRING' : 'ARRAY' });
-        if (receiver.tag === 'input' && method === 'get') return receiver;
+        if (receiver.tag === 'input' && method === 'get') return receiver.inputShape==='FORM_DATA'?{...receiver,inputShape:'FORM_FIELD'}:receiver;
         if (receiver.tag === 'database' && method === 'prepare') {
           const sql = { ...(args[0] ?? unknown()) };
           // A partial control path does not erase a directly observed literal/bound query.
@@ -1181,7 +1194,7 @@ export function analyze(input, overrides = {}) {
   writePass?.();
   phase='ENTRY_DISCOVERY';
   entryContracts({ts,modules,tick,note,loc,append,result});
-  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp});
+  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport});
   nodeSupport.discover();
   phase='FLOW';
   for (const mod of modules.values()) for (const entry of mod.entries) {

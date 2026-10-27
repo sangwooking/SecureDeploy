@@ -119,7 +119,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         if (snapshot.resourceUses() == null) return List.of();
         var groups = new LinkedHashMap<String, List<ServerAnalysisSnapshot.Finding>>();
         for (var candidate : snapshot.findings()) {
-            if (!Set.of("PY_FILE_PATH_INPUT_FLOW", "PY_UNSAFE_DESERIALIZATION_INPUT_FLOW").contains(candidate.ruleId())
+            if (!Set.of("JS_FILE_PATH_INPUT_FLOW", "PY_FILE_PATH_INPUT_FLOW", "PY_UNSAFE_DESERIALIZATION_INPUT_FLOW").contains(candidate.ruleId())
                     || !"HIGH".equals(candidate.confidence()) || candidate.limitations().contains("RESOURCE_FLOW_UNRESOLVED")) continue;
             boolean observed = snapshot.resourceUses().stream().anyMatch(use -> use.executionObserved()
                     && Set.of("INPUT_IN_FILE_PATH", "INPUT_TO_UNSAFE_DESERIALIZATION").contains(use.kind())
@@ -132,8 +132,8 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         }
         return groups.entrySet().stream().map(group -> {
             var first = group.getValue().get(0);
-            boolean path = first.ruleId().equals("PY_FILE_PATH_INPUT_FLOW");
-            return new ServerFlowFinding(group.getKey(), "PYTHON_DATA_FLOW", snapshot.analyzerVersion(), first.ruleId(),
+            boolean path = first.ruleId().endsWith("FILE_PATH_INPUT_FLOW");
+            return new ServerFlowFinding(group.getKey(), first.ruleId().startsWith("JS_")?"TYPESCRIPT_DATA_FLOW":"PYTHON_DATA_FLOW", snapshot.analyzerVersion(), first.ruleId(),
                     RiskPriority.REVIEW_REQUIRED, "NOT_COMPARED", first.sink(), List.copyOf(group.getValue()), List.of(first.sink()),
                     path ? "사용자가 입력한 경로로 서버가 다른 파일에 접근할 가능성이 있습니다" : "외부에서 받은 데이터를 위험한 방식으로 복원할 가능성이 있습니다",
                     path ? "요청 값이 파일 접근 경로에 전달되는 정적 근거입니다(CWE-22). 허용 디렉터리 밖 접근이나 실제 파일 유출을 확인한 것은 아닙니다."
