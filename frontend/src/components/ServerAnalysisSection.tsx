@@ -9,6 +9,15 @@ import { JavaSqlAnalysisSection } from './JavaSqlAnalysisSection';
 import { SupabaseAnalysisSection } from './SupabaseAnalysisSection';
 
 const entryStageLabels: Record<string,string>={
+  CORS_FIXED_ORIGIN:'고정 Origin 선언 · 인증·인가 증명 아님',CORS_WILDCARD_DECLARED:'전체 Origin 선언 · 공개 용도는 별도 확인',
+  CORS_WILDCARD_CREDENTIALS_BLOCKED:'wildcard와 credentials 조합 · 브라우저의 credential 응답 접근 제한',
+  CORS_POLICY_NOT_APPLICABLE:'이 응답 경로에 해당 CORS 설정이 선행하지 않음',
+  CORS_REFLECTION_CONTEXT_UNKNOWN:'Origin 반사 선언 · 응답 민감도 미확인',
+  SENSITIVE_REFLECTED_CREDENTIAL_RESPONSE:'민감 응답 후보와 Origin 반사·credentials 선언 연결',
+  WEB_POLICY_UNRESOLVED:'설정·미들웨어 범위·변경 관계 미확인',WEB_POLICY_COMPOSITION_UNKNOWN:'복수 보안 미들웨어의 합성 효과 미확인',
+  SESSION_COOKIE_ATTRIBUTES:'세션 쿠키 속성 선언 · 실제 발급·인증 미검증',SESSION_HTTPONLY_EXPLICITLY_DISABLED:'세션 쿠키의 명시적 HttpOnly 해제 선언',
+  CSRF_READ_ONLY_LOCAL_BODY:'지원하는 로컬 본문에서 업무 상태 변경 미관찰',CSRF_EXACT_ORIGIN_CONSTRAINT:'상태 변경 전 정확한 Origin 차단 조건 선언 · 전체 CSRF 보호 미검증',
+  CSRF_CONTEXT_UNVERIFIED:'인증 방식·상태 변경·CSRF 보호를 추가 확인해야 함',
   ENTRY_REGISTERED:'요청 handler의 정적 등록·Router 연결 확인',CALL_LINKED:'확인된 함수에서 Router 반환 연결',
   CALLBACK_BOUND:'Passport 콜백 등록 선언 확인 · 요청 실행은 미확인',
   AUTHENTICATOR_REFERENCED:'같은 파일에서 등록한 인증 전략 참조 확인 · 실행은 미확인',
@@ -298,6 +307,8 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false, on
     <div className="vulnerability-list">{candidates.map((finding, i) => <article className="vulnerability-item action-finding" key={i}>
       <span className="risk-badge risk-review_required">코드 흐름 · 추가 확인 필요</span>
       <h4>{finding.ruleId === 'TS_SSRF_INPUT_FLOW' ? '서버 요청 주소의 처리 과정을 확인해 주세요'
+        : finding.ruleId === 'JS_CORS_CREDENTIAL_REFLECTION' ? '응답에 적용된 CORS 출처 설정을 확인해 주세요'
+        : finding.ruleId === 'JS_SESSION_COOKIE_ATTRIBUTE_REVIEW' ? '세션 쿠키 속성과 실제 발급을 확인해 주세요'
         : finding.ruleId === 'JS_EVAL_INPUT_FLOW' ? '입력값을 코드로 실행하는지 확인해 주세요'
         : finding.ruleId === 'JS_SHELL_COMMAND_INPUT_FLOW' ? '입력값이 서버의 명령 문자열에 전달되는지 확인해 주세요'
         : finding.ruleId === 'JS_SEQUELIZE_SQL_INPUT_FLOW' ? '입력값이 SQL 문장에 직접 들어가는지 확인해 주세요'

@@ -12,9 +12,9 @@ export async function evaluate(root){
   const r=analyze(c.input);assert.deepEqual(r,analyze(c.input));
   const hits=r.findings.filter(f=>f.ruleId===rules[c.track]&&f.confidence==='HIGH'&&f.sink.filePath===c.input.files[0].filePath);
   const observations=r.nodeUses.filter(u=>u.ruleId===rules[c.track]||u.ruleId==='JS_WEB_SECURITY_CONTEXT');
-  const normal=c.track==='CORS'?observations.some(u=>['CORS_FIXED_ORIGIN','CORS_PUBLIC_WILDCARD','CORS_WILDCARD_CREDENTIALS_BLOCKED','CORS_POLICY_NOT_APPLICABLE'].includes(u.kind))
+  const normal=c.track==='CORS'?observations.some(u=>['CORS_FIXED_ORIGIN','CORS_WILDCARD_DECLARED','CORS_WILDCARD_CREDENTIALS_BLOCKED','CORS_POLICY_NOT_APPLICABLE'].includes(u.kind))
    :c.track==='COOKIE'?observations.some(u=>u.kind==='SESSION_COOKIE_ATTRIBUTES'&&u.limitations.includes('COOKIE_SECURE_ENABLED')&&u.limitations.some(s=>['COOKIE_HTTPONLY_ENABLED','COOKIE_HTTPONLY_DEFAULT_ENABLED'].includes(s)))
-   :observations.some(u=>u.kind==='CSRF_READ_ONLY_LOCAL_BODY');
+   :observations.some(u=>['CSRF_READ_ONLY_LOCAL_BODY','CSRF_EXACT_ORIGIN_CONSTRAINT'].includes(u.kind));
   const outcome=c.truth==='RISK'?(hits.length?'TP':'FN'):c.truth==='NORMAL'?(hits.length?'FP':normal?'TN':'NORMAL_DEFERRED')
    :hits.length?'UNEXPECTED_CANDIDATE':'UNKNOWN';
   rows.push({id:c.id,track:c.track,truth:c.truth,reason:c.reason,outcome,worker:r.analyzerVersion,

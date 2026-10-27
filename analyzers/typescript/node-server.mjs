@@ -4,6 +4,7 @@ import {sequelizeContracts} from './sequelize.mjs';
 import {moduleResolution} from './module-resolution.mjs';
 import {mongooseContracts} from './mongoose.mjs';
 import {fieldValidation} from './field-validation.mjs';
+import {webSecurity} from './web-security.mjs';
 
 // Library contracts over AST values only. Never require/import/eval target modules.
 export function nodeServer(api) {
@@ -47,8 +48,10 @@ export function nodeServer(api) {
   const sequelize=sequelizeContracts({...api,object,native,findModule,observe});
   const mongoose=mongooseContracts({...api,object,native});
   const fields=fieldValidation({...api,native});
+  const web=webSecurity({...api,native,object});
   function findModule(mod,spec,mode='require') { return resolver.resolve(mod,spec,mode); }
   function dependency(mod,spec,mode='require') {
+    const security=web.dependency(mod,spec);if(security)return security;
     const fileModule=api.filesSupport.dependency(spec);if(fileModule)return fileModule;
     if(spec==='express')return native('express',mod);
     if(spec==='mongodb')return native('mongodb',mod);
@@ -127,6 +130,7 @@ export function nodeServer(api) {
       if(['query','body','params'].includes(key))return value('input',[loc(node,state.mod,'EXPRESS_'+key.toUpperCase(),state.fn)],{inputShape:key==='params'?'STRING_MAP':undefined,
         fieldOrigin:fields.root(base,key,node,state),fieldValidationUncertain:base.fieldValidationUncertain});
       if(['user','session'].includes(key)){
+        if(key==='session')state.webSessionRead=true;
         state.context.checks.push(loc(node,state.mod,'PRINCIPAL_CONTEXT_UNVERIFIED',state.fn));return {...unknown(),principal:true};
       }
       return unknown();
@@ -135,6 +139,7 @@ export function nodeServer(api) {
     const field=fields.read(base,key,node,state);if(field)return field;
   }
   function write(receiver,key,v,state) {
+    web.write(receiver,state);
     if(!state.nodeMode||!literal(key)||!receiver.ref)return false;
     if(receiver.native){receiver.ref.unknown=true;note(state.mod,'NODE_LIBRARY_MUTATION_UNKNOWN');return true;}
     if(receiver.tag==='function'&&['__proto__','prototype','constructor','caller','arguments'].includes(String(key.constant)))return false;
@@ -178,6 +183,8 @@ export function nodeServer(api) {
   }
   function call(node,callee,receiver,args,state,global,callable) {
     if(!state.nodeMode)return;
+    const middleware=web.factory(callable,node,args,state);if(middleware)return middleware;
+    const origin=web.request(node,receiver,args,state);if(origin)return origin;
     const validation=fields.call(node,receiver,args,state);if(validation)return validation;
     const rawQuery=sequelize.call(node,receiver,args,state,callable);if(rawQuery)return rawQuery;
     const selector=mongoose.call(node,callee,receiver,args,state,global,callable);if(selector)return selector;
@@ -192,6 +199,7 @@ export function nodeServer(api) {
       return {value:unknown()};
     }
     const method=ts.isPropertyAccessExpression(callee)?callee.name.text:undefined;
+    web.headers(receiver,method,args,state);
     if(global&&ts.isIdentifier(callee)&&callee.text==='require'&&ts.isCallExpression(node))
       return {value:args.length===1&&literal(args[0])&&typeof args[0].constant==='string'
         ? (state.context.isolate??(v=>v))(dependency(state.mod,args[0].constant)):unknown()};
@@ -235,10 +243,11 @@ export function nodeServer(api) {
         const handler=args.at(-1);
         if(!handler.target||handler.unknown){note(state.mod,'EXPRESS_HANDLER_UNKNOWN');return {value:receiver};}
         if(routes.length>=limits.maxResults){note(state.mod,'EXPRESS_REGISTRATION_LIMIT');return {value:receiver};}
-        const route={target:handler.target,location:loc(node,state.mod,'EXPRESS_REGISTRATION',state.fn),uncertain:state.uncertain,middleware:args.length>2,setupContext:state.context};
+        const route={target:handler.target,location:loc(node,state.mod,'EXPRESS_REGISTRATION',state.fn),uncertain:state.uncertain,middleware:args.length>2,setupContext:state.context,web:web.route(receiver,args,node,state,method)};
         receiver.routes.push(route);routes.push(route);return {value:receiver};
       }
       if(method==='use') {
+        web.use(receiver,args,node,state);
         const mounted=args.at(-1);
         if(mounted?.tag==='express-router'&&args.length<=2&&(args.length===1||literal(args[0])))receiver.mounts.push(mounted);
         else note(state.mod,'EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN');
@@ -297,6 +306,7 @@ export function nodeServer(api) {
     }
     if(receiver?.tag==='express-response'&&['send','json','render','redirect','status','end'].includes(method)) {
       if(['send','json','end'].includes(method)&&args.length){
+        if(args.length===1&&!receiver.unknown&&!receiver.ref?.unknown)web.response(args[0],node,state);
         if(args.length!==1)note(state.mod,'EXPRESS_RESPONSE_ARGUMENT_CONTRACT_UNKNOWN');
         api.observeExpressResponse(args.length===1?args[0]:union(...args),node,state,
           !!receiver.unknown||!!receiver.ref?.unknown||args.length!==1);
@@ -372,14 +382,14 @@ export function nodeServer(api) {
     for(const app of reachable)for(const route of app.routes) {
       const mod=route.target.mod;
       if(mod.entries.length>=limits.maxResults){note(mod,'EXPRESS_ENTRY_LIMIT');continue;}
-      mod.entries.push({fn:route.target,kind:'EXPRESS_HANDLER',registration:route.location,uncertain:route.uncertain||!!route.setupContext.unresolved,middleware:route.middleware});mod.record.entrypoints++;
+      mod.entries.push({fn:route.target,kind:'EXPRESS_HANDLER',registration:route.location,uncertain:route.uncertain||!!route.setupContext.unresolved,middleware:route.middleware,web:route.web});mod.record.entrypoints++;
       append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ENTRY_REGISTERED',operation:'EXPRESS_ROUTER_MOUNTED',
         location:route.location,trace:[loc(route.target.node,mod,'EXPRESS_HANDLER_TARGET',route.target)],
         limitations:['STATIC_REGISTRATION_ONLY','MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED']},mod);
     }
     for(const route of routes)if(![...reachable].some(app=>app.routes.includes(route)))note(route.target.mod,'UNMOUNTED_ROUTER_NOT_ANALYZED');
   }
-  return {property,write,call,construct,discover,functionValue,awaitValue:mongoose.consume,
+  return {property,write,call,construct,discover,functionValue,awaitValue:mongoose.consume,webEntry:web.entry,
     applyFields:fields.apply,typeOfField:fields.typeName,compareFields:fields.compare,refineFields:fields.refine,
     invalidateFields:fields.invalidate,mergeFields:fields.merge,escapeFields:fields.escape};
 }

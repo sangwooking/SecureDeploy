@@ -20,6 +20,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         findings.addAll(connectService(snapshot));
         findings.addAll(connectNode(snapshot));
         findings.addAll(connectMongoose(snapshot));
+        findings.addAll(connectWeb(snapshot));
         if (snapshot.httpUses() == null) return List.copyOf(findings);
         Map<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>> groups = new LinkedHashMap<>();
         for (var candidate : snapshot.findings()) {
@@ -144,6 +145,31 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
                         path ? "임시 테스트 디렉터리에서 정상 파일명·상위 경로·절대 경로·심볼릭 링크가 정책대로 처리되는지 검증하세요."
                         : "로컬 Mock에서 정상 데이터·잘못된 형식·크기 제한과 거부 동작을 검증하세요. 실제 악성 객체를 실행하지 마세요.",
                         "변경 후 같은 프로젝트를 재검사하세요. 이 검토 항목은 기존 점수·배포 판단·해결 건수와 별도입니다."));
+        }).toList();
+    }
+
+    private static List<ServerFlowFinding> connectWeb(ServerAnalysisSnapshot snapshot) {
+        if(snapshot.nodeUses()==null)return List.of();
+        var groups=new LinkedHashMap<String,List<ServerAnalysisSnapshot.Finding>>();
+        for(var f:snapshot.findings()) {
+            String observed=f.ruleId().equals("JS_CORS_CREDENTIAL_REFLECTION")?"SENSITIVE_REFLECTED_CREDENTIAL_RESPONSE"
+                    :f.ruleId().equals("JS_SESSION_COOKIE_ATTRIBUTE_REVIEW")?"SESSION_HTTPONLY_EXPLICITLY_DISABLED":null;
+            if(observed==null||!f.confidence().equals("HIGH"))continue;
+            if(snapshot.nodeUses().stream().noneMatch(u->u.ruleId().equals(f.ruleId())&&u.kind().equals(observed)&&u.location().equals(f.sink())&&u.trace().equals(f.flow())))continue;
+            var at=f.source().kind().endsWith("_MODULE")?f.source():f.sink();
+            groups.computeIfAbsent(identity(snapshot.analyzerVersion(),f.ruleId(),at),k->new ArrayList<>()).add(f);
+        }
+        return groups.entrySet().stream().map(g->{
+            var f=g.getValue().get(0);boolean cors=f.ruleId().equals("JS_CORS_CREDENTIAL_REFLECTION");
+            return new ServerFlowFinding(g.getKey(),"TYPESCRIPT_DATA_FLOW",snapshot.analyzerVersion(),f.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",
+                    f.source(),List.copyOf(g.getValue()),g.getValue().stream().map(ServerAnalysisSnapshot.Finding::sink).distinct().toList(),
+                    cors?"민감 응답에 적용된 CORS 출처 설정을 확인해 주세요":"세션 쿠키의 HttpOnly 해제 설정을 확인해 주세요",
+                    cors?"등록 순서와 요청 경로에서 Origin 반사·credentials 선언 및 민감 응답 후보가 연결됐습니다. 실제 인증 성공·브라우저 열람·프록시 적용은 미확인이며 인증·인가 또는 CSRF 우회 성공을 뜻하지 않습니다."
+                    :"지원 버전의 세션 미들웨어가 앞서 등록된 경로에서 세션 참조와 명시적 HttpOnly 해제를 확인했습니다. 실제 Set-Cookie 발급·로그인 성공·세션 저장소 상태는 미검증입니다.",
+                    f.recommendation(),List.of("표시한 설정·등록·응답 위치와 외부 미들웨어·프록시 설정을 확인하세요.",
+                    cors?"소유한 로컬 환경에서 허용/비허용 Origin·credentials·preflight와 정상 API 동작을 브라우저로 확인하세요."
+                    :"로컬에서 Set-Cookie와 로그인·세션 유지·로그아웃을 확인하세요. SameSite를 무조건 Strict로 변경하지 마세요.",
+                    "수정 후 재검사하세요. 이 후보는 기존 점수·BLOCKING·해결 건수에 자동 합산되지 않습니다."));
         }).toList();
     }
 

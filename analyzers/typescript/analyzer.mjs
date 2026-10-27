@@ -15,7 +15,7 @@ import {tsPaths} from './ts-paths.mjs';
 import {objectData} from './object-data.mjs';
 import {fileAccess} from './file-access.mjs';
 
-export const VERSION = 'ts-server-v37';
+export const VERSION = 'ts-server-v38';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -1194,7 +1194,7 @@ export function analyze(input, overrides = {}) {
   writePass?.();
   phase='ENTRY_DISCOVERY';
   entryContracts({ts,modules,tick,note,loc,append,result});
-  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport});
+  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody});
   nodeSupport.discover();
   phase='FLOW';
   for (const mod of modules.values()) for (const entry of mod.entries) {
@@ -1203,6 +1203,8 @@ export function analyze(input, overrides = {}) {
       // Runtime require() must use this same graph as captured module values.
       const isolate = entryState(() => tick(mod), canonicalFunctions);
       Object.defineProperty(context, 'isolate', {value: isolate});
+      Object.defineProperty(context, 'webSecurity', {value:nodeSupport.webEntry(entry.web,isolate)});
+      if(entry.kind.startsWith('NEXT_'))note(mod,'NEXT_CORS_CSRF_COOKIE_CONTRACT_NOT_EVALUATED');
       const entryFn = entry.fn.nodeMode ? isolate(entry.fn) : entry.fn;
       if(entry.fn.nodeMode)note(mod,'MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED');
       if(entry.registration){context.checks.push(entry.registration);note(mod,'EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED');}
