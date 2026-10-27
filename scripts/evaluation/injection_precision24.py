@@ -12,9 +12,11 @@ from benchmark import relative
 
 def safe_file(root, name):
     root = root.resolve()
-    target = root / relative(name)
-    if target.is_symlink() or not target.resolve().is_relative_to(root):
-        raise ValueError('UNSAFE_SOURCE_PATH')
+    target = root
+    for part in relative(name).parts:
+        target = target / part
+        if target.is_symlink() or not target.resolve().is_relative_to(root):
+            raise ValueError('UNSAFE_SOURCE_PATH')
     return target
 
 
@@ -26,16 +28,17 @@ def classify(case, result):
     if case['truth'] == 'UNKNOWN':
         if hits:
             return 'UNEXPECTED_CANDIDATE'
-        if any(u['kind'] in ['UNKNOWN', 'FLOW_UNRESOLVED', 'CALLBACK_VERSION_UNSUPPORTED'] for u in uses):
-            return 'UNKNOWN'
         if any(u['kind'] in ['STATIC_OR_DATA_ONLY', 'STATIC_OR_STRING_FILTER', 'SANITIZE_FILTER_DECLARED'] for u in uses):
             return 'FALSE_SAFE_OBSERVATION'
+        if any(u['kind'] in ['UNKNOWN', 'FLOW_UNRESOLVED', 'CALLBACK_VERSION_UNSUPPORTED'] for u in uses):
+            return 'UNKNOWN'
         return 'NOT_INSPECTED'
     if case['truth'] == 'RISK':
         return 'TP_STATIC_CONTRACT' if hits else 'FN_INCLUDING_DEFERRED'
     if hits:
         return 'FP_STATIC_CONTRACT'
-    return 'TN_REVIEWED_STATIC_CONTROL' if uses and any(u['kind'] in ['STATIC_OR_DATA_ONLY', 'STATIC_OR_STRING_FILTER', 'SANITIZE_FILTER_DECLARED'] for u in uses) and not any(u['kind'] in ['UNKNOWN', 'FLOW_UNRESOLVED'] for u in uses) else 'NORMAL_DEFERRED_NOT_TN'
+    inspected = any(f['filePath'] == case['input']['files'][0]['filePath'] and f['parseStatus'] == 'PARSED' and f['entrypoints'] > 0 for f in result.get('files', []))
+    return 'TN_REVIEWED_STATIC_CONTROL' if inspected and uses and any(u['kind'] in ['STATIC_OR_DATA_ONLY', 'STATIC_OR_STRING_FILTER', 'SANITIZE_FILTER_DECLARED'] for u in uses) and not any(u['kind'] in ['UNKNOWN', 'FLOW_UNRESOLVED'] for u in uses) else 'NORMAL_DEFERRED_NOT_TN'
 
 
 def evaluate(repo, baseline, output):
@@ -82,7 +85,7 @@ def prepare_dvna(root, destination):
     original = plan['projects'][0]
     if len(plan['projects']) != 1 or original['commitSha'] != '9ba473add536f66ac9007966acb2a775dd31277a':
         raise ValueError('UNEXPECTED_ORIGINAL_SHA')
-    source = safe_file(root / 'sources', original['projectId'])
+    source = safe_file(root, 'sources/' + str(relative(original['projectId'])))
     blobs = {}
     for f in original['files']:
         path = safe_file(source, f['path'])

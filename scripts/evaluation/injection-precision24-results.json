@@ -1,0 +1,870 @@
+{
+  "schemaVersion": 1,
+  "baseline": "cd2361dce096c01b0657ec4bd440e0d4ccbbd05f",
+  "productCommit": "e7b0a4b",
+  "worker": "ts-server-v35",
+  "rls": "supabase-rls-v4",
+  "grade": "B_AUTHORED_NOT_INDEPENDENT",
+  "cases": 67,
+  "summary": {
+    "SQL": {
+      "before": {
+        "TP_STATIC_CONTRACT": 3,
+        "FN_INCLUDING_DEFERRED": 15,
+        "TN_REVIEWED_STATIC_CONTROL": 12,
+        "NORMAL_DEFERRED_NOT_TN": 3,
+        "FALSE_SAFE_OBSERVATION": 12,
+        "UNKNOWN": 3,
+        "NOT_INSPECTED": 3
+      },
+      "after": {
+        "TP_STATIC_CONTRACT": 18,
+        "TN_REVIEWED_STATIC_CONTROL": 12,
+        "NORMAL_DEFERRED_NOT_TN": 3,
+        "UNKNOWN": 15,
+        "NOT_INSPECTED": 3
+      }
+    },
+    "NOSQL": {
+      "before": {
+        "TP_STATIC_CONTRACT": 1,
+        "FN_INCLUDING_DEFERRED": 4,
+        "NORMAL_DEFERRED_NOT_TN": 2,
+        "TN_REVIEWED_STATIC_CONTROL": 3,
+        "FP_STATIC_CONTRACT": 1,
+        "UNKNOWN": 4,
+        "NOT_INSPECTED": 1
+      },
+      "after": {
+        "TP_STATIC_CONTRACT": 5,
+        "TN_REVIEWED_STATIC_CONTROL": 6,
+        "UNKNOWN": 4,
+        "NOT_INSPECTED": 1
+      }
+    }
+  },
+  "repeatIdentical": true,
+  "controlledRows": [
+    {
+      "caseId": "sql-4.44.4-direct",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "f6d8219b3fe3f5366943aa7c23863b77f332690fb502da06bc83422d94f7108d",
+      "before": "TP_STATIC_CONTRACT",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-4.44.4-object-concat",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "42525583779aed1b4061a2540bf104fdb5b409f4edeb633f9127cfb0caff07c2",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-4.44.4-object-template",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "58a660c7ce94520d6ed0524273486e42c5c327e0fee04e131cd4b23beb1164bb",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-4.44.4-object-alias",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "219da0c1c15f9a84ee04fac46dec7b28467c5e8afb5f8e8834cc91c4e36ca3ac",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-4.44.4-object-helper",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "eca27ff889e6fd0f2506ad749729ea7746ffdeec621d039706060fb85c1906b2",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-4.44.4-binding-after-concat",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "f9b4048fcca36d9e8ab6279aecee1d064b278d43bfc3dcc8ff8cd9a74ea4ed08",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-4.44.4-bound-string",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "773b3e932579437580634e6fa50578a20acfa37c7f2af294bc99264cbd0f4fde",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-4.44.4-values-object",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "b704c0ee9daa8228702a448046778da43048c0f24a7a1ff0a27f26ed1fd02d15",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-4.44.4-bind-object",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "36b3019515e92959df8ac6ae1a83fe77ae420b9f15a79a1e2e598f08d2f30ca0",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-4.44.4-static-object",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "c8063277c15e8475c3b7526f4610e376f433ddde7ab3f5c58429a93bfd3c11bc",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-4.44.4-selected-fixed",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "REGRESSION",
+      "knownGap": "Constant identifier alternatives are a normal control, but no SQL execution observation is connected after this conditional expression.",
+      "inputSha256": "7c05f26bf161c9a7c26a025770e4d6e2ba569080aa50c56e849aae29cc327caf",
+      "before": "NORMAL_DEFERRED_NOT_TN",
+      "after": "NORMAL_DEFERRED_NOT_TN"
+    },
+    {
+      "caseId": "sql-4.44.4-unknown-query",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "d93c89663c334eff641b983887672108168708d7e2993feac3ef020e0189e676",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-4.44.4-spread",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "dbeeb38d4eb2f1d92c3bed2b1a1846f5d9838c52f631275f4176aebfb74f7a73",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-4.44.4-conflicting-values",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "dbee75ee7d2f997489cb108977222b8d10b7c45e1f217334295114e134eb5d15",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-4.44.4-mixed-bindings",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "bfc95514ef73e6e1650c02bc5a037ddd88392600bb3abf893c8e3bff089db1b1",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-4.44.4-missing-query",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "80a79a9043dea2891dcd7f7a7307bd8d58a7062f1e838b9bc22eb916c7a5c256",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-4.44.4-dynamic-wrapper",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "REGRESSION",
+      "knownGap": null,
+      "inputSha256": "00d7161d8a762a2b040fb16aeaee293760ce0dbfe77fc4354dff90103645a3ce",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "sql-5.22.5-direct",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "c25f10d46f6e896b7192f2801857a7ed990b0b359c9b7828008bccb2c149fb62",
+      "before": "TP_STATIC_CONTRACT",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-5.22.5-object-concat",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "fd315565bf9b846e26be3fbd226bd9d99a06d981f62c430b720f9f168fcb0efd",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-5.22.5-object-template",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "34e8fbd17148c799e64e914c7ad00bee49672a4634ba74573b39fe2b03657d11",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-5.22.5-object-alias",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "417d058f31e4914a89fa775164841dace037cc58c8a0c5f42134abcf229fedda",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-5.22.5-object-helper",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "63cee32fba93f77f73821cdd8d7d4aabe1baabe8d49238b9de60efbe32e973dd",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-5.22.5-binding-after-concat",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "e5e41a5300b546175e88818535ba8ebe6262768dee4f643173a19a19a8d3ce21",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-5.22.5-bound-string",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "c94cfd37ef79ce88bd356771478a3662f421176eec6ed7aa11b4f4c6fcc8e010",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-5.22.5-values-object",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "ced51c8cb7e458bf13ebf156362547999e57762a8166b06f05c85bb3b30c9f23",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-5.22.5-bind-object",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "9e9b1f9d22bd449db0477c17167e57fec0377dd2c467b2cc19f07a72a8ac84a9",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-5.22.5-static-object",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "0d4f57a21eaf5a2b532f9fdcd3e6ea8f686dfad8239aceb2918c8da1cdd6088a",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-5.22.5-selected-fixed",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": "Constant identifier alternatives are a normal control, but no SQL execution observation is connected after this conditional expression.",
+      "inputSha256": "a60b7b6330da88fd7044bb830434ef45ad35231e05452d15033bfae46b98b015",
+      "before": "NORMAL_DEFERRED_NOT_TN",
+      "after": "NORMAL_DEFERRED_NOT_TN"
+    },
+    {
+      "caseId": "sql-5.22.5-unknown-query",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "3077832f2bb13ae816c7cb0d3ccd239db1f387759cbed4d8dfc7ed2b8531d751",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-5.22.5-spread",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "7822c16c2c693e221592ce2088ab45717df32aa2f19c3ccd16bdc12dcdab2a6b",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-5.22.5-conflicting-values",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "c06d5d461df12d44de2aed13471793631b242cba9ac9fe7bc96795c4f4448d12",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-5.22.5-mixed-bindings",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "1e28fd9dd19ff80628911ed2c41e0bb26d41fcd1cf2ee0632ef047cf9ed73c15",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-5.22.5-missing-query",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "28b9d7e11ae5e23ff62e0009226f92ffd1451474ed148e9d4e9659ac805af8dc",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-5.22.5-dynamic-wrapper",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "a54c859500446c3855f205534384bbcc2bdc112ec10ac2eed392ba01605704d3",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "sql-6.37.5-direct",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "6cfc33503543825002ab387891bfcd0f7f1e4d6644fb31daa3101b0f4f56ac2a",
+      "before": "TP_STATIC_CONTRACT",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-6.37.5-object-concat",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "52ebe522c85fb4ed4d1b480a75c4460d010bdfda57a71ea854f16196533631dc",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-6.37.5-object-template",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "410b975331bbc03db0d0be5575dbdb0d2305dd4e010e75a8d684acac23d1c3bd",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-6.37.5-object-alias",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "756b3527d4755125146b9e40beb1a9d2a176ba1f1b2571c90ccf15028260d54c",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-6.37.5-object-helper",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "e37fadf911049730cf69b1cc33ad9c26cfa1c16c51553708d505700bd5c48540",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-6.37.5-binding-after-concat",
+      "track": "SQL",
+      "truth": "RISK",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "2ad8d913216d9cd38a06cabb2a35717302aba69e948447bb9e22ea4b39a92449",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "sql-6.37.5-bound-string",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "6249b219285ea43234bb99a12c533f75700395a59eeaa97ce1a3a4e8fb4eac3b",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-6.37.5-values-object",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "43ecda35f6265f75eb77807625650faaa8b43b6f79f5505f3430a76dcd58a3c2",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-6.37.5-bind-object",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "7fc4f9a7b7b0de227712182b68f72b58432023fd704e8cd64ff45aaa368137ef",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-6.37.5-static-object",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "caa9235acc7112627c338056a10df7a946bcea372093547c236636f92e57e571",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "sql-6.37.5-selected-fixed",
+      "track": "SQL",
+      "truth": "NORMAL",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": "Constant identifier alternatives are a normal control, but no SQL execution observation is connected after this conditional expression.",
+      "inputSha256": "1b419fef318a42b97390202e401b828969cb7f3dddf85791a26311454d5677e7",
+      "before": "NORMAL_DEFERRED_NOT_TN",
+      "after": "NORMAL_DEFERRED_NOT_TN"
+    },
+    {
+      "caseId": "sql-6.37.5-unknown-query",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "c1edacfc8cc8b0da4124d6af567a3ca861a2e6cc4365a21790715f7fd37a44ac",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-6.37.5-spread",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "36cd4d643b7e0457b8347503965a76c0146f7b3f760b3df0267278169bc1a256",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-6.37.5-conflicting-values",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "22f68f14064ee12ade1afcb5c6edcd88e571da05343341c1349925b0adb9a475",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-6.37.5-mixed-bindings",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "b840310b431b438f4382aa41d028a84fb7d8fd74e287549588704dc13b42b351",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-6.37.5-missing-query",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "4d1ec42d08643b072667884bce3aaed8cd8a1709fc488d06aa57b4af4e505af5",
+      "before": "FALSE_SAFE_OBSERVATION",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "sql-6.37.5-dynamic-wrapper",
+      "track": "SQL",
+      "truth": "UNKNOWN",
+      "split": "VALIDATION_SAME_AUTHOR_NOT_BLIND",
+      "knownGap": null,
+      "inputSha256": "cba4e8393b2b7c921da36b60725436bf239f8eeec91a1528ed131d1d2b8bd4fd",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_INSPECTED"
+    },
+    {
+      "caseId": "mongo-direct",
+      "track": "NOSQL",
+      "truth": "RISK",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "08ce1830f0df5cb9af8a52cc744cebfcef1f1a8f102eb5d3d79918f28e25c489",
+      "before": "TP_STATIC_CONTRACT",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "mongo-shared-body",
+      "track": "NOSQL",
+      "truth": "RISK",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "9a049fbdffb628be7038d9c13f231ded07cf04d1084c3cdcca041102f22bf478",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "mongo-shared-callback",
+      "track": "NOSQL",
+      "truth": "RISK",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "f7cff3803928fbaa628aedfa52129330f94ce40c2dad36eec7be3f694eb2d348",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "mongo-shared-exec",
+      "track": "NOSQL",
+      "truth": "RISK",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "d39ef1eec14b8f68e7bda5115b549e8ea8fbcb92bfd968a24a772c78a6383e34",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "mongo-shared-helper",
+      "track": "NOSQL",
+      "truth": "RISK",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "023a84a4490d942a06ae024c75636984f7ff9ae476bda50b5e14c9b421081625",
+      "before": "FN_INCLUDING_DEFERRED",
+      "after": "TP_STATIC_CONTRACT"
+    },
+    {
+      "caseId": "mongo-constant-alias",
+      "track": "NOSQL",
+      "truth": "NORMAL",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "ae1aa5181d9d44cc7e8fafcac0fadeb901a69eaf0198a6696a93f0d4524eb924",
+      "before": "NORMAL_DEFERRED_NOT_TN",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "mongo-constant-direct",
+      "track": "NOSQL",
+      "truth": "NORMAL",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "5128ad6844e705dad702cee5db64afc5b8fff58a16693dcac98727fc0ee2d55f",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "mongo-string-reused",
+      "track": "NOSQL",
+      "truth": "NORMAL",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "c4b95e0065c2982eba67de57d5b6f07934d960b6f12d4084dedecb1f5ac966fa",
+      "before": "NORMAL_DEFERRED_NOT_TN",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "mongo-type-guard",
+      "track": "NOSQL",
+      "truth": "NORMAL",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "4e5e228ce1ff3a8cf2ff58b3a20330241ae233c1f47cc1d5bb9bb1caf2bac12b",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "mongo-sanitize",
+      "track": "NOSQL",
+      "truth": "NORMAL",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "4a32d01705c3cebb02b6a72bdef46c072f1bf41a447a67dd01d4bb0436e4bf62",
+      "before": "TN_REVIEWED_STATIC_CONTROL",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "mongo-trusted-static-other-field",
+      "track": "NOSQL",
+      "truth": "NORMAL",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "4f1a2a1cd99bc4fe5aa24fa89ea9c0138c4c7eb06eaa3468a7936382fcd24612",
+      "before": "FP_STATIC_CONTRACT",
+      "after": "TN_REVIEWED_STATIC_CONTROL"
+    },
+    {
+      "caseId": "mongo-unknown-transform",
+      "track": "NOSQL",
+      "truth": "UNKNOWN",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "a47470e7b66a8efe5426f5253cc620b9ab63f9dd0b27fb87bd4d6e459e0b3f84",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "mongo-trusted-input",
+      "track": "NOSQL",
+      "truth": "UNKNOWN",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "25b469112ceaddef07bfe786d45475da67ac12814bdcc6597854151d762e42af",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "mongo-filter-mutation",
+      "track": "NOSQL",
+      "truth": "UNKNOWN",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "fb860e33f556810aa18a95133f190f02052c5d74134827bf7bc2a6da19f3940c",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "mongo-dynamic-filter",
+      "track": "NOSQL",
+      "truth": "UNKNOWN",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "cddcdfa1acef3a39f0a14d21960eefbb56472729d4289de41270caea53ed6fde",
+      "before": "UNKNOWN",
+      "after": "UNKNOWN"
+    },
+    {
+      "caseId": "mongo-creation-only",
+      "track": "NOSQL",
+      "truth": "UNKNOWN",
+      "split": "REGRESSION_SAME_AUTHOR",
+      "knownGap": null,
+      "inputSha256": "aa1bd3e2f2077ff287853e1c46f4b204c95b4c8b7fe44b4559571cc5a0ef62fe",
+      "before": "NOT_INSPECTED",
+      "after": "NOT_INSPECTED"
+    }
+  ],
+  "wholeApplicationDifferential": {
+    "planSha256": "5b928de2e7589a5b74cc53239bf7d71a9bb527b900de117f61f22f3a58d7eed2",
+    "originalSha": "9ba473add536f66ac9007966acb2a775dd31277a",
+    "originalFilesVerified": 127,
+    "upstreamPatch": false,
+    "rows": [
+      {
+        "id": "query-object",
+        "before": {
+          "targetSqlFindings": [],
+          "shellFindings": 1,
+          "score": 79,
+          "risk": "BLOCKED",
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            613,
+            514
+          ]
+        },
+        "after": {
+          "targetSqlFindings": [
+            {
+              "rule": "JS_SEQUELIZE_SQL_INPUT_FLOW",
+              "file": "core/appHandler.js",
+              "line": 11
+            }
+          ],
+          "shellFindings": 1,
+          "score": 79,
+          "risk": "BLOCKED",
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            779,
+            626
+          ]
+        },
+        "repeatIdentical": true
+      },
+      {
+        "id": "bound-query-object",
+        "before": {
+          "targetSqlFindings": [],
+          "shellFindings": 1,
+          "score": 79,
+          "risk": "BLOCKED",
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            487,
+            484
+          ]
+        },
+        "after": {
+          "targetSqlFindings": [],
+          "shellFindings": 1,
+          "score": 79,
+          "risk": "BLOCKED",
+          "coverage": "PARTIAL",
+          "elapsedMs": [
+            599,
+            621
+          ]
+        },
+        "repeatIdentical": true
+      }
+    ]
+  },
+  "originalApplications": {
+    "inputs": 15,
+    "repeatedIdentically": true,
+    "legacyUnchanged": true,
+    "newVerifiedVulnerabilityTP": 0,
+    "rlsUnchanged": true
+  },
+  "regressions": {
+    "mongoose18": 35,
+    "callback19": 53,
+    "field20": 36,
+    "identity21": 26,
+    "secret22": 90,
+    "rls23": 14,
+    "priorStatesPreserved": true
+  },
+  "tests": {
+    "worker": 766,
+    "backend": {
+      "total": 704,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9
+    },
+    "python": 117,
+    "evaluationTools": 249,
+    "frontend": 165,
+    "newFrontendBuild": false,
+    "newBrowserE2e": false,
+    "newLiveGithubE2e": false
+  },
+  "resources": {
+    "applicationElapsedMs": [
+      211,
+      845
+    ],
+    "maxSampledParentHeapBytes": 163005280,
+    "workerRssBytes": {
+      "sqlBefore": [
+        132022272,
+        129253376
+      ],
+      "sqlAfter": [
+        128581632,
+        131858432
+      ],
+      "noSqlBefore": [
+        131022848,
+        130809856
+      ],
+      "noSqlAfter": [
+        131661824,
+        128286720
+      ]
+    },
+    "workSteps": {
+      "sqlBefore": 284,
+      "sqlAfter": 284,
+      "noSqlBefore": 385,
+      "noSqlAfter": 385
+    },
+    "limitsRaised": false,
+    "newFilterScanBudget": 1024
+  },
+  "protected": {
+    "intent13Sha256": "93fe972e3b9177c01317a815607679cf270e91405859e9ca8d21f979bacc3c2e",
+    "rls23ResultSha256": "992d6b9dc4d5eb0bd9ff7774763baf39ddcad1a7283057f2e76f5ba67ea104b8",
+    "columnUpdateVersion": "column-update-v1",
+    "serverPid": 99387,
+    "serverVersion": "v28",
+    "serverRestarted": false,
+    "userDatabaseModified": false,
+    "paidAiCalls": 0,
+    "deployed": false
+  },
+  "limitations": [
+    "Static contract TP/TN, not runtime query or attack proof.",
+    "No new independent original-app TP or verified new CVE/fix pair.",
+    "Normal constant identifier controls remain deferred, not TN.",
+    "FALSE_SAFE_OBSERVATION is internal observation mismatch, not proof of a product SAFE verdict.",
+    "Independent requirements/runtime oracle not obtained; reviewer only inspected code.",
+    "Prisma and node-postgres APIs not newly supported.",
+    "No uploaded/external application or dependency was executed.",
+    "Structural candidates remain REVIEW_REQUIRED/NOT_COMPARED and score-separated."
+  ]
+}

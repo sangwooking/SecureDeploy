@@ -8,7 +8,7 @@ const sql=[
  ['object-template','RISK','db.query({query:`SELECT * FROM items WHERE id=${req.body.id}`});'],
  ['object-alias','RISK',"const q={query:'SELECT * FROM items WHERE id='+req.body.id};const alias=q;db.query(alias);"],
  ['object-helper','RISK',"function build(x){return {query:'SELECT * FROM items WHERE id='+x}}db.query(build(req.body.id));"],
- ['binding-after-concat','RISK',"db.query({query:'SELECT * FROM items WHERE id='+req.body.id,bind:[req.body.id]});"],
+ ['binding-after-concat','RISK',"db.query({query:'SELECT * FROM items WHERE id='+req.body.id+' AND kind=$1',bind:['fixed']});"],
  ['bound-string','NORMAL',"db.query('SELECT * FROM items WHERE id=$1',{bind:[req.body.id]});"],
  ['values-object','NORMAL',"db.query({query:'SELECT * FROM items WHERE id=?',values:[req.body.id]});"],
  ['bind-object','NORMAL',"db.query({query:'SELECT * FROM items WHERE id=$1',bind:[req.body.id]});"],
