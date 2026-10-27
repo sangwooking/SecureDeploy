@@ -9,7 +9,6 @@ const binary=process.argv[2];if(!binary)throw Error('EXISTING_CHROMIUM_PATH_REQU
 const servers=[];let browser,profile;
 async function listen(handler){const s=http.createServer(handler);servers.push(s);await new Promise(r=>s.listen(0,'127.0.0.1',r));return 'http://127.0.0.1:'+s.address().port;}
 let trusted,untrusted,changes=0,preflights=0,next=0;const sessions=new Set();
-let report;const completion=new Promise(r=>report=r);
 try{
  const api=await listen((req,res)=>{
   const path=req.url,origin=req.headers.origin;
@@ -57,7 +56,7 @@ try{
  await fetch('/done',{method:'POST',body:JSON.stringify(checks)});
  })()</script>`;
  const reports=[];
- const page=kind=>async(req,res)=>{if(req.url==='/done'){let data='';for await(const c of req){data+=c;if(data.length>12000){res.destroy();return;}}reports.push(...JSON.parse(data));res.end('ok');if(kind==='trusted')report();return;}res.setHeader('Content-Type','text/html');res.end(html(kind));};
+ const page=kind=>async(req,res)=>{if(req.url==='/done'){let data='';for await(const c of req){data+=c;if(data.length>12000){res.destroy();return;}}reports.push(...JSON.parse(data));res.end('ok');return;}res.setHeader('Content-Type','text/html');res.end(html(kind));};
  untrusted=await listen(page('untrusted'));trusted=await listen(page('trusted'));
  profile=await mkdtemp(join(tmpdir(),'securedeploy-web27-browser-'));
  const launch=async url=>{
@@ -67,7 +66,7 @@ try{
   clearTimeout(timer);child.kill('SIGTERM');await new Promise(r=>child.once('exit',r));browser=undefined;
  };
  await launch(untrusted);assert.equal(changes,1,'cross-origin simple POST changes state despite unreadable response');
- await launch(trusted);await completion;assert.equal(changes,2);assert.ok(preflights>=2);
+ await launch(trusted);assert.equal(changes,2);assert.ok(preflights>=2);
  assert.ok(reports.length>=16);assert.ok(reports.every(c=>c.ok),JSON.stringify(reports));
  console.log(JSON.stringify({passed:reports.length,preflights,ownedStateChanges:changes,crossOriginSameSite:true,tls:false,realMiddlewareExecuted:false,checks:reports}));
 }finally{
