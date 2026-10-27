@@ -15,7 +15,7 @@ import {tsPaths} from './ts-paths.mjs';
 import {objectData} from './object-data.mjs';
 import {fileAccess} from './file-access.mjs';
 
-export const VERSION = 'ts-server-v38';
+export const VERSION = 'ts-server-v39';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -1204,6 +1204,7 @@ export function analyze(input, overrides = {}) {
       const isolate = entryState(() => tick(mod), canonicalFunctions);
       Object.defineProperty(context, 'isolate', {value: isolate});
       Object.defineProperty(context, 'webSecurity', {value:nodeSupport.webEntry(entry.web,isolate)});
+      Object.defineProperty(context, 'rateSecurity', {value:nodeSupport.rateEntry(entry.rate,isolate)});
       if(entry.kind.startsWith('NEXT_'))note(mod,'NEXT_CORS_CSRF_COOKIE_CONTRACT_NOT_EVALUATED');
       const entryFn = entry.fn.nodeMode ? isolate(entry.fn) : entry.fn;
       if(entry.fn.nodeMode)note(mod,'MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED');

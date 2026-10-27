@@ -10,7 +10,7 @@ const url=process.env.FRONTEND_URL;if(!url)throw Error('ISOLATED_FRONTEND_URL_RE
   const page=await browser.newPage({viewport:{width,height:1000}}),errors=[],blocked=[];
   const result=require('../result-fixture.cjs')();const data=fixture();result.serverAnalysis=data;
   const template=data.validatedFindings[0],evidence=data.findings[0];
-  data.validatedFindings=[['JS_CORS_CREDENTIAL_REFLECTION','민감 응답에 적용된 CORS 출처 설정을 확인해 주세요'],
+  data.validatedFindings=[['JS_RATE_LIMIT_BYPASS_REVIEW','요청 제한을 건너뛰고 서버 작업으로 이어지는 설정을 확인해 주세요'],['JS_CORS_CREDENTIAL_REFLECTION','민감 응답에 적용된 CORS 출처 설정을 확인해 주세요'],
    ['JS_SESSION_COOKIE_ATTRIBUTE_REVIEW','세션 쿠키의 HttpOnly 해제 설정을 확인해 주세요']].map(([ruleId,title],i)=>({
     ...template,findingId:'ts-flow:web27-'+i,ruleId,title,
     riskExplanation:'저장소 선언 근거이며 실제 인증 성공·브라우저 열람·운영 적용은 미검증입니다.',

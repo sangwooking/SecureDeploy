@@ -9,6 +9,14 @@ import { JavaSqlAnalysisSection } from './JavaSqlAnalysisSection';
 import { SupabaseAnalysisSection } from './SupabaseAnalysisSection';
 
 const entryStageLabels: Record<string,string>={
+  RATE_LIMIT_DECLARATION:'요청 제한 선언 · 적용·실제 차단 증명 아님',
+  RATE_LIMIT_NOT_APPLICABLE:'이 요청 경로에 해당 제한이 선행하지 않음',
+  RATE_LIMIT_APPLICATION_UNKNOWN:'요청 제한의 적용·합성·설정 변경 관계 미확인',
+  RATE_LIMIT_DEFAULT_STOP_BOUND:'지원 버전의 기본 초과 종료 계약 연결 · 운영 효과 미확인',
+  RATE_LIMIT_ZERO_BLOCKS_BOUND:'지원 버전의 0 설정은 전체 차단 · 무제한 허용 아님',
+  RATE_LIMIT_BLOCKING_UNKNOWN:'요청 제한의 키·콜백·차단 효과 미확인',
+  RATE_LIMIT_EXPLICIT_BYPASS:'항상 건너뛰기 또는 초과 후 다음 작업 진행 선언',
+  RATE_LIMIT_BYPASS_TO_WORK:'제한을 건너뛰는 선언과 서버 작업 연결 · 실제 남용·비용 미검증',
   CORS_FIXED_ORIGIN:'고정 Origin 선언 · 인증·인가 증명 아님',CORS_WILDCARD_DECLARED:'전체 Origin 선언 · 공개 용도는 별도 확인',
   CORS_WILDCARD_CREDENTIALS_BLOCKED:'wildcard와 credentials 조합 · 브라우저의 credential 응답 접근 제한',
   CORS_POLICY_NOT_APPLICABLE:'이 응답 경로에 해당 CORS 설정이 선행하지 않음',
@@ -25,6 +33,21 @@ const entryStageLabels: Record<string,string>={
 };
 
 const labels: Record<string, string> = {
+  RATE_LIMIT_VERSION_OPTIONS_OR_STORE_UNKNOWN:'제한 라이브러리 버전·설정·저장소 계약 미확인',
+  RATE_LIMIT_SCOPE_LIMIT:'요청 제한 적용 범위 추적 상한',
+  UPSTASH_RATE_LIMIT_EXECUTION_CONTRACT_NOT_SUPPORTED:'Upstash SDK 객체·요청별 결과·차단 분기 연결 미지원',
+  EXTERNAL_GATEWAY_WAF_AND_DEPLOYMENT_UNKNOWN:'외부 Gateway·WAF·실제 배포 보호 미확인',
+  RATE_BUDGET_BUSINESS_REQUIREMENTS_UNKNOWN:'업무별 허용 횟수·자원 예산 요구사항 미확인',
+  AUTHENTICATION_AND_DISTRIBUTED_ABUSE_NOT_PROVEN:'인증 성공·분산된 계정 남용 방어는 미검증',
+  PROXY_HOPS_HEADER_REPLACEMENT_AND_IP_NORMALIZATION_UNKNOWN:'프록시 홉·헤더 교체·IP 정규화 미확인',
+  IP_DECLARED_PROXY_UNKNOWN:'IP 기반 키 선언 · 실제 프록시 문맥 미확인',GLOBAL_CONSTANT_KEY:'전역 고정 키 · 사용자별 제한 아님',
+  REQUEST_HEADER_KEY_UNVERIFIED:'요청 헤더 기반 키 · 신뢰된 식별자 여부 미확인',KEY_UNKNOWN:'제한 식별자·사용자 신원 미확인',
+  MEMORY_STORE_PROCESS_LOCAL_DECLARATION:'프로세스 로컬 MemoryStore 기본 선언',
+  STORE_CONNECTIVITY_AND_MULTI_INSTANCE_EFFECT_UNKNOWN:'저장소 연결·다중 인스턴스 공유 효과 미검증',
+  STORE_ERROR_FAIL_OPEN_DECLARED:'저장소 오류 시 요청 통과 선언 · 업무 적합성 별도 확인',
+  STORE_ERROR_NOT_PASSED_BY_DEFAULT:'저장소 오류 시 기본 통과하지 않음 · 운영 장애 처리 미검증',
+  SKIP_ALWAYS_TRUE:'항상 제한을 건너뛰는 콜백 선언',EXCEEDED_HANDLER_CALLS_NEXT:'초과 handler가 다음 작업 진행 함수를 호출',
+  OPERATION_COST_AND_SENSITIVITY_NOT_PROVEN:'작업의 실제 비용·민감도·남용 성공은 미확인',
   WEB_MIDDLEWARE_VERSION_OR_OPTIONS_UNKNOWN:'보안 미들웨어의 버전·옵션·출처를 확인하지 못함',
   WEB_MIDDLEWARE_SCOPE_LIMIT:'보안 미들웨어 적용 범위 추적 상한',
   NEXT_CORS_CSRF_COOKIE_CONTRACT_NOT_EVALUATED:'Next.js CORS·CSRF·쿠키 보호 계약은 이번 범위에서 미검사',
@@ -329,6 +352,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false, on
     <div className="vulnerability-list">{candidates.map((finding, i) => <article className="vulnerability-item action-finding" key={i}>
       <span className="risk-badge risk-review_required">코드 흐름 · 추가 확인 필요</span>
       <h4>{finding.ruleId === 'TS_SSRF_INPUT_FLOW' ? '서버 요청 주소의 처리 과정을 확인해 주세요'
+        : finding.ruleId === 'JS_RATE_LIMIT_BYPASS_REVIEW' ? '요청 제한을 건너뛰는 설정과 서버 작업을 확인해 주세요'
         : finding.ruleId === 'JS_CORS_CREDENTIAL_REFLECTION' ? '응답에 적용된 CORS 출처 설정을 확인해 주세요'
         : finding.ruleId === 'JS_SESSION_COOKIE_ATTRIBUTE_REVIEW' ? '세션 쿠키 속성과 실제 발급을 확인해 주세요'
         : finding.ruleId === 'JS_EVAL_INPUT_FLOW' ? '입력값을 코드로 실행하는지 확인해 주세요'

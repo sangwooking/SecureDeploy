@@ -21,6 +21,7 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         findings.addAll(connectNode(snapshot));
         findings.addAll(connectMongoose(snapshot));
         findings.addAll(connectWeb(snapshot));
+        findings.addAll(connectRate(snapshot));
         if (snapshot.httpUses() == null) return List.copyOf(findings);
         Map<ServerAnalysisSnapshot.Location, List<ServerAnalysisSnapshot.Finding>> groups = new LinkedHashMap<>();
         for (var candidate : snapshot.findings()) {
@@ -170,6 +171,27 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
                     cors?"소유한 로컬 환경에서 허용/비허용 Origin·credentials·preflight와 정상 API 동작을 브라우저로 확인하세요."
                     :"로컬에서 Set-Cookie와 로그인·세션 유지·로그아웃을 확인하세요. SameSite를 무조건 Strict로 변경하지 마세요.",
                     "수정 후 재검사하세요. 이 후보는 기존 점수·BLOCKING·해결 건수에 자동 합산되지 않습니다."));
+        }).toList();
+    }
+
+    private static List<ServerFlowFinding> connectRate(ServerAnalysisSnapshot snapshot) {
+        if(snapshot.nodeUses()==null)return List.of();
+        var groups=new LinkedHashMap<String,List<ServerAnalysisSnapshot.Finding>>();
+        for(var f:snapshot.findings()) {
+            if(!f.ruleId().equals("JS_RATE_LIMIT_BYPASS_REVIEW")||!f.confidence().equals("HIGH"))continue;
+            if(snapshot.nodeUses().stream().noneMatch(u->u.ruleId().equals(f.ruleId())&&u.kind().equals("RATE_LIMIT_BYPASS_TO_WORK")&&u.location().equals(f.sink())&&u.trace().equals(f.flow())))continue;
+            var at=f.source().kind().endsWith("_MODULE")?f.source():f.sink();
+            groups.computeIfAbsent(identity(snapshot.analyzerVersion(),f.ruleId(),at),k->new ArrayList<>()).add(f);
+        }
+        return groups.entrySet().stream().map(g->{
+            var f=g.getValue().get(0);
+            return new ServerFlowFinding(g.getKey(),"TYPESCRIPT_DATA_FLOW",snapshot.analyzerVersion(),f.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",
+                    f.source(),List.copyOf(g.getValue()),g.getValue().stream().map(ServerAnalysisSnapshot.Finding::sink).distinct().toList(),
+                    "요청 제한을 건너뛰고 서버 작업으로 이어지는 설정을 확인해 주세요",
+                    "지원 버전의 제한 미들웨어가 선행하는 경로에서 항상 skip하거나 초과 handler가 next()를 호출하는 선언과 서버 작업을 연결했습니다. 실제 공격·비용·인증 성공·외부 WAF·배포 적용은 미검증입니다.",
+                    f.recommendation(),List.of("표시한 설정·등록·작업 위치와 업무별 허용량을 확인하세요. 모든 API에 같은 횟수를 적용하지 마세요.",
+                    "로컬에서 사용자 A/B·한도 이내/초과·시간 경과·저장소 장애를 소량의 요청으로 확인하세요. 차단 시 작업을 수행하지 않고 정상 요청은 유지해야 합니다.",
+                    "IP 제한은 계정별 제한과 다릅니다. 프록시·공유 저장소·계정 잠금 악용·개인정보 노출을 별도로 검토하고 재검사하세요. 기존 점수와 해결 건수에는 자동 합산되지 않습니다."));
         }).toList();
     }
 
