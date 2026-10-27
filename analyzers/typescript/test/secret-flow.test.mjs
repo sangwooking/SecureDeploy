@@ -41,3 +41,10 @@ test('property cap and cyclic object paths remain bounded and not confirmed safe
  assert.equal(leaks(cycle).length,0);
  assert.notEqual(analyze(secretInput(body),{maxSteps:1}).status,'COMPLETE');
 });
+test('shared object fanout consumes bounded serialization work instead of expanding indefinitely',()=>{
+ const refs=name=>Array.from({length:64},(_,i)=>`p${i}:${name}`).join(',');
+ const body="const leaf={value:process.env.API_SECRET};const branch={"+refs('leaf')+"};const output={"+refs('branch')+"};return Response.json(output);";
+ const r=analyze(secretInput(body));
+ assert.equal(leaks(r).length,0);assert.ok(r.limitations.includes('EXPOSURE_RESPONSE_BODY_WORK_LIMIT'));
+ assert.ok(r.exposureUses.some(u=>u.status==='FLOW_UNRESOLVED'));
+});

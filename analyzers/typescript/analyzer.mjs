@@ -155,7 +155,12 @@ export function analyze(input, overrides = {}) {
           : '보호해야 할 정보 후보가 서버 응답 또는 로그에 전달되는 경로를 확인해 주세요.',
       recommendation: errors.length ? '사용자 응답에는 일반 오류 메시지와 추적 ID만 반환하고 상세 스택은 접근이 제한된 내부 로그로 분리하세요. 로컬 오류 응답 테스트 후 재검사하세요.' : '응답·로그에서 해당 값을 제거하거나 목적에 맞게 마스킹하세요. 실제 노출이 확인됐다면 자격증명 교체를 검토하고 로컬 테스트와 재검사로 확인하세요. 클라이언트 공개 환경변수로 옮기는 것은 해결이 아닙니다.' }, state.mod);
   }
-  function responseBody(v, depth=0, seen=new Set()) {
+  function responseBody(v, depth=0, seen=new Set(), budget={remaining:4096}) {
+    if(budget.remaining--<=0){
+      if(budget.remaining===-1&&!result.limitations.includes('EXPOSURE_RESPONSE_BODY_WORK_LIMIT'))result.limitations.push('EXPOSURE_RESPONSE_BODY_WORK_LIMIT');
+      return {origins:[],trail:[],unresolved:true};
+    }
+    charged();
     if(!v||depth>3)return {origins:[],trail:[],unresolved:depth>3};
     const identity=v.ref??v;
     if(seen.has(identity))return {origins:[],trail:[],unresolved:true};
@@ -165,10 +170,10 @@ export function analyze(input, overrides = {}) {
     // when its key is unknown. It does not make arbitrary property reads safe.
     if (v?.tag === 'object' && v.ref?.computedKeyOnly && v.ref.properties.size === 1) {
       const child = [...v.ref.properties.values()][0];
-      return responseBody(child,depth+1,seen);
+      return responseBody(child,depth+1,seen,budget);
     }
     if(v.ref?.properties){
-      const children=[...v.ref.properties.values()].map(c=>responseBody(c,depth+1,seen));
+      const children=[...v.ref.properties.values()].map(c=>responseBody(c,depth+1,seen,budget));
       return {origins:[...(v.ref.exposureUnknownSources??[]),...children.flatMap(c=>c.origins)].slice(0,20),trail:children.flatMap(c=>c.trail).slice(0,10),
         unresolved:!!v.unknown||!!v.ref.unknown||v.ref.properties.has('toJSON')||v.ref.properties.has('__proto__')||children.some(c=>c.unresolved)};
     }
