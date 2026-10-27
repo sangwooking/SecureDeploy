@@ -16,7 +16,8 @@ public class HardcodedFrontendSecretRule implements VulnerabilityRule {
 
     private static final Pattern ENV_SECRET = Pattern.compile("(?i)^\\h*(?:export\\h+)?\\b([A-Z0-9_]*(?:API_KEY|SECRET|TOKEN)[A-Z0-9_]*)\\h*=\\h*(?:\"([^\"\\r\\n]*)\"|'([^'\\r\\n]*)'|([^\\s#;]+))\\h*(?:#.*)?$");
     private static final Pattern JS_SECRET = Pattern.compile("(?i)(api[_-]?key|secret|token|accessToken|refreshToken)[\"']?\\s*[:=]\\s*[\"']([^\"']{8,})[\"']");
-    private static final Pattern CREDENTIAL = Pattern.compile("^(?:sk-(?:proj-)?[A-Za-z0-9_-]{24,}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{24,}|AKIA[A-Z0-9]{16}|eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+)$");
+    private static final Pattern CREDENTIAL = Pattern.compile("^(?:sb_secret_[A-Za-z0-9_-]{24,}|sk-(?:proj-)?[A-Za-z0-9_-]{24,}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{24,}|AKIA[A-Z0-9]{16}|eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+)$");
+    private static final Pattern PUBLIC_SUPABASE_KEY = Pattern.compile("^sb_publishable_[A-Za-z0-9_-]{24,}$");
 
     @Override
     public List<RuleMatch> evaluate(ProjectFile file) {
@@ -48,6 +49,7 @@ public class HardcodedFrontendSecretRule implements VulnerabilityRule {
     }
 
     static boolean credentialCandidate(String value) {
+        if (PUBLIC_SUPABASE_KEY.matcher(value).matches()) return false;
         if (CREDENTIAL.matcher(value).matches()) return true;
         if (value.length() < 32 || value.startsWith("${") || value.startsWith("http://") || value.startsWith("https://")
                 || value.startsWith("pk_live_") || value.startsWith("pk_test_")
@@ -68,7 +70,7 @@ public class HardcodedFrontendSecretRule implements VulnerabilityRule {
             return;
         }
         String value = matcher.group(2);
-        if (FrontendEvidenceSanitizer.isDummyValue(value)) {
+        if (PUBLIC_SUPABASE_KEY.matcher(value).matches() || FrontendEvidenceSanitizer.isDummyValue(value)) {
             return;
         }
         matches.add(match(file, lineNumber, line));

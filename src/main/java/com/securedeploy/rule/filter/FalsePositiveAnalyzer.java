@@ -39,7 +39,7 @@ public class FalsePositiveAnalyzer {
             "K8S_SECRET_PLAIN_TEXT",
             "GITHUB_ACTIONS_SECRET_ECHO"
     );
-    private static final Pattern API_KEY_PATTERN = Pattern.compile("(?i)(sk-[a-z0-9_-]{16,}|ghp_[a-z0-9_]{20,}|xoxb-[a-z0-9-]{20,}|akia[0-9a-z]{16}|aiza[0-9a-z_-]{20,})");
+    private static final Pattern API_KEY_PATTERN = Pattern.compile("(?i)(sb_secret_[a-z0-9_-]{24,}|sk-[a-z0-9_-]{16,}|ghp_[a-z0-9_]{20,}|xoxb-[a-z0-9-]{20,}|akia[0-9a-z]{16}|aiza[0-9a-z_-]{20,})");
     private static final Pattern JWT_PATTERN = Pattern.compile("(?i)eyJ[a-z0-9_-]+\\.[a-z0-9_-]+\\.[a-z0-9_-]+");
     private static final Pattern DATA_URL_PATTERN = Pattern.compile("(?i)data:(?:image/(?:png|jpeg|jpg|gif|webp|svg\\+xml)|application/octet-stream);base64,");
     private static final Pattern DUMMY_PATTERN = Pattern.compile(

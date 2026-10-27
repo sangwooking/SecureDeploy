@@ -8,6 +8,18 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
 class FrontendEnvironmentSecretTest {
+    @Test void supabasePublishableFormatIsNotSecretButSecretFormatIsRetainedAndMasked() {
+        String publicKey="sb_publishable_"+"Ab2Cd3Ef4Gh5Jk6Lm7Np8Qr9St0Uv1Wx";
+        String secretKey="sb_secret_"+"A".repeat(32);
+        assertThat(rule.evaluate(file("VITE_API_KEY="+publicKey))).isEmpty();
+        assertThat(rule.evaluate(file("NEXT_PUBLIC_API_KEY="+publicKey))).isEmpty();
+        var source=file("NEXT_PUBLIC_API_KEY="+secretKey);var raw=rule.evaluate(source);
+        assertThat(raw).hasSize(1).allSatisfy(m->assertThat(m.evidence()).doesNotContain(secretKey).contains("redacted"));
+        var finalMatches=new FalsePositiveAnalyzer().analyze(new ProjectStructure(Path.of("."),List.of(source)),raw);
+        assertThat(finalMatches).hasSize(1).allSatisfy(m->assertThat(m.confidence().name()).isEqualTo("HIGH"));
+        assertThat(new com.securedeploy.ai.remediation.RemediationSanitizer().text("diagnostic: "+secretKey,1000))
+                .doesNotContain(secretKey).contains("redacted");
+    }
     final HardcodedFrontendSecretRule rule=new HardcodedFrontendSecretRule();
     final String fake="ghp_"+"a".repeat(36);
     ProjectFile file(String line) { return new ProjectFile(Path.of(".env"),".env",ProjectFileType.ENV_FILE,List.of(line)); }

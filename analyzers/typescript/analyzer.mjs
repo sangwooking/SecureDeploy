@@ -12,8 +12,9 @@ import { analyzePolicies } from './rls.mjs';
 import { syntaxIndex, indexSyntax } from './syntax-index.mjs';
 import { regexFlow } from './regex-flow.mjs';
 import {tsPaths} from './ts-paths.mjs';
+import {objectData} from './object-data.mjs';
 
-export const VERSION = 'ts-server-v32';
+export const VERSION = 'ts-server-v33';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -99,12 +100,13 @@ export function analyze(input, overrides = {}) {
     if(steps>=limits.maxSteps||Date.now()>deadline)throw Error('SUPABASE_BUDGET');
     steps++;phaseSteps[phase]=(phaseSteps[phase]??0)+1;
   }
-  const safeName = text => /^[A-Za-z_$][\w$]{0,79}$/.test(text ?? '') && !/^(?:sk_|gh[pousr]_|AKIA)/.test(text) ? text : '[identifier]';
+  const safeName = text => /^[A-Za-z_$][\w$]{0,79}$/.test(text ?? '') && !/^(?:sb_secret_|sk_|gh[pousr]_|AKIA)/.test(text) ? text : '[identifier]';
   const loc = (node, mod, kind, fn) => ({ filePath: mod.filePath,
     line: mod.ast.getLineAndCharacterOfPosition(node.getStart(mod.ast)).line + 1,
     column: mod.ast.getLineAndCharacterOfPosition(node.getStart(mod.ast)).character + 1,
     functionName: safeName(fn?.name ?? 'module'), kind });
   const regexSupport=regexFlow({ts,unwrap,expr,note,tick,loc,step,constant,unknown});
+  const dataObjects=objectData({tick,note,step,loc,sources:exposureSources});
   function tick(mod) {
     try { charged(); } catch {
       mod.record.limitations.add(steps >= limits.maxSteps ? 'ANALYSIS_STEP_BUDGET_EXCEEDED' : 'ANALYSIS_TIME_BUDGET_EXCEEDED');
@@ -154,19 +156,21 @@ export function analyze(input, overrides = {}) {
       recommendation: errors.length ? '사용자 응답에는 일반 오류 메시지와 추적 ID만 반환하고 상세 스택은 접근이 제한된 내부 로그로 분리하세요. 로컬 오류 응답 테스트 후 재검사하세요.' : '응답·로그에서 해당 값을 제거하거나 목적에 맞게 마스킹하세요. 실제 노출이 확인됐다면 자격증명 교체를 검토하고 로컬 테스트와 재검사로 확인하세요. 클라이언트 공개 환경변수로 옮기는 것은 해결이 아닙니다.' }, state.mod);
   }
   function responseBody(v, depth=0, seen=new Set()) {
-    if(!v||depth>3||seen.has(v))return {origins:[],trail:[],unresolved:depth>3};
-    seen.add(v);
+    if(!v||depth>3)return {origins:[],trail:[],unresolved:depth>3};
+    const identity=v.ref??v;
+    if(seen.has(identity))return {origins:[],trail:[],unresolved:true};
+    seen=new Set([...seen,identity]);
     if(v.tag==='exposureResponse')return {origins:[],trail:[],unresolved:false};
     // One computed data-property always contributes its value to JSON even
     // when its key is unknown. It does not make arbitrary property reads safe.
     if (v?.tag === 'object' && v.ref?.computedKeyOnly && v.ref.properties.size === 1) {
       const child = [...v.ref.properties.values()][0];
-      return {origins: exposureSources(child), trail: exposureTrails(child), unresolved: exposureUncertain(child)};
+      return responseBody(child,depth+1,seen);
     }
     if(v.ref?.properties){
       const children=[...v.ref.properties.values()].map(c=>responseBody(c,depth+1,seen));
-      return {origins:children.flatMap(c=>c.origins).slice(0,20),trail:children.flatMap(c=>c.trail).slice(0,10),
-        unresolved:!!v.unknown||!!v.ref.unknown||children.some(c=>c.unresolved)};
+      return {origins:[...(v.ref.exposureUnknownSources??[]),...children.flatMap(c=>c.origins)].slice(0,20),trail:children.flatMap(c=>c.trail).slice(0,10),
+        unresolved:!!v.unknown||!!v.ref.unknown||v.ref.properties.has('toJSON')||v.ref.properties.has('__proto__')||children.some(c=>c.unresolved)};
     }
     return {origins: exposureSources(v), trail: exposureTrails(v), unresolved: exposureUncertain(v)};
   }
@@ -186,7 +190,7 @@ export function analyze(input, overrides = {}) {
       if (!proof.unresolved && sensitive.length) append(result.findings, {ruleId:'TS_SENSITIVE_DATA_EXPOSURE', kind:'CWE-200', confidence:'HIGH',
         disposition:'REVIEW_REQUIRED', source:sensitive[0], sink:proof.location, flow:[...trace, proof.location], defenses:[], limitations,
         message:serverReturn?'서버 환경 설정의 값이 서버 함수 반환값으로 전달됩니다. 클라이언트 호출·권한 문맥을 확인해 주세요.':'서버 환경 설정의 값이 요청 응답에 전달되는 경로를 확인했습니다.',
-        recommendation:'환경값 전체를 반환하는 기능을 제거하고 필요한 서버 작업만 제공하세요. 공개 설정과 서버 전용 키를 분리하고, 가짜 값으로 일반 사용자 응답에 서버 비밀값이 포함되지 않는지 확인한 뒤 재검사하세요.'}, state.mod);
+        recommendation:'표시된 응답 생성·반환 위치에서 서버 비밀값을 담는 필드를 제거하고 status 등 정상 응답 필드는 유지하세요. 비밀값은 서버의 필요한 작업에서만 사용하고 NEXT_PUBLIC_·VITE_ 변수로 옮기지 마세요. 공개 Supabase anon·publishable 키나 프로젝트 URL 자체를 숨기는 것은 해결책이 아닙니다. 실제 사용 중인 비밀키가 이미 노출됐다면 코드 수정과 별도로 폐기·교체 및 접근 기록을 검토하세요. 자동 교체·배포를 수행한 것은 아닙니다. 로컬의 같은 요청에서 가짜 canary 값이 응답·로그에 없는지, 정상 응답이 유지되는지 확인한 뒤 재검사하세요.'}, state.mod);
     }
   }
   function observeExpressResponse(v,node,state,unresolved=false) {
@@ -399,7 +403,9 @@ export function analyze(input, overrides = {}) {
       return {
         read: () => hasConstant(key) ? property(receiver, String(key.constant), node, state) : { ...union(receiver, key), unknown: true },
         write: (v, target) => {
+          if(dataObjects.plain(receiver)&&exposureSources(v).length)v=step(v,loc(node,mod,'OBJECT_DATA_PROPERTY_WRITE',fn),mod);
           if(nodeSupport?.write(receiver,key,v,target))return;
+          if(dataObjects.write(receiver,key,v,target,node))return;
           if (receiver.ref?.http && receiver.tag === 'url') {
             note(mod, 'URL_PROPERTY_WRITE');
             const ref = target.forkRefs?.get(receiver.ref) ?? receiver.ref;
@@ -593,21 +599,41 @@ export function analyze(input, overrides = {}) {
       const combined = union(left, right);
       return op === ts.SyntaxKind.PlusToken ? step(addition(left, right), loc(node, mod, 'SQL_STRING_CONSTRUCTION', fn), mod) : combined;
     }
+    if(ts.isDeleteExpression(node)){
+      const target=unwrap(node.expression);
+      if(ts.isPropertyAccessExpression(target)||ts.isElementAccessExpression(target)){
+        const receiver=expr(target.expression,state),key=ts.isPropertyAccessExpression(target)?constant(target.name.text):expr(target.argumentExpression,state);
+        if(dataObjects.remove(receiver,key,state))return constant(true);
+        invalidateWrites(writtenNames(node,state),state);state.uncertain=true;return unknown();
+      }
+      note(mod,'OBJECT_DELETE_UNRESOLVED');return unknown();
+    }
     if (ts.isObjectLiteralExpression(node)) {
       const properties = new Map();
-      let incomplete = false, spread = unknown();
+      let incomplete = false, spread = unknown(),plainData=true;
+      const residual=[];
       for (const p of node.properties) {
         if (ts.isPropertyAssignment(p) && !ts.isComputedPropertyName(p.name)) properties.set(p.name.getText().replace(/^['"]|['"]$/g, ''), expr(p.initializer, state));
         else if (ts.isShorthandPropertyAssignment(p)) properties.set(p.name.text, expr(p.name, state));
         else if (ts.isPropertyAssignment(p) && ts.isComputedPropertyName(p.name) && node.properties.length === 1) {
           expr(p.name.expression, state);
           properties.set(Symbol('computed-data'), expr(p.initializer, state)); incomplete = true;
+        } else if(ts.isSpreadAssignment(p)){
+          const copied=expr(p.expression,state);tick(mod);
+          if(dataObjects.plain(copied)&&!copied.trace.length&&!copied.ref.trace?.length&&properties.size+copied.ref.properties.size<=32){
+            for(const [key,v]of copied.ref.properties){tick(mod);properties.set(key,step(v,loc(p,mod,'OBJECT_DATA_SPREAD',fn),mod));}
+          }else{
+            note(mod,'OBJECT_SPREAD_UNRESOLVED');incomplete=true;plainData=false;
+            spread=union(spread,copied);residual.push(...exposureSources(copied));
+          }
         } else {
           note(mod, 'OBJECT_MEMBER_UNRESOLVED'); incomplete = true;
-          if (ts.isSpreadAssignment(p)) spread = union(spread, expr(p.expression, state));
+          plainData=false;
         }
       }
       return value('object', spread.trace, { unknown: incomplete, ref: { properties, unknown: incomplete,
+        plainData:plainData&&!incomplete&&properties.size<=32&&[...properties.keys()].every(k=>typeof k==='string'&&dataObjects.allowed(k)),
+        exposureUnknownSources:residual.slice(0,20),
         computedKeyOnly: node.properties.length===1 && ts.isPropertyAssignment(node.properties[0]) && ts.isComputedPropertyName(node.properties[0].name),
         trace: union(spread, ...properties.values()).trace,...(state.nodeMode?{nodeIdentity:{}}:{}) } });
     }
@@ -662,8 +688,9 @@ export function analyze(input, overrides = {}) {
           && ts.isIdentifier(callee.expression.expression) && callee.expression.expression.text==='Deno'
           && mod.denoGlobals && !state.vars.has('Deno') && args.length===1) {
         const name=args[0];
-        const publicValue=hasConstant(name) && (['SUPABASE_ANON_KEY','SUPABASE_PUBLISHABLE_KEY','SUPABASE_URL'].includes(name.constant) || /^PUBLIC_[A-Z0-9_]+$/.test(name.constant));
-        const secret=hasConstant(name) && /(?:SECRET|SERVICE_ROLE|PRIVATE_KEY|PASSWORD|API_KEY|ACCESS_TOKEN|REFRESH_TOKEN)/i.test(String(name.constant)) && !publicValue;
+        const publicValue=hasConstant(name) && ['SUPABASE_ANON_KEY','SUPABASE_PUBLISHABLE_KEY','SUPABASE_URL'].includes(name.constant);
+        const publicHint=hasConstant(name)&&/^PUBLIC_[A-Z0-9_]+$/.test(name.constant);
+        const secret=hasConstant(name) && /(?:SECRET|SERVICE_ROLE|PRIVATE_KEY|PASSWORD|API_KEY|ACCESS_TOKEN|REFRESH_TOKEN)/i.test(String(name.constant)) && !publicValue&&!publicHint;
         const selected=name.trace.some(s=>['QUERY_PARAMETER','REQUEST_BODY','REQUEST_HEADER','ROUTE_PARAMETER','REQUEST_URL'].includes(s.kind)) && !name.unknown;
         const origin=loc(node,mod,selected?'REQUEST_SELECTED_ENVIRONMENT_VALUE':secret?'SERVER_SECRET_ENVIRONMENT_VALUE':publicValue?'DECLARED_PUBLIC_ENVIRONMENT_VALUE':'ENVIRONMENT_VALUE_UNVERIFIED',fn);
         return value('environmentValue',[],{unknown:!!name.unknown, exposures:[...(selected?name.trace:[]),origin]});

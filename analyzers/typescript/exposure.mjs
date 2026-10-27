@@ -1,6 +1,6 @@
 // Metadata only; literals and environment names never enter observations or findings.
 export const credentialShape = text => typeof text === 'string' &&
-  /^(?:sk-(?:proj-)?[A-Za-z0-9_-]{24,}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{24,}|AKIA[A-Z0-9]{16})$/.test(text);
+  /^(?:sb_secret_[A-Za-z0-9_-]{24,}|sk-(?:proj-)?[A-Za-z0-9_-]{24,}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{24,}|AKIA[A-Z0-9]{16})$/.test(text);
 export function sources(v, depth = 0, seen = new Set()) {
   if (!v || depth > 3 || seen.has(v)) return [];
   seen.add(v);

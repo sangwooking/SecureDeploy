@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 public class RemediationSanitizer {
     private static final String MASK = "<redacted>";
     private static final Pattern PRIVATE_KEY = Pattern.compile("-----BEGIN [^-]*PRIVATE KEY-----[\\s\\S]*?(?:-----END [^-]*PRIVATE KEY-----|$)");
-    private static final Pattern CREDENTIAL = Pattern.compile("(?i)\\b(?:sk-(?:proj-)?[a-z0-9_-]{8,}|gh[pousr]_[a-z0-9_]{8,}|github_pat_[a-z0-9_]{8,}|xox[baprs]-[a-z0-9-]{8,}|AKIA[A-Z0-9]{16}|AIza[a-z0-9_-]{20,}|eyJ[a-z0-9_-]+\\.[a-z0-9_-]+\\.[a-z0-9_-]+)\\b");
+    private static final Pattern CREDENTIAL = Pattern.compile("(?i)\\b(?:sb_secret_[a-z0-9_-]{8,}|sk-(?:proj-)?[a-z0-9_-]{8,}|gh[pousr]_[a-z0-9_]{8,}|github_pat_[a-z0-9_]{8,}|xox[baprs]-[a-z0-9-]{8,}|AKIA[A-Z0-9]{16}|AIza[a-z0-9_-]{20,}|eyJ[a-z0-9_-]+\\.[a-z0-9_-]+\\.[a-z0-9_-]+)\\b");
     private static final Pattern ASSIGNMENT = Pattern.compile("(?i)(?<![\\w.-])([\\w.-]*(?:password|passwd|secret|token|api[_-]?key|private[_-]?key)[\\w.-]*[\\\"']?\\s*[:=]\\s*)(?:\"(?:\\\\.|[^\"\\\\])*+\"|'(?:\\\\.|[^'\\\\])*+'|[^\\s,;<>]++)");
     private static final Pattern LONG_VALUE = Pattern.compile("(?<![\\w])[-A-Za-z0-9_+/=]{32,}(?![\\w])");
     private static final Pattern STRING_LITERAL = Pattern.compile("\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|`(?:\\\\.|[^`\\\\])*`", Pattern.DOTALL);
