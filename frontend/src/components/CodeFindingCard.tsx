@@ -2,6 +2,7 @@ import type { RemediationSnapshot, RiskFinding, Vulnerability, VulnerabilityStat
 import { FindingRemediation } from './FindingRemediation';
 import { codeExplanation, priorityLabels } from './reviewPresentation';
 import { findingGuidance, needsVerification } from './findingGuidance';
+import { severityLabels } from './uiLanguage';
 
 const statusLabels: Record<VulnerabilityStatus, string> = {
   UNCHECKED: '미확인', ACKNOWLEDGED: '확인 완료', IN_PROGRESS: '수정 중', RESOLVED: '수정 완료', IGNORED: '무시',
@@ -30,11 +31,11 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
       </span>
       <span className="status-badge">{statusLabels[status]}</span>
     </div>
-    <p className="finding-origin">규칙 경고 · 정적 탐지 근거 · 심각도 {v.severity}</p>
+    <p className="finding-origin">규칙 경고 · 코드에서 확인한 단서 · 영향 수준 {severityLabels[v.severity]}</p>
     <h3>{needsReview ? guidance.summary : codeExplanation(v).title}</h3>
     <p className="finding-location"><strong>확인할 파일</strong> <code>{v.filePath}</code> · {v.line}행</p>
     {needsReview && <p className="review-caution">실제 사용 방식과 주변 코드에 따라 위험이 달라질 수 있습니다. 먼저 해당 상황인지 확인하세요.</p>}
-    <p className="finding-next-step"><strong>{needsReview ? '내가 확인할 일' : '내가 해야 할 일'}</strong><br />{needsReview ? guidance.steps[0] : guidance.action}</p>
+    <p className="finding-next-step"><strong>{needsReview ? '먼저 확인할 내용' : '수정할 내용'}</strong><br />{needsReview ? guidance.steps[0] : guidance.action}</p>
     {onEditFile && <button className="secondary-button" type="button" onClick={()=>onEditFile(v.filePath)}>이 파일 수정하기</button>}
     <p className="fix-availability">{onEditFile?'수동 수정 · 자동/AI 수정 가능 여부는 작업 공간에서 현재 소스를 확인한 뒤 안내합니다.':'이 화면에서는 코드 수정이 지원되지 않습니다.'}</p>
     <FindingRemediation finding={finding} snapshot={remediation} vulnerability={v} />
@@ -49,7 +50,7 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
           onChange={event => id != null && statusActions.onComment(id, event.target.value)} /></label>
         {id != null && statusActions.updatingId === id && <span role="status">저장 중...</span>}
       </div>
-      <p>메모는 상태를 변경할 때 함께 저장됩니다.</p>
+      <p>메모는 상태를 변경할 때 함께 저장됩니다. 직접 기록한 상태이며, 수정본 재검사나 해결 검증을 대신하지는 않아요.</p>
     </details>
     <details className="technical-details"><summary>기술 정보 보기</summary>
       <p className="finding-location"><strong>위치</strong> <code>{v.filePath}</code> <span className="finding-line">{v.line}행</span></p>

@@ -10,13 +10,15 @@ export function DependencyContextDetails({ locations }: { locations: DependencyC
   if (locations.some(c => c.ecosystem === 'PYPI')) return <PythonDependencyDetails locations={locations} />;
   const contexts = locations.filter(c => c.context);
   if (!contexts.length) return <p>이 이력에는 상위 의존성 경로가 없습니다. 직접/간접 경로와 실제 수정 위치를 추가로 확인해야 합니다.</p>;
-  return <details className="action-details"><summary>의존성 경로와 수정 위치 확인</summary>
+  return <details className="action-details"><summary>함께 설치된 경로와 수정할 파일</summary>
     <p>아래는 manifest·lockfile의 선언 근거입니다. 운영 실행 여부나 공격 가능성을 확인한 것은 아닙니다. 개발 도구도 CI·빌드·테스트 입력에 따라 위험할 수 있습니다.</p>
     {locations.some(c => !c.context) && <p className="review-caution">일부 버전 확인 위치에는 상위 의존성 경로 기록이 없습니다. 아래 경로만으로 전체 사용 환경이나 수정 위치를 확정할 수 없습니다.</p>}
     {contexts.map((component, i) => {
       const context = component.context!;
       return <section className="dependency-context" key={`${component.sourceFile}:${context.installedPath}:${i}`}>
         <h4>{environmentLabels[context.environment] ?? environmentLabels.UNKNOWN} · {component.direct == null ? '직접/간접 미확인' : component.direct ? '직접 의존성' : '간접 의존성'}</h4>
+        {context.environment==='DEVELOPMENT'&&<p>웹사이트 개발이나 테스트 과정에서 사용하는 도구의 선언에 포함되어 있어요. 운영에서 실행되는지는 별도 확인이 필요해요.</p>}
+        {component.direct===false&&<p>다른 라이브러리를 설치하면서 함께 추가된 패키지예요. 아래 상위 패키지부터 확인해 주세요.</p>}
         <p className="finding-location">버전 확인 위치: {component.sourceFile}{component.line > 0 ? `:${component.line}` : context.lockLine > 0 ? `:${context.lockLine}` : ''} · {context.installedPath || '설치 위치 미확인'}</p>
         {context.paths.map((path, index) => <div key={index}>
           <p className="finding-location">{path.chain.map(hop => `${hop.packageName}@${hop.version ?? '버전 미확정'}`).join(' → ')}</p>

@@ -3,7 +3,7 @@ const {renderToStaticMarkup}=require('react-dom/server');
 const {WorkspaceScanPanel}=require('./load-component.cjs')('WorkspaceScanPanel');
 test('workspace rescan explicitly binds revision, STANDARD and external lookup consent',()=>{
  const html=renderToStaticMarkup(React.createElement(WorkspaceScanPanel,{workspace:{id:'w',revision:4,changedFileIds:['f'],identityStatus:'EXACT_GIT_COMMIT'},original:{reviewId:1},disabled:false}));
- for(const text of ['revision 4','STANDARD','OSV','EPSS/KEV','유료 AI는 호출하지 않습니다'])assert.ok(html.includes(text),text);
+ for(const text of ['수정본 버전 4','STANDARD','OSV','EPSS/KEV','유료 AI는 호출하지 않습니다'])assert.ok(html.includes(text),text);
  assert.match(html,/<button[^>]*disabled/);
 });
 test('unverified ZIP does not claim old findings were fixed',()=>{

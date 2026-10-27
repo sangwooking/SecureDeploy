@@ -4,6 +4,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs'), os = require('node:os'), path = require('node:path'), crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 const { stage, pane } = require('./editor-navigation.cjs');
+const {inspectionLabel}=require('../load-component.cjs')('uiLanguage');
+const {deploymentLabels}=require('../load-component.cjs')('reviewPresentation');
 const origin = process.env.FRONTEND_URL || 'http://127.0.0.1:5484';
 const api = process.env.API_BASE_URL || 'http://127.0.0.1:58033';
 for (const value of [origin, api]) {
@@ -106,8 +108,9 @@ function expiredToken(user) {
       await page.locator('.summary-facts').waitFor();
       const displayed = await page.locator('.summary-facts').innerText();
       assert.ok(displayed.includes(`${before.securityScore} / 100`));
-      assert.ok(displayed.includes(before.riskAssessment.prioritizedDeploymentAssessment));
-      assert.ok(displayed.includes(before.coverage.status));
+      assert.ok(displayed.includes(deploymentLabels[before.riskAssessment.prioritizedDeploymentAssessment]));
+      assert.ok(displayed.includes(inspectionLabel(before.coverage.status)));
+      assert.ok((await page.locator('.summary-detail').textContent()).includes(before.riskAssessment.prioritizedDeploymentAssessment));
       assert.equal(await page.evaluate(() => window.__sourceExecuted), undefined);
       await page.locator('.report-menu > summary').click();
       const pdfDownloading = page.waitForEvent('download');
@@ -221,8 +224,8 @@ function expiredToken(user) {
       await page.locator('.history-item').first().click();
       await page.locator('.summary-facts').waitFor();
       const afterVisible = await page.locator('.summary-facts').innerText();
-      assert.ok(afterVisible.includes('100 / 100')); assert.ok(afterVisible.includes(after.coverage.status));
-      assert.ok(afterVisible.includes(after.riskAssessment.prioritizedDeploymentAssessment));
+      assert.ok(afterVisible.includes('100 / 100')); assert.ok(afterVisible.includes(inspectionLabel(after.coverage.status)));
+      assert.ok(afterVisible.includes(deploymentLabels[after.riskAssessment.prioritizedDeploymentAssessment]));
       await page.getByRole('button', { name: '로그아웃', exact: true }).click();
       assert.equal(await page.evaluate(() => localStorage.getItem('securedeploy.accessToken')), null);
       // Product uses stateless bearer tokens: logout removes browser state, not a server revocation list.

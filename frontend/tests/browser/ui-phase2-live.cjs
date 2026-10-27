@@ -3,6 +3,8 @@ const {chromium,request}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),{execFileSync}=require('node:child_process');
 const {stage,pane,resultView}=require('./editor-navigation.cjs');
 const api=process.env.API_BASE_URL||'http://127.0.0.1:8085',origin=process.env.FRONTEND_URL||'http://localhost:5173';
+const output=process.env.UI_OUTPUT_DIR;
+if(output)require('node:fs').mkdirSync(output,{recursive:true,mode:0o700});
 const files={'application.properties':'debug=true\nserver.error.include-stacktrace=always\n','notes/very-long-file-name-used-to-check-file-navigation-and-wrapping.txt':'static fixture\n'};
 const zip=execFileSync('python3',['-c',"import io,sys,json,zipfile\nb=io.BytesIO()\nwith zipfile.ZipFile(b,'w') as z:\n for p,s in json.load(sys.stdin).items():z.writestr(p,s)\nsys.stdout.buffer.write(b.getvalue())"],{input:JSON.stringify(files)});
 (async()=>{const browser=await chromium.launch(),http=await request.newContext({baseURL:api}),report=[];
@@ -12,11 +14,11 @@ try{for(const width of [1440,1024,768,390,320]){
  // Test-only proxy adapts a separate Vite port to the configured development origin.
  // This exercises real API responses, not production CORS eligibility.
  await page.route('**/*',async r=>{const u=new URL(r.request().url());if(u.pathname.startsWith('/api/')){
-  const response=await r.fetch({url:api+u.pathname+u.search,headers:{...r.request().headers(),origin:'http://localhost:5173'}});return r.fulfill({response});
+  const response=await r.fetch({url:api+u.pathname+u.search,headers:{...r.request().headers(),origin:'http://localhost:5173'}});return r.fulfill({response,headers:{...response.headers(),'access-control-allow-origin':origin}});
  }if(u.origin===origin)return r.continue();outbound.push(u.origin);return r.abort();});
  const signup=await http.post('/api/auth/signup',{data:{email:`phase2-${width}-${Date.now()}@example.invalid`,name:'UI fixture',password:'Synthetic-Local-813!'}});assert.equal(signup.status(),200);const user=await signup.json();
  await page.addInitScript(auth=>{localStorage.setItem('securedeploy.accessToken',auth.accessToken);localStorage.setItem('securedeploy.authUser',JSON.stringify(auth.user));},user);
- const check=async name=>{assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name);assert.deepEqual(errors,[]);await page.screenshot({path:`/private/tmp/sd-ui-phase2-${name}-${width}.png`,fullPage:true});};
+ const check=async name=>{assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name);assert.deepEqual(errors,[]);await page.screenshot({path:output?`${output}/${name}-${width}.png`:`/private/tmp/sd-ui-phase2-${name}-${width}.png`,fullPage:true});};
  await page.goto(origin+'/#/new');await page.getByLabel('ZIP 파일 선택').setInputFiles({name:'phase2-static.zip',mimeType:'application/zip',buffer:zip});await check('new');
  const uploaded=page.waitForResponse(r=>r.url().endsWith('/api/reviews/upload')&&r.request().method()==='POST');await page.getByRole('button',{name:'분석 시작',exact:true}).click();const response=await uploaded;assert.equal(response.status(),200);const result=await response.json();
  await page.getByRole('navigation',{name:'분석 결과 메뉴'}).waitFor();await check('summary');

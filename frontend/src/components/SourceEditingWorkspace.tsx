@@ -122,7 +122,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath }: { result
     ? [...(result.serverAnalysis?.validatedFindings ?? []), ...(result.serverAnalysis?.pythonAnalysis?.validatedFindings ?? [])]
       .filter(f => f.location.filePath.replace(/\\/g, '/') === selected.path) : [];
   return <section className={`source-editor stage-${stage} pane-${pane} ${evidenceOpen?'evidence-open':''}`} aria-label="수정 작업 공간">
-    <header className="source-editor-header"><div><h2>수정 작업 공간</h2><p>{result.projectName} · Review {result.reviewId}</p></div>
+    <header className="source-editor-header"><div><h2>수정 작업 공간</h2><p>{result.projectName} · 검사 #{result.reviewId}</p></div>
       <button type="button" className="secondary-button" aria-label="분석 결과로 돌아가기" disabled={busy} onClick={() => { if (!dirty || window.confirm('저장하지 않은 편집을 버리고 결과로 돌아갈까요?')) onBack(); }}>결과로 돌아가기</button></header>
     {error && <p className="error-message" role="alert">{error}</p>}
     {!workspace ? <div className="source-editor-acquire">
@@ -133,9 +133,9 @@ export function SourceEditingWorkspace({ result, onBack, initialPath }: { result
       {result.sourceType === 'WORKSPACE' && <p role="note">수정본 Review에는 전체 소스를 보관하지 않습니다. 기존 작업 공간을 이용하거나 다운로드한 ZIP으로 새 분석을 시작해 주세요.</p>}
       <button className="primary-button" type="button" disabled={busy || !result.reviewId || !result.sourceType || result.sourceType === 'WORKSPACE' || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 후 작업 공간 시작'}</button>
     </div> : <>
-      <div className="source-editor-status"><p><strong>revision {workspace.revision}</strong> · 만료 {new Date(workspace.expiresAt).toLocaleTimeString()} · 변경 {workspace.changedFileIds.length}개</p>
+      <div className="source-editor-status"><p><strong>수정본 버전 {workspace.revision}</strong> · 만료 {new Date(workspace.expiresAt).toLocaleTimeString('ko-KR')} · 변경 {workspace.changedFileIds.length}개</p>
         <details><summary>원본·해시 정보</summary><p className="source-revision">원본: {workspace.sourceRevision}</p></details>
-        {workspace.identityStatus === 'UNVERIFIED_REUPLOAD' && <p role="note">원본 일치 미검증 · 기존 Finding 위치 연결 안 함 · 수정 후 새 분석 필요</p>}
+        {workspace.identityStatus === 'UNVERIFIED_REUPLOAD' && <p role="note">이전 검사 원본과 같은 파일인지 확인하지 못했어요. 과거 문제 위치를 연결하지 않으며, 수정 후 새 검사가 필요해요.</p>}
         {expired && <p role="alert">작업 공간이 만료되었습니다. 원본을 다시 확보해 주세요.</p>}
         <button type="button" className="secondary-button" disabled={busy} onClick={clear}>작업 공간 삭제</button>
       </div>
@@ -180,7 +180,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath }: { result
           <button type="button" className="secondary-button" disabled={busy || dirty || workspace.changedFileIds.length === 0} onClick={reviewDiff}>전체 변경 Diff 확인</button>
           {dirty && <p>현재 편집 내용을 저장한 후 전체 변경을 확인해 주세요.</p>}
           {diffs && diffs.map(diff => <div className="source-diff" key={diff.fileId}><h4>{workspace.files.find(f => f.id === diff.fileId)?.path}</h4><PatchDiff patch={diff.patch || '변경 없음'} /></div>)}
-          {diffs && <label className="source-export-approval"><input type="checkbox" checked={approved} disabled={busy} onChange={e => setApproved(e.target.checked)} />revision {workspace.revision}의 변경 {workspace.changedFileIds.length}개를 검토했으며 다운로드를 승인합니다.</label>}
+          {diffs && <label className="source-export-approval"><input type="checkbox" checked={approved} disabled={busy} onChange={e => setApproved(e.target.checked)} />수정본 버전 {workspace.revision}의 변경 {workspace.changedFileIds.length}개를 검토했으며 다운로드를 승인합니다.</label>}
           <div className="source-editor-actions"><button type="button" className="secondary-button" disabled={busy || !approved || !diffs || dirty} onClick={() => download('zip')}>수정본 ZIP 다운로드</button>
             <button type="button" className="secondary-button" disabled={busy || !approved || !diffs || dirty} onClick={() => download('patch')}>Patch 다운로드</button></div>
           <p>다운로드는 보안 문제 해결 판정이 아닙니다. 적용 후 테스트와 STANDARD 재검사가 필요합니다.</p>

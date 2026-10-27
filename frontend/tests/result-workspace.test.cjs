@@ -16,7 +16,7 @@ const render = (result, view = 'SUMMARY') => renderToStaticMarkup(React.createEl
 test('summary qualifies the visible legacy score and prioritizes deployment assessment over it', () => {
   const result = fixture(), before = JSON.stringify(result);
   const html = render(result);
-  for (const text of ['프로젝트 보안 요약', '배포 전 수정 필요', '반드시 처리', 'AI 추가 후보 1건은 별도 확인', '가장 먼저 해야 할 일']) assert.ok(html.includes(text), text);
+  for (const text of ['프로젝트 보안 요약', '배포 전 수정 필요', '반드시 처리', 'AI 추가 후보 1건은 별도 확인', '가장 먼저 확인할 문제']) assert.ok(html.includes(text), text);
   assert.match(html, /배포 전 직접 확인<\/span><strong>1<\/strong>/);
   for (const text of ['CVE-2099', 'HARDCODED_SECRET', 'fixture-model', 'Confidence', 'AI_SECURITY_CANDIDATE']) assert.ok(!html.includes(text), text);
   assert.ok(html.includes('100 / 100'));assert.ok(html.includes('전체 안전 점수가 아닙니다'));

@@ -1,17 +1,17 @@
 import type { RiskAssessment, RiskFinding, RiskPriority, SecurityReviewResponse, SemanticSnapshot, Vulnerability } from '../types/securityReview';
 import { dependencyGuidance, dependencyText, incompleteDependency } from './dependencyGuidance';
 
-export type ResultView = 'SUMMARY' | 'BLOCKING' | 'REVIEW_REQUIRED' | 'SHOULD_FIX' | 'GUIDANCE' | 'TECHNICAL' | 'PROGRESS';
+export type ResultView = 'SUMMARY' | 'BLOCKING' | 'REVIEW_REQUIRED' | 'SHOULD_FIX' | 'GUIDANCE' | 'TECHNICAL' | 'PROGRESS' | 'LIBRARIES';
 export const resultViews: { id: ResultView; label: string }[] = [
   { id: 'SUMMARY', label: '결과 요약' }, { id: 'BLOCKING', label: '반드시 처리' },
   { id: 'REVIEW_REQUIRED', label: '배포 전 직접 확인할 부분' }, { id: 'SHOULD_FIX', label: '수정 권장' },
-  { id: 'GUIDANCE', label: '해결 방법' }, { id: 'PROGRESS', label: '변화 보기' }, { id: 'TECHNICAL', label: '기술 정보' },
+  { id: 'GUIDANCE', label: '해결 방법' }, { id: 'PROGRESS', label: '변화 보기' }, { id: 'LIBRARIES', label: '외부 라이브러리' }, { id: 'TECHNICAL', label: '기술 정보' },
 ];
 export const priorityLabels: Record<RiskPriority, string> = {
   BLOCKING: '반드시 처리', REVIEW_REQUIRED: '배포 전 직접 확인할 부분', SHOULD_FIX: '수정 권장', INFORMATIONAL: '참고 사항',
 };
 export const deploymentLabels: Record<RiskAssessment['prioritizedDeploymentAssessment'], string> = {
-  BLOCKED: '배포 전 수정 필요', REVIEW_REQUIRED: '확인 후 배포 판단 필요',
+  BLOCKED: '배포 전 수정 필요', REVIEW_REQUIRED: '직접 확인이 필요해요',
   READY_WITH_WARNINGS: '정책상 수정 권장 항목 있음', READY: '정책상 필수 처리 항목 없음',
 };
 

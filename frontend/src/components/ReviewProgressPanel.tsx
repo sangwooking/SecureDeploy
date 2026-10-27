@@ -3,6 +3,7 @@ import type { SecurityReviewResponse } from '../types/securityReview';
 import type { ProgressChange, ProgressFinding } from '../types/reviewProgress';
 import { codeExplanation, deploymentLabels, priorityLabels } from './reviewPresentation';
 import { FindingRemediation } from './FindingRemediation';
+import { inspectionLabel, securityTerms } from './uiLanguage';
 import { GitHubCommitComparison } from './GitHubSourceInfo';
 
 const labels: Record<ProgressChange, string> = {
@@ -24,8 +25,9 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
     <nav className="progress-filters" aria-label="변화 분류">{(Object.keys(labels) as ProgressChange[]).map(change =>
       <button type="button" key={change} aria-pressed={filter === change} onClick={() => setFilter(change)}>
         {labels[change]} <strong>{snapshot.counts[change]}</strong></button>)}</nav>
-    <p className="review-caution">비교는 저장된 분석 계약과 확인한 범위에 한정됩니다. 구조 분석 후보의 NOT_COMPARED와 미검사·버전 차이로 인한 확인 불가는 RESOLVED가 아닙니다.</p>
-    <p>저장된 비교 상태: {snapshot.status} · 변화 건수는 비교 대상 Finding 기준이며, 영향받는 패키지 수나 수정 작업 수가 아닙니다.</p>
+    <p className="review-caution">확인한 범위에서만 비교했어요. 코드 검토 후보를 비교하지 못했거나 검사 버전이 다르면 해결된 것으로 처리하지 않아요.</p>
+    <p>{inspectionLabel(snapshot.status)} · 변화 건수는 비교한 보안 문제 기준이며, 영향받는 패키지 수나 수정 작업 수가 아닙니다.</p>
+    <details className="comparison-status"><summary>비교 상태의 기술 정보</summary><p>{snapshot.status} · {securityTerms.notCompared} (NOT_COMPARED)는 RESOLVED가 아닙니다.</p></details>
     {snapshot.workspaceScan&&<p>수정본은 새 GitHub commit이 아닙니다. 원본 버전과 수정 revision·입력 해시로 구분합니다.</p>}
     {snapshot.workspaceScan&&!snapshot.workspaceScan.baselineVerified&&<p role="note">원본 동일성 미확인: 과거 Review와 자동 해결 비교를 하지 않습니다.</p>}
     <p>{snapshot.message}</p>

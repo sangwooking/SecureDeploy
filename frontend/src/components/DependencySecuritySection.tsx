@@ -3,11 +3,7 @@ import { DependencyFindingCard } from './DependencyFindingCard';
 import { IncompleteDependencyCard } from './IncompleteDependencyCard';
 import { dependencyText } from './dependencyGuidance';
 import { DependencyActionGroups } from './DependencyContextDetails';
-
-const statusLabels: Record<ScaResult['status'], string> = {
-  COMPLETE: '조회 완료', PARTIAL: '일부만 확인됨', UNAVAILABLE: '조회하지 못함',
-  NO_MANIFEST: '지원하는 의존성 파일 없음', DISABLED: '라이브러리 검사 비활성',
-};
+import { securityTerms, inspectionLabel } from './uiLanguage';
 
 export function ScaAssessmentNotice({ sca }: { sca?: ScaResult | null; riskAssessment?: RiskAssessment | null }) {
   if (sca?.status === 'COMPLETE') return null;
@@ -19,17 +15,18 @@ export function DependencySecuritySection({ sca, riskAssessment, remediation, re
   reviewId?: number | null;
 }) {
   if (!sca) return <section className="sca-section" aria-label="사용 중인 라이브러리 문제">
-    <h2>사용 중인 라이브러리 문제</h2><p>이 분석 이력에는 라이브러리 검사 결과가 없습니다. 재분석이 필요합니다.</p>
+    <h2>{securityTerms.libraries}</h2><p>이 이력에는 외부 라이브러리 검사 결과가 없습니다. 다시 검사해 주세요.</p>
   </section>;
   const canonical = riskAssessment && riskAssessment.schemaVersion >= 2
     ? riskAssessment.dependencyFindings.flatMap(finding => finding.dependency ? [finding.dependency] : [])
     : sca.dependencyVulnerabilities;
   const unresolved = sca.components.filter(component => component.versionResolution !== 'EXACT');
   return <section className="sca-section" aria-label="사용 중인 라이브러리 문제">
-    <div className="section-heading"><h2>사용 중인 라이브러리 문제</h2><span>{statusLabels[sca.status]}</span></div>
+    <div className="section-heading"><h2>{securityTerms.libraries}</h2><span>{inspectionLabel(sca.status)}</span></div>
+    <p className="section-lead">{sca.status==='COMPLETE'?'프로젝트에 포함된 외부 코드 중 알려진 보안 문제가 있는 항목을 확인했어요.':'프로젝트에 포함된 외부 코드의 보안 정보예요. 확인하지 못한 항목은 아래 검사 상태를 참고해 주세요.'}</p>
     <ScaAssessmentNotice sca={sca} />
     {(sca.components.some(c => c.ecosystem === 'PYPI') || sca.manifests?.some(m => /(?:requirements|pyproject|poetry|pipfile|uv\.lock|pylock)/i.test(m.filePath))) &&
-      <p className="review-caution">Python은 지원하는 의존성 선언과 알려진 보안 정보만 확인합니다. 실제 설치·간접 의존성 전체와 Python 서버 코드의 인증·권한·데이터 흐름은 미검증입니다.</p>}
+      <p className="review-caution">이 화면은 Python 라이브러리의 선언과 알려진 보안 정보를 보여줘요. 실제 설치·간접 의존성 전체는 미확인이고, Python 서버 코드의 인증·권한·데이터 흐름 결과와는 별개예요.</p>}
     <p>기존 규칙 기반 점수에는 미반영됩니다. 배포 판단에는 별도 위험 평가가 사용됩니다.</p>
     <p className="section-footnote">라이브러리 분석 시각: <time dateTime={sca.analyzedAt}>{sca.analyzedAt ? new Date(sca.analyzedAt).toLocaleString('ko-KR') : '미기록'}</time>. 공지별 갱신 시점과 다르며, 현재 운영 환경을 조회한 시각이 아닙니다.</p>
     <dl className="sca-metrics">
@@ -39,8 +36,8 @@ export function DependencySecuritySection({ sca, riskAssessment, remediation, re
       <div><dt>표시된 보안 공지·패키지·버전 항목</dt><dd>{canonical.length}</dd></div>
       <div><dt>버전 확인 필요 조합</dt><dd>{sca.summary.unresolvedDependencies}</dd></div>
     </dl>
-    <p>패키지·버전 조합은 생태계별로 구분합니다. 한 조합에 여러 보안 공지가 연결될 수 있으며, 공지 항목 수는 영향받는 조합 수나 수정 작업 수와 다릅니다. 원본 조회의 공지 항목은 {sca.summary.dependencyVulnerabilities}개이며, 별도 위험 평가에서 같은 공지를 통합하면 표시 수와 다를 수 있습니다.</p>
-    <details><summary>보안 공지 ID와 항목 수의 차이</summary><p>같은 보안 공지가 여러 설치 버전에 연결될 수 있습니다. 전체 고유 보안 공지 ID 수는 API에서 별도 집계하지 않으며, 표시 항목 수를 고유 ID 수로 해석하지 않습니다. 각 항목의 ID·별칭·영향 버전은 상세 근거에서 확인하세요.</p></details>
+    <p className="section-footnote">같은 패키지에 여러 보안 공지가 연결될 수 있어요. 공지 항목 수는 고유 취약점 수나 수정 작업 수와 달라요.</p>
+    <details><summary>보안 공지 ID와 항목 수의 차이</summary><p>패키지·버전 조합은 생태계별로 구분합니다. 원본 조회의 공지 항목은 {sca.summary.dependencyVulnerabilities}개이며, 같은 공지를 통합하면 표시 수와 다를 수 있습니다. 전체 고유 보안 공지 ID 수는 API에서 별도 집계하지 않으며, 표시 항목 수를 고유 ID 수로 해석하지 않습니다. 각 항목의 ID·별칭·영향 버전은 상세 근거에서 확인하세요.</p></details>
     {canonical.length === 0 && <p>{sca.status === 'COMPLETE'
       ? '조회한 정확한 버전에서 알려진 취약점이 반환되지 않았습니다. 프로젝트 전체의 안전을 보장하지 않습니다.'
       : '표시할 라이브러리 문제가 없습니다. 미조회 항목과 분석 상태를 확인해 주세요.'}</p>}

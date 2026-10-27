@@ -14,6 +14,7 @@ import { GitHubSourceInfo } from './GitHubSourceInfo';
 import { ReviewSummaryPanel } from './ReviewSummaryPanel';
 import { findingGuidance } from './findingGuidance';
 import { incompleteDependency, dependencyText } from './dependencyGuidance';
+import { severityLabels } from './uiLanguage';
 import { IncompleteDependencyCard } from './IncompleteDependencyCard';
 import { allRiskFindings, deploymentLabels, findingTitle, priorityLabels, resultViews, reviewCounts,
   semanticStatusText, vulnerabilityForFinding, type ResultView } from './reviewPresentation';
@@ -63,6 +64,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
       <button type="button" aria-current={['BLOCKING','REVIEW_REQUIRED','SHOULD_FIX'].includes(view) ? 'page' : undefined}
         onClick={() => navigate((counts.blocking ?? 0)>0?'BLOCKING':(counts.review ?? 0)>0?'REVIEW_REQUIRED':'SHOULD_FIX')}>문제 목록</button>
       <button type="button" aria-current={view === 'PROGRESS' ? 'page' : undefined} onClick={() => navigate('PROGRESS')}>변화 보기</button>
+      <button type="button" aria-current={view === 'LIBRARIES' ? 'page' : undefined} onClick={() => navigate('LIBRARIES')}>외부 라이브러리</button>
       <details className="result-more"><summary>분석 상세</summary>
         {resultViews.filter(i=>['GUIDANCE','TECHNICAL'].includes(i.id)).map(item=><button key={item.id} type="button"
           aria-current={view === item.id?'page':undefined} onClick={e=>{e.currentTarget.closest('details')?.removeAttribute('open');navigate(item.id);}}>{item.label}</button>)}
@@ -79,7 +81,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
               <strong>{counts.review ?? '미평가'}</strong>
               <small>AI 추가 후보 {counts.candidates}건은 별도 확인</small></button>
             <button type="button" onClick={() => navigate('SHOULD_FIX')}><span>수정 권장</span><strong>{counts.recommended ?? '미평가'}</strong></button>
-          </div>}/>
+          </div>}><FirstSteps result={result} navigate={navigate} flowCount={flowCount} configCount={configCount} /></ReviewSummaryPanel>
           <InspectionBoundaryNotice coverage={result.coverage} />
         </section>
         <details className="summary-scope"><summary>파일별 검사 범위와 라이브러리 수정 위치</summary>
@@ -87,23 +89,6 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
           <DependencyActionGroups sca={result.sca} />
         </details>
         <details className="summary-scope"><summary>별도 코드·설정 검토 후보 ({flowCount + configCount}건)</summary><ServerAnalysisSection snapshot={result.serverAnalysis} compact /></details>
-        <section className="next-actions"><h3>가장 먼저 해야 할 일</h3>
-          {assessment ? <>
-            <ol>{(['BLOCKING', 'REVIEW_REQUIRED', 'SHOULD_FIX'] as const).filter(priority => assessment.prioritySummary[priority] > 0).map(priority => {
-              const first = findings.find(f => f.priority === priority);
-              return <li key={priority}><div><strong>{priorityLabels[priority]} {assessment.prioritySummary[priority]}건</strong>
-                <p>{first ? findingTitle(result, first) : '저장된 분석 항목을 확인하세요.'}</p></div>
-                <button className="secondary-button" type="button" onClick={() => navigate(priority)}>왜 문제인지 확인</button></li>;
-            })}</ol>
-            {assessment.prioritySummary.BLOCKING === 0 && assessment.prioritySummary.REVIEW_REQUIRED === 0 && assessment.prioritySummary.SHOULD_FIX === 0 && <p>분석된 범위에서 필수 처리 또는 수정 권장 문제가 보고되지 않았습니다. 분석 범위와 추가 확인 사항을 함께 확인하세요.</p>}
-            {counts.candidates > 0 && <p>AI가 제안한 {counts.candidates}개 확인 항목은 ‘배포 전 직접 확인할 부분’에서 별도로 검토하세요.</p>}
-            {flowCount > 0 && <p>서버 코드 흐름 근거가 연결된 검토 항목 {flowCount}건이 있습니다.
-              <button className="secondary-button" type="button" onClick={() => navigate('REVIEW_REQUIRED')}>입력 경로와 수정 방법 확인</button></p>}
-            {configCount > 0 && <p>설정 선언에 대한 별도 검토 항목 {configCount}건이 있습니다.
-              <button className="secondary-button" type="button" onClick={() => navigate('REVIEW_REQUIRED')}>설정 근거와 수정 방법 확인</button></p>}
-            {assessment.prioritySummary.INFORMATIONAL > 0 && <p>참고 사항 {assessment.prioritySummary.INFORMATIONAL}건은 ‘수정 권장’에서 별도로 확인할 수 있습니다.</p>}
-          </> : <button className="secondary-button" type="button" onClick={() => navigate('REVIEW_REQUIRED')}>저장된 문제 확인</button>}
-        </section>
         <section className="analysis-coverage-brief"><h3>추가 코드 검토</h3>
           <p>{semanticStatusText(result.semanticReview, result.scanMode)}</p>
           {result.semanticReview && <p>검토한 코드 영역 {result.semanticReview.semanticSlicesAnalyzed}개 · 추가 확인 후보 {counts.candidates}개</p>}
@@ -134,6 +119,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
         </details>}
       </>}
       {view === 'PROGRESS' && <ReviewProgressPanel result={result} />}
+      {view === 'LIBRARIES' && <DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} />}
       {view === 'GUIDANCE' && <>
         <h2>수정·확인 가이드</h2><p>문제 하나를 선택해 저장된 수정 제안과 직접 확인 방법을 보세요. 적용 전 사용 방식과 호환성을 확인하세요.</p>
         <Guidance result={result} findings={findings} />
@@ -158,6 +144,25 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
   </section>;
 }
 
+function FirstSteps({ result, navigate, flowCount, configCount }: { result: SecurityReviewResponse; navigate: (view: ResultView) => void; flowCount: number; configCount: number }) {
+  const assessment = result.riskAssessment, findings = allRiskFindings(result);
+  return <section className="next-actions"><h3>가장 먼저 확인할 문제</h3>
+    {assessment ? <>
+      <ol>{(['BLOCKING', 'REVIEW_REQUIRED', 'SHOULD_FIX'] as const).filter(priority => assessment.prioritySummary[priority] > 0).map(priority => {
+        const first = findings.find(f => f.priority === priority);
+        return <li key={priority} data-priority={priority}><div><span className="action-priority">{priorityLabels[priority]} · {assessment.prioritySummary[priority]}건</span>
+          <p>{first ? findingTitle(result, first) : '저장된 분석 항목을 확인해 주세요.'}</p>
+          {first?.sourceFiles[0]&&<code className="next-action-location">{first.sourceFiles[0]}</code>}</div>
+          <button className="secondary-button" type="button" onClick={() => navigate(priority)}>수정 방법 확인</button></li>;
+      })}</ol>
+      {assessment.prioritySummary.BLOCKING === 0 && assessment.prioritySummary.REVIEW_REQUIRED === 0 && assessment.prioritySummary.SHOULD_FIX === 0 && <p>이 분류에서 보고된 문제는 없어요. 검사 범위와 별도 확인 항목도 함께 살펴보세요.</p>}
+      {(flowCount + configCount > 0)&&<p className="supplemental-action">점수와 별도로 확인할 코드·설정 항목이 {flowCount + configCount}건 있어요.{' '}
+        <button className="text-action" type="button" onClick={() => navigate('REVIEW_REQUIRED')}>근거와 수정 방법 확인</button></p>}
+      {assessment.prioritySummary.INFORMATIONAL > 0 && <p>참고 사항 {assessment.prioritySummary.INFORMATIONAL}건은 ‘수정 권장’에서 확인할 수 있어요.</p>}
+    </> : <button className="secondary-button" type="button" onClick={() => navigate('REVIEW_REQUIRED')}>저장된 문제 확인</button>}
+  </section>;
+}
+
 function FindingCollection({ result, findings, statusActions, onEditFile }: {
   result: SecurityReviewResponse; findings: RiskFinding[]; statusActions: FindingStatusActions;
   onEditFile?: (path: string) => void;
@@ -170,7 +175,7 @@ function FindingCollection({ result, findings, statusActions, onEditFile }: {
   const currentPage = Math.min(page, Math.max(0, Math.ceil(sorted.length / 6) - 1));
   return <>
     <label className="finding-filter">심각도 <select value={severity} onChange={event => { setSeverity(event.target.value as Severity | 'ALL'); setPage(0); }}>
-      <option value="ALL">전체</option>{Object.keys(severityOrder).map(value => <option key={value}>{value}</option>)}
+      <option value="ALL">전체</option>{Object.keys(severityOrder).map(value => <option key={value} value={value}>{severityLabels[value]}</option>)}
     </select><span>{sorted.length}건</span></label>
     {findings.filter(f => f.ruleId === 'LOCAL_STORAGE_TOKEN').length > 1 &&
       <p className="review-caution">토큰 사용 위치가 여러 곳입니다. 서로 독립적인 수정 작업이라는 뜻은 아닙니다. 공통 저장 코드와 로그인·갱신 흐름을 함께 확인하세요. 별칭을 통한 저장 위치는 현재 룰에서 확인하지 못할 수 있습니다.</p>}

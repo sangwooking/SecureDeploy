@@ -17,7 +17,7 @@ export function DependencyFindingCard({ dependency: dep, finding, remediation, i
     </span>
     <h3>{dependencyText(dep.packageName)} 업데이트 검토</h3>
     <p>{dep.ecosystem === 'PYPI' ? '정적 선언에서 확인한' : '사용 중인'} {dependencyText(dep.installedVersion)} 버전에 알려진 보안 문제가 보고되어 있습니다. 실제 영향은 사용 방식과 버전에 따라 달라집니다.</p>
-    {dep.ecosystem === 'PYPI' && <p className="review-caution">실제 설치 여부는 미확인입니다. Python 서버 코드의 인증·권한 및 데이터 흐름 검사는 아직 지원하지 않습니다.</p>}
+    {dep.ecosystem === 'PYPI' && <p className="review-caution">실제 설치 여부는 미확인입니다. 이 라이브러리 조회가 Python 서버 코드의 인증·권한 및 데이터 흐름을 검증하는 것은 아니에요. 서버 코드 검사 결과는 별도로 확인해 주세요.</p>}
     {knownExploited && <p className="review-caution">분석 당시 정보에 실제 공격에서 악용된 이력이 있습니다. 이 프로젝트가 공격받았다는 뜻은 아닙니다.</p>}
     <dl className="dependency-versions">
       <div><dt>라이브러리</dt><dd>{dependencyText(dep.packageName)}</dd></div>

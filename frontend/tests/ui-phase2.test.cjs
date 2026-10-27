@@ -7,7 +7,8 @@ const render=(name,props)=>renderToStaticMarkup(React.createElement(load(name)[n
 test('summary puts actionable server priorities before the qualified reference score without changing data',()=>{
   const result=require('./result-fixture.cjs')(),before=JSON.stringify(result);
   const html=render('ReviewResultWorkspace',{result,view:'SUMMARY',onViewChange(){},statusActions:{updatingId:null,comments:{},onComment(){},onStatus(){}},reportActions:null,progress:null});
-  assert.ok(html.indexOf('aria-label="확인할 문제"')<html.indexOf('기존 규칙 기반 참고 점수'));
+  assert.ok(html.indexOf('aria-label="확인할 문제"')<html.indexOf('검사 규칙 기준 참고 점수'));
+  assert.ok(html.indexOf('가장 먼저 확인할 문제')<html.indexOf('검사 규칙 기준 참고 점수'));
   assert.ok(html.includes('배포 판단의 검사 범위 한계'));
   assert.ok(html.includes('전체 안전 점수가 아닙니다'));
   assert.equal(JSON.stringify(result),before);

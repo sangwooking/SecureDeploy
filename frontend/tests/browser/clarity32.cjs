@@ -6,6 +6,7 @@ const path = require('node:path');
 const fixture = require('../result-fixture.cjs');
 const scenarios = require('../summary-fixture.cjs');
 const workspace = require('./workspace-fixture.cjs');
+const {inspectionLabel}=require('../load-component.cjs')('uiLanguage');
 const origin = process.env.FRONTEND_URL || 'http://127.0.0.1:5482';
 const output = process.env.UI32_OUTPUT || '/private/tmp/securedeploy-ui32';
 const phase = process.env.CAPTURE_PHASE || 'after';
@@ -96,7 +97,7 @@ function clarityScenarios() {
           if (scenario.view === 'SUMMARY') {
             const visible = await page.locator('.summary-facts').innerText();
             assert.ok(visible.includes(String(result.securityScore)));
-            assert.ok(visible.includes(result.resultSummary?.coverageStatus ?? result.coverage.status));
+            assert.ok(visible.includes(inspectionLabel(result.resultSummary?.coverageStatus ?? result.coverage.status)));
           }
           assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${scenario.id} ${width}`);
           assert.equal(await page.locator('#result-content img').count(), 0);

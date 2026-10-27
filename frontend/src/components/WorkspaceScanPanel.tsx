@@ -45,16 +45,16 @@ export function WorkspaceScanPanel({ workspace, original, disabled }: {
   return <section className="workspace-scan" aria-label="수정본 보안 재검사">
     <h3>수정본 다시 검사</h3>
     {workspace.identityStatus === 'UNVERIFIED_REUPLOAD' && <p role="note">원본 일치 미검증 ZIP: 별도 프로젝트의 새 기준 검사로 저장합니다. 과거 Review의 경고를 해결 처리하지 않습니다.</p>}
-    <details className="scan-consent" open={!result}><summary>검사 revision·외부 조회 동의</summary>
-    <p>저장된 revision {workspace.revision} 전체를 STANDARD로 검사합니다. 편집은 계속할 수 있으며 실행 중인 검사 입력은 바뀌지 않습니다.</p>
+    <details className="scan-consent" open={!result}><summary>검사할 수정본과 외부 조회 확인</summary>
+    <p>저장된 수정본 버전 {workspace.revision} 전체를 기본 검사(STANDARD)로 확인해요. 편집을 계속해도 실행 중인 검사 입력은 바뀌지 않습니다.</p>
     <label><input type="checkbox" checked={approved} disabled={disabled || starting || scan?.state === 'RUNNING'} onChange={e => setApproved(e.target.checked)} />
-      revision {workspace.revision}의 변경 {workspace.changedFileIds.length}개를 검사하며, 패키지명·생태계·확정 버전의 OSV 조회와 공개 취약점 식별자의 EPSS/KEV 조회에 동의합니다. 유료 AI는 호출하지 않습니다.</label>
+      수정본 버전 {workspace.revision}의 변경 {workspace.changedFileIds.length}개를 검사하며, 패키지명·생태계·확정 버전의 보안 공지(OSV) 조회와 공개 취약점 식별자의 악용 정보(EPSS/KEV) 조회에 동의합니다. 유료 AI는 호출하지 않습니다.</label>
     <button type="button" className="primary-button" disabled={disabled || !approved || starting || scan?.state === 'RUNNING'} onClick={() => void start()}>
       {starting || scan?.state === 'RUNNING' ? '수정본 검사 중...' : '수정본 다시 검사'}</button>
     </details>
     {error && <p role="alert" className="error-message">{error}</p>}
-    {scan && <div aria-live="polite"><p>검사 revision {scan.revision} · {scan.message}</p>
-      {scan.revision !== workspace.revision && <p role="status">현재 revision {workspace.revision}은 이 검사에 포함되지 않았습니다. 최신 수정본은 아직 재검사되지 않았습니다.</p>}
+    {scan && <div aria-live="polite"><p>검사한 수정본 버전 {scan.revision} · {scan.message}</p>
+      {scan.revision !== workspace.revision && <p role="status">현재 수정본 버전 {workspace.revision}은 이 검사에 포함되지 않았습니다. 최신 수정본은 아직 재검사되지 않았습니다.</p>}
       <details><summary>검사 입력 근거</summary><p className="source-revision">입력 해시: {scan.inputHash}</p><p>원본 Review {original.reviewId} · 검사 시점 {new Date(scan.capturedAt).toLocaleString()}</p></details>
     </div>}
     {result && <>

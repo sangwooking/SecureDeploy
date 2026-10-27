@@ -78,7 +78,8 @@ test('all comparison statuses expose saved scope and keep unknown and NOT_COMPAR
     const before = JSON.stringify(result);
     const html = render(ReviewProgressPanel, { result });
     const context = html.indexOf('<details class="comparison-context"');
-    assert.ok(html.slice(0, context).includes(`저장된 비교 상태: ${status}`));
+    assert.ok(html.slice(0, context).includes(require('./load-component.cjs')('uiLanguage').inspectionLabel(status)));
+    assert.ok(html.slice(0, context).includes(`<p>${status} ·`));
     assert.ok(html.slice(0, context).includes('서버 흐름 Finding은 해결 건수에 미포함'));
     assert.ok(html.includes('NOT_COMPARED'));
     assert.match(html, /비교 확인 불가 <strong>1<\/strong>/);
