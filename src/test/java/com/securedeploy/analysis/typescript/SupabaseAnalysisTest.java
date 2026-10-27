@@ -9,6 +9,20 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
 class SupabaseAnalysisTest {
+    @Test void columnOnlyBroadWritePersistsWithoutInventingWholeTablePermissionOrResolvedHistory(){
+        var result=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties()).analyze(project(
+            broad.replace("CREATE TABLE public.records(user_id uuid)","CREATE TABLE public.records(user_id uuid, body text)")
+                .replace("GRANT UPDATE ON","GRANT UPDATE(body) ON")));
+        var s=result.supabaseAnalysis();assertThat(s.analyzerVersion()).isEqualTo("supabase-rls-v4");
+        assertThat(s.findings()).hasSize(1);assertThat(s.findings().get(0).comparisonPolicy()).isEqualTo("NOT_COMPARED");
+        assertThat(s.tables().get(0).updatePrivileges().get(1).tableGrant()).isEqualTo("NOT_ESTABLISHED");
+        assertThat(s.tables().get(0).updatePrivileges().get(1).columns()).containsExactly("body");
+        var converter=new ServerAnalysisConverter();String json=converter.convertToDatabaseColumn(result);
+        assertThat(json).doesNotContain("CREATE TABLE","GRANT UPDATE(body)");
+        assertThat(converter.convertToEntityAttribute(json)).isEqualTo(result);
+        String old=json.replace("ts-server-v34","ts-server-v33").replace("supabase-rls-v4","supabase-rls-v3");
+        assertThat(converter.convertToDatabaseColumn(converter.convertToEntityAttribute(old))).isEqualTo(old);
+    }
     @Test void localIdentityAliasesAndMatchPersistAsEvidenceNotAuthorizationOrNewFindings(){
         for(String filter:List.of("eq('user_id',identity)","match({user_id:identity})")){
             String path="app/api/records/route.ts",code="import {createClient} from '@supabase/supabase-js';const db=createClient('https://example.invalid',process.env.ANON_KEY);export async function GET(req){const {data:{user}}=await db.auth.getUser();if(!user)return;const identity=user.id;return db.from('records').select()."+filter+";}";

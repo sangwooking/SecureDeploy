@@ -9,7 +9,7 @@ try {
   }
   const result=analyze(JSON.parse(Buffer.concat(chunks).toString('utf8')));
   if(result.supabaseAnalysis&&Buffer.byteLength(JSON.stringify(result))>1950000)
-    result.supabaseAnalysis={schemaVersion:1,analyzerVersion:'supabase-rls-v3',status:'PARTIAL',files:[],tables:[],clients:[],accesses:[],findings:[],limitations:['SUPABASE_OUTPUT_LIMIT','DECLARATIONS_NOT_LIVE_DATABASE']};
+    result.supabaseAnalysis={schemaVersion:1,analyzerVersion:'supabase-rls-v4',status:'PARTIAL',files:[],tables:[],clients:[],accesses:[],findings:[],limitations:['SUPABASE_OUTPUT_LIMIT','DECLARATIONS_NOT_LIVE_DATABASE']};
   process.stdout.write(JSON.stringify(result));
 } catch {
   // Parser diagnostics can contain source text. Do not log them.

@@ -200,7 +200,11 @@ export function analyzePolicies(files,tick,workTick=tick){
       const applicable=policies.filter(p=>[op,'ALL'].includes(p.command)&&(p.roles.includes(role)||p.roles.includes('public')));
       const merge=key=>{const permissive=applicable.filter(p=>p.mode==='PERMISSIVE').reduce((a,p)=>combine(a,p[key],false),atom('DENY'));
         return applicable.filter(p=>p.mode==='RESTRICTIVE').reduce((a,p)=>combine(a,p[key],true),permissive);};
-      const using=merge('using'),check=merge('check'),grant=t.grants.get(role)?.has(op)||t.grants.get('public')?.has(op)||false;
+      const using=merge('using'),check=merge('check');
+      // UPDATE can be authorized for individual columns without a table grant.
+      // Keep the separate updatePrivileges record as the source of column scope.
+      const grant=t.grants.get(role)?.has(op)||t.grants.get('public')?.has(op)
+        ||op==='UPDATE'&&!!(t.updateColumns.get(role)?.size||t.updateColumns.get('public')?.size)||false;
       const broad=v=>v.kind==='ALLOW'||role==='authenticated'&&v.kind==='AUTHENTICATION_ONLY';
       // USING checks the old row; WITH CHECK checks its replacement, not the same row.
       const partialUpdate=using.kind==='UID_COLUMN_EQUALITY'&&broad(check)?'UPDATE_NEW_ROW_UNRESTRICTED':

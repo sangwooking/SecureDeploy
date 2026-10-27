@@ -18,7 +18,9 @@ test('column updates are per field, not a row ownership or protected-property ve
  const s=run('GRANT SELECT,UPDATE(label) ON public.items TO authenticated;',{payload:'{level:body.level,label:body.label}'});
  assert.deepEqual(acl(s).roles[1].fields.map(f=>f.grant),['NOT_ESTABLISHED','COLUMN_GRANT']);
  assert.ok(acl(s).limitations.includes('PROTECTED_PROPERTY_REQUIREMENTS_UNKNOWN'));
- assert.equal(s.accesses[0].authorizationEvidence.effectiveRole,'UNKNOWN');assert.equal(s.findings.length,0);
+ assert.equal(s.accesses[0].authorizationEvidence.effectiveRole,'UNKNOWN');assert.equal(s.findings.length,1);
+ assert.equal(s.findings[0].ruleId,'SUPABASE_BROAD_WRITE_DECLARATION');
+ assert.ok(s.findings[0].limitations.includes('PUBLIC_OR_SHARED_DATA_INTENT_UNKNOWN'));
 });
 test('valid column REVOKE no longer hides an existing broad table write review candidate',()=>{
  const s=run('GRANT UPDATE ON public.items TO authenticated;REVOKE UPDATE(level) ON public.items FROM authenticated;');
