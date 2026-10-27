@@ -88,8 +88,10 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       await page.goto(`${url}/#/projects/7/findings`);
       const nav = page.getByRole('navigation', { name: '분석 결과 메뉴' });
       await nav.getByRole('button', { name: '결과 요약', exact: true }).click();
+      await page.getByText(/^별도 코드·설정 검토 후보 \(/).click();
       assert.ok((await page.getByRole('region', { name: '서버 코드 흐름 요약', exact: true }).innerText()).includes('별도 결과'));
-      await nav.getByRole('button', { name: '배포 전 직접 확인할 부분', exact: true }).click();
+      await nav.getByRole('button', { name: '문제 목록', exact: true }).click();
+      await page.getByRole('navigation', { name: '문제 우선순위' }).getByRole('button', { name: /배포 전 직접 확인할 부분/ }).click();
       const rls=page.getByRole('region',{name:'Supabase 데이터 접근 검사',exact:true});
       await rls.waitFor({state:'visible'});
       await rls.getByRole('heading',{name:'사용자별 수정 권한이 넓게 선언되어 있습니다',exact:true}).waitFor({state:'visible'});
@@ -131,6 +133,8 @@ const url = process.env.FRONTEND_URL || 'http://localhost:5173';
       }
       await pythonSection.waitFor({ state: 'visible' });
       assert.equal(await pythonSection.locator('article').count(), 4);
+      for (const panel of [pythonSection, section])
+        for (const item of await panel.getByText('입력 경로와 수정 방법', {exact:true}).all()) await item.click();
       for(const phrase of ['사용자가 입력한 경로로 서버가 다른 파일','외부에서 받은 데이터를 위험한 방식','YAML SafeLoader'])assert.ok((await pythonSection.innerText()).includes(phrase),phrase);
       await pythonSection.getByText('파일 접근·데이터 복원 근거 (2)',{exact:true}).click();
       await pythonSection.getByText('토큰 서명·사용 근거 (1)',{exact:true}).click();

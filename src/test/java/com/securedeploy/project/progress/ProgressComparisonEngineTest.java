@@ -66,6 +66,15 @@ class ProgressComparisonEngineTest {
         var after = review(2, sca(ScaResult.Status.COMPLETE, List.of(dependency("CVE-2099-0001", "1.0.1"))));
         assertThat(engine.compare(before, after).counts()).containsEntry(Change.CHANGED, 1L).containsEntry(Change.NEW, 0L);
     }
+    @Test void advisoryConsolidationAcrossAnalyzerFingerprintsIsNotAResolutionOrNewVulnerability() {
+        var before=review(1,sca(ScaResult.Status.COMPLETE,List.of(dependency("OSV-TEST","1.0.0"),dependency("CVE-2099-0001","1.0.0"))));
+        var after=review(2,sca(ScaResult.Status.COMPLETE,List.of(dependency("CVE-2099-0001","1.0.0"))));
+        after.attachComparisonContext(new ComparisonContext(1,1L,"sca-alias-implementation-changed",true,List.of("package.json")));
+        var original=before.getScaResult();var savedRisk=before.getRiskAssessment();
+        assertThat(engine.compare(before,after).counts()).containsEntry(Change.RESOLVED,0L).containsEntry(Change.NEW,0L);
+        assertThat(before.getScaResult()).isSameAs(original);
+        assertThat(before.getRiskAssessment()).isSameAs(savedRisk);
+    }
     @Test void duplicateMaskedAnchorsAreUnavailableNotCollapsed() {
         var before = review(1, sca(ScaResult.Status.COMPLETE, List.of()), code("A", 1), code("A", 2));
         var after = review(2, sca(ScaResult.Status.COMPLETE, List.of()), code("A", 5));

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a",
+  "engineCommit": "1aff9a2",
+  "versions": {"before": "ts-server-v39", "after": "ts-server-v40", "deployment": "deployment-v2", "rls": "supabase-rls-v4", "column": "column-update-v1"},
+  "coverageMatrix": "scripts/evaluation/audit30-matrix.json",
+  "coverageMatrixAreas": 23,
+  "wholeFamiliesFullyVerified": 0,
+  "overallVerdict": "PARTIAL_USEFUL_BOUNDED_STATIC_ANALYSIS_NOT_GENERAL_SECURITY_OR_RELEASE_CERTIFICATION",
+  "frozenEvidenceFiles": 65,
+  "frozenEvidenceChanged": false,
+  "intent13ReceiptSha256": "93fe972e3b9177c01317a815607679cf270e91405859e9ca8d21f979bacc3c2e",
+  "implemented": {
+    "rootCause": "Logical branch joins discarded an untouched native HTTP receiver; direct href replacement invalidated the whole URL instead of recomputing the destination",
+    "nativeScope": "Only node-http/node-http-get with equal native origin and reference identity, empty property maps and no unknown/mutation",
+    "urlScope": "Known WHATWG URL direct href replacement; clear prior checks and properties, preserve alias trace and conservatively join branch destinations",
+    "uncertainty": "Reusing guarded source remains UNKNOWN; unknown coercion, changed HTTP API, options and unsupported setters never gain a safe or high-confidence destination proof",
+    "guide": "Validate the final parsed URL after the last href/host change; redirect, DNS, port and network controls are separate",
+    "backend": "Matching Source/Sink/trace reaches REVIEW_REQUIRED and NOT_COMPARED; old v39 and earlier snapshots round-trip without recomputation"
+  },
+  "fixedPopulationControls": {
+    "grade": "B_SAME_AUTHOR_NONBLIND",
+    "metricsNotPooled": true,
+    "xss21": {"beforeAfter": {"TP": 5, "FP": 1, "FN": 0, "TN": 9, "UNKNOWN": 6}},
+    "ssrf22": {"before": {"TP": 8, "FP": 0, "FN": 4, "TN": 5, "UNKNOWN": 4, "NORMAL_DEFERRED": 1}, "after": {"TP": 9, "FP": 0, "FN": 3, "TN": 6, "UNKNOWN": 4, "NORMAL_DEFERRED": 0}, "repairedRisk": "ssrf-guard-mutation", "completedNormal": "ssrf-allowed", "remainingFn": ["ssrf-options", "ssrf-callback", "ssrf-prefix"]},
+    "secret90": {"unchanged": {"TP_STATIC_CONTRACT": 32, "TN_REVIEWED_STATIC_CONTROL": 30, "UNKNOWN": 27, "FN_INCLUDING_DEFERRED": 1}},
+    "sql51": {"unchanged": {"TP_STATIC_CONTRACT": 18, "TN_REVIEWED_STATIC_CONTROL": 15, "UNKNOWN": 15, "NOT_INSPECTED": 3}},
+    "nosql16": {"unchanged": {"TP_STATIC_CONTRACT": 5, "TN_REVIEWED_STATIC_CONTROL": 6, "UNKNOWN": 4, "NOT_INSPECTED": 1}},
+    "path33": {"unchanged": {"TP": 12, "FN": 6, "TN": 8, "NORMAL_DEFERRED": 1, "NORMAL_NO_FS_SINK": 1, "UNKNOWN": 5}},
+    "upload6": {"unchanged": {"FN": 1, "UNKNOWN": 5}},
+    "cors16": {"unchanged": {"FN": 5, "TN": 6, "UNKNOWN": 5}},
+    "cookie12": {"unchanged": {"TP": 2, "TN": 2, "NORMAL_DEFERRED": 3, "UNKNOWN": 5}},
+    "csrf8": {"unchanged": {"FN": 3, "TN": 2, "NORMAL_DEFERRED": 1, "UNKNOWN": 2}},
+    "rate32": {"unchanged": {"TP": 3, "FN": 7, "TN": 7, "NORMAL_DEFERRED": 3, "UNKNOWN": 12}},
+    "docker14": {"unchanged": {"TP": 5, "FP": 0, "FN": 1, "TN": 4, "UNKNOWN": 4}},
+    "ci12": {"unchanged": {"TP": 3, "FP": 0, "FN": 1, "TN": 4, "UNKNOWN": 4}},
+    "sca": {"frozenMockCases": 3, "samePackageVersionAliasCount": 1, "twoVersionsCount": 2, "conflictingFixMetadataCount": 2, "sourcePathsPreserved": true, "liveFeedAccuracy": "NOT_VERIFIED"},
+    "rls23": {"cases": 14, "staticMatches": 14, "repeatIdentical": true, "postgresExecutedThisAudit": false},
+    "intent13": {"cases": 68, "regressionSubset": 36, "v40ExpectationMatches": 68, "sourceStates": {"NO_SOURCE_CANDIDATE_OBSERVED": 50, "SOURCE_REVIEW": 18}, "intentStates": {"CONDITIONAL_MATCH": 8, "CONFLICT": 24, "UNKNOWN": 36}, "originalV28ReceiptAlsoReevaluated": true, "originalReceiptChanged": false, "ownerApprovals": 0, "productIntentFindingsPromoted": 0, "meaning": "Requirement-versus-declaration interpreter, not automatic vulnerability TP/TN or deployed authorization proof"},
+    "meaning": "TN is the labelled inspected property, not whole-project safety; known unsupported risk remains FN and unknown is never relabelled as safe"
+  },
+  "realApps": {
+    "inputs": 15, "uniqueProjectIds": 14, "runsEach": 2,
+    "sourceShaAndPlanPreserved": true, "repeatIdentical": true,
+    "rawFilteredScoreRiskScaJavaPythonDeploymentPreserved": true,
+    "rlsClientTableFindingFactsPreserved": true, "existingStructuralSinkIdentitiesPreserved": true,
+    "workerVersionAndFindingIdsChanged": true,
+    "goofBudgetDelta": {"entryDiscoveryStepsBeforeAfter": [6581, 6582], "totalStepsBeforeAfter": [27680, 27681], "securityEvidenceChanged": false},
+    "newRealVulnerabilityTP": 0, "newOfficialVulnerableFixedPairs": 0, "newIndependentHoldout": 0,
+    "realAppTargetConfusionMatrix": "NOT_SCORED_WITHOUT_TARGET_GROUND_TRUTH",
+    "afterElapsedMsRange": [269, 989], "afterParentHeapSampleBytesRange": [60735056, 137355408],
+    "performanceCaveat": "Own Gradle regressions overlapped; uncontrolled host load and parent heap are not peak RSS, throughput or causal performance proof"
+  },
+  "nextbase": {
+    "sha": "00ad2da857b84322ff359db098cbf1cb4f4b7282", "sameSourcePlan": true,
+    "ruleId": "GITHUB_ACTIONS_UNPINNED", "removedLocalActionWarnings": 5,
+    "locations": [".github/workflows/version-packages.yml:39", ".github/workflows/integration-tests.yml:48", ".github/workflows/ci.yml:38", ".github/workflows/ci.yml:68", ".github/workflows/update-dependencies.yml:36"],
+    "reason": "./.github/actions/ci-setup is local code, not a remote action ref to pin",
+    "historicalScoreBeforeAfter29": [37, 72], "scoreAfter30": 72, "mediumPenaltyEach": 7, "removedPenalty": 35,
+    "blockingBeforeAfter": [0, 0], "otherLegacyFindingsPreserved": true,
+    "comparison": "Analyzer fingerprint changes block RESOLVED/NEW certainty; original Review and Snapshot unchanged"
+  },
+  "tests": {"worker": 942, "backendTotal": 730, "backendFailures": 0, "backendSkipped": 9, "frontend": 167, "frontendBuild": "PASS", "pythonWorker": 117, "evaluationPython": 252, "evaluationJavaScript": 4, "realReactMockApiWidths": [1440, 390, 320], "liveGitHub": false},
+  "browserScenarioRepair": "Only navigation and expanding existing collapsed source/fix panels changed in test; product UI and existing assertions preserved",
+  "resources": {
+    "limitsRaised": false, "workerOldSpaceMiB": 192,
+    "method": "22 identical SSRF packets per fresh trusted analyzer process, two processes per revision, analysis-only elapsed time excluding startup",
+    "beforeAnalysisMs": [21.727083, 23.943375], "afterAnalysisMs": [22.780583, 22.667834],
+    "beforeMaxRssBytes": [136691712, 141426688], "afterMaxRssBytes": [142245888, 140034048],
+    "meaning": "Small authored workload and uncontrolled host load; no performance improvement or production capacity claim"
+  },
+  "remainingPriority": [
+    "P0: request.url environment source, unsupported auth/admin wrappers and role/owner context",
+    "P0: SELECT/INSERT column ACL, role inheritance, owner-approved protected fields and live JWT/deployed RLS",
+    "P1: Prisma/pg, branch/model uncertainty and FlintCMS class/event registration",
+    "P1: DOMPurify FP1; SSRF FN3; path FN6 and originalname/Next File.name; upload CWE-434/400",
+    "P1: CORS FN5; CSRF FN3; cookie normal-deferred3 and runtime lifecycle",
+    "P2: rate FN7 and Upstash/distributed enforcement; Docker ARG/RUN/COPY; CI env-to-eval/reuse; SCA actual installation/reachability/fix compatibility"
+  ],
+  "productReadiness": "Useful bounded graduation-project analysis/remediation platform, not independently validated comprehensive SAST or production-security guarantee",
+  "friendReanalysisReadiness": "Technical fixed-SHA replay available; urisai/runwhen not reanalysed. Obtain source/permission scope, distinguish packages/advisories and runtime uncertainty, then separately authorize reanalysis",
+  "uiDataContractFollowup": ["Keep score separate from PARTIAL and structural REVIEW_REQUIRED", "Do not render missing SCA or evidence as zero/safe", "Preserve NOT_COMPARED across version changes", "Exact source revision/hash needed before editing; old ZIP equality remains unverified"],
+  "safety": {"riskScoreBlockingFormulaChanged": false, "rlsColumnIntentChanged": false, "dbMigration": false, "oldReviewOrSnapshotChanged": false, "automaticFixExpanded": false, "protectedLocalMain": "15070416a3534b9560a6d38c5ce59298cfc18c0b", "protectedServerPid": 99387, "protectedServerWorker": "v28", "serverRestarted": false, "privateUntrackedDocuments": 3, "userDatabaseAccessed": false, "externalTargetExecuted": false, "paidAiCalls": 0, "deployed": false},
+  "standardMappingBoundary": "Area/rule source occurrence references only. No claim that every Rule implements a whole standard, supported API version or every ASVS control; gaps remain explicit in matrix.",
+  "sources": [
+    "https://top10.owasp.org/2025/", "https://api-security.owasp.org/editions/2023/en/0x11-t10/",
+    "https://raw.githubusercontent.com/OWASP/ASVS/v5.0.0/5.0/en/0x10-V1-Encoding-and-Sanitization.md",
+    "https://raw.githubusercontent.com/nodejs/node/v22.14.0/doc/api/url.md",
+    "https://cwe.mitre.org/data/definitions/918.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html"
+  ]
+}

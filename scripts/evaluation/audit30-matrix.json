@@ -1,0 +1,2801 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a",
+  "matrix": [
+    {
+      "priority": "P0",
+      "area": "authentication",
+      "status": "PARTIAL",
+      "boundedContract": "Local getUser/getClaims result and supported absence exit; Django permission declarations",
+      "normalBoundary": "Public APIs are intentional in some services; a call is not successful login",
+      "unknownOrUnsupported": [
+        "External auth helpers",
+        "getSession verification",
+        "Actual JWT and middleware activation"
+      ],
+      "causeClasses": [
+        3,
+        6
+      ],
+      "rules": [
+        {
+          "ruleId": "PERMIT_ALL_USAGE",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/ai/semantic/SemanticOutputValidator.java",
+              "line": 110
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 319
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 359
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 420
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 443
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 459
+            },
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 25
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/PermitAllUsageRule.java",
+              "line": 24
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/modern-supabase.test.mjs",
+        "analyzers/python/test_authorization.py",
+        "analyzers/python/test_authorization_permissions.py"
+      ],
+      "coreModule": "analyzers/typescript/auth-result-evidence.mjs",
+      "standards": {
+        "owasp2025": [
+          "A07"
+        ],
+        "owaspApi2023": [
+          "API2"
+        ],
+        "cwe": [],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P0",
+      "area": "administrator",
+      "status": "PARTIAL",
+      "boundedContract": "Django IsAdminUser/staff declarations; no general JS administrator enforcement detector",
+      "normalBoundary": "Role-like names and service keys do not establish administrator authorization",
+      "unknownOrUnsupported": [
+        "General Next/Express administrator guard: NOT_IMPLEMENTED",
+        "External role RPC"
+      ],
+      "causeClasses": [
+        3,
+        5,
+        6
+      ],
+      "rules": [],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/modern-supabase.test.mjs",
+        "analyzers/python/test_authorization.py",
+        "analyzers/python/test_authorization_permissions.py"
+      ],
+      "coreModule": "analyzers/typescript/auth-result-evidence.mjs",
+      "standards": {
+        "owasp2025": [
+          "A01"
+        ],
+        "owaspApi2023": [
+          "API5"
+        ],
+        "cwe": [
+          "862"
+        ],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P0",
+      "area": "idor-bola",
+      "status": "PARTIAL",
+      "boundedContract": "Local identity-to-eq/match filter; Django schema-backed inverted ownership guard",
+      "normalBoundary": "Request ID or absent visible guard alone never creates an IDOR verdict",
+      "unknownOrUnsupported": [
+        "Two identity filters after argument escape",
+        "Sharing intent",
+        "General ORM ownership"
+      ],
+      "causeClasses": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "rules": [
+        {
+          "ruleId": "PY_AUTHORIZATION_INVERTED_OWNER_GUARD",
+          "occurrences": [
+            {
+              "file": "analyzers/python/authorization.py",
+              "line": 396
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 263
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 274
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 275
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "JS_MONGO_RESOURCE_ACCESS",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 179
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 282
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/access-control.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/supabase-evidence.mjs",
+      "standards": {
+        "owasp2025": [
+          "A01"
+        ],
+        "owaspApi2023": [
+          "API1"
+        ],
+        "cwe": [
+          "639"
+        ],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P0",
+      "area": "protected-fields-bopla",
+      "status": "PARTIAL",
+      "boundedContract": "Request write fields and table/PUBLIC/column UPDATE privilege declarations",
+      "normalBoundary": "Field name does not establish protected intent; row ownership differs from column mutation",
+      "unknownOrUnsupported": [
+        "SELECT/INSERT column ACL: NOT_IMPLEMENTED",
+        "Role inheritance",
+        "Protected-field intent"
+      ],
+      "causeClasses": [
+        3,
+        5,
+        6
+      ],
+      "rules": [],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/column-update.test.mjs",
+        "analyzers/typescript/test/write-origin.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/column-update.mjs",
+      "standards": {
+        "owasp2025": [
+          "A01"
+        ],
+        "owaspApi2023": [
+          "API3"
+        ],
+        "cwe": [],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P0",
+      "area": "intent-boundary",
+      "status": "REQUIRES_EXTERNAL_CONTEXT",
+      "boundedContract": "Evaluation-only SOURCE_ONLY versus DECLARED_INTENT; no product Intent Preview",
+      "normalBoundary": "Ownership transfer and editable columns are separate proposed dimensions, not applied",
+      "unknownOrUnsupported": [
+        "Owner-approved requirements",
+        "PUBLIC availability",
+        "CONFLICT plus runtime UNKNOWN"
+      ],
+      "causeClasses": [
+        4,
+        5,
+        6
+      ],
+      "rules": [],
+      "boundedValidation": "REQUIRES_EXTERNAL_CONTEXT",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "scripts/evaluation/test_authorization_intent13.py"
+      ],
+      "coreModule": "analyzers/typescript/write-origin.mjs",
+      "standards": {
+        "owasp2025": [
+          "A01"
+        ],
+        "owaspApi2023": [
+          "API1",
+          "API3"
+        ],
+        "cwe": [],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P0",
+      "area": "secret-literals",
+      "status": "PARTIAL",
+      "boundedContract": "Known credential shapes and supported declaration context; public key controls",
+      "normalBoundary": "Public configuration, dummy values and examples are distinct from usable credentials",
+      "unknownOrUnsupported": [
+        "Actual key validity and rotation",
+        "Actual client build boundary",
+        "Custom envPrefix"
+      ],
+      "causeClasses": [
+        3,
+        6,
+        7
+      ],
+      "rules": [
+        {
+          "ruleId": "HARDCODED_SECRET",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/ai/semantic/SemanticOutputValidator.java",
+              "line": 111
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 318
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 341
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 417
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 437
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 458
+            },
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 23
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/engine/VulnerabilityRuleEngine.java",
+              "line": 31
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 25
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 35
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/HardcodedSecretRule.java",
+              "line": 36
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "HARDCODED_PASSWORD",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/ai/semantic/SemanticOutputValidator.java",
+              "line": 111
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 318
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 335
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 416
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 437
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 458
+            },
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 23
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 26
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 36
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/HardcodedPasswordRule.java",
+              "line": 33
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "HARDCODED_FRONTEND_SECRET",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/ai/remediation/RemediationTemplates.java",
+              "line": 39
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/semantic/SemanticOutputValidator.java",
+              "line": 111
+            },
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 23
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/engine/VulnerabilityRuleEngine.java",
+              "line": 33
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 27
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 37
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/HardcodedFrontendSecretRule.java",
+              "line": 81
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/InsecureApiUrlContext.java",
+              "line": 23
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/InsecureApiUrlContext.java",
+              "line": 112
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "WEAK_JWT_SECRET",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 341
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 417
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 437
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 458
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/WeakJwtSecretRule.java",
+              "line": 36
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/display-context.test.mjs",
+        "analyzers/typescript/test/html-context.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/exposure.mjs",
+      "standards": {
+        "owasp2025": [
+          "A02",
+          "A04"
+        ],
+        "owaspApi2023": [
+          "API8"
+        ],
+        "cwe": [
+          "798"
+        ],
+        "asvs500": [
+          "13.3.1"
+        ],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P0",
+      "area": "secret-response",
+      "status": "PARTIAL",
+      "boundedContract": "Supported Next/Deno/Express/Cloudflare response and log paths, plain objects and helpers",
+      "normalBoundary": "Server-internal consumption is not a client exposure; unknown masking is not safety",
+      "unknownOrUnsupported": [
+        "Express request.url environment selector FN1",
+        "Unknown wrappers and bundle boundaries"
+      ],
+      "causeClasses": [
+        3,
+        6
+      ],
+      "rules": [
+        {
+          "ruleId": "TS_SENSITIVE_DATA_EXPOSURE",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/analyzer.mjs",
+              "line": 163
+            },
+            {
+              "file": "analyzers/typescript/analyzer.mjs",
+              "line": 208
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 209
+            },
+            {
+              "file": "src/main/java/com/securedeploy/editing/EditingWorkspaceService.java",
+              "line": 208
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "PY_SENSITIVE_DATA_EXPOSURE",
+          "occurrences": [
+            {
+              "file": "analyzers/python/exposure.py",
+              "line": 53
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 209
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "TS_ERROR_DETAIL_EXPOSURE",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/analyzer.mjs",
+              "line": 163
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 209
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "PY_ERROR_DETAIL_EXPOSURE",
+          "occurrences": [
+            {
+              "file": "analyzers/python/exposure.py",
+              "line": 53
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 209
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/secret-flow.test.mjs",
+        "analyzers/typescript/test/deno-exposure.test.mjs",
+        "analyzers/typescript/test/next.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/exposure.mjs",
+      "standards": {
+        "owasp2025": [
+          "A02"
+        ],
+        "owaspApi2023": [
+          "API3"
+        ],
+        "cwe": [
+          "200"
+        ],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P0",
+      "area": "rls-grants",
+      "status": "PARTIAL",
+      "boundedContract": "RLS v4 selected ordered SQL; USING/WITH CHECK, supported roles and explicit grants",
+      "normalBoundary": "Repository declaration is not deployed policy or authenticated database role",
+      "unknownOrUnsupported": [
+        "Role inheritance",
+        "Dynamic policy functions",
+        "Missing SQL",
+        "Owner/BYPASSRLS and live JWT"
+      ],
+      "causeClasses": [
+        3,
+        5,
+        6,
+        7
+      ],
+      "rules": [
+        {
+          "ruleId": "SUPABASE_BROAD_WRITE_DECLARATION",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/supabase.mjs",
+              "line": 96
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 250
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/rls-column-enforcement23.test.mjs",
+        "analyzers/typescript/test/authorization-update.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/rls.mjs",
+      "standards": {
+        "owasp2025": [
+          "A01"
+        ],
+        "owaspApi2023": [
+          "API1",
+          "API3"
+        ],
+        "cwe": [],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P1",
+      "area": "sql",
+      "status": "PARTIAL",
+      "boundedContract": "Bounded Java JDBC/JdbcTemplate/Mapper, Django cursor, Cloudflare prepare and Sequelize contracts",
+      "normalBoundary": "Confirmed parameter binding is data, not SQL construction; unresolved dispatch is not safe",
+      "unknownOrUnsupported": [
+        "Prisma/pg: NOT_SUPPORTED",
+        "Complex branch/object/helper flow",
+        "Java nested loops"
+      ],
+      "causeClasses": [
+        2,
+        3
+      ],
+      "rules": [
+        {
+          "ruleId": "DANGEROUS_SQL",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 319
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 353
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 419
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 441
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 457
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/javaflow/JavaSqlAnalyzer.java",
+              "line": 89
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/javaflow/JavaSqlAnalyzer.java",
+              "line": 100
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/javaflow/JavaSqlAnalyzer.java",
+              "line": 106
+            },
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 25
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/DangerousSqlRule.java",
+              "line": 33
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "TS_SQL_INPUT_FLOW",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/analyzer.mjs",
+              "line": 804
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 91
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "JS_SEQUELIZE_SQL_INPUT_FLOW",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 172
+            },
+            {
+              "file": "analyzers/typescript/sequelize.mjs",
+              "line": 6
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 72
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 78
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 282
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "PY_SQL_INPUT_FLOW",
+          "occurrences": [
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 1145
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 91
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "JAVA_SQL_INPUT_FLOW",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/analysis/javaflow/JavaSqlAnalyzer.java",
+              "line": 108
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/injection24.test.mjs",
+        "analyzers/typescript/test/sequelize.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/sequelize.mjs",
+      "standards": {
+        "owasp2025": [
+          "A05"
+        ],
+        "owaspApi2023": [],
+        "cwe": [
+          "89"
+        ],
+        "asvs500": [
+          "1.2.4"
+        ],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P1",
+      "area": "nosql",
+      "status": "PARTIAL",
+      "boundedContract": "Version-aware Mongoose model/selector/execution and field-scoped String/email controls",
+      "normalBoundary": "Conversion of one field never protects other fields; query construction differs from execution",
+      "unknownOrUnsupported": [
+        "FlintCMS class and DB event startup",
+        "Branch model merging",
+        "Unknown schema or version"
+      ],
+      "causeClasses": [
+        2,
+        3,
+        6
+      ],
+      "rules": [
+        {
+          "ruleId": "JS_MONGOOSE_SELECTOR_INPUT_FLOW",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/field-validation.mjs",
+              "line": 87
+            },
+            {
+              "file": "analyzers/typescript/mongoose.mjs",
+              "line": 6
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 53
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 282
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "JS_MONGO_WHERE_INPUT_FLOW",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 185
+            },
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 293
+            },
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 325
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 72
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 282
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/mongoose.test.mjs",
+        "analyzers/typescript/test/mongoose-callback.test.mjs",
+        "analyzers/typescript/test/field-validation.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/mongoose.mjs",
+      "standards": {
+        "owasp2025": [
+          "A05"
+        ],
+        "owaspApi2023": [],
+        "cwe": [
+          "943"
+        ],
+        "asvs500": [
+          "1.2.4"
+        ],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P1",
+      "area": "xss",
+      "status": "PARTIAL",
+      "boundedContract": "HTML/JSX static passive choices and supported lexical exclusions; Python subset",
+      "normalBoundary": "JSX text and textContent differ from HTML interpretation; no full browser Source-to-DOM claim",
+      "unknownOrUnsupported": [
+        "Known DOMPurify pattern FP1",
+        "DOM sanitizer configuration and hooks",
+        "Stored XSS provenance"
+      ],
+      "causeClasses": [
+        3,
+        4,
+        6
+      ],
+      "rules": [
+        {
+          "ruleId": "REACT_DANGEROUS_HTML",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 25
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 32
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 114
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/InsecureApiUrlContext.java",
+              "line": 23
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/InsecureApiUrlContext.java",
+              "line": 105
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/InsecureApiUrlContext.java",
+              "line": 106
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/ReactDangerousHtmlRule.java",
+              "line": 26
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/context25.test.mjs",
+        "analyzers/typescript/test/url-context.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/url-context.mjs",
+      "standards": {
+        "owasp2025": [
+          "A05"
+        ],
+        "owaspApi2023": [],
+        "cwe": [
+          "79"
+        ],
+        "asvs500": [
+          "1.2.1",
+          "1.3.1"
+        ],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P1",
+      "area": "ssrf",
+      "status": "PARTIAL",
+      "boundedContract": "Supported native HTTP/get/fetch initial destination, exact host/protocol guards and href replacement",
+      "normalBoundary": "Fixed destination and query-only writes are not host control; guarded source reuse remains UNKNOWN",
+      "unknownOrUnsupported": [
+        "Remaining FN3: options/callback/prefix",
+        "DNS/redirect/port/network policy",
+        "Unknown URL setters"
+      ],
+      "causeClasses": [
+        2,
+        3,
+        6,
+        7
+      ],
+      "rules": [
+        {
+          "ruleId": "TS_SSRF_INPUT_FLOW",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/analyzer.mjs",
+              "line": 969
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 28
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 40
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 41
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/audit30.test.mjs",
+        "analyzers/typescript/test/ssrf-quality.test.mjs",
+        "analyzers/typescript/test/context25.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/destination.mjs",
+      "standards": {
+        "owasp2025": [
+          "A01"
+        ],
+        "owaspApi2023": [
+          "API7"
+        ],
+        "cwe": [
+          "918"
+        ],
+        "asvs500": [
+          "1.3.6"
+        ],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P1",
+      "area": "command",
+      "status": "PARTIAL",
+      "boundedContract": "Supported Express request flow to known child_process shell or eval, regex capture forwarding",
+      "normalBoundary": "Fixed command and execFile argv differ; argv does not prove command-specific option safety",
+      "unknownOrUnsupported": [
+        "Unsupported overloads",
+        "Dynamic dispatch",
+        "Actual process execution not performed"
+      ],
+      "causeClasses": [
+        3,
+        6
+      ],
+      "rules": [
+        {
+          "ruleId": "JS_SHELL_COMMAND_INPUT_FLOW",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 161
+            },
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 171
+            },
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 172
+            },
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 221
+            },
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 229
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 72
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 78
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 282
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "JS_EVAL_INPUT_FLOW",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 171
+            },
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 172
+            },
+            {
+              "file": "analyzers/typescript/node-server.mjs",
+              "line": 308
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 72
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 78
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 282
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/shell-flow.test.mjs",
+        "analyzers/typescript/test/regex-flow.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/node-server.mjs",
+      "standards": {
+        "owasp2025": [
+          "A05"
+        ],
+        "owaspApi2023": [],
+        "cwe": [
+          "78"
+        ],
+        "asvs500": [
+          "1.2.5",
+          "1.3.2"
+        ],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P1",
+      "area": "path",
+      "status": "PARTIAL",
+      "boundedContract": "Supported request-to-fs/Django paths with bounded lexical relative containment",
+      "normalBoundary": "Prefix/normalize is not filesystem containment; lexical proof is not symlink or TOCTOU proof",
+      "unknownOrUnsupported": [
+        "FN6: choices/prefix/post-guard replacement/realpath/originalname/Next File.name",
+        "Actual mount permissions"
+      ],
+      "causeClasses": [
+        2,
+        3,
+        6,
+        7
+      ],
+      "rules": [
+        {
+          "ruleId": "JS_FILE_PATH_INPUT_FLOW",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/file-access.mjs",
+              "line": 81
+            },
+            {
+              "file": "analyzers/typescript/file-access.mjs",
+              "line": 85
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 124
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 286
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "PY_FILE_PATH_INPUT_FLOW",
+          "occurrences": [
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 1042
+            },
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 1046
+            },
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 1073
+            },
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 1085
+            },
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 1090
+            },
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 1102
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 124
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/file26.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/file-access.mjs",
+      "standards": {
+        "owasp2025": [
+          "A01"
+        ],
+        "owaspApi2023": [],
+        "cwe": [
+          "22"
+        ],
+        "asvs500": [
+          "5.3.2"
+        ],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P1",
+      "area": "upload",
+      "status": "NOT_IMPLEMENTED",
+      "boundedContract": "Upload-related input is not complete CWE-434/400 validation",
+      "normalBoundary": "SecureDeploy ZIP intake safety does not certify target application upload security",
+      "unknownOrUnsupported": [
+        "CWE-434 execution/type protection FN1",
+        "CWE-400 resource controls",
+        "MIME/signature/storage/download"
+      ],
+      "causeClasses": [
+        3,
+        4,
+        6
+      ],
+      "rules": [],
+      "boundedValidation": "NOT_IMPLEMENTED",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/file26.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/file-access.mjs",
+      "standards": {
+        "owasp2025": [
+          "A02"
+        ],
+        "owaspApi2023": [
+          "API4"
+        ],
+        "cwe": [
+          "434",
+          "400"
+        ],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P1",
+      "area": "cors",
+      "status": "PARTIAL",
+      "boundedContract": "Known middleware origin reflection plus credentials plus supported sensitive terminal response",
+      "normalBoundary": "Public wildcard, fixed origin and wildcard credential browser rejection are distinct",
+      "unknownOrUnsupported": [
+        "FN5",
+        "Dynamic Origin callbacks",
+        "Raw headers and Next cookie/CORS contracts"
+      ],
+      "causeClasses": [
+        3,
+        4,
+        6
+      ],
+      "rules": [
+        {
+          "ruleId": "CORS_WILDCARD",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 319
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 347
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 418
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 439
+            },
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 25
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/CorsWildcardRule.java",
+              "line": 26
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "JS_CORS_CREDENTIAL_REFLECTION",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/web-security.mjs",
+              "line": 101
+            },
+            {
+              "file": "analyzers/typescript/web-security.mjs",
+              "line": 106
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 156
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 164
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 282
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/web27.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/web-security.mjs",
+      "standards": {
+        "owasp2025": [
+          "A02"
+        ],
+        "owaspApi2023": [
+          "API8"
+        ],
+        "cwe": [
+          "942"
+        ],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P1",
+      "area": "csrf",
+      "status": "PARTIAL",
+      "boundedContract": "State-changing operations, exact Origin early rejection and bounded read-only body observations",
+      "normalBoundary": "Missing visible defense never alone produces a new CSRF vulnerability Finding",
+      "unknownOrUnsupported": [
+        "FN3",
+        "Normal deferred1",
+        "Cookie authentication and token/session binding"
+      ],
+      "causeClasses": [
+        3,
+        4,
+        6
+      ],
+      "rules": [
+        {
+          "ruleId": "JS_WEB_SECURITY_CONTEXT",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/web-security.mjs",
+              "line": 86
+            },
+            {
+              "file": "analyzers/typescript/web-security.mjs",
+              "line": 87
+            },
+            {
+              "file": "analyzers/typescript/web-security.mjs",
+              "line": 109
+            },
+            {
+              "file": "analyzers/typescript/web-security.mjs",
+              "line": 120
+            },
+            {
+              "file": "analyzers/typescript/web-security.mjs",
+              "line": 143
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 282
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/web27.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/web-security.mjs",
+      "standards": {
+        "owasp2025": [
+          "A01"
+        ],
+        "owaspApi2023": [],
+        "cwe": [
+          "352"
+        ],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P1",
+      "area": "cookie-session",
+      "status": "PARTIAL",
+      "boundedContract": "Registered session middleware plus request session use and explicit HttpOnly=false; config patterns",
+      "normalBoundary": "Flag declarations do not prove HTTPS, actual cookie transmission, rotation or server-side revocation",
+      "unknownOrUnsupported": [
+        "Normal deferred3",
+        "Proxy/TLS",
+        "Operational session store and lifecycle"
+      ],
+      "causeClasses": [
+        3,
+        4,
+        6,
+        7
+      ],
+      "rules": [
+        {
+          "ruleId": "INSECURE_COOKIE",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/ai/remediation/RemediationTemplates.java",
+              "line": 53
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 318
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 377
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 423
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 449
+            },
+            {
+              "file": "src/main/java/com/securedeploy/editing/WorkspacePatch.java",
+              "line": 60
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/InsecureCookieRule.java",
+              "line": 23
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "LOCAL_STORAGE_TOKEN",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 31
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 124
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/LocalStorageTokenRule.java",
+              "line": 29
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "JS_SESSION_COOKIE_ATTRIBUTE_REVIEW",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/web-security.mjs",
+              "line": 129
+            },
+            {
+              "file": "analyzers/typescript/web-security.mjs",
+              "line": 130
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 157
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 282
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/web27.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/web-security.mjs",
+      "standards": {
+        "owasp2025": [
+          "A07"
+        ],
+        "owaspApi2023": [
+          "API2"
+        ],
+        "cwe": [
+          "1004"
+        ],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P2",
+      "area": "rate-abuse",
+      "status": "PARTIAL",
+      "boundedContract": "Declared express-rate-limit 7.5.0 route scope/order, supported bypass and default stop controls",
+      "normalBoundary": "Rate declaration is not distributed enforcement, identity, billing or complete bot prevention",
+      "unknownOrUnsupported": [
+        "FN7",
+        "Upstash result/branch: NOT_SUPPORTED",
+        "Redis/proxy/WAF and multi-instance state"
+      ],
+      "causeClasses": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "rules": [
+        {
+          "ruleId": "JS_RATE_LIMIT_BYPASS_REVIEW",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/rate-limit.mjs",
+              "line": 130
+            },
+            {
+              "file": "analyzers/typescript/rate-limit.mjs",
+              "line": 131
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/ServerFlowFinding.java",
+              "line": 181
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 282
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "JS_RATE_LIMIT_CONTEXT",
+          "occurrences": [
+            {
+              "file": "analyzers/typescript/rate-limit.mjs",
+              "line": 100
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java",
+              "line": 282
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "analyzers/typescript/test/rate28.test.mjs"
+      ],
+      "coreModule": "analyzers/typescript/rate-limit.mjs",
+      "standards": {
+        "owasp2025": [
+          "A06"
+        ],
+        "owaspApi2023": [
+          "API4",
+          "API6"
+        ],
+        "cwe": [
+          "799"
+        ],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P2",
+      "area": "docker-compose",
+      "status": "PARTIAL",
+      "boundedContract": "Final-stage USER, bounded logical ENV and supported Compose privilege/mount/port declarations",
+      "normalBoundary": "EXPOSE is not publishing; digest is not patched image; readonly socket is not daemon API isolation",
+      "unknownOrUnsupported": [
+        "Docker FN1 ARG",
+        "ARG/RUN/COPY/layer flow",
+        "Overrides/profiles and actual image/network"
+      ],
+      "causeClasses": [
+        3,
+        6,
+        7
+      ],
+      "rules": [
+        {
+          "ruleId": "DOCKER_ROOT_USER",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/DockerRootUserRule.java",
+              "line": 21
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "DOCKER_LATEST_TAG",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/DockerLatestTagRule.java",
+              "line": 30
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "DOCKER_SECRET_ENV",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 23
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 28
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 38
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 158
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/DockerSecretEnvRule.java",
+              "line": 27
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/DockerSecretEnvRule.java",
+              "line": 39
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "DOCKER_PRIVILEGED",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/ComposeInspector.java",
+              "line": 61
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/DockerComposeSecurityRule.java",
+              "line": 15
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/DockerComposeSecurityRule.java",
+              "line": 17
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/DockerComposeSecurityRule.java",
+              "line": 19
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "DOCKER_HOST_NETWORK",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/ComposeInspector.java",
+              "line": 62
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/DockerComposeSecurityRule.java",
+              "line": 15
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "COMPOSE_SOCKET",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/ComposeInspector.java",
+              "line": 109
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 10
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "COMPOSE_CAPABILITY",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/ComposeInspector.java",
+              "line": 73
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 11
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "COMPOSE_HOST_MOUNT",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/ComposeInspector.java",
+              "line": 109
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 14
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "COMPOSE_PORT_BINDING",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/ComposeInspector.java",
+              "line": 123
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 12
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "COMPOSE_ROOT_OVERRIDE",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/ComposeInspector.java",
+              "line": 67
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 13
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "COMPOSE_SECURITY_DISABLED",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/ComposeInspector.java",
+              "line": 78
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 15
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "src/test/java/com/securedeploy/analysis/deployment/Supply29ControlsTest.java",
+        "src/test/java/com/securedeploy/analysis/deployment/Supply29BoundaryTest.java"
+      ],
+      "coreModule": null,
+      "standards": {
+        "owasp2025": [
+          "A02"
+        ],
+        "owaspApi2023": [
+          "API8"
+        ],
+        "cwe": [],
+        "asvs500": [
+          "13.2.2",
+          "13.3.1"
+        ],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P2",
+      "area": "ci",
+      "status": "PARTIAL",
+      "boundedContract": "Workflow/job permissions, supported checkout order, simple project execution and run expressions",
+      "normalBoundary": "Local action is not a remote unpinned action; unpinning is not proven compromise",
+      "unknownOrUnsupported": [
+        "CI FN1 env-to-eval",
+        "Complex shell and reusable workflows",
+        "Organization token/secret/approval"
+      ],
+      "causeClasses": [
+        3,
+        6,
+        7
+      ],
+      "rules": [
+        {
+          "ruleId": "GITHUB_ACTIONS_UNPINNED",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/GitHubActionsSecurityRule.java",
+              "line": 86
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "GITHUB_ACTIONS_SECRET_ECHO",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 29
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 30
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 40
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/GitHubActionsSecurityRule.java",
+              "line": 34
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "GITHUB_ACTIONS_CURL_PIPE",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/GitHubActionsSecurityRule.java",
+              "line": 46
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "CI_UNTRUSTED_PR_EXECUTION",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 8
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/WorkflowInspector.java",
+              "line": 128
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "CI_SCRIPT_EXPRESSION",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 9
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/WorkflowInspector.java",
+              "line": 118
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "src/test/java/com/securedeploy/analysis/deployment/Supply29ControlsTest.java",
+        "src/test/java/com/securedeploy/analysis/deployment/Supply29BoundaryTest.java"
+      ],
+      "coreModule": null,
+      "standards": {
+        "owasp2025": [
+          "A03",
+          "A08"
+        ],
+        "owaspApi2023": [],
+        "cwe": [
+          "78",
+          "829"
+        ],
+        "asvs500": [
+          "15.2.4"
+        ],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P2",
+      "area": "sca",
+      "status": "PARTIAL",
+      "boundedContract": "npm/PyPI/Maven/Gradle package/exact-version OSV query, dependency provenance and corroborated aliases",
+      "normalBoundary": "Unresolved version/feed failure is not safe; fixed metadata is not compatibility or reachability",
+      "unknownOrUnsupported": [
+        "Conflicting fixes retained PARTIAL",
+        "Actual installed/dev/production topology",
+        "Live KEV access and runtime reachability"
+      ],
+      "causeClasses": [
+        3,
+        4,
+        6,
+        7
+      ],
+      "rules": [
+        {
+          "ruleId": "VULNERABLE_NPM_DEPENDENCY",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 27
+            },
+            {
+              "file": "src/main/java/com/securedeploy/risk/service/DependencyFindingCorrelator.java",
+              "line": 12
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/VulnerableNpmDependencyRule.java",
+              "line": 32
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "VULNERABLE_MAVEN_DEPENDENCY",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 27
+            },
+            {
+              "file": "src/main/java/com/securedeploy/risk/service/DependencyFindingCorrelator.java",
+              "line": 12
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/VulnerableMavenDependencyRule.java",
+              "line": 25
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "VULNERABLE_GRADLE_DEPENDENCY",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 27
+            },
+            {
+              "file": "src/main/java/com/securedeploy/risk/service/DependencyFindingCorrelator.java",
+              "line": 12
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/VulnerableGradleDependencyRule.java",
+              "line": 25
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "src/test/java/com/securedeploy/sca/Alias29ControlsTest.java",
+        "src/test/java/com/securedeploy/sca/client/OsvAlias29BoundaryTest.java"
+      ],
+      "coreModule": null,
+      "standards": {
+        "owasp2025": [
+          "A03"
+        ],
+        "owaspApi2023": [],
+        "cwe": [],
+        "asvs500": [
+          "15.2.1"
+        ],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    },
+    {
+      "priority": "P2",
+      "area": "deployment",
+      "status": "PARTIAL",
+      "boundedContract": "Supported properties/YAML/Django/Compose/Wrangler/Nginx/Kubernetes declarations",
+      "normalBoundary": "File parsing and static profile names do not prove effective production settings",
+      "unknownOrUnsupported": [
+        "Rendered includes",
+        "Activated settings",
+        "Proxy/platform environment and actual deployment"
+      ],
+      "causeClasses": [
+        3,
+        6,
+        7
+      ],
+      "rules": [
+        {
+          "ruleId": "DEBUG_ENABLED",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/ai/remediation/RemediationTemplates.java",
+              "line": 51
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 318
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 365
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 421
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 445
+            },
+            {
+              "file": "src/main/java/com/securedeploy/editing/WorkspacePatch.java",
+              "line": 58
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/DebugEnabledRule.java",
+              "line": 23
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "STACKTRACE_EXPOSURE",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/ai/remediation/RemediationTemplates.java",
+              "line": 52
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 318
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 383
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 424
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 445
+            },
+            {
+              "file": "src/main/java/com/securedeploy/editing/WorkspacePatch.java",
+              "line": 59
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/StacktraceExposureRule.java",
+              "line": 23
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "EXPOSED_ACTUATOR",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/ai/remediation/RemediationTemplates.java",
+              "line": 54
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 371
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 422
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 447
+            },
+            {
+              "file": "src/main/java/com/securedeploy/ai/service/TemplateAiProvider.java",
+              "line": 460
+            },
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 26
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/ExposedActuatorRule.java",
+              "line": 23
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "DJANGO_DEBUG",
+          "occurrences": [
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 446
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 16
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "DJANGO_ALLOWED_HOSTS",
+          "occurrences": [
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 436
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 18
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "DJANGO_HTTPS",
+          "occurrences": [
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 441
+            },
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 450
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 20
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "DJANGO_SECRET_LITERAL",
+          "occurrences": [
+            {
+              "file": "analyzers/python/worker.py",
+              "line": 431
+            },
+            {
+              "file": "src/main/java/com/securedeploy/analysis/deployment/DeploymentGuidance.java",
+              "line": 17
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "NGINX_DIRECTORY_LISTING",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/NginxSecurityRule.java",
+              "line": 41
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "NGINX_SERVER_TOKENS",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/NginxSecurityRule.java",
+              "line": 53
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "NGINX_HTTP_ONLY",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/NginxSecurityRule.java",
+              "line": 67
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "K8S_PRIVILEGED_CONTAINER",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/KubernetesSecurityRule.java",
+              "line": 35
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "K8S_LATEST_IMAGE",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/KubernetesSecurityRule.java",
+              "line": 38
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "K8S_NODEPORT_EXPOSURE",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/KubernetesSecurityRule.java",
+              "line": 41
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        },
+        {
+          "ruleId": "K8S_SECRET_PLAIN_TEXT",
+          "occurrences": [
+            {
+              "file": "src/main/java/com/securedeploy/risk/policy/DefaultRiskPolicy.java",
+              "line": 26
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 29
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/filter/FalsePositiveAnalyzer.java",
+              "line": 39
+            },
+            {
+              "file": "src/main/java/com/securedeploy/rule/rules/KubernetesSecurityRule.java",
+              "line": 44
+            }
+          ],
+          "implementedLiteralFound": true,
+          "validation": "BOUNDED_CONTROLS_NOT_FULL_FAMILY",
+          "runtime": "REQUIRES_EXTERNAL_CONTEXT"
+        }
+      ],
+      "boundedValidation": "VERIFIED_WITHIN_SCOPE",
+      "boundedValidationMeaning": "Only the stated declaration/flow or rejection property in authored tests; not the vulnerability family",
+      "tests": [
+        "src/test/java/com/securedeploy/analysis/deployment/DeploymentAnalyzerTest.java"
+      ],
+      "coreModule": null,
+      "standards": {
+        "owasp2025": [
+          "A02"
+        ],
+        "owaspApi2023": [
+          "API8"
+        ],
+        "cwe": [],
+        "asvs500": [],
+        "meaning": "RELATED_SCOPE_ONLY_NOT_ALL_RULES_IMPLEMENT_EVERY_REQUIREMENT"
+      },
+      "guidance": "EXISTING_GUIDE_ONLY_NO_NEW_AUTOMATIC_FIX",
+      "independentRealAccuracy": "NOT_VERIFIED"
+    }
+  ],
+  "frozenEvidence": [
+    {
+      "path": "analyzers/typescript/test/access-control-cases.mjs",
+      "sha256": "5592deeed51823fec186d0d3cdb605dfeba088f2189a0feccb28cfae62de89af",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "analyzers/typescript/test/context25-cases.mjs",
+      "sha256": "2cce9433581f07e67d29aab1f69a515ce6eadc82ef2a1edb31ecf63143bd0f2c",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "analyzers/typescript/test/field-cases.mjs",
+      "sha256": "acf876f6f77e808bb0d2165c47ea74991f05cef0d82c4f9fce301e3fea85201d",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "analyzers/typescript/test/file26-cases.mjs",
+      "sha256": "f86cf5df5f4ddb235cbf2e74e4fd8524e402d4a53d4d479c83852686363e4a18",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "analyzers/typescript/test/injection24-cases.mjs",
+      "sha256": "2dcd07609ebb421df5fcf68944a479592279c9c8b7d64ca641a88e188818da33",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "analyzers/typescript/test/mongoose-callback-cases.mjs",
+      "sha256": "03bce8690f1df86f621062fb757a78b79befc2a738caea6588ecddb5573606af",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "analyzers/typescript/test/mongoose-cases.mjs",
+      "sha256": "0f9a75635d02db031fb2f0b2081550bb0d5e184fca0ce2053ceb44c0026f742d",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "analyzers/typescript/test/prebeta-exposure-cases.mjs",
+      "sha256": "9a893c25492c8130a99c5803efcd29410a63e6e6bd7d095e60f5c927a1d5c3e2",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "analyzers/typescript/test/quality-cases.mjs",
+      "sha256": "846dc38f0997dc09f115ac879eb7e4ca8e894e16b42921261edcee26113eb699",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "analyzers/typescript/test/rate28-cases.mjs",
+      "sha256": "0fa9da35ea25eb4ddf4356cc324a91880cc8a52ee8be407b14ca24f066d75a5d",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "analyzers/typescript/test/secret-flow-cases.mjs",
+      "sha256": "326f8d2eec22df3049303856b5f168148c37b347c64c4d4566034a7b5f1742d0",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "analyzers/typescript/test/web27-cases.mjs",
+      "sha256": "82983b0cecb012a40c508cbaec03e444325b3bf6cb96f0716671f3f317825b65",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/access-control21-results.json",
+      "sha256": "db175c8dda8cac8caef279578bc0342c5edc28858cc09827c5f5e7163ecf6664",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/authorization-ground-truth11-results.json",
+      "sha256": "966d3453c1e9eb19e3761053351bda49bd799d4cc993bc386a628a285b3b9698",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/authorization-intent13-results.json",
+      "sha256": "93fe972e3b9177c01317a815607679cf270e91405859e9ca8d21f979bacc3c2e",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/authorization-validation8-results.json",
+      "sha256": "daf63886348476e4b4feba6d14410488d165668a8a833a9ab2b31adc224802e4",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/authorization_intent13.py",
+      "sha256": "e87f1f6570fd4096499b44c1be1e87c7a96f6c11a48b52ba772336996694e974",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/callback19-results.json",
+      "sha256": "849a56915f2068c7424fe2c3e2dfd59061ba5b907641d07819980adf8df26a63",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/column-authorization12-results.json",
+      "sha256": "ceb09d0bc84e9f1f018b3a5e78fc856160972353a24703c37c91204a32fc5aa0",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/context-xss-ssrf25-results.json",
+      "sha256": "cc1a6ce78885b8719865a7b04f3f8cc98792d956cc9d3abdc48e85ab4357b767",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/detection-deep-dive-results.json",
+      "sha256": "bd7adfb0bf02c4a9f5ccae0220b4b6550c5769dced6b8a3e1c048c8bc924b07a",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/field-validation20-results.json",
+      "sha256": "98adab7139338adc0b134aa89470c17a32b0c7cc7c0a47b4bd2341ce576fdecf",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/file26-results.json",
+      "sha256": "bee886f6cf2ea9af1ed91c5755502a5ae6522a065ce736796c101b192b54964e",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/final-freeze-results.json",
+      "sha256": "e9eaa86eff2cad21efc0cdbf0058d492bb74de5a74a132f06e2f8da16fa8c185",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/freeze-closeout-results.json",
+      "sha256": "f543e2eb82e96a7035f6769276bb2166148818b08d7bb741753b5fef04c18e07",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/goof-hardening-results.json",
+      "sha256": "8fd94531a7beb7e008b9db3c50b4e8314924c05c6290818bb5a123d60a6c07b6",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/goof-resource-results.json",
+      "sha256": "abf29951031c8bd333b2048c8e4fe0c07358a4f6b40541431b3da07d676b3512",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening10-results.json",
+      "sha256": "da4d8480dd2b959aa93300c8f2cf468022f97ca534628d37ac3c80fd477ba4ab",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening11-results.json",
+      "sha256": "953bc7276ee6890152ba3032b476e289a611f0220ac26bc106ffb1b858e5aea4",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening12-results.json",
+      "sha256": "4e9d924e704cfe9ea96af94e6222ade775c6cb17798ea85cb6ca9a7c69d65de6",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening2-results.json",
+      "sha256": "dcaf3673d6beb2c478fa4fa089bb542700fa6167fcee43b96de7bccd0766006d",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening3-results.json",
+      "sha256": "819d6125b41624ae9cca586df180876545efad3740eb49fd9b99f53cd552371f",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening4-results.json",
+      "sha256": "2a65e314d17925e041a94690d79157de7dcaecc1d3573db5a70714c65f03691d",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening5-results.json",
+      "sha256": "9f10d6f3e47064dc74553bc2fff0b6c93f55dd11edc2a66cf8eba35dd0244dc4",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening6-isolation-results.json",
+      "sha256": "3a4282417fae20c432c7288195045712e68af81d93084e3636f50147a81a10fd",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening6-results.json",
+      "sha256": "481af7280a24a800ed1fc5773b87a7a0c4532e1eadbe922341731e9f2260fbc3",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening7-results.json",
+      "sha256": "bfd40acd32d9aaeb68e1341b341034eb5a06658e1eec346919e54a96c6337f84",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening8-results.json",
+      "sha256": "1e9847d46925b4d77e0b399f169e928a3d210811f018072919d6620440cdba12",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/hardening9-eligibility-results.json",
+      "sha256": "8e97cf23aee86ed1b667dfb340aebef452c7698f5cec4cde737fdd36c2006bf5",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/html-context-app-results.json",
+      "sha256": "b2610f2df4a57337eb3fd54396f6d1a0677cffeef24bad9803557c04632e4c32",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/html-context-results.json",
+      "sha256": "8111c819a6ed6903c53cf930d226c333f5f089da75bd3f58a9d9a96ee8133f21",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/injection-precision24-results.json",
+      "sha256": "a3bd2ccb72e201822765cd536eceb33667571d2e329f94cd6e2138d21a044a80",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/intent13_cases.py",
+      "sha256": "7a0a2d80be79950ed7290827915e0e6bb65fc81f7e19bfb48e51cf0a07a8877d",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/modern-supabase-results.json",
+      "sha256": "20cbed880c1e01f3337b5d96411d2282b4f7945ba2138fd1f842896e69f71027",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/mongoose18-results.json",
+      "sha256": "fcabfe6abc91f63ff55f482b59d257cb5355b83910361a1c5243c42886d66ffb",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/node-entry-b1-results.json",
+      "sha256": "43552484e628ba25dc43f0950b8462446c7bfd9e2553dee63177c33896d298a2",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/rate28-results.json",
+      "sha256": "bd02338638b2964a5137a91905a98488c949f2c1e957277669b4c896d9d76a3d",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/request-path-hardening-results.json",
+      "sha256": "f3b1c620f1d782b5a8960b45a0f1378dacaf6c806e56d631f1d0b9a2e0e39a6b",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/rls-authorization23-results.json",
+      "sha256": "992d6b9dc4d5eb0bd9ff7774763baf39ddcad1a7283057f2e76f5ba67ea104b8",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/secret-exposure22-results.json",
+      "sha256": "45ee4d57edd4de51a6fd34360950c21ea6d175f498b51d61aea05cdbfeeb573b",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/selection-budget-balance-results.json",
+      "sha256": "ae896652da926ffc3a83de887827df968d596dce58d1f7f9d9ce6f9dce110462",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/sequelize-hardening-results.json",
+      "sha256": "39ef4b97cd81d801ef9e448d1675fe176d0ca2e6f42f48c04357cc7b627c9e90",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/supabase-authorization-results.json",
+      "sha256": "4eca520a96653569af96ccd030a3eaba76671a3c85946fdd788be6161cda5e2b",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/supabase-rls-results.json",
+      "sha256": "25f06ff64f9c97adb4d93ecc59b4b2c3ea41f946b671cfa6c67ab25f3f919984",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/supply29-results.json",
+      "sha256": "f42ee54274a8183c6fbc3e12132ff1b34f5fc99df730bccbe2823da1068d171c",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/validation5-regression-results.json",
+      "sha256": "bc02d61b03bbc11178c752bfd2fc5a9500a8c4fa33502c1891c17e2f17b88586",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/validation5-resource-results.json",
+      "sha256": "db100ac94af6dc7beb88e1c3b0109f0c65482dfa837dffde8c45142f408d5e35",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/validation5-results.json",
+      "sha256": "a9c1ae5be1a75dcb7119b32d022aa108031ff47c350e1d34c234c26653381c1b",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/vibe-hardening-results.json",
+      "sha256": "e5516365197f00137695f68bd85c9afb51847076ddf9061de535846a5a12b419",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/vibe-results.json",
+      "sha256": "0e446f4837199772a7d52c3bd53efe80c274332a6486fac78c260a9e556cc60b",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/web27-results.json",
+      "sha256": "8e606896116c02ff8e6526fb4cc1f6250259f2633584e127101cf28f00756b8a",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/write-origin-hardening10-results.json",
+      "sha256": "958e78426b9594b972badde255cae912db39477290c80de391a4e2b215cfc5dd",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "scripts/evaluation/write-path-validation9-results.json",
+      "sha256": "59fa271f46a8accc788911db5fe5a07ea8635b9a95c5c3d34212e1c3c647d9b7",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "src/test/java/com/securedeploy/analysis/deployment/Supply29ControlsTest.java",
+      "sha256": "5fcd456d1ef3f8dc611d729d7ee8021e15420be0b107eba37bf92313211e0925",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    },
+    {
+      "path": "src/test/java/com/securedeploy/sca/Alias29ControlsTest.java",
+      "sha256": "e5854c3de97ee60ee694af202524524373c42fe97f06936ecd95afad0e1fda4b",
+      "unchangedFrom": "45385d3e69d0c6ae321a1d8ec96f2c9248c39d2a"
+    }
+  ],
+  "method": "Nonblind technical review and source occurrence index; no independent owner or runtime approval",
+  "inventoryLimit": "Literal occurrence is not runtime registration or complete per-rule API/version proof. Unmapped versions and runtime claims remain NOT_VERIFIED.",
+  "noFamilyFullyVerified": true,
+  "originalMetricsNotPooled": true,
+  "newIndependentHoldout": 0,
+  "newRealVulnerabilityTP": 0,
+  "unresolvedIntentBoundary": "Separate ownership constraints proposed only; SOURCE_ONLY/DECLARED_INTENT evaluator unchanged",
+  "implementationReview": "SSRF native HTTP branch identity and href replacement only; no new framework, Rule, risk formula or limit increase",
+  "baselineCoverageMatrix": {
+    "path": "docs/evaluation/security-coverage21.md",
+    "sha256": "09e2b7ff3e6dfc1e6e61a5767fe9f9c7d948fd429a6f646baf8137962b95d67b"
+  }
+}
