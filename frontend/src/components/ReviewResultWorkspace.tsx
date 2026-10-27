@@ -81,7 +81,6 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
             <button type="button" onClick={() => navigate('SHOULD_FIX')}><span>수정 권장</span><strong>{counts.recommended ?? '미평가'}</strong></button>
           </div>}/>
           <InspectionBoundaryNotice coverage={result.coverage} />
-          <p className="decision-disclaimer">분석 당시의 판단입니다. 미발견이 완전한 안전을 뜻하지 않으며, AI 추가 후보와 서버 코드 흐름 검토 항목은 배포 판단에 합산하지 않습니다.</p>
         </section>
         <details className="summary-scope"><summary>파일별 검사 범위와 라이브러리 수정 위치</summary>
           <AnalysisCoverageSection coverage={result.coverage} sca={result.sca} semantic={result.semanticReview} />
@@ -105,7 +104,6 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
             {assessment.prioritySummary.INFORMATIONAL > 0 && <p>참고 사항 {assessment.prioritySummary.INFORMATIONAL}건은 ‘수정 권장’에서 별도로 확인할 수 있습니다.</p>}
           </> : <button className="secondary-button" type="button" onClick={() => navigate('REVIEW_REQUIRED')}>저장된 문제 확인</button>}
         </section>
-        <p className="decision-disclaimer">추천 진행 순서: 반드시 처리할 문제 확인 → 직접 확인 → 수정 → 같은 프로젝트 재검사</p>
         <section className="analysis-coverage-brief"><h3>추가 코드 검토</h3>
           <p>{semanticStatusText(result.semanticReview, result.scanMode)}</p>
           {result.semanticReview && <p>검토한 코드 영역 {result.semanticReview.semanticSlicesAnalyzed}개 · 추가 확인 후보 {counts.candidates}개</p>}

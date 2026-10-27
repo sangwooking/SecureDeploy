@@ -12,7 +12,10 @@ try{for(const width of widths)for(const kind of ['fixed','selected']){
  const page=await browser.newPage({viewport:{width,height:1000},acceptDownloads:true}),errors=[],outbound=[],providerRequests=[];let workspace,headers;
  page.on('request',r=>{if(r.url().endsWith('/generate'))providerRequests.push(r.url());});
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- await page.route('**/*',rt=>{const u=new URL(rt.request().url());if(u.pathname.startsWith('/api/'))return rt.continue({url:api+u.pathname+u.search});if(u.origin===origin)return rt.continue();outbound.push(u.origin);return rt.abort();});
+ // Isolated-port proxy only; production CORS is not evaluated here.
+ await page.route('**/*',async rt=>{const u=new URL(rt.request().url());if(u.pathname.startsWith('/api/')){
+  const response=await rt.fetch({url:api+u.pathname+u.search,headers:{...rt.request().headers(),origin:'http://localhost:5173'}});return rt.fulfill({response});
+ }if(u.origin===origin)return rt.continue();outbound.push(u.origin);return rt.abort();});
  try{
   console.log(JSON.stringify({width,kind,stage:'start'}));
   await page.goto(origin);await page.getByPlaceholder('user@test.com').fill(`deno-${kind}-${width}@example.invalid`);await page.getByPlaceholder('비밀번호',{exact:true}).fill('Synthetic-Local-813!');await page.locator('.auth-submit').click();await page.getByRole('navigation',{name:'앱 메뉴'}).waitFor();

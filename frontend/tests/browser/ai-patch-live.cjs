@@ -16,7 +16,10 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173',api='http://127.0
    const page=await browser.newPage({viewport:{width,height:1000},acceptDownloads:true}),errors=[],outbound=[];
    page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
    await page.addInitScript(auth=>{localStorage.setItem('securedeploy.accessToken',auth.accessToken);localStorage.setItem('securedeploy.authUser',JSON.stringify(auth.user));},user);
-   await page.route('**/*',route=>{const url=new URL(route.request().url());if(url.pathname.startsWith('/api/'))return route.continue({url:api+url.pathname+url.search});if(url.origin===new URL(origin).origin)return route.continue();outbound.push(url.origin);return route.abort();});
+   // Isolated-port proxy only; production CORS is not evaluated here.
+   await page.route('**/*',async route=>{const url=new URL(route.request().url());if(url.pathname.startsWith('/api/')){
+    const response=await route.fetch({url:api+url.pathname+url.search,headers:{...route.request().headers(),origin:'http://localhost:5173'}});return route.fulfill({response});
+   }if(url.origin===new URL(origin).origin)return route.continue();outbound.push(url.origin);return route.abort();});
    await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);
    await page.getByRole('button',{name:'수정 작업 공간 열기',exact:true}).click();await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).click();
    await page.getByRole('button',{name:'application.properties',exact:true}).click();await pane(page,'수정 근거 · AI');const panel=page.getByLabel('보안 수정안',{exact:true});

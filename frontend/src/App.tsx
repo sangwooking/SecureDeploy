@@ -70,7 +70,7 @@ interface AuthScreenProps {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
-function AuthScreen({
+export function AuthScreen({
   mode,
   email,
   password,
@@ -84,6 +84,12 @@ function AuthScreen({
   onSubmit,
 }: AuthScreenProps) {
   const isSignup = mode === 'SIGNUP';
+  const [showPassword, setShowPassword] = useState(false);
+  const [invalidFields, setInvalidFields] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    setShowPassword(false);
+    setInvalidFields({});
+  }, [mode]);
 
   return (
     <main className="app-shell auth-shell">
@@ -91,9 +97,19 @@ function AuthScreen({
         <div className="auth-copy">
           <p className="auth-brand">SecureDeploy</p>
           <h1>{isSignup ? '계정 생성' : '로그인'}</h1>
+          <p className="auth-intro">코드의 보안 문제를 확인하고 배포 전 검토를 이어가세요.</p>
         </div>
 
-        <form className="auth-form" onSubmit={onSubmit} aria-busy={isLoading}>
+        <form className="auth-form" onSubmit={onSubmit} aria-busy={isLoading}
+          aria-describedby={errorMessage ? 'auth-error' : undefined}
+          onInvalid={event => {
+            const input = event.target as HTMLInputElement;
+            setInvalidFields(fields => ({ ...fields, [input.name]: true }));
+          }}
+          onInput={event => {
+            const input = event.target as HTMLInputElement;
+            if (input.validity.valid) setInvalidFields(fields => ({ ...fields, [input.name]: false }));
+          }}>
           <div className="mode-switch auth-mode-switch" aria-label="인증 방식 선택">
             <button className={mode === 'LOGIN' ? 'mode-button mode-button-active' : 'mode-button'} aria-pressed={mode==='LOGIN'} type="button" disabled={isLoading} onClick={() => onModeChange('LOGIN')}>
               로그인
@@ -106,21 +122,25 @@ function AuthScreen({
           {isSignup && (
             <label>
               <span>이름</span>
-              <input type="text" autoComplete="name" value={name} placeholder="이름" onChange={(event) => onNameChange(event.target.value)} disabled={isLoading} required />
+              <input name="name" type="text" autoComplete="name" value={name} placeholder="이름" aria-invalid={invalidFields.name || undefined} onChange={(event) => onNameChange(event.target.value)} disabled={isLoading} required />
             </label>
           )}
 
           <label>
             <span>이메일</span>
-            <input type="email" autoComplete="email" value={email} placeholder="user@test.com" onChange={(event) => onEmailChange(event.target.value)} disabled={isLoading} required />
+            <input name="email" type="email" autoComplete="email" value={email} placeholder="user@test.com" aria-invalid={invalidFields.email || undefined} aria-describedby={errorMessage ? 'auth-error' : undefined} onChange={(event) => onEmailChange(event.target.value)} disabled={isLoading} required />
           </label>
 
-          <label>
+          <div className="auth-password-field"><label>
             <span>비밀번호</span>
-            <input type="password" autoComplete={isSignup?'new-password':'current-password'} value={password} placeholder="비밀번호" onChange={(event) => onPasswordChange(event.target.value)} disabled={isLoading} minLength={8} required />
+            <input id="auth-password" name="password" type={showPassword ? 'text' : 'password'} autoComplete={isSignup?'new-password':'current-password'} value={password} placeholder="비밀번호" aria-invalid={invalidFields.password || undefined} aria-describedby={errorMessage ? 'auth-password-hint auth-error' : 'auth-password-hint'} onChange={(event) => onPasswordChange(event.target.value)} disabled={isLoading} minLength={8} required />
           </label>
+          <button type="button" aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 표시'} aria-controls="auth-password" aria-pressed={showPassword} disabled={isLoading} onClick={() => setShowPassword(value => !value)}>
+            {showPassword ? '숨기기' : '표시'}
+          </button></div>
+          <p id="auth-password-hint">비밀번호는 8자 이상 입력하세요.</p>
 
-          {errorMessage && <div role="alert" className="feedback-message feedback-error">{errorMessage}</div>}
+          {errorMessage && <div id="auth-error" role="alert" className="feedback-message feedback-error">{errorMessage}</div>}
 
           <button className="primary-button auth-submit" type="submit" disabled={isLoading}>
             {isLoading ? '처리 중...' : isSignup ? '회원가입' : '로그인'}

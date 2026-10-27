@@ -9,6 +9,7 @@ import { projectLink, projectTabs, type WorkspaceRoute } from './workspaceRoute'
 import { ProjectReviewResult } from './ProjectReviewResult';
 import { RescanForm } from './RescanForm';
 import { GitHubSourceInfo } from './GitHubSourceInfo';
+import { ReviewSummaryPanel } from './ReviewSummaryPanel';
 
 export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDeleted }: {
   route: Extract<WorkspaceRoute, { page: 'project' }>; policy: UploadPolicy | null; policyError: string;
@@ -79,18 +80,20 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
   const first = review ? allRiskFindings(review).sort((a, b) => order[a.priority] - order[b.priority]).slice(0, 3) : [];
   return <section className="project-workspace">
     <p className="result-breadcrumb"><a href="#/projects">내 프로젝트</a> / {project.name}</p>
-    <header className="workspace-section"><h2>{project.name}</h2>
+    <header className="workspace-section project-heading"><p className="eyebrow">프로젝트</p><h2>{project.name}</h2>
       <p>{project.sourceType === 'GITHUB' ? 'GitHub' : 'ZIP'}{project.repositoryUrl && ` · ${project.repositoryUrl}`}</p>
       {project.githubRepositoryId != null && <p>{project.privateRepository ? '비공개' : '공개'} 저장소 · GitHub App 읽기 전용 · 최근 분석 시점 기준</p>}
-      <strong>{reviewStatus(project.latestReview)}</strong><p>최근 분석: {dateLabel(project.latestReview?.createdAt)}</p>
+      <div className="project-heading-meta"><strong className={`policy-label policy-${project.latestReview?.riskSummary?.deploymentAssessment.toLowerCase() ?? 'unknown'}`}>{reviewStatus(project.latestReview)}</strong><p>최근 분석: {dateLabel(project.latestReview?.createdAt)}</p></div>
+      {project.sourceType === 'GITHUB' && project.latestReview && <GitHubSourceInfo source={project.latestReview.sourceMetadata} compact />}
     </header>
     <nav className="project-navigation" aria-label="프로젝트 메뉴">{projectTabs.map(tab => <a key={tab.id} href={projectLink(project.projectId, tab.id)} aria-current={route.tab === tab.id ? 'page' : undefined}>{tab.label}</a>)}</nav>
     {notice && <p role="status" className="feedback-message feedback-success">{notice}</p>}
     {error && <p role="alert" className="error-message">{error}</p>}
     {busy && <p role="status">요청을 처리하고 있습니다. 잠시 기다려 주세요.</p>}
     {route.tab === 'overview' && <section className="workspace-section">
-      {project.sourceType === 'GITHUB' && project.latestReview && <GitHubSourceInfo source={project.latestReview.sourceMetadata} />}
-      <h2>현재 보안 상태</h2><PriorityCounts assessment={project.latestReview?.riskSummary} />
+      <h2 className="visually-hidden">현재 보안 상태</h2>
+      {review ? <ReviewSummaryPanel result={review} actions={<PriorityCounts assessment={project.latestReview?.riskSummary} />} /> : <PriorityCounts assessment={project.latestReview?.riskSummary} />}
+      {project.sourceType === 'GITHUB' && project.latestReview && <details className="summary-detail"><summary>원본 버전과 수집 근거</summary><GitHubSourceInfo source={project.latestReview.sourceMetadata} /></details>}
       <h3>최근 변화</h3><ProgressBrief progress={latestSelected && review?.comparison ? review.comparison : null} />
       <h3>가장 먼저 처리할 문제</h3>
       {first.length && review ? <ol className="next-actions">{first.map(f => <li key={f.findingId}><a href={projectLink(project.projectId, 'findings', undefined, f.priority === 'INFORMATIONAL' ? 'SHOULD_FIX' : f.priority)}>{priorityLabels[f.priority]} · {findingTitle(review, f)}</a></li>)}</ol>

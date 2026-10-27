@@ -12,6 +12,7 @@ export function DependencyContextDetails({ locations }: { locations: DependencyC
   if (!contexts.length) return <p>이 이력에는 상위 의존성 경로가 없습니다. 직접/간접 경로와 실제 수정 위치를 추가로 확인해야 합니다.</p>;
   return <details className="action-details"><summary>의존성 경로와 수정 위치 확인</summary>
     <p>아래는 manifest·lockfile의 선언 근거입니다. 운영 실행 여부나 공격 가능성을 확인한 것은 아닙니다. 개발 도구도 CI·빌드·테스트 입력에 따라 위험할 수 있습니다.</p>
+    {locations.some(c => !c.context) && <p className="review-caution">일부 버전 확인 위치에는 상위 의존성 경로 기록이 없습니다. 아래 경로만으로 전체 사용 환경이나 수정 위치를 확정할 수 없습니다.</p>}
     {contexts.map((component, i) => {
       const context = component.context!;
       return <section className="dependency-context" key={`${component.sourceFile}:${context.installedPath}:${i}`}>

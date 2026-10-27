@@ -25,9 +25,14 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
       <button type="button" key={change} aria-pressed={filter === change} onClick={() => setFilter(change)}>
         {labels[change]} <strong>{snapshot.counts[change]}</strong></button>)}</nav>
     <p className="review-caution">비교는 저장된 분석 계약과 확인한 범위에 한정됩니다. 구조 분석 후보의 NOT_COMPARED와 미검사·버전 차이로 인한 확인 불가는 RESOLVED가 아닙니다.</p>
+    <p>저장된 비교 상태: {snapshot.status} · 변화 건수는 비교 대상 Finding 기준이며, 영향받는 패키지 수나 수정 작업 수가 아닙니다.</p>
     {snapshot.workspaceScan&&<p>수정본은 새 GitHub commit이 아닙니다. 원본 버전과 수정 revision·입력 해시로 구분합니다.</p>}
     {snapshot.workspaceScan&&!snapshot.workspaceScan.baselineVerified&&<p role="note">원본 동일성 미확인: 과거 Review와 자동 해결 비교를 하지 않습니다.</p>}
     <p>{snapshot.message}</p>
+    <details className="comparison-limitations"><summary>변화 건수의 의미와 추가 비교 제한 ({snapshot.notices.length}건)</summary>
+      <p>해결된 문제(RESOLVED)는 비교 가능한 현재 검사에서 해당 경고가 재탐지되지 않았다는 뜻입니다. 실제 취약점 해결이나 전체 안전성의 증명이 아닙니다. 새로 발견된 문제도 코드 변경으로 새로 생겼다는 뜻은 아닙니다.</p>
+      {snapshot.notices.map((note, index) => <p key={index}>{note}</p>)}
+    </details>
     <details className="comparison-context"><summary>비교한 분석·정책·파일 근거</summary>
     {snapshot.workspaceScan && <div className="workspace-scan-provenance"><p>수정본 revision {snapshot.workspaceScan.revision} · 원본 Review {snapshot.workspaceScan.originalReviewId} · GitHub 반영 안 함</p>
       <p>RESOLVED는 비교 가능한 검사에서 해당 경고가 재탐지되지 않았다는 뜻입니다. 실제 취약점 해결이나 전체 안전성의 증명이 아닙니다.</p>
@@ -57,9 +62,13 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
       return <article className="vulnerability-item action-finding" key={`${entry.fingerprint}-${index}`}>
         <span className={`risk-badge risk-${finding.risk.priority.toLowerCase()}`}>{priorityLabels[finding.risk.priority]} · {entry.after ? '현재' : '이전'}</span>
         <h3>{title(finding)}</h3><p>{entry.note}</p>
+        <p>우선순위: {entry.before ? priorityLabels[entry.before.risk.priority] : '이전 Finding 없음'} → {entry.after ? priorityLabels[entry.after.risk.priority] : '현재 Finding 없음'}</p>
         {entry.before && <p className="finding-location">이전 위치: {entry.before.risk.sourceFiles.join(', ')}{entry.before.code && ` · ${entry.before.code.line}행`}</p>}
         {entry.after && <p className="finding-location">현재 위치: {entry.after.risk.sourceFiles.join(', ')}{entry.after.code && ` · ${entry.after.code.line}행`}</p>}
-        {finding.risk.source === 'DEPENDENCY' && <p>이전 버전: {entry.before?.risk.version ?? '정보 없음'} / 현재 확인 버전: {entry.currentVersions.join(', ') || '확인 불가'}</p>}
+        {finding.risk.source === 'DEPENDENCY' && <>
+          <p>이전 Finding 버전: {entry.before?.risk.version ?? '정보 없음'} / 현재 Finding 버전: {entry.after?.risk.version ?? '정보 없음'}</p>
+          <p>현재 의존성 선언에서 관찰한 버전: {entry.currentVersions.join(', ') || '확인 불가'}. 범위·미확정 값이 포함될 수 있으며 실제 설치 버전이나 안전한 버전이라는 뜻은 아닙니다.</p>
+        </>}
         {entry.after && <>
           {entry.after.code && <p>{entry.after.code.recommendation}</p>}
           <FindingRemediation finding={entry.after.risk} snapshot={result.remediation} />
@@ -79,7 +88,6 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
       </article>)}
     </details>
     <details className="technical-details"><summary>비교 범위와 참고 점수</summary>
-      {snapshot.notices.map(note => <p key={note}>{note}</p>)}
       <p>룰 기반 참고 점수: {before?.referenceSecurityScore ?? '정보 없음'} → {after?.referenceSecurityScore ?? '정보 없음'}</p>
       <p>비교 상태: {snapshot.status} · 비교 버전: {snapshot.comparisonSchemaVersion}</p>
     </details>
