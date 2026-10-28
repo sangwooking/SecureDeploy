@@ -11,7 +11,7 @@ import com.securedeploy.project.coverage.CoverageRecorder;
 final class TypeScriptSourceSelector {
     static final int MAX_FILES=100, MAX_FILE_CHARS=100_000, MAX_TOTAL_CHARS=1_000_000;
     private static final int HINT_FILES=1000, HINT_CHARS=1_000_000, PREFIX_CHARS=16_000;
-    private static final Pattern IMPORT=Pattern.compile("(?:\\bfrom\\s*|\\bimport\\s*|\\brequire\\s*\\(\\s*)['\"](\\.[^'\"\\r\\n]{1,240})['\"]");
+    private static final Pattern IMPORT=Pattern.compile("(?:\\bfrom\\s*|\\bimport\\s*|\\brequire\\s*\\(\\s*)['\"]([^'\"\\r\\n]{1,240})['\"]");
     private static final Pattern HTTP_EXPORT=Pattern.compile("\\bexport\\s+(?:async\\s+)?function\\s+(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b|\\bexport\\s+const\\s+(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b");
     private static final Pattern SERVER_USE=Pattern.compile("\\b(?:fetch|eval|exec|execSync)\\s*\\(|\\.\\s*(?:query|prepare)\\s*\\(|child_process|process\\.env|Deno\\.env");
     private static final Pattern EXPRESS_RUNTIME=Pattern.compile("\\brequire\\s*\\(\\s*['\"]express['\"]\\s*\\)|\\bimport\\s+(?:(?!type\\b)[A-Za-z_$][\\w$]*(?:\\s*,[^;\\r\\n]+)?|\\*\\s+as\\s+[A-Za-z_$][\\w$]*|\\{\\s*Router\\b[^}\\r\\n]*\\})\\s+from\\s*['\"]express['\"]");
@@ -41,6 +41,7 @@ final class TypeScriptSourceSelector {
         }
         ambiguous.forEach(specs::remove);
         int configCharacters=TypeScriptConfigMetadata.read(input).stream().mapToInt(c->c.getOrDefault("content","").length()).sum();
+        var aliases=new TypeScriptSelectionAliases(input);
         int hints=0,characters=manifests.characters()+configCharacters;boolean complete=manifests.complete();
         var texts=new HashMap<String,String>();
         var hintOrder=js.stream().sorted(Comparator.comparingInt((ProjectFile f)->convention(f.relativePath()))
@@ -78,7 +79,7 @@ final class TypeScriptSourceSelector {
             if(priority(own)<current.priority()) {
                 current=new Choice(current.file(),own,priority(own),current.characters(),false);choices.put(p,current);
             }
-            var refs=references(p,text,specs,packages);edges.put(p,refs);
+            var refs=references(p,text,specs,packages,aliases);edges.put(p,refs);
             if(current.priority()<3)for(String target:refs) {
                 var old=choices.get(target);int depth=current.priority()+1;
                 if(old.priority()>depth) {
@@ -139,15 +140,38 @@ final class TypeScriptSourceSelector {
         if(text.stripLeading().startsWith("'use server'")||text.stripLeading().startsWith("\"use server\""))return "TS_SERVER_DIRECTIVE_HINT";
         return "TS_DETERMINISTIC_FALLBACK";
     }
-    private static Set<String> references(String p,String text,Map<String,String> specs,Map<String,Map<String,String>> packages) {
+    private static Set<String> references(String p,String text,Map<String,String> specs,Map<String,Map<String,String>> packages,TypeScriptSelectionAliases aliases) {
         var refs=new TreeSet<String>();var m=IMPORT.matcher(text);
         while(m.find()) {
-            String base=Path.of(p).getParent()==null?m.group(1):Path.of(p).getParent().resolve(m.group(1)).toString();
+            String spec=m.group(1);
+            if(!spec.startsWith(".")){
+                var hint=aliases.target(p,spec);if(hint==null)continue;
+                String target=resolveAliasHint(hint,specs,packages);if(target!=null)refs.add(target);continue;
+            }
+            String base=Path.of(p).getParent()==null?spec:Path.of(p).getParent().resolve(spec).toString();
             base=Path.of(base).normalize().toString().replace('\\','/');
             if(base.startsWith("../")||base.startsWith("/"))continue;
             String target=resolveHint(base,specs,packages);if(target!=null)refs.add(target);
         }
         return refs;
+    }
+    private static String resolveAliasHint(TypeScriptSelectionAliases.Hint hint,Map<String,String> specs,Map<String,Map<String,String>> packages){
+        String base=hint.base();var names=new ArrayList<String>();
+        if(hint.ordered()){
+            if(base.endsWith(".js"))for(String ext:List.of(".ts",".tsx",".d.ts",".js"))names.add(base.substring(0,base.length()-3)+ext);
+            else if(Path.of(base).getFileName().toString().contains("."))names.add(base);
+            else for(String ext:List.of(".ts",".tsx",".d.ts",".js",".jsx"))names.add(base+ext);
+            for(String name:names){String target=specs.get(name);if(target!=null&&target.equals(name))return target;}
+            if(Path.of(base).getFileName().toString().contains("."))return null;
+            if(packages.containsKey(base+"/package.json"))return null;
+            for(String ext:List.of("ts","tsx","d.ts","js","jsx")){String name=base+"/index."+ext,target=specs.get(name);if(name.equals(target))return target;}
+            return null;
+        }
+        for(String name:List.of(base,base.replaceFirst("\\.js$",".ts"),base+".ts",base+".tsx",base+".js",base+"/index.ts",base+"/index.js")){
+            String target=specs.get(name);if(target!=null&&!names.contains(target))names.add(target);
+        }
+        if(names.size()!=1)return null;
+        return names.get(0).startsWith(base+"/")&&packages.containsKey(base+"/package.json")?null:names.get(0);
     }
     private static String resolveHint(String base,Map<String,String> specs,Map<String,Map<String,String>> packages){
         for(String key:List.of(base,base+".js",base.replaceFirst("\\.js$",".ts"))){String target=specs.get(key);if(target!=null)return target;}

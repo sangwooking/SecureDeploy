@@ -38,6 +38,28 @@ class ServerAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void boundedSelectionPreservesAliasLinkedSourceSinkUnderUiPressure() throws Exception {
+        String token=signup();var files=new HashMap<String,String>();
+        for(int i=0;i<180;i++)files.put("aaa/View%03d.tsx".formatted(i),"export const text=1;");
+        files.put("package.json","{\"dependencies\":{\"next\":\"15.2.4\"}}");
+        files.put("tsconfig.json","{\"compilerOptions\":{\"moduleResolution\":\"bundler\",\"paths\":{\"@/*\":[\"./src/*\"]}}}");
+        files.put("src/app/api/task/route.ts","import {run} from '@/lib/gateway';export async function GET(request){return run(new URL(request.url).searchParams.get('url'));}");
+        files.put("src/lib/gateway/index.ts","export {run} from '@/domain/operation';");
+        files.put("src/domain/operation.ts","export function run(value){return fetch(value);}");
+        var unsafe=uploadSources(token,files);var snapshot=unsafe.path("serverAnalysis");
+        assertThat(snapshot.path("validatedFindings")).hasSize(1);
+        assertThat(snapshot.at("/validatedFindings/0/ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
+        assertThat(snapshot.at("/validatedFindings/0/evidence/0/source/filePath").asText()).isEqualTo("src/app/api/task/route.ts");
+        assertThat(snapshot.at("/validatedFindings/0/evidence/0/sink/filePath").asText()).isEqualTo("src/domain/operation.ts");
+        assertThat(snapshot.at("/selectionCoverage/submittedFiles").asInt()).isEqualTo(100);
+        assertThat(snapshot.at("/selectionCoverage/submittedCharacters").asInt()).isLessThanOrEqualTo(1_000_000);
+        var safeFiles=new HashMap<>(files);safeFiles.put("src/domain/operation.ts","export function run(value){return fetch('https://example.invalid/fixed');}");
+        var safe=uploadSources(token,safeFiles);assertThat(safe.at("/serverAnalysis/validatedFindings")).isEmpty();
+        assertThat(safe.path("securityScore")).isEqualTo(unsafe.path("securityScore"));
+        var unknownFiles=new HashMap<>(files);unknownFiles.put("tsconfig.json","{\"compilerOptions\":{\"paths\":{\"@/*\":[\"./src/*\",\"./fallback/*\"]}}}");
+        assertThat(uploadSources(token,unknownFiles).at("/serverAnalysis/validatedFindings")).isEmpty();
+    }
+
     @Test void wrappedNextRequestsPersistDistinctSourceSinkAndKeepUnknownOutOfValidatedFindings() throws Exception {
         String token=signup();
         var sources=Map.of("package.json","{\"dependencies\":{\"next\":\"15.2.4\"}}",
