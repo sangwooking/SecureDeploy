@@ -45,7 +45,9 @@ class ServerAnalysisIntegrationTest {
         var open=uploadSource(token,"server.js",start+"(req,res,next)=>next()"+end);
         var blocked=uploadSource(token,"server.js",start+"(req,res)=>res.end()"+end);
         var continued=uploadSource(token,"server.js",start+"(req,res,next)=>{res.end();next();}"+end);
-        for(var result:List.of(open,continued)) {
+        var errorPath=uploadSource(token,"server.js","const app=require('express')();app.set('json replacer',()=>{throw new Error('closed');});"
+                +"app.post('/',(req,res)=>res.json({ok:true}),(err,req,res,next)=>next(),(req,res)=>eval(req.body.value));");
+        for(var result:List.of(open,continued,errorPath)) {
             var finding=result.at("/serverAnalysis/validatedFindings/0");
             assertThat(result.at("/serverAnalysis/validatedFindings")).hasSize(1);
             assertThat(finding.path("ruleId").asText()).isEqualTo("JS_EVAL_INPUT_FLOW");

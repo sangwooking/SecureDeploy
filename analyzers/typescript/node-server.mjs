@@ -307,7 +307,10 @@ export function nodeServer(api) {
         }else{receiver.controlOpaque=true;note(state.mod,'EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN');}
         return {value:receiver};
       }
-      if(['set','disable','enable','listen','engine'].includes(method))return {value:receiver};
+      if(['set','engine'].includes(method)){
+        receiver.controlOpaque=true;note(state.mod,'EXPRESS_RESPONSE_SETTINGS_CONTROL_UNVERIFIED');return {value:receiver};
+      }
+      if(['disable','enable','listen'].includes(method))return {value:receiver};
     }
     if(receiver?.native==='mongo-client'&&!receiver.unknown&&!receiver.ref?.unknown&&method==='connect') {
       const callback=args.at(-1), manifests=(api.input.nodeManifests??[]).filter(m=>state.mod.filePath.startsWith(path.posix.dirname(m.filePath)==='.'?'':path.posix.dirname(m.filePath)+'/'))
@@ -457,7 +460,7 @@ export function nodeServer(api) {
       if(mod.entries.length>=limits.maxResults){note(mod,'EXPRESS_ENTRY_LIMIT');continue;}
       let blocked;
       try{
-        if(control.prefix.length&&!control.opaque&&!route.uncertain&&!route.setupContext.unresolved){
+        if(control.prefix.length&&!control.opaque&&!route.uncertain&&!route.setupContext.unresolved&&route.target.node.parameters.length!==4){
           const local=controls.proof(control.prefix);
           if(local&&controlBefore(control.owner,control.before,mod)&&controlScope(control.owner,mod))blocked=local;
         }

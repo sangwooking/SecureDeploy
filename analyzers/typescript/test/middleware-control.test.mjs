@@ -37,6 +37,8 @@ test('unsupported response overloads, shadows and mutation do not become termina
     `(req,res,next)=>{let res=other;return res.end();}`,
     `(req,res,next)=>{if(check(req,next))return res.end();else return res.end();}`,
     `(req,res,next)=>{res.end();next=external;next();}`,
+    `(req,res,next)=>{next('route');next();}`,
+    `(req,res,next)=>{next('router');next();}`,
   ]){
     const r=analyze({files:[{filePath:'server.js',content:`const app=require('express')();app.post('/',${guard},(req,res)=>eval(req.body.value));`}]});
     assert.equal(findings(r).length,1,guard);assert.equal(proof(r).length,0,guard);
@@ -81,4 +83,43 @@ test('local path/step limits cannot produce a successful suppression',()=>{
   assert.ok(r.files[0].limitations.includes('EXPRESS_MIDDLEWARE_CONTROL_BUDGET_OR_UNSUPPORTED'));
   const limited=analyze(input(middlewareCases[0]),{maxSteps:15});
   assert.equal(proof(limited).length,0);assert.equal(limited.status,'PARTIAL');
+});
+
+test('error handlers and custom response settings cannot resume a falsely suppressed final Handler',()=>{
+  for(const before of [
+    `app.set('json replacer',()=>{throw new Error('replacer');});`,
+    `app.engine('custom',external);`,
+    ``,
+  ]){
+    const r=analyze({files:[{filePath:'server.js',content:`const app=require('express')();${before}
+      app.post('/',(req,res)=>res.json({ok:true}),(err,req,res,next)=>next(),(req,res)=>eval(req.body.value));`} ]});
+    assert.equal(findings(r).length,1);assert.equal(proof(r).length,0);
+  }
+  const settings=analyze({files:[{filePath:'server.js',content:`const app=require('express')();app.set('json replacer',external);
+    app.post('/',(req,res)=>res.json({ok:true}),(req,res)=>eval(req.body.value));`} ]});
+  assert.equal(findings(settings).length,1);assert.equal(proof(settings).length,0);
+});
+
+test('one blocked registration cannot remove a shared Handler reached from another route',()=>{
+  const r=analyze({files:[{filePath:'server.js',content:`const app=require('express')();
+    function shared(req,res){eval(req.body.value);}
+    app.post('/closed',(req,res)=>res.end(),shared);
+    app.post('/open',shared);`} ]});
+  assert.equal(findings(r).length,1);assert.equal(proof(r).length,1);
+});
+
+test('bounded evidence retains the actual exit after a long pure next prefix',()=>{
+  const callbacks=Array.from({length:60},()=>`(req,res,next)=>next()`).join(',');
+  const r=analyze({files:[{filePath:'server.js',content:`const app=require('express')();
+    app.post('/',${callbacks},(req,res)=>res.end(),(req,res)=>eval(req.body.value));`} ]});
+  assert.equal(findings(r).length,0);assert.equal(proof(r).length,1);
+  assert.ok(proof(r)[0].trace.length<=20);
+  assert.ok(proof(r)[0].trace.some(p=>p.kind==='RESPONSE_END'));
+  assert.ok(proof(r)[0].limitations.includes('CONTROL_TRACE_BOUNDED'));
+});
+
+test('parameter and app names do not act as protection keywords',()=>{
+  const r=analyze({files:[{filePath:'api.cjs',content:`const factory=require('express');const web=factory();
+    web.post('/',(incoming,reply)=>reply.end(),(incoming,reply)=>eval(incoming.body.value));`} ]});
+  assert.equal(findings(r).length,0);assert.equal(proof(r).length,1);
 });

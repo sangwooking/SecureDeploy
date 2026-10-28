@@ -112,16 +112,20 @@ export function middlewareControl({ts,tick,note,loc,append,result}) {
     }catch{note(mod,'EXPRESS_MIDDLEWARE_CONTROL_BUDGET_OR_UNSUPPORTED');return;}
   }
   function proof(callbacks) {
-    if(callbacks.some(v=>!v?.target||v.unknown||v.ref?.unknown))return;
+    if(callbacks.some(v=>!v?.target||v.unknown||v.ref?.unknown||v.target.node.parameters.length>3))return;
     const trace=[];const exits=new Set();
     for(const callback of callbacks){
       const plan=summarize(callback);if(!plan)return;
       trace.push(...plan.flatMap(p=>p.trace));
       for(const p of plan)if(p.kind!=='NEXT')exits.add(p.kind);
       if(plan.every(p=>p.kind!=='NEXT')){
-        const evidence=[...plan.flatMap(p=>p.trace),...trace];
-        const unique=evidence.filter((p,i,all)=>all.findIndex(q=>q.filePath===p.filePath&&q.line===p.line&&q.column===p.column&&q.kind===p.kind)===i);
-        return {trace:unique.slice(0,20),exits:[...exits],truncated:unique.length>20};
+        const seen=new Set(),evidence=[];
+        for(const chunk of [plan.flatMap(p=>p.trace),trace])for(const p of chunk){
+          tick(callback.target.mod);
+          const key=JSON.stringify([p.filePath,p.line,p.column,p.kind]);
+          if(!seen.has(key)){seen.add(key);if(evidence.length<20)evidence.push(p);}
+        }
+        return {trace:evidence,exits:[...exits],truncated:seen.size>20};
       }
       if(plan.some(p=>p.kind==='NEXT'&&p.response))return;
     }
