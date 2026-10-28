@@ -32,6 +32,9 @@ fixed-destination fact, not merely the absence of a warning. Reassignment or
 unknown closure writes invalidate that fact. Prior aliases, object properties,
 loose/dynamic comparisons, disjunctions and generic validators are not refined.
 This does not prove DNS, redirects, runtime reachability or authorization safety.
+Evaluation separates fixed-destination normal controls from negative package-origin
+controls. A local same-named factory is not thereby a whole-project SAFE/TN case;
+its general object-factory semantics may remain unsupported.
 
 ## Typed source mapping and scheduling (v43)
 

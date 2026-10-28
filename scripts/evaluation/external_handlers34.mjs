@@ -7,7 +7,10 @@ import {exportLinkCases} from '../../analyzers/typescript/test/export-link-fixtu
 import {continuityCases} from '../../analyzers/typescript/test/request-continuity-fixtures.mjs';
 const [output,before,after]=process.argv.slice(2);
 assert.ok(output&&before&&after);
-const report={method:'SAME_AUTHOR_NONBLIND_GRADE_B_STATIC_FLOW_NOT_EXPLOIT_PROOF',engines:{}};
+const negativeContractControls=new Set(['same-name-local','different-package','not-exported']);
+const report={method:'SAME_AUTHOR_NONBLIND_GRADE_B_STATIC_FLOW_NOT_EXPLOIT_PROOF',
+ truthScope:'TARGET_ADAPTER_CONTRACT_NOT_WHOLE_PROJECT_SAFETY',
+ negativeContractControls:[...negativeContractControls],engines:{}};
 for(const [version,file]of [['ts-server-v43',before],['ts-server-v44',after]]){
  const {analyze,VERSION}=await import(pathToFileURL(file).href);assert.equal(VERSION,version);
  report.engines[version]={};
@@ -24,4 +27,7 @@ for(const [version,file]of [['ts-server-v43',before],['ts-server-v44',after]]){
 for(const set of ['34-A','34-B'])assert.deepEqual(report.engines['ts-server-v43'][set],report.engines['ts-server-v44'][set]);
 fs.writeFileSync(output,JSON.stringify(report,null,2),{flag:'wx',mode:0o600});
 for(const [v,sets]of Object.entries(report.engines))console.log(v,Object.fromEntries(Object.entries(sets).map(([k,rows])=>[k,
- {cases:rows.length,highCases:rows.filter(r=>r.high).length,normalWarnings:rows.filter(r=>r.truth==='NORMAL'&&(r.high||r.medium)).length,opaqueCases:rows.filter(r=>r.opaque).length}])));
+ {cases:rows.length,highCases:rows.filter(r=>r.high).length,
+  normalFlowWarnings:rows.filter(r=>r.truth==='NORMAL'&&!negativeContractControls.has(r.id)&&(r.high||r.medium)).length,
+  negativeContractControls:rows.filter(r=>negativeContractControls.has(r.id)).length,
+  opaqueCases:rows.filter(r=>r.opaque).length}])));
