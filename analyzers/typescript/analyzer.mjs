@@ -17,7 +17,7 @@ import {fileAccess} from './file-access.mjs';
 import {exportLinks} from './export-links.mjs';
 import {wrapperLinks} from './wrapper-links.mjs';
 
-export const VERSION = 'ts-server-v42';
+export const VERSION = 'ts-server-v43';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -338,11 +338,13 @@ export function analyze(input, overrides = {}) {
   function sourceModule(mod,spec) {
     if(typeof spec!=='string'||spec.length>240||/[\\\0?#%]/.test(spec))return;
     if(!spec.startsWith('.'))return sourceImports.target(mod,spec);
+    const mapped=sourceImports.relativeTarget(mod,spec);if(mapped)return mapped.target;
     const base=path.posix.normalize(path.posix.join(path.posix.dirname(mod.filePath),spec));
     if(base==='..'||base.startsWith('../')||path.posix.isAbsolute(base)){note(mod,'MODULE_EXPORT_PATH_OUTSIDE_INPUT');return;}
     // Source mapping for bundled Worker/Next code, not Node's runtime ESM resolver.
     for(const p of [...new Set([base,base.replace(/\.js$/,'.ts'),base+'.ts',base+'.js',base+'/index.ts',base+'/index.js'])]){
       tick(mod);
+      if(sourceImports.isDirectory(p))continue;
       if(sourceInventory.has(p)){
         const target=modules.get(p);if(!target)note(mod,'MODULE_EXPORT_TARGET_NOT_INSPECTED');
         return target;
