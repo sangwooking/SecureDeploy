@@ -38,7 +38,9 @@ export function evaluateControls() {
   return controls.map(c=>{
     const r=analyze({files:c.files});
     const matching=r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW');
-    const expected=VERSION==='ts-server-v45'&&['http-Server-constructor-app-escape','http-Server-call-app-escape'].includes(c.id)?'FLOW':c.expect;
+    const listenerVersion=['ts-server-v45','ts-server-v46'].includes(VERSION);
+    const expected=VERSION==='ts-server-v46'&&c.id==='earlier-middleware-terminates'?'SAFE_TARGET'
+      :listenerVersion&&['http-Server-constructor-app-escape','http-Server-call-app-escape'].includes(c.id)?'FLOW':c.expect;
     return {id:c.id,expected,baselineExpected:c.expect,expectedCount:['FLOW','KNOWN_BLOCKED_REVIEW_CANDIDATE'].includes(expected)?(c.count??1):0,
       observedCount:matching.length,highCount:matching.filter(f=>f.confidence==='HIGH').length,
       entries:r.files.reduce((n,f)=>n+f.entrypoints,0),

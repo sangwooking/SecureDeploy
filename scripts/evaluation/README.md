@@ -4,6 +4,20 @@ Evaluation only. These tools do not modify engine/Risk policy or existing Review
 Never use production credentials in fixtures. Keep downloaded source, raw results,
 private evidence and process-environment launch helpers outside Git.
 
+## Local Express control flow (35-C)
+
+`middleware35-summary.json` records v45/v46 control results and the fixed engine
+SHA. `middleware35.mjs` replays the 44 pre-implementation controls using a trusted
+SecureDeploy analyzer path; write raw output outside Git. Run the accompanying
+`.test.mjs` and the Worker suite. Fixture hashes and original labels are retained.
+Only supported synchronous local route callbacks with complete exit evidence are
+excluded. Ordinary next, response-then-next, partial branches, error dispatch,
+external callbacks, writes and unknown scopes do not become safe or lower severity.
+Other routes and request behavior are not certified. This is not an automatic
+remediation (an unconditional response can disable features), an engine freeze or
+independent product-accuracy evaluation. Bootstrap/class/Promise/import/event
+continuity remains separate follow-up work; local server cutover/UI E2E is pending.
+
 ## Bootstrap continuity (35-B)
 
 `bootstrap35-catalog.json` separates selected-source, activation and Handler
