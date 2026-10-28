@@ -20,7 +20,7 @@ export function nextEntries({ts, modules, input, tick, note,wrapper}) {
     mod.nextContract=true;
     mod.nextResponses=new Set();
     mod.nextEnvironment=false;
-    const writes=new Set(),bindings=new Set();
+    const writes=mod.syntaxIndex?.writes??new Set(),bindings=mod.syntaxIndex?.nextBindings??new Set();
     try {
       const scan=n=>{
         tick(mod);
@@ -35,7 +35,9 @@ export function nextEntries({ts, modules, input, tick, note,wrapper}) {
             &&n.parent!==mod.ast&&!ts.isVariableDeclaration(n.parent))note(mod,'NEXT_INLINE_SERVER_CLOSURE_NOT_SUPPORTED');
         ts.forEachChild(n,scan);
       };
-      scan(mod.ast);
+      if(mod.syntaxIndex?.nextBindings){
+        if(mod.syntaxIndex.nextInlineServerClosure)note(mod,'NEXT_INLINE_SERVER_CLOSURE_NOT_SUPPORTED');
+      }else scan(mod.ast);
       mod.nextEnvironment=!bindings.has('process')&&!writes.has('process');
       for(const s of mod.ast.statements)if(ts.isImportDeclaration(s)&&s.moduleSpecifier.text==='next/server'
           &&!s.importClause?.isTypeOnly&&s.importClause?.namedBindings&&ts.isNamedImports(s.importClause.namedBindings))
