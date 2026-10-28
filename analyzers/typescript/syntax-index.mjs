@@ -1,11 +1,9 @@
 // Reuse the already bounded parse walk. These are syntax facts, not execution or trust proofs.
 export function syntaxIndex() {
-  return {declarations:new Map(),bindings:new Set(),nextBindings:new Set(),nextInlineServerClosure:false,writes:new Set(),exportWrites:new Set(),nodes:[],typeOnly:new Set(),dependencies:[],argumentUses:new Map(),argumentReferenceIncomplete:new Set(),aliases:new Map()};
+  return {declarations:new Map(),bindings:new Set(),nextInlineServerClosure:false,writes:new Set(),exportWrites:new Set(),nodes:[],typeOnly:new Set(),dependencies:[],argumentUses:new Map(),argumentReferenceIncomplete:new Set(),aliases:new Map()};
 }
 export function indexSyntax(ts,n,index) {
   // Same facts as the Next registration walk, charged once by bounded parsing.
-  if(n.name&&ts.isIdentifier(n.name)&&(ts.isParameter(n)||ts.isVariableDeclaration(n)||ts.isFunctionDeclaration(n)
-      ||ts.isClassDeclaration(n)||ts.isImportClause(n)||ts.isNamespaceImport(n)||ts.isImportEqualsDeclaration(n)||ts.isBindingElement(n)))index.nextBindings.add(n.name.text);
   if(ts.isFunctionLike(n)&&n.body&&ts.isBlock(n.body)&&!ts.isSourceFile(n.parent)&&!ts.isVariableDeclaration(n.parent)){
     for(const s of n.body.statements){
       if(!ts.isExpressionStatement(s)||!ts.isStringLiteral(s.expression))break;

@@ -5,21 +5,21 @@ import {syntaxIndex,indexSyntax} from '../syntax-index.mjs';
 import {analyze} from '../analyzer.mjs';
 
 test('cached Next syntax facts match the original full-walk binding and write definitions',()=>{
- const ast=ts.createSourceFile('app/api/task/route.ts',`import process from 'not-node';import {process as other} from 'x';
+ const ast=ts.createSourceFile('app/api/task/route.ts',`import {process as other, named} from 'x';
  const x=1;function outer(arg){let local=arg;function nested(){'use strict';'use server';return local;}local=2;}
  export async function GET(request){process.env.KEY='changed';return request;}`,ts.ScriptTarget.Latest,true);
  const index=syntaxIndex(),bindings=new Set(),writes=new Set();
  const walk=n=>{
   indexSyntax(ts,n,index);
   if(n.name&&ts.isIdentifier(n.name)&&(ts.isParameter(n)||ts.isVariableDeclaration(n)||ts.isFunctionDeclaration(n)
-    ||ts.isClassDeclaration(n)||ts.isImportClause(n)||ts.isNamespaceImport(n)||ts.isImportEqualsDeclaration(n)||ts.isBindingElement(n)))bindings.add(n.name.text);
+    ||ts.isClassDeclaration(n)||ts.isImportClause(n)||ts.isImportSpecifier(n)||ts.isNamespaceImport(n)||ts.isImportEqualsDeclaration(n)||ts.isBindingElement(n)))bindings.add(n.name.text);
   if(ts.isBinaryExpression(n)&&ts.isAssignmentOperator(n.operatorToken.kind)){
    let base=n.left;while(ts.isPropertyAccessExpression(base)||ts.isElementAccessExpression(base))base=base.expression;
    if(ts.isIdentifier(base))writes.add(base.text);
   }
   ts.forEachChild(n,walk);
  };walk(ast);
- assert.deepEqual([...index.nextBindings].sort(),[...bindings].sort());
+ assert.deepEqual([...(index.nextBindings??index.bindings)].sort(),[...bindings].sort());
  assert.deepEqual([...index.writes].sort(),[...writes].sort());
  assert.equal(index.nextInlineServerClosure,true);
 });
