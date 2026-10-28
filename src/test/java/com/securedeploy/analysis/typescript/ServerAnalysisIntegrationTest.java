@@ -45,7 +45,7 @@ class ServerAnalysisIntegrationTest {
         files.put("app/api/task/route.ts","import {toNextJsHandler} from 'better-auth/next-js';import {run} from './handler';export const {GET,POST}=toNextJsHandler(run);");
         files.put("app/api/task/handler.ts","export async function run(request){return fetch(new URL(request.url).searchParams.get('url'));}");
         var unsafe=uploadSources(token,files);var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v44");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v45");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         assertThat(snapshot.at("/validatedFindings/0/ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
         assertThat(snapshot.at("/validatedFindings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
@@ -95,7 +95,7 @@ class ServerAnalysisIntegrationTest {
                 "app/api/task/route.ts","import {wrap} from '../../../lib/wrapper';export const GET=wrap(async(request)=>fetch(new URL(request.url).searchParams.get('url')));");
         var unsafe=uploadSources(token,sources);
         var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v44");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v45");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
         assertThat(finding.path("ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
@@ -133,7 +133,7 @@ class ServerAnalysisIntegrationTest {
                 "service.ts","function query(db,id){return db.prepare('SELECT * FROM records WHERE id='+id).all();}export {query};");
         var unsafe=uploadSources(token,sources);
         var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v44");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v45");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
         assertThat(finding.path("ruleId").asText()).isEqualTo("TS_SQL_INPUT_FLOW");

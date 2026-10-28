@@ -18,7 +18,7 @@ class MongooseFlowTest {
     }
     @Test void modelOriginAndConsumedInputProduceSupplementalFindingWithExactEvidence() {
         var result=analyze("const email=req.body.email;await Model.findOne({email});","6.13.0");
-        assertThat(result.analyzerVersion()).isEqualTo("ts-server-v44");
+        assertThat(result.analyzerVersion()).isEqualTo("ts-server-v45");
         assertThat(result.validatedFindings()).hasSize(1).allSatisfy(f->{
             assertThat(f.ruleId()).isEqualTo("JS_MONGOOSE_SELECTOR_INPUT_FLOW");
             assertThat(f.priority().name()).isEqualTo("REVIEW_REQUIRED");

@@ -66,7 +66,7 @@ export function nodeServer(api) {
     if(['child_process','node:child_process'].includes(spec))return native('node-child-process',mod);
     if(['http','node:http','https','node:https'].includes(spec)){
       const key=spec.replace(/^node:/,'');
-      if(!httpModules.has(key))httpModules.set(key,native('node-http',mod));
+      if(!httpModules.has(key))httpModules.set(key,{...native('node-http',mod),httpProtocol:key});
       return httpModules.get(key);
     }
     const target=findModule(mod,spec,mode);
@@ -148,6 +148,9 @@ export function nodeServer(api) {
     if(base.native==='express'&&key==='Router')return native('router',base.nativeMod,base.ref);
     if(base.native==='sequelize'&&['Sequelize','default'].includes(key))return native('sequelize',base.nativeMod,base.ref);
     if(base.native==='node-http'&&key==='get')return native('node-http-get',base.nativeMod,base.ref);
+    if(base.native==='node-http'&&base.httpProtocol==='http'&&key==='Server')return native('node-http-server-constructor',base.nativeMod,base.ref);
+    if((base.native==='node-http-server-constructor'&&key==='prototype')||base.native==='node-http-server-prototype')
+      return native('node-http-server-prototype',base.nativeMod,base.ref);
     if(base.native==='node-child-process'&&['exec','execSync','execFile','execFileSync','spawn','spawnSync'].includes(key))return native('node-child-'+key,base.nativeMod,base.ref);
     if(base.tag==='express-router'&&key==='locals'){
       if(!base.ref.properties.has(key))base.ref.properties.set(key,object('express-locals'));
@@ -214,6 +217,13 @@ export function nodeServer(api) {
   }
   function call(node,callee,receiver,args,state,global,callable) {
     if(!state.nodeMode)return;
+    // A verified HTTP listener registration retains the app identity; it does
+    // not execute requests, listen callbacks or application initialization.
+    if(callable?.native==='node-http-server-constructor'&&!callable.unknown&&!callable.ref?.unknown
+        &&args.length===1&&args[0]?.tag==='express-router'&&args[0].app&&!args[0].unknown&&!args[0].ref?.unknown){
+      note(state.mod,'NODE_HTTP_SERVER_APP_LISTENER_LINK');
+      return {value:object('node-http-server')};
+    }
     const limiter=rate.factory(callable,node,args,state);if(limiter)return limiter;
     const middleware=web.factory(callable,node,args,state);if(middleware)return middleware;
     const origin=web.request(node,receiver,args,state);if(origin)return origin;

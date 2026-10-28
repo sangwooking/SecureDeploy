@@ -18,7 +18,7 @@ import {exportLinks} from './export-links.mjs';
 import {wrapperLinks} from './wrapper-links.mjs';
 import {externalNext} from './external-next.mjs';
 
-export const VERSION = 'ts-server-v44';
+export const VERSION = 'ts-server-v45';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
