@@ -12,7 +12,7 @@ final class TypeScriptSourceSelector {
     static final int MAX_FILES=100, MAX_FILE_CHARS=100_000, MAX_TOTAL_CHARS=1_000_000;
     private static final int HINT_FILES=1000, HINT_CHARS=1_000_000, PREFIX_CHARS=16_000;
     private static final Pattern IMPORT=Pattern.compile("(?:\\bfrom\\s*|\\bimport\\s*|\\brequire\\s*\\(\\s*)['\"]([^'\"\\r\\n]{1,240})['\"]");
-    private static final Pattern HTTP_EXPORT=Pattern.compile("\\bexport\\s+(?:async\\s+)?function\\s+(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b|\\bexport\\s+const\\s+(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b");
+    private static final Pattern HTTP_EXPORT=Pattern.compile("\\bexport\\s+(?:async\\s+)?function\\s+(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b|\\bexport\\s+const\\s+(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b|\\bexport\\s+(?:const\\s+)?\\{[^{}]{0,512}\\b(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b[^{}]{0,512}\\}");
     private static final Pattern SERVER_USE=Pattern.compile("\\b(?:fetch|eval|exec|execSync)\\s*\\(|\\.\\s*(?:query|prepare)\\s*\\(|child_process|process\\.env|Deno\\.env");
     private static final Pattern EXPRESS_RUNTIME=Pattern.compile("\\brequire\\s*\\(\\s*['\"]express['\"]\\s*\\)|\\bimport\\s+(?:(?!type\\b)[A-Za-z_$][\\w$]*(?:\\s*,[^;\\r\\n]+)?|\\*\\s+as\\s+[A-Za-z_$][\\w$]*|\\{\\s*Router\\b[^}\\r\\n]*\\})\\s+from\\s*['\"]express['\"]");
     record Choice(ProjectFile file,String reason,int priority,int characters,boolean sql) { }

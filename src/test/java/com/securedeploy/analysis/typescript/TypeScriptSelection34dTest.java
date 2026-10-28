@@ -43,4 +43,15 @@ class TypeScriptSelection34dTest {
         var files=inputs();files.add(file("src/tsconfig.json","{\"extends\":\"./uninspected\"}"));
         assertThat(TypeScriptSourceSelector.select(files).selected()).extracting(c->c.file().relativePath()).doesNotContain("src/lib/gateway/index.ts");
     }
+    @Test void destructuredAndForwardedRouteExportsAreSchedulingHintsUnderPressure(){
+        for(String content:List.of("import {adapt} from './bridge';export const { GET, POST } = adapt(handler);",
+                "export { GET, POST } from './bridge';")){
+            var files=inputs();files.removeIf(f->f.relativePath().equals("src/app/api/save/route.ts"));
+            files.add(file("src/app/api/save/route.ts",content));
+            files.add(file("src/app/api/save/bridge.ts","export const marker=1;"));
+            var plan=TypeScriptSourceSelector.select(files);
+            assertThat(plan.selected()).extracting(c->c.file().relativePath()).contains("src/app/api/save/route.ts","src/app/api/save/bridge.ts");
+            assertThat(plan.selected()).hasSize(100);
+        }
+    }
 }
