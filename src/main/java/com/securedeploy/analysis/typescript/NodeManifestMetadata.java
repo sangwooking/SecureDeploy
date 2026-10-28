@@ -40,15 +40,22 @@ final class NodeManifestMetadata {
                     var v=doc.path("dependencies").path(name);
                     if(v.isTextual()&&v.asText().length()<=80&&v.asText().matches("[~^]?[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?"))metadata.put(name,v.asText());
                 }
-                var scripts=doc.path("scripts");
+                var config=doc.path("nodemonConfig");
+                String local=p.substring(0,p.length()-"package.json".length())+"nodemon.json";
+                var localFiles=files.stream().filter(c->c.relativePath().equals(local)).toList();
+                if(!localFiles.isEmpty()) {
+                    var c=localFiles.get(0);int n=c.lines().stream().mapToInt(l->l.length()+1).sum();
+                    if(localFiles.size()!=1||n>100_000||chars+n>1_000_000){config=null;complete=false;}
+                    else {chars+=n;try{config=JSON.readTree(String.join("\n",c.lines()));}catch(Exception ignored){config=null;}}
+                }
+                var scripts=doc.path("scripts");int bootstrap=0;
                 if(scripts.isObject())for(String name:iterable(scripts.fieldNames()).stream().sorted().limit(20).toList()) {
                     if(!name.matches("(?:start|dev|serve)(?::[A-Za-z0-9_-]+)?"))continue;
                     var script=scripts.get(name);if(!script.isTextual())continue;
                     String command=script.asText();
-                    if(command.length()<=260&&command.matches("node[ \\t]+[A-Za-z0-9_./-]+")){
-                        String target=command.replaceFirst("^node[ \\t]+","");
-                        if(valid(target)&&!target.startsWith("-"))addSeed(seeds,p,target);
-                    }
+                    String target=bootstrap(command,config,metadata.get("main"));
+                    if(target!=null){addSeed(seeds,p,target);metadata.put("bootstrap"+bootstrap++,target);}
+                    else metadata.put("bootstrapUnknown","true");
                 }
             }catch(Exception ignored){complete=false;metadata.put("resolutionStatus","MALFORMED");metadata.put("mainStatus","UNKNOWN");}
             manifests.add(Map.copyOf(metadata));
@@ -56,6 +63,29 @@ final class NodeManifestMetadata {
         return new Catalog(List.copyOf(manifests),List.copyOf(seeds),chars,complete);
     }
     private static List<String> iterable(Iterator<String> names){var result=new ArrayList<String>();names.forEachRemaining(result::add);return result;}
+    // A bounded command grammar, not a shell lexer. No quoting, expansion or wrappers.
+    private static String bootstrap(String command,com.fasterxml.jackson.databind.JsonNode config,String main){
+        if(command.length()>260||!command.matches("[A-Za-z0-9_./, *\\t-]+"))return null;
+        String[] words=command.trim().split("[ \\t]+");
+        if(words.length==2&&words[0].equals("node"))return validTarget(words[1])?words[1]:null;
+        if(!words[0].equals("nodemon"))return null;
+        if(config==null||!config.isMissingNode()&&!config.isObject())return null;
+        if(config.has("exec")||config.has("execMap")||config.has("cwd")||config.has("events"))return null;
+        String target=null;
+        for(int i=1;i<words.length;i++){
+            String w=words[i];
+            if(Set.of("--ignore","--watch","--ext","-e","-w").contains(w)){
+                if(++i>=words.length||words[i].startsWith("-"))return null;
+            }else if(w.equals("--config")){
+                if(++i>=words.length||!words[i].equals("nodemon.json")||config.isMissingNode())return null;
+            }else if(!w.startsWith("-")&&target==null&&validTarget(w))target=w;
+            else return null;
+        }
+        if(target==null&&config.path("script").isTextual())target=config.path("script").asText();
+        if(target==null)target=main;
+        return target!=null&&validTarget(target)?target:null;
+    }
+    private static boolean validTarget(String p){return valid(p)&&!p.startsWith("-")&&!p.contains("*")&&!p.equals("..");}
     private static boolean valid(String p){return !p.isEmpty()&&p.length()<=240&&p.matches("[A-Za-z0-9_@./-]+")&&!p.startsWith("/");}
     private static void addSeed(Set<String> seeds,String manifest,String relative){
         var dir=Path.of(manifest).getParent();String p=(dir==null?Path.of(relative):dir.resolve(relative)).normalize().toString().replace('\\','/');

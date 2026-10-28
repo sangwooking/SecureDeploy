@@ -36,7 +36,7 @@ class TypeScriptSourceSelectorTest {
     }
     @Test void untrustedManifestSyntaxCannotInventAnEntryHint(){
         for(String text:List.of("{","{\"main\":\"a.js\",\"main\":\"b.js\"}","{\"main\":\"../../escape.js\"}",
-                "{\"main\":{},\"scripts\":{\"start\":\"node ${TARGET}\",\"dev\":\"nodemon app.js\",\"test\":\"node app.js && node other.js\"}}")) {
+                "{\"main\":{},\"scripts\":{\"start\":\"node ${TARGET}\",\"dev\":\"nodemon --exec wrapper app.js\",\"test\":\"node app.js && node other.js\"}}")) {
             var plan=TypeScriptSourceSelector.select(List.of(js("package.json",text),js("app.js","export const a=1;")));
             assertThat(plan.selected()).noneMatch(c->c.reason().equals("TS_NODE_MANIFEST_ENTRY_HINT"));
         }
@@ -49,7 +49,20 @@ class TypeScriptSourceSelectorTest {
         var metadata=NodeManifestMetadata.read(List.of(js("package.json","{\"main\":{},\"type\":\"module\"}")));
         assertThat(metadata.worker().get(0)).containsEntry("mainStatus","UNKNOWN").containsEntry("moduleType","module");
         var scripts=NodeManifestMetadata.read(List.of(js("package.json","{\"scripts\":{\"package\":\"node pack.js\",\"test\":\"node check.js\",\"start:prod\":\"node runtime.cjs\",\"dev\":\"nodemon dev.js\"}}")));
-        assertThat(scripts.seeds()).containsExactly("runtime.cjs");
+        assertThat(scripts.seeds()).containsExactly("dev.js","runtime.cjs");
+    }
+    @Test void nodemonHintsAreStaticBoundedAndConfigPrecedenceIsRespected(){
+        for(String command:List.of("nodemon launch.js","nodemon --ignore app launch.js","nodemon --watch src --ext js,cjs launch.js")){
+            var catalog=NodeManifestMetadata.read(List.of(js("package.json","{\"scripts\":{\"start\":\""+command+"\"}}")));
+            assertThat(catalog.seeds()).containsExactly("launch.js");
+            assertThat(catalog.worker().get(0)).containsEntry("bootstrap0","launch.js");
+        }
+        var manifest=js("package.json","{\"main\":\"library.js\",\"scripts\":{\"dev\":\"nodemon\"},\"nodemonConfig\":{\"script\":\"ignored.js\"}}");
+        assertThat(NodeManifestMetadata.read(List.of(manifest,js("nodemon.json","{\"script\":\"local.js\"}"))).seeds()).containsExactly("library.js","local.js");
+        for(String config:List.of("{","{\"exec\":\"wrapper\"}","{\"script\":\"../../escape.js\"}"))
+            assertThat(NodeManifestMetadata.read(List.of(manifest,js("nodemon.json",config))).seeds()).containsExactly("library.js");
+        for(String command:List.of("nodemon --exec node launch.js","nodemon --config missing.json launch.js","node ${FILE}","nodemon launch.js && node other.js","nodemon ../outside.js"))
+            assertThat(NodeManifestMetadata.read(List.of(js("package.json","{\"scripts\":{\"start\":\""+command+"\"}}"))).seeds()).isEmpty();
     }
     @Test void typeReferencesAreNotRuntimeSeedsAndEducationalMarkersDoNotExcludeLiveCode(){
         var plan=TypeScriptSourceSelector.select(List.of(

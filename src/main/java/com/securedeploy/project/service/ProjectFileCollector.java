@@ -91,6 +91,7 @@ public class ProjectFileCollector {
 
     private boolean isFrontendConfig(String lowerName) {
         return "tsconfig.json".equals(lowerName)
+                || "nodemon.json".equals(lowerName)
                 || "vite.config.js".equals(lowerName)
                 || "vite.config.ts".equals(lowerName)
                 || "next.config.js".equals(lowerName)
