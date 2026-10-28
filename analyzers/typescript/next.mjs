@@ -1,7 +1,7 @@
 import path from 'node:path';
 
 // Conventions are declarations, not proof of a deployed endpoint or invocation.
-export function nextEntries({ts, modules, input, tick, note,wrapper}) {
+export function nextEntries({ts, modules, input, tick, note,wrapper,externalHandlers,loc,append,result}) {
   const directive=(statements,name)=>{
     for(const s of statements??[]) {
       if(!ts.isExpressionStatement(s)||!ts.isStringLiteral(s.expression))break;
@@ -51,6 +51,22 @@ export function nextEntries({ts, modules, input, tick, note,wrapper}) {
       const route=new RegExp('^'+(rootApp?'app':'(?:src/)?app')+'/(?:[^/]+/)*route\\.[jt]s$').test(relative);
       if(/^(?:src\/)?app\//.test(relative))note(mod,'NEXT_ROUTING_CONFIG_AND_MIDDLEWARE_NOT_VERIFIED');
       const registrations=new Map();
+      let opaque=0;
+      if(route&&externalHandlers)for(const method of externalHandlers.methods){
+        if(mod.exports.has(method))continue;
+        const binding=externalHandlers.exported(mod,method);
+        if(!binding?.method)continue;
+        const location=loc(binding.registrationNode,mod,'NEXT_EXTERNAL_HANDLER_REGISTRATION');
+        append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:binding.fn?'CALLBACK_BOUND':'EXTERNAL_IMPLEMENTATION_UNKNOWN',
+          operation:'BETTER_AUTH_NEXT_'+method,location,trace:binding.trace,
+          limitations:['DECLARED_VERSION_NOT_INSTALLED_LIBRARY','HANDLER_REGISTRATION_NOT_AUTHENTICATION_OR_AUTHORIZATION_PROOF',
+            ...(binding.fn?['STATIC_REQUEST_FORWARDING_NOT_RUNTIME_INVOCATION_PROOF']:['SDK_INTERNAL_CALLBACKS_AND_REQUEST_FLOW_NOT_INSPECTED'])]},mod);
+        if(binding.fn){
+          mod.exports.set(method,{...binding.fn,wrapper:true,wrapperLocations:binding.trace,externalAdapter:true});
+          // Keep the request registration at this route, not at the helper body.
+          registrations.set(method,binding.registrationNode);
+        }else{opaque++;note(mod,'NEXT_EXTERNAL_REGISTERED_HANDLER_BODY_UNKNOWN');}
+      }
       if(route&&wrapper)for(const s of mod.ast.statements){
         tick(mod);
         if(!ts.isVariableStatement(s)||!(s.declarationList.flags&ts.NodeFlags.Const)
@@ -68,7 +84,7 @@ export function nextEntries({ts, modules, input, tick, note,wrapper}) {
         if(writes.has(name)){note(mod,'NEXT_MUTABLE_EXPORT_NOT_SUPPORTED');continue;}
         if(route&&['GET','POST','PATCH','PUT','DELETE','HEAD','OPTIONS'].includes(name)) {
           const paramNames=[...relative.matchAll(/\[(?:\[)?(?:\.\.\.)?([A-Za-z_$][\w$]*)\](?:\])?/g)].map(m=>m[1]);
-          mod.entries.push({fn,kind:'NEXT_ROUTE_HANDLER',paramNames,registrationNode:registrations.get(name)});
+          mod.entries.push({fn,kind:'NEXT_ROUTE_HANDLER',paramNames,registrationNode:registrations.get(name),singleRequestArgument:!!fn.externalAdapter});
           note(mod,'NEXT_ROUTE_AUTHORIZATION_NOT_VERIFIED');
         } else if(server||fn.node.body&&ts.isBlock(fn.node.body)&&directive(fn.node.body.statements,'use server')) {
           if(+version[1]<14||!fn.node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword)){note(mod,'NEXT_SERVER_FUNCTION_CONTRACT_NOT_SUPPORTED');continue;}
@@ -79,7 +95,7 @@ export function nextEntries({ts, modules, input, tick, note,wrapper}) {
         }
       }
       if(mod.ast.statements.some(s=>ts.isExportDeclaration(s)))note(mod,'NEXT_REEXPORT_REGISTRATION_NOT_SUPPORTED');
-      mod.record.entrypoints=mod.entries.length;
+      mod.record.entrypoints=mod.entries.length+opaque;
     } catch {note(mod,'NEXT_REGISTRATION_BUDGET_EXCEEDED');}
   }
 }

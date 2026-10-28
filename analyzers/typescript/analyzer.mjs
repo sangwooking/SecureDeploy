@@ -16,8 +16,9 @@ import {objectData} from './object-data.mjs';
 import {fileAccess} from './file-access.mjs';
 import {exportLinks} from './export-links.mjs';
 import {wrapperLinks} from './wrapper-links.mjs';
+import {externalNext} from './external-next.mjs';
 
-export const VERSION = 'ts-server-v43';
+export const VERSION = 'ts-server-v44';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -1221,7 +1222,8 @@ export function analyze(input, overrides = {}) {
   phase='ENTRY_DISCOVERY';
   denoEntries({ts,modules,resolve,claimFunction,tick,note,input});
   const wrappers=wrapperLinks({ts,unwrap,resolve,stable:exportSupport.stable,claimFunction,tick,note,limits,constant,value,loc});
-  nextEntries({ts,modules,input,tick,note,wrapper:wrappers.build});
+  const externalHandlers=externalNext({ts,input,sourceModule,sourceImports,stable:exportSupport.stable,wrapper:wrappers.build,tick,note,limits,loc});
+  nextEntries({ts,modules,input,tick,note,wrapper:wrappers.build,externalHandlers,loc,append,result});
   let requestEvidenceBytes=Buffer.byteLength(JSON.stringify(precomputedSupabase));
   for(const access of precomputedSupabase.accesses){
     const evidence=access.authorizationEvidence,at=evidence?.enclosingFunction,mod=at&&modules.get(at.filePath);
@@ -1260,7 +1262,7 @@ export function analyze(input, overrides = {}) {
       const entryFn = entry.fn.nodeMode||entry.fn.closure ? isolate(entry.fn) : entry.fn;
       if(entry.fn.nodeMode)note(mod,'MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED');
       if(entry.registration){context.checks.push(entry.registration);note(mod,'EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED');}
-      const returned = invoke(entryFn, entry.kind === 'NEXT_ROUTE_HANDLER' ? [value('request'),value('nextContext',[],{paramNames:entry.paramNames})]
+      const returned = invoke(entryFn, entry.kind === 'NEXT_ROUTE_HANDLER' ? entry.singleRequestArgument?[value('request')]:[value('request'),value('nextContext',[],{paramNames:entry.paramNames})]
         : entry.kind==='NEXT_SERVER_FUNCTION'?entry.fn.node.parameters.map(p=>value('input',[loc(p,mod,'SERVER_FUNCTION_ARGUMENT',entry.fn)]))
         : entry.kind === 'WORKER_FETCH' || entry.kind === 'DENO_HTTP_HANDLER' ? [value('request'), value('env')] : entry.kind==='EXPRESS_HANDLER'
         ?[value('express-request'),value('express-response'),unknown()]:[value('context')], 0, context, new Set(),!!entry.uncertain);

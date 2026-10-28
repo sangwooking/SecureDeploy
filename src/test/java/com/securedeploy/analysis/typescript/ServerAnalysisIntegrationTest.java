@@ -38,6 +38,29 @@ class ServerAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void externalAdapterPersistsProjectFlowButDoesNotInventSdkCallbacks() throws Exception {
+        String token=signup();
+        var files=new HashMap<String,String>();
+        files.put("package.json","{\"dependencies\":{\"next\":\"15.2.4\",\"better-auth\":\"1.7.12\"}}");
+        files.put("app/api/task/route.ts","import {toNextJsHandler} from 'better-auth/next-js';import {run} from './handler';export const {GET,POST}=toNextJsHandler(run);");
+        files.put("app/api/task/handler.ts","export async function run(request){return fetch(new URL(request.url).searchParams.get('url'));}");
+        var unsafe=uploadSources(token,files);var snapshot=unsafe.path("serverAnalysis");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v44");
+        assertThat(snapshot.path("validatedFindings")).hasSize(1);
+        assertThat(snapshot.at("/validatedFindings/0/ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
+        assertThat(snapshot.at("/validatedFindings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
+        assertThat(snapshot.at("/validatedFindings/0/comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        assertThat(snapshot.at("/validatedFindings/0/evidence/0/source/filePath").asText()).isEqualTo("app/api/task/handler.ts");
+        assertThat(snapshot.at("/nodeUses").findValuesAsText("operation")).contains("BETTER_AUTH_NEXT_GET","BETTER_AUTH_NEXT_POST");
+        assertThat(detail(token,unsafe.path("reviewId").asLong()).path("serverAnalysis")).isEqualTo(snapshot);
+        var safeFiles=new HashMap<>(files);safeFiles.put("app/api/task/handler.ts","export async function run(request){return fetch('https://example.invalid/fixed');}");
+        var safe=uploadSources(token,safeFiles);assertThat(safe.at("/serverAnalysis/validatedFindings")).isEmpty();
+        assertThat(safe.path("securityScore")).isEqualTo(unsafe.path("securityScore"));
+        files.put("app/api/task/route.ts","import {toNextJsHandler} from 'better-auth/next-js';import {betterAuth} from 'better-auth';const auth=betterAuth({callback:async request=>fetch(request.url)});export const {GET,POST}=toNextJsHandler(auth);");
+        var unknown=uploadSources(token,files);assertThat(unknown.at("/serverAnalysis/validatedFindings")).isEmpty();
+        assertThat(unknown.at("/serverAnalysis/nodeUses").findValuesAsText("kind")).contains("EXTERNAL_IMPLEMENTATION_UNKNOWN");
+    }
+
     @Test void boundedSelectionPreservesAliasLinkedSourceSinkUnderUiPressure() throws Exception {
         String token=signup();var files=new HashMap<String,String>();
         for(int i=0;i<180;i++)files.put("aaa/View%03d.tsx".formatted(i),"export const text=1;");
@@ -67,7 +90,7 @@ class ServerAnalysisIntegrationTest {
                 "app/api/task/route.ts","import {wrap} from '../../../lib/wrapper';export const GET=wrap(async(request)=>fetch(new URL(request.url).searchParams.get('url')));");
         var unsafe=uploadSources(token,sources);
         var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v43");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v44");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
         assertThat(finding.path("ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
@@ -105,7 +128,7 @@ class ServerAnalysisIntegrationTest {
                 "service.ts","function query(db,id){return db.prepare('SELECT * FROM records WHERE id='+id).all();}export {query};");
         var unsafe=uploadSources(token,sources);
         var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v43");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v44");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
         assertThat(finding.path("ruleId").asText()).isEqualTo("TS_SQL_INPUT_FLOW");

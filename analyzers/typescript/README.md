@@ -1,5 +1,30 @@
 # Bounded server analysis runtime
 
+## External Next adapter (v44)
+
+The audited `better-auth/next-js` named `toNextJsHandler` adapter forwards exactly
+one Request to a supplied function or its `handler`. Supported declaration floors
+are 1.6.23 and 1.7.12 (exact, caret or tilde); resolved/installed package contents
+remain unverified. This is not an authentication, identity or ownership proof.
+Type-only/shadowed imports, unknown aliases/configs and other versions do not link.
+
+Static exported GET/POST/PATCH/PUT/DELETE bindings may be destructured directly,
+through immutable local result aliases, or forwarded through bounded named source
+exports. Source-resolved project functions and plain single-handler object literals
+reuse existing request, function, Sink and response analysis. Contextual `this`,
+getters, mutation, escaped result objects, dynamic factories/imports and SDK-created
+handlers are not executed or guessed. Opaque handlers produce registration
+observations and separate uninspected-body limitations, not traced request values
+or authentication-bypass Findings. SDK plugins/callbacks are not HTTP entries.
+The adapter does not forward Next's second route context argument.
+
+No SDK source is loaded at analysis time. Audited upstream sources:
+[1.6.23](https://github.com/better-auth/better-auth/blob/v1.6.23/packages/better-auth/src/integrations/next-js.ts),
+[1.7.12](https://github.com/better-auth/better-auth/blob/v1.7.12/packages/better-auth/src/integrations/next-js.ts).
+Auth.js v4 Pages handlers, v5 handlers/auth wrappers, Better Auth session APIs,
+cookie plugins and arbitrary callback semantics are not added by this contract.
+Existing resource limits, Rule IDs, Risk and NOT_COMPARED policy remain unchanged.
+
 ## Typed source mapping and scheduling (v43)
 
 Directory inventory entries are not source-file candidates. An explicit static

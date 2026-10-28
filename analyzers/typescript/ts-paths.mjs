@@ -95,5 +95,6 @@ export function tsPaths({ts,input,modules,charge,note}) {
     if(!safe(base)){note(mod,'TS_PATH_OUTSIDE_INPUT');return {target:null};}
     return {target:select(mod,base,true)};
   }
-  return {target,relativeTarget,shadows,isDirectory:p=>directories.has(p),uncertain:mod=>config(mod)?.status==='UNKNOWN'};
+  return {target,relativeTarget,shadows,isDirectory:p=>directories.has(p),uncertain:mod=>config(mod)?.status==='UNKNOWN',
+    externalContractUnknown:mod=>['UNKNOWN','UNINSPECTED'].includes(config(mod)?.status)};
 }
