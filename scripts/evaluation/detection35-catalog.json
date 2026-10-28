@@ -1,0 +1,781 @@
+{
+  "schemaVersion": 1,
+  "baseline": "9f1ba7625af1cea65eeb9d2ff1ad9a884dd408cc",
+  "truthReview": "EXISTING_OBSERVED_REGRESSION_REVIEW_NOT_BLIND; metadata assembled after baseline replay; no truth labels derived from warnings",
+  "engines": {
+    "v40": "032fc53b3ea2000d294d29ee282d23435c2c6023",
+    "v44": "9f1ba7625af1cea65eeb9d2ff1ad9a884dd408cc"
+  },
+  "projects": {
+    "flint-before": {
+      "projectId": "JasonEtco--flintcms",
+      "sourceSha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+      "license": "MIT",
+      "planSha256": "dc95cfc9fd320c7080b4e13bf1123ceeb52e4c29f826dd50194e9852ffbe39cc",
+      "upstreamFixed": false,
+      "controlledChanges": []
+    },
+    "flint-after": {
+      "projectId": "JasonEtco--flintcms",
+      "sourceSha": "4ae34238ce39fde00dfa15082397541758c07af1",
+      "license": "MIT",
+      "planSha256": "72723f8f8219dadea2c62c9ca643c20d28dde48b22c610c3b68571738a2d9992",
+      "upstreamFixed": true,
+      "controlledChanges": []
+    },
+    "nodegoat": {
+      "projectId": "OWASP--NodeGoat",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "license": "Apache-2.0",
+      "planSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+      "upstreamFixed": false,
+      "controlledChanges": []
+    },
+    "juice": {
+      "projectId": "juice-shop--juice-shop",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "license": "MIT",
+      "planSha256": "4c73a4ed4f05ac4f89d71f6eff2bff3545f275b5a96394c9621a9eb59ca0f362",
+      "upstreamFixed": false,
+      "controlledChanges": []
+    },
+    "nodegoat-fixed": {
+      "projectId": "OWASP--NodeGoat",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "license": "Apache-2.0",
+      "planSha256": "18b75b260c97ea4f8affa496e9dd246b169d7e8df0f4cd1a7fac55b4f051582d",
+      "upstreamFixed": false,
+      "controlledChanges": [
+        {
+          "filePath": "app/data/allocations-dao.js",
+          "originalSha256": "c6aebc971ce7f9c8b2a8f0864a500497de25a3ea0318ef94ecd57cadf6e789ea",
+          "controlledSha256": "3919860d3ff697284ac2cccce6e8b1ebb611fbcd4a8061d29c2849846133c50e"
+        },
+        {
+          "filePath": "app/routes/contributions.js",
+          "originalSha256": "196bdeaa22da4cfe8a851b1b932710b2fcedd21f14ed75d70b739ba759a01003",
+          "controlledSha256": "cacbcff90cdec7436e2addbdfd541906469f7edf7fbb05d060919f2b3338ff59"
+        }
+      ]
+    },
+    "juice-sql-fixed": {
+      "projectId": "juice-shop--juice-shop",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "license": "MIT",
+      "planSha256": "a600805c8e25b98ad5b8be881368b2879bafb5859492138faeb6d631bc4de40e",
+      "upstreamFixed": false,
+      "controlledChanges": [
+        {
+          "filePath": "routes/search.ts",
+          "originalSha256": "6e3272ef4065d080295d995a04964e8c5e6b1e06c4b4c8ebed3234286686ee5f",
+          "controlledSha256": "ab5713c1d8ccb680a2a14f653442f9c6bb4ef29f72250384e4e0665d546665cd"
+        }
+      ]
+    }
+  },
+  "inputs": {
+    "v40-flint-before": {
+      "projectId": "JasonEtco--flintcms",
+      "sourceSha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+      "license": "MIT",
+      "planSha256": "dc95cfc9fd320c7080b4e13bf1123ceeb52e4c29f826dd50194e9852ffbe39cc",
+      "upstreamFixed": false,
+      "controlledChanges": [],
+      "worker": "ts-server-v40"
+    },
+    "v40-flint-after": {
+      "projectId": "JasonEtco--flintcms",
+      "sourceSha": "4ae34238ce39fde00dfa15082397541758c07af1",
+      "license": "MIT",
+      "planSha256": "72723f8f8219dadea2c62c9ca643c20d28dde48b22c610c3b68571738a2d9992",
+      "upstreamFixed": true,
+      "controlledChanges": [],
+      "worker": "ts-server-v40"
+    },
+    "v40-nodegoat": {
+      "projectId": "OWASP--NodeGoat",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "license": "Apache-2.0",
+      "planSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+      "upstreamFixed": false,
+      "controlledChanges": [],
+      "worker": "ts-server-v40"
+    },
+    "v40-juice": {
+      "projectId": "juice-shop--juice-shop",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "license": "MIT",
+      "planSha256": "4c73a4ed4f05ac4f89d71f6eff2bff3545f275b5a96394c9621a9eb59ca0f362",
+      "upstreamFixed": false,
+      "controlledChanges": [],
+      "worker": "ts-server-v40"
+    },
+    "v40-nodegoat-fixed": {
+      "projectId": "OWASP--NodeGoat",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "license": "Apache-2.0",
+      "planSha256": "18b75b260c97ea4f8affa496e9dd246b169d7e8df0f4cd1a7fac55b4f051582d",
+      "upstreamFixed": false,
+      "controlledChanges": [
+        {
+          "filePath": "app/data/allocations-dao.js",
+          "originalSha256": "c6aebc971ce7f9c8b2a8f0864a500497de25a3ea0318ef94ecd57cadf6e789ea",
+          "controlledSha256": "3919860d3ff697284ac2cccce6e8b1ebb611fbcd4a8061d29c2849846133c50e"
+        },
+        {
+          "filePath": "app/routes/contributions.js",
+          "originalSha256": "196bdeaa22da4cfe8a851b1b932710b2fcedd21f14ed75d70b739ba759a01003",
+          "controlledSha256": "cacbcff90cdec7436e2addbdfd541906469f7edf7fbb05d060919f2b3338ff59"
+        }
+      ],
+      "worker": "ts-server-v40"
+    },
+    "v40-juice-sql-fixed": {
+      "projectId": "juice-shop--juice-shop",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "license": "MIT",
+      "planSha256": "a600805c8e25b98ad5b8be881368b2879bafb5859492138faeb6d631bc4de40e",
+      "upstreamFixed": false,
+      "controlledChanges": [
+        {
+          "filePath": "routes/search.ts",
+          "originalSha256": "6e3272ef4065d080295d995a04964e8c5e6b1e06c4b4c8ebed3234286686ee5f",
+          "controlledSha256": "ab5713c1d8ccb680a2a14f653442f9c6bb4ef29f72250384e4e0665d546665cd"
+        }
+      ],
+      "worker": "ts-server-v40"
+    },
+    "v44-flint-before": {
+      "projectId": "JasonEtco--flintcms",
+      "sourceSha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+      "license": "MIT",
+      "planSha256": "dc95cfc9fd320c7080b4e13bf1123ceeb52e4c29f826dd50194e9852ffbe39cc",
+      "upstreamFixed": false,
+      "controlledChanges": [],
+      "worker": "ts-server-v44"
+    },
+    "v44-flint-after": {
+      "projectId": "JasonEtco--flintcms",
+      "sourceSha": "4ae34238ce39fde00dfa15082397541758c07af1",
+      "license": "MIT",
+      "planSha256": "72723f8f8219dadea2c62c9ca643c20d28dde48b22c610c3b68571738a2d9992",
+      "upstreamFixed": true,
+      "controlledChanges": [],
+      "worker": "ts-server-v44"
+    },
+    "v44-nodegoat": {
+      "projectId": "OWASP--NodeGoat",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "license": "Apache-2.0",
+      "planSha256": "9d26ee6b280cceec374629bb41d7c3fcd74105357378d49f88bbc48e9a1f534e",
+      "upstreamFixed": false,
+      "controlledChanges": [],
+      "worker": "ts-server-v44"
+    },
+    "v44-juice": {
+      "projectId": "juice-shop--juice-shop",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "license": "MIT",
+      "planSha256": "4c73a4ed4f05ac4f89d71f6eff2bff3545f275b5a96394c9621a9eb59ca0f362",
+      "upstreamFixed": false,
+      "controlledChanges": [],
+      "worker": "ts-server-v44"
+    },
+    "v44-nodegoat-fixed": {
+      "projectId": "OWASP--NodeGoat",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "license": "Apache-2.0",
+      "planSha256": "18b75b260c97ea4f8affa496e9dd246b169d7e8df0f4cd1a7fac55b4f051582d",
+      "upstreamFixed": false,
+      "controlledChanges": [
+        {
+          "filePath": "app/data/allocations-dao.js",
+          "originalSha256": "c6aebc971ce7f9c8b2a8f0864a500497de25a3ea0318ef94ecd57cadf6e789ea",
+          "controlledSha256": "3919860d3ff697284ac2cccce6e8b1ebb611fbcd4a8061d29c2849846133c50e"
+        },
+        {
+          "filePath": "app/routes/contributions.js",
+          "originalSha256": "196bdeaa22da4cfe8a851b1b932710b2fcedd21f14ed75d70b739ba759a01003",
+          "controlledSha256": "cacbcff90cdec7436e2addbdfd541906469f7edf7fbb05d060919f2b3338ff59"
+        }
+      ],
+      "worker": "ts-server-v44"
+    },
+    "v44-juice-sql-fixed": {
+      "projectId": "juice-shop--juice-shop",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "license": "MIT",
+      "planSha256": "a600805c8e25b98ad5b8be881368b2879bafb5859492138faeb6d631bc4de40e",
+      "upstreamFixed": false,
+      "controlledChanges": [
+        {
+          "filePath": "routes/search.ts",
+          "originalSha256": "6e3272ef4065d080295d995a04964e8c5e6b1e06c4b4c8ebed3234286686ee5f",
+          "controlledSha256": "ab5713c1d8ccb680a2a14f653442f9c6bb4ef29f72250384e4e0665d546665cd"
+        }
+      ],
+      "worker": "ts-server-v44"
+    }
+  },
+  "cases": [
+    {
+      "caseId": "flint-forgotpassword",
+      "group": "flint-cve-2018-3783",
+      "before": "flint-before",
+      "after": "flint-after",
+      "ruleId": "JS_MONGOOSE_SELECTOR_INPUT_FLOW",
+      "source": {
+        "filePath": "server/apps/routes/auth.js",
+        "lines": [
+          79
+        ]
+      },
+      "sink": {
+        "filePath": "server/apps/routes/auth.js",
+        "lines": [
+          80
+        ]
+      },
+      "cwe": "CWE-943_ANALYST",
+      "upstreamCwe": "CWE-89",
+      "grade": "A_CVE_REAL_UPSTREAM_PAIR",
+      "references": [
+        "https://github.com/advisories/GHSA-jhq3-57xh-6643",
+        "https://github.com/JasonEtco/flintcms/commit/4ae34238ce39fde00dfa15082397541758c07af1"
+      ],
+      "route": [
+        {
+          "filePath": "index.js",
+          "lines": [
+            94,
+            123
+          ]
+        },
+        {
+          "filePath": "server/index.js",
+          "lines": [
+            53
+          ]
+        },
+        {
+          "filePath": "server/apps/admin.js",
+          "lines": [
+            12
+          ]
+        },
+        {
+          "filePath": "server/apps/routes/auth.js",
+          "lines": [
+            78
+          ]
+        }
+      ],
+      "staticMeaning": "Object-valued request email reaches Mongo selector; upstream patch converts it to string. Missing/wrong-type input behavior and operating auth remain unverified.",
+      "firstObservedGap": "HTTP_REQUEST_REGISTRATION_NOT_CONNECTED",
+      "additionalObservedGaps": [
+        "MONGOOSE_MODEL_REGISTRATION_UNKNOWN"
+      ],
+      "readiness": "GUIDANCE_ONLY",
+      "blocking": [
+        "No end-to-end engine repair comparison",
+        "Missing input/toString error semantics",
+        "No Mongoose automatic patch validator"
+      ],
+      "hashes": {
+        "before": {
+          "index.js": "f6e13f6fb3b6bbbfa5c230eb87d5307d1a77c9b949322035897183a6e755b269",
+          "server/apps/admin.js": "da4e64a61255749e1b62be695947f246a2683f19b50513f5d61533042319151b",
+          "server/apps/routes/auth.js": "6fbb97fe04d3fdd8ca646e243cf494a6c9753931967bd4e43577c1a196ea98f2",
+          "server/index.js": "85fdfccc57410fdf8a8ea4a672c7f03634b2047d29553a19c262929e7b2015d0"
+        },
+        "after": {
+          "index.js": "f6e13f6fb3b6bbbfa5c230eb87d5307d1a77c9b949322035897183a6e755b269",
+          "server/apps/admin.js": "da4e64a61255749e1b62be695947f246a2683f19b50513f5d61533042319151b",
+          "server/apps/routes/auth.js": "a8cc7f4b71947c854f5f748d13456122b906cc5c538e2dcdc71c6db9476c905f",
+          "server/index.js": "85fdfccc57410fdf8a8ea4a672c7f03634b2047d29553a19c262929e7b2015d0"
+        }
+      }
+    },
+    {
+      "caseId": "nodegoat-where",
+      "group": "nodegoat-nosql",
+      "before": "nodegoat",
+      "after": "nodegoat-fixed",
+      "ruleId": "JS_MONGO_WHERE_INPUT_FLOW",
+      "source": {
+        "filePath": "app/routes/allocations.js",
+        "lines": [
+          19,
+          20,
+          21,
+          22,
+          23
+        ]
+      },
+      "sink": {
+        "filePath": "app/data/allocations-dao.js",
+        "lines": [
+          86
+        ]
+      },
+      "cwe": "CWE-943",
+      "grade": "A_DOCUMENTED_TRAINING_PATH_WITH_B_CONTROLLED_FIX",
+      "references": [
+        "https://github.com/OWASP/NodeGoat/blob/c5cb68a7084e4ae7dcc60e6a98768720a81841e8/app/views/tutorial/a1.html"
+      ],
+      "route": [
+        {
+          "filePath": "server.js",
+          "lines": [
+            132
+          ]
+        },
+        {
+          "filePath": "app/routes/index.js",
+          "lines": [
+            63
+          ]
+        },
+        {
+          "filePath": "app/routes/allocations.js",
+          "lines": [
+            23
+          ]
+        },
+        {
+          "filePath": "app/data/allocations-dao.js",
+          "lines": [
+            78,
+            86
+          ]
+        }
+      ],
+      "afterTarget": {
+        "sink": {
+          "filePath": "app/data/allocations-dao.js",
+          "lines": [
+            88
+          ]
+        },
+        "normalProof": {
+          "field": "nodeUses",
+          "kind": "STATIC_OR_DATA_ONLY",
+          "filePath": "app/data/allocations-dao.js",
+          "lines": [
+            88
+          ]
+        }
+      },
+      "staticMeaning": "Request threshold is embedded as executable $where code; controlled fix materializes documented integer/range conversion before the same cursor consumption.",
+      "readiness": "GUIDANCE_ONLY",
+      "blocking": [
+        "Numeric domain and rejection behavior require owner confirmation",
+        "Database/runtime not executed",
+        "No automatic patch validator"
+      ],
+      "hashes": {
+        "before": {
+          "app/data/allocations-dao.js": "c6aebc971ce7f9c8b2a8f0864a500497de25a3ea0318ef94ecd57cadf6e789ea",
+          "app/routes/allocations.js": "b5b7da1a6b595799cf6cca402756dd9a3f6e2a8b5d712c1989d23b7f01f349a6",
+          "app/routes/index.js": "3ab970b2888bc1501515db24a83cc7851ac9c09d00948c652300401515185eb5",
+          "server.js": "48ec5e8f9668b230caf6af27f4a4ffbdcd8b702b376a6bbcc951217917c6ea2e"
+        },
+        "after": {
+          "app/data/allocations-dao.js": "3919860d3ff697284ac2cccce6e8b1ebb611fbcd4a8061d29c2849846133c50e",
+          "app/routes/allocations.js": "b5b7da1a6b595799cf6cca402756dd9a3f6e2a8b5d712c1989d23b7f01f349a6",
+          "app/routes/index.js": "3ab970b2888bc1501515db24a83cc7851ac9c09d00948c652300401515185eb5",
+          "server.js": "48ec5e8f9668b230caf6af27f4a4ffbdcd8b702b376a6bbcc951217917c6ea2e"
+        }
+      }
+    },
+    {
+      "caseId": "juice-search",
+      "group": "juice-search-sql",
+      "before": "juice",
+      "after": "juice-sql-fixed",
+      "ruleId": "JS_SEQUELIZE_SQL_INPUT_FLOW",
+      "source": {
+        "filePath": "routes/search.ts",
+        "lines": [
+          21,
+          22
+        ]
+      },
+      "sink": {
+        "filePath": "routes/search.ts",
+        "lines": [
+          23
+        ]
+      },
+      "cwe": "CWE-89",
+      "grade": "A_DOCUMENTED_TRAINING_PATH_WITH_B_CONTROLLED_FIX",
+      "references": [
+        "https://github.com/juice-shop/juice-shop/blob/717f5efa886b0417eeecb52378b03cf10567b7e2/routes/search.ts",
+        "https://help.owasp-juice.shop/part2/injection.html"
+      ],
+      "route": [
+        {
+          "filePath": "server.ts",
+          "lines": [
+            630
+          ]
+        },
+        {
+          "filePath": "routes/search.ts",
+          "lines": [
+            19,
+            20,
+            21,
+            23
+          ]
+        }
+      ],
+      "staticMeaning": "Request search criteria is interpolated into SQL; controlled fix moves the value to Sequelize bind parameters while preserving LIKE wildcards.",
+      "firstObservedGap": "HTTP_REQUEST_REGISTRATION_NOT_CONNECTED",
+      "additionalObservedGaps": [
+        "NAMESPACE_IMPORT_UNSUPPORTED",
+        "NODE_INITIALIZATION_STRUCTURE_UNKNOWN"
+      ],
+      "readiness": "GUIDANCE_ONLY",
+      "blocking": [
+        "Target query not reached by engine",
+        "Real Sequelize execution and behavior not verified",
+        "No SQL automatic patch validator"
+      ],
+      "hashes": {
+        "before": {
+          "routes/search.ts": "6e3272ef4065d080295d995a04964e8c5e6b1e06c4b4c8ebed3234286686ee5f",
+          "server.ts": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+        },
+        "after": {
+          "routes/search.ts": "ab5713c1d8ccb680a2a14f653442f9c6bb4ef29f72250384e4e0665d546665cd",
+          "server.ts": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+        }
+      }
+    },
+    {
+      "caseId": "juice-profile-ssrf",
+      "group": "juice-profile-ssrf",
+      "before": "juice",
+      "ruleId": "TS_SSRF_INPUT_FLOW",
+      "source": {
+        "filePath": "routes/profileImageUrlUpload.ts",
+        "lines": [
+          18,
+          19
+        ]
+      },
+      "sink": {
+        "filePath": "routes/profileImageUrlUpload.ts",
+        "lines": [
+          24
+        ]
+      },
+      "cwe": "CWE-918",
+      "grade": "A_DOCUMENTED_TRAINING_PATH_NO_FIXED_PAIR",
+      "references": [
+        "https://github.com/juice-shop/juice-shop/blob/717f5efa886b0417eeecb52378b03cf10567b7e2/data/static/challenges.yml"
+      ],
+      "route": [
+        {
+          "filePath": "server.ts",
+          "lines": [
+            339
+          ]
+        },
+        {
+          "filePath": "routes/profileImageUrlUpload.ts",
+          "lines": [
+            17,
+            19,
+            21,
+            22,
+            24
+          ]
+        }
+      ],
+      "staticMeaning": "Authenticated profile-image request may fetch a user URL. The authentication branch is a precondition, not a destination allowlist.",
+      "firstObservedGap": "HTTP_REQUEST_REGISTRATION_NOT_CONNECTED",
+      "readiness": "REVIEW_REQUIRED",
+      "blocking": [
+        "Allowed hosts/redirect/network policy not approved",
+        "No verified repair pair",
+        "Target request not reached"
+      ],
+      "hashes": {
+        "before": {
+          "routes/profileImageUrlUpload.ts": "75140f35e65141135d3abb4b3b86aad1556c0d2a22d733ae1d50a127cd0cbb26",
+          "server.ts": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+        }
+      }
+    },
+    {
+      "caseId": "nodegoat-eval-preTax",
+      "group": "nodegoat-contribution-eval",
+      "before": "nodegoat",
+      "after": "nodegoat-fixed",
+      "ruleId": "JS_EVAL_INPUT_FLOW",
+      "source": {
+        "filePath": "app/routes/contributions.js",
+        "lines": [
+          32
+        ]
+      },
+      "sink": {
+        "filePath": "app/routes/contributions.js",
+        "lines": [
+          32
+        ]
+      },
+      "cwe": "CWE-95",
+      "grade": "A_DOCUMENTED_TRAINING_PATH_WITH_B_CONTROLLED_FIX",
+      "references": [
+        "https://github.com/OWASP/NodeGoat/blob/c5cb68a7084e4ae7dcc60e6a98768720a81841e8/app/views/tutorial/a1.html"
+      ],
+      "route": [
+        {
+          "filePath": "server.js",
+          "lines": [
+            132
+          ]
+        },
+        {
+          "filePath": "app/routes/index.js",
+          "lines": [
+            52
+          ]
+        },
+        {
+          "filePath": "app/routes/contributions.js",
+          "lines": [
+            28,
+            32
+          ]
+        }
+      ],
+      "afterTarget": {
+        "normalProof": {
+          "field": "authorizationContexts",
+          "kind": "NUMERIC_CONVERSION",
+          "filePath": "app/routes/contributions.js",
+          "lines": [
+            32
+          ]
+        }
+      },
+      "staticMeaning": "Direct request body field is evaluated as JavaScript; controlled fix materializes the repository-documented integer conversion. Existing validation and DAO update remain.",
+      "readiness": "GUIDANCE_ONLY",
+      "blocking": [
+        "Integer/decimal/trailing-input semantics need owner confirmation",
+        "Normal runtime behavior not executed",
+        "No JavaScript eval automatic patch validator"
+      ],
+      "hashes": {
+        "before": {
+          "app/routes/contributions.js": "196bdeaa22da4cfe8a851b1b932710b2fcedd21f14ed75d70b739ba759a01003",
+          "app/routes/index.js": "3ab970b2888bc1501515db24a83cc7851ac9c09d00948c652300401515185eb5",
+          "server.js": "48ec5e8f9668b230caf6af27f4a4ffbdcd8b702b376a6bbcc951217917c6ea2e"
+        },
+        "after": {
+          "app/routes/contributions.js": "cacbcff90cdec7436e2addbdfd541906469f7edf7fbb05d060919f2b3338ff59",
+          "app/routes/index.js": "3ab970b2888bc1501515db24a83cc7851ac9c09d00948c652300401515185eb5",
+          "server.js": "48ec5e8f9668b230caf6af27f4a4ffbdcd8b702b376a6bbcc951217917c6ea2e"
+        }
+      }
+    },
+    {
+      "caseId": "nodegoat-eval-afterTax",
+      "group": "nodegoat-contribution-eval",
+      "before": "nodegoat",
+      "after": "nodegoat-fixed",
+      "ruleId": "JS_EVAL_INPUT_FLOW",
+      "source": {
+        "filePath": "app/routes/contributions.js",
+        "lines": [
+          33
+        ]
+      },
+      "sink": {
+        "filePath": "app/routes/contributions.js",
+        "lines": [
+          33
+        ]
+      },
+      "cwe": "CWE-95",
+      "grade": "A_DOCUMENTED_TRAINING_PATH_WITH_B_CONTROLLED_FIX",
+      "references": [
+        "https://github.com/OWASP/NodeGoat/blob/c5cb68a7084e4ae7dcc60e6a98768720a81841e8/app/views/tutorial/a1.html"
+      ],
+      "route": [
+        {
+          "filePath": "server.js",
+          "lines": [
+            132
+          ]
+        },
+        {
+          "filePath": "app/routes/index.js",
+          "lines": [
+            52
+          ]
+        },
+        {
+          "filePath": "app/routes/contributions.js",
+          "lines": [
+            28,
+            33
+          ]
+        }
+      ],
+      "afterTarget": {
+        "normalProof": {
+          "field": "authorizationContexts",
+          "kind": "NUMERIC_CONVERSION",
+          "filePath": "app/routes/contributions.js",
+          "lines": [
+            33
+          ]
+        }
+      },
+      "staticMeaning": "Direct request body field is evaluated as JavaScript; controlled fix materializes the repository-documented integer conversion. Existing validation and DAO update remain.",
+      "readiness": "GUIDANCE_ONLY",
+      "blocking": [
+        "Integer/decimal/trailing-input semantics need owner confirmation",
+        "Normal runtime behavior not executed",
+        "No JavaScript eval automatic patch validator"
+      ],
+      "hashes": {
+        "before": {
+          "app/routes/contributions.js": "196bdeaa22da4cfe8a851b1b932710b2fcedd21f14ed75d70b739ba759a01003",
+          "app/routes/index.js": "3ab970b2888bc1501515db24a83cc7851ac9c09d00948c652300401515185eb5",
+          "server.js": "48ec5e8f9668b230caf6af27f4a4ffbdcd8b702b376a6bbcc951217917c6ea2e"
+        },
+        "after": {
+          "app/routes/contributions.js": "cacbcff90cdec7436e2addbdfd541906469f7edf7fbb05d060919f2b3338ff59",
+          "app/routes/index.js": "3ab970b2888bc1501515db24a83cc7851ac9c09d00948c652300401515185eb5",
+          "server.js": "48ec5e8f9668b230caf6af27f4a4ffbdcd8b702b376a6bbcc951217917c6ea2e"
+        }
+      }
+    },
+    {
+      "caseId": "nodegoat-eval-roth",
+      "group": "nodegoat-contribution-eval",
+      "before": "nodegoat",
+      "after": "nodegoat-fixed",
+      "ruleId": "JS_EVAL_INPUT_FLOW",
+      "source": {
+        "filePath": "app/routes/contributions.js",
+        "lines": [
+          34
+        ]
+      },
+      "sink": {
+        "filePath": "app/routes/contributions.js",
+        "lines": [
+          34
+        ]
+      },
+      "cwe": "CWE-95",
+      "grade": "A_DOCUMENTED_TRAINING_PATH_WITH_B_CONTROLLED_FIX",
+      "references": [
+        "https://github.com/OWASP/NodeGoat/blob/c5cb68a7084e4ae7dcc60e6a98768720a81841e8/app/views/tutorial/a1.html"
+      ],
+      "route": [
+        {
+          "filePath": "server.js",
+          "lines": [
+            132
+          ]
+        },
+        {
+          "filePath": "app/routes/index.js",
+          "lines": [
+            52
+          ]
+        },
+        {
+          "filePath": "app/routes/contributions.js",
+          "lines": [
+            28,
+            34
+          ]
+        }
+      ],
+      "afterTarget": {
+        "normalProof": {
+          "field": "authorizationContexts",
+          "kind": "NUMERIC_CONVERSION",
+          "filePath": "app/routes/contributions.js",
+          "lines": [
+            34
+          ]
+        }
+      },
+      "staticMeaning": "Direct request body field is evaluated as JavaScript; controlled fix materializes the repository-documented integer conversion. Existing validation and DAO update remain.",
+      "readiness": "GUIDANCE_ONLY",
+      "blocking": [
+        "Integer/decimal/trailing-input semantics need owner confirmation",
+        "Normal runtime behavior not executed",
+        "No JavaScript eval automatic patch validator"
+      ],
+      "hashes": {
+        "before": {
+          "app/routes/contributions.js": "196bdeaa22da4cfe8a851b1b932710b2fcedd21f14ed75d70b739ba759a01003",
+          "app/routes/index.js": "3ab970b2888bc1501515db24a83cc7851ac9c09d00948c652300401515185eb5",
+          "server.js": "48ec5e8f9668b230caf6af27f4a4ffbdcd8b702b376a6bbcc951217917c6ea2e"
+        },
+        "after": {
+          "app/routes/contributions.js": "cacbcff90cdec7436e2addbdfd541906469f7edf7fbb05d060919f2b3338ff59",
+          "app/routes/index.js": "3ab970b2888bc1501515db24a83cc7851ac9c09d00948c652300401515185eb5",
+          "server.js": "48ec5e8f9668b230caf6af27f4a4ffbdcd8b702b376a6bbcc951217917c6ea2e"
+        }
+      }
+    }
+  ],
+  "counts": {
+    "originalFamilies": 3,
+    "riskySinkPaths": 7,
+    "rootCauseGroups": 5,
+    "upstreamPatchPairs": 1,
+    "controlledProjectCopies": 2,
+    "independentNewProjects": 0
+  },
+  "sca": "EXTERNAL_LOOKUP_NOT_RUN_MANIFESTS_ONLY",
+  "rules": {
+    "count": 72,
+    "registrySha256": "4bca2d00fe90e4e62bff0a9baed23404c778abd9183811532d228e0302ffa106"
+  },
+  "documentationHashes": {
+    "OWASP/NodeGoat@c5cb68a7084e4ae7dcc60e6a98768720a81841e8:app/views/tutorial/a1.html": "3b23bc8efe111e442c3170e21f0a0d35e56d7344b2b8e7ec4650325b6cf39dc4",
+    "juice-shop/juice-shop@717f5efa886b0417eeecb52378b03cf10567b7e2:data/static/challenges.yml": "a37357f5d4daa0981f87fa3af9817de140d87777732bb1bbbd0fbf8b5bf7d218"
+  },
+  "readinessMatrix": [
+    {"ruleId":"JS_EVAL_INPUT_FLOW","scope":"NodeGoat contribution input","status":"GUIDANCE_ONLY",
+      "A":"PINNED_FILE_HASH_AND_LOCATION","B":"ENGINE_SOURCE_SINK","C":"DOCUMENTED_NUMERIC_CONVERSION",
+      "D":"STATIC_CONTROL_ONLY_INTEGER_DOMAIN_NEEDS_OWNER_CONFIRMATION","E":"TARGET_PAIR_WITH_PROOF_NOT_COMPARED",
+      "F":"NO_NEW_AUTH_POLICY_ASSUMED_RUNTIME_AUTH_UNVERIFIED","G":"MANUAL_WORKSPACE_GUARDS_ONLY_NO_JS_PATCH_VALIDATOR"},
+    {"ruleId":"JS_MONGO_WHERE_INPUT_FLOW","scope":"NodeGoat threshold","status":"GUIDANCE_ONLY",
+      "A":"PINNED_FILE_HASH_AND_LOCATION","B":"ENGINE_SOURCE_SINK","C":"DOCUMENTED_NUMERIC_AND_RANGE_CONSTRAINT",
+      "D":"STATIC_CONTROL_ONLY_INPUT_REJECTION_COMPATIBILITY_UNVERIFIED","E":"TARGET_PAIR_WITH_CURSOR_CONSUMPTION_PROOF_NOT_COMPARED",
+      "F":"NO_OWNERSHIP_POLICY_ASSUMED","G":"MANUAL_WORKSPACE_GUARDS_ONLY_NO_MONGO_PATCH_VALIDATOR"},
+    {"ruleId":"JS_MONGOOSE_SELECTOR_INPUT_FLOW","scope":"FlintCMS password reset","status":"GUIDANCE_ONLY",
+      "A":"PINNED_FILE_HASH_AND_LOCATION","B":"HUMAN_SOURCE_REVIEW_ENGINE_REQUEST_UNSUPPORTED","C":"REAL_UPSTREAM_STRING_CONVERSION",
+      "D":"NULL_AND_OBJECT_ERROR_BEHAVIOR_UNVERIFIED","E":"ENGINE_PAIR_NOT_EVALUABLE",
+      "F":"NO_AUTH_BYPASS_MODEL_INFERRED_FROM_NAMES","G":"MANUAL_WORKSPACE_GUARDS_ONLY_NO_MONGOOSE_PATCH_VALIDATOR"},
+    {"ruleId":"JS_SEQUELIZE_SQL_INPUT_FLOW","scope":"Juice Shop search","status":"GUIDANCE_ONLY",
+      "A":"PINNED_FILE_HASH_AND_LOCATION","B":"HUMAN_SOURCE_REVIEW_ENGINE_REQUEST_UNSUPPORTED","C":"CONTROLLED_BIND_PARAMETERS",
+      "D":"LIKE_WILDCARD_STRUCTURE_PRESERVED_RUNTIME_UNVERIFIED","E":"ENGINE_PAIR_NOT_EVALUABLE",
+      "F":"NO_NEW_AUTH_POLICY_REQUIRED_FOR_SQL_BINDING","G":"MANUAL_WORKSPACE_GUARDS_ONLY_NO_SQL_PATCH_VALIDATOR"},
+    {"ruleId":"TS_SSRF_INPUT_FLOW","scope":"Juice Shop profile image URL","status":"REVIEW_REQUIRED",
+      "A":"PINNED_FILE_HASH_AND_LOCATION","B":"HUMAN_SOURCE_REVIEW_ENGINE_REQUEST_UNSUPPORTED","C":"OWNER_DESTINATION_POLICY_REQUIRED",
+      "D":"NO_APPROVED_NORMAL_COUNTERPART","E":"NO_VERIFIED_FIXED_PAIR",
+      "F":"ALLOWED_HOST_REDIRECT_AND_NETWORK_INTENT_UNKNOWN","G":"MANUAL_WORKSPACE_GUARDS_ONLY_NO_SSRF_PATCH_VALIDATOR"}
+  ],
+  "remediationContract": {
+    "automaticEligibleRules": [],
+    "sourceAnchors": "full original SHA plus file hash and AST call span needed",
+    "existingWorkspace": "Ownership/revision/hash/Diff/approval/manual rescan available; JS eval/Mongo/SQL automatic patch validators not implemented",
+    "comparison": "REVIEW_REQUIRED_NOT_COMPARED_NOT_AUTOMATIC_RESOLVED",
+    "ownerIntent": "Runtime auth, numeric input domain and SSRF host intent never inferred from field names"
+  }
+}

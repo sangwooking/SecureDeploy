@@ -1,0 +1,655 @@
+{
+  "schemaVersion": 1,
+  "baseline": "9f1ba7625af1cea65eeb9d2ff1ad9a884dd408cc",
+  "engineChanged": false,
+  "counts": {
+    "v40": {
+      "before": {
+        "NOT_SUPPORTED_REQUEST_CONNECTION": 3,
+        "TP": 4
+      },
+      "after": {
+        "NOT_SUPPORTED_REQUEST_CONNECTION": 2,
+        "TN_TARGET_ONLY": 4
+      },
+      "targetContrasts": 4
+    },
+    "v44": {
+      "before": {
+        "NOT_SUPPORTED_REQUEST_CONNECTION": 3,
+        "TP": 4
+      },
+      "after": {
+        "NOT_SUPPORTED_REQUEST_CONNECTION": 2,
+        "TN_TARGET_ONLY": 4
+      },
+      "targetContrasts": 4
+    }
+  },
+  "scope": {
+    "originalFamilies": 3,
+    "riskySinkPaths": 7,
+    "rootCauseGroups": 5,
+    "upstreamPatchPairs": 1,
+    "controlledProjectCopies": 2,
+    "independentNewProjects": 0
+  },
+  "metrics": [
+    {
+      "input": "v40-flint-before",
+      "parsed": 100,
+      "selected": 100,
+      "discovered": 290,
+      "entries": 0,
+      "functions": 3,
+      "steps": {
+        "AST_NODES_INDEXED": 22632,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 17258,
+        "STEPS_SETUP": 0,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 31,
+        "STEPS_ENTRY_DISCOVERY": 17227,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        1245,
+        979
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        58480192,
+        60837528
+      ],
+      "rawLegacy": 7,
+      "filteredLegacy": 7,
+      "securityScore": 30,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "observationCount": 2,
+        "componentCount": 109,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN"
+      },
+      "repeatIdentical": true
+    },
+    {
+      "input": "v40-flint-after",
+      "parsed": 100,
+      "selected": 100,
+      "discovered": 290,
+      "entries": 0,
+      "functions": 3,
+      "steps": {
+        "AST_NODES_INDEXED": 22643,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 17302,
+        "STEPS_SETUP": 0,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 31,
+        "STEPS_ENTRY_DISCOVERY": 17271,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        1346,
+        962
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        57779664,
+        56018632
+      ],
+      "rawLegacy": 7,
+      "filteredLegacy": 7,
+      "securityScore": 30,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "status": "EXTERNAL_LOOKUP_NOT_RUN",
+        "componentCount": 109,
+        "observationCount": 2
+      },
+      "repeatIdentical": true
+    },
+    {
+      "input": "v40-nodegoat",
+      "parsed": 44,
+      "selected": 44,
+      "discovered": 44,
+      "entries": 19,
+      "functions": 48,
+      "steps": {
+        "AST_NODES_INDEXED": 11089,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 34211,
+        "STEPS_SETUP": 21,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 0,
+        "STEPS_ENTRY_DISCOVERY": 11833,
+        "STEPS_FLOW": 22357,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        1440,
+        1063
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        81162512,
+        152275712
+      ],
+      "rawLegacy": 7,
+      "filteredLegacy": 7,
+      "securityScore": 16,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "componentCount": 1479,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN",
+        "observationCount": 2
+      },
+      "repeatIdentical": true
+    },
+    {
+      "input": "v40-juice",
+      "parsed": 100,
+      "selected": 100,
+      "discovered": 648,
+      "entries": 0,
+      "functions": 4,
+      "steps": {
+        "AST_NODES_INDEXED": 48843,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 87358,
+        "STEPS_SETUP": 143,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 533,
+        "STEPS_ENTRY_DISCOVERY": 86682,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        2158,
+        1648
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        70063944,
+        145695096
+      ],
+      "rawLegacy": 349,
+      "filteredLegacy": 349,
+      "securityScore": 0,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "observationCount": 2,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN",
+        "componentCount": 176
+      },
+      "repeatIdentical": true
+    },
+    {
+      "input": "v40-nodegoat-fixed",
+      "parsed": 44,
+      "selected": 44,
+      "discovered": 44,
+      "entries": 19,
+      "functions": 48,
+      "steps": {
+        "AST_NODES_INDEXED": 11116,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 34411,
+        "STEPS_SETUP": 21,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 0,
+        "STEPS_ENTRY_DISCOVERY": 11911,
+        "STEPS_FLOW": 22479,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        1376,
+        1023
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        96617760,
+        149228352
+      ],
+      "rawLegacy": 7,
+      "filteredLegacy": 7,
+      "securityScore": 16,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "componentCount": 1479,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN",
+        "observationCount": 2
+      },
+      "repeatIdentical": true
+    },
+    {
+      "input": "v40-juice-sql-fixed",
+      "parsed": 100,
+      "selected": 100,
+      "discovered": 648,
+      "entries": 0,
+      "functions": 4,
+      "steps": {
+        "AST_NODES_INDEXED": 48847,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 87358,
+        "STEPS_SETUP": 143,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 533,
+        "STEPS_ENTRY_DISCOVERY": 86682,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        2146,
+        1613
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        90538392,
+        79648256
+      ],
+      "rawLegacy": 349,
+      "filteredLegacy": 349,
+      "securityScore": 0,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "componentCount": 176,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN",
+        "observationCount": 2
+      },
+      "repeatIdentical": true
+    },
+    {
+      "input": "v44-flint-before",
+      "parsed": 100,
+      "selected": 100,
+      "discovered": 290,
+      "entries": 0,
+      "functions": 3,
+      "steps": {
+        "AST_NODES_INDEXED": 22632,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 17258,
+        "STEPS_SETUP": 0,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 31,
+        "STEPS_ENTRY_DISCOVERY": 17227,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        1244,
+        986
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        86810048,
+        53932288
+      ],
+      "rawLegacy": 7,
+      "filteredLegacy": 7,
+      "securityScore": 30,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "status": "EXTERNAL_LOOKUP_NOT_RUN",
+        "observationCount": 2,
+        "componentCount": 109
+      },
+      "repeatIdentical": true
+    },
+    {
+      "input": "v44-flint-after",
+      "parsed": 100,
+      "selected": 100,
+      "discovered": 290,
+      "entries": 0,
+      "functions": 3,
+      "steps": {
+        "AST_NODES_INDEXED": 22643,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 17302,
+        "STEPS_SETUP": 0,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 31,
+        "STEPS_ENTRY_DISCOVERY": 17271,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        1303,
+        980
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        57638144,
+        60067840
+      ],
+      "rawLegacy": 7,
+      "filteredLegacy": 7,
+      "securityScore": 30,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "componentCount": 109,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN",
+        "observationCount": 2
+      },
+      "repeatIdentical": true
+    },
+    {
+      "input": "v44-nodegoat",
+      "parsed": 44,
+      "selected": 44,
+      "discovered": 44,
+      "entries": 19,
+      "functions": 48,
+      "steps": {
+        "AST_NODES_INDEXED": 11089,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 34211,
+        "STEPS_SETUP": 21,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 0,
+        "STEPS_ENTRY_DISCOVERY": 11833,
+        "STEPS_FLOW": 22357,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        1469,
+        1063
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        65163392,
+        122230784
+      ],
+      "rawLegacy": 7,
+      "filteredLegacy": 7,
+      "securityScore": 16,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "status": "EXTERNAL_LOOKUP_NOT_RUN",
+        "componentCount": 1479,
+        "observationCount": 2
+      },
+      "repeatIdentical": true
+    },
+    {
+      "input": "v44-juice",
+      "parsed": 100,
+      "selected": 100,
+      "discovered": 648,
+      "entries": 0,
+      "functions": 20,
+      "steps": {
+        "AST_NODES_INDEXED": 48843,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 89362,
+        "STEPS_SETUP": 143,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 533,
+        "STEPS_ENTRY_DISCOVERY": 88686,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        2151,
+        1631
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        65783296,
+        105501912
+      ],
+      "rawLegacy": 349,
+      "filteredLegacy": 349,
+      "securityScore": 0,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "status": "EXTERNAL_LOOKUP_NOT_RUN",
+        "componentCount": 176,
+        "observationCount": 2
+      },
+      "repeatIdentical": true
+    },
+    {
+      "input": "v44-nodegoat-fixed",
+      "parsed": 44,
+      "selected": 44,
+      "discovered": 44,
+      "entries": 19,
+      "functions": 48,
+      "steps": {
+        "AST_NODES_INDEXED": 11116,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 34411,
+        "STEPS_SETUP": 21,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 0,
+        "STEPS_ENTRY_DISCOVERY": 11911,
+        "STEPS_FLOW": 22479,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        1479,
+        1024
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        111425240,
+        128930816
+      ],
+      "rawLegacy": 7,
+      "filteredLegacy": 7,
+      "securityScore": 16,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "componentCount": 1479,
+        "observationCount": 2,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN"
+      },
+      "repeatIdentical": true
+    },
+    {
+      "input": "v44-juice-sql-fixed",
+      "parsed": 100,
+      "selected": 100,
+      "discovered": 648,
+      "entries": 0,
+      "functions": 20,
+      "steps": {
+        "AST_NODES_INDEXED": 48847,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 89362,
+        "STEPS_SETUP": 143,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 533,
+        "STEPS_ENTRY_DISCOVERY": 88686,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "elapsedMs": [
+        2076,
+        1639
+      ],
+      "parentHeapUsedBytesNotPeak": [
+        93943416,
+        77011752
+      ],
+      "rawLegacy": 349,
+      "filteredLegacy": 349,
+      "securityScore": 0,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL",
+      "sca": {
+        "componentCount": 176,
+        "observationCount": 2,
+        "status": "EXTERNAL_LOOKUP_NOT_RUN"
+      },
+      "repeatIdentical": true
+    }
+  ],
+  "caseStatuses": [
+    {
+      "caseId": "flint-forgotpassword",
+      "worker": "v40",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "after": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "pair": "NOT_VERIFIED_AS_SUCCESSFUL_REPAIR",
+      "warningCount": 0
+    },
+    {
+      "caseId": "flint-forgotpassword",
+      "worker": "v44",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "after": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "pair": "NOT_VERIFIED_AS_SUCCESSFUL_REPAIR",
+      "warningCount": 0
+    },
+    {
+      "caseId": "nodegoat-where",
+      "worker": "v40",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED",
+      "warningCount": 1
+    },
+    {
+      "caseId": "nodegoat-where",
+      "worker": "v44",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED",
+      "warningCount": 1
+    },
+    {
+      "caseId": "juice-search",
+      "worker": "v40",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "after": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "pair": "NOT_VERIFIED_AS_SUCCESSFUL_REPAIR",
+      "warningCount": 0
+    },
+    {
+      "caseId": "juice-search",
+      "worker": "v44",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "after": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "pair": "NOT_VERIFIED_AS_SUCCESSFUL_REPAIR",
+      "warningCount": 0
+    },
+    {
+      "caseId": "juice-profile-ssrf",
+      "worker": "v40",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "after": "NO_FIXED_COUNTERPART",
+      "pair": null,
+      "warningCount": 0
+    },
+    {
+      "caseId": "juice-profile-ssrf",
+      "worker": "v44",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "after": "NO_FIXED_COUNTERPART",
+      "pair": null,
+      "warningCount": 0
+    },
+    {
+      "caseId": "nodegoat-eval-preTax",
+      "worker": "v40",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED",
+      "warningCount": 1
+    },
+    {
+      "caseId": "nodegoat-eval-preTax",
+      "worker": "v44",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED",
+      "warningCount": 1
+    },
+    {
+      "caseId": "nodegoat-eval-afterTax",
+      "worker": "v40",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED",
+      "warningCount": 1
+    },
+    {
+      "caseId": "nodegoat-eval-afterTax",
+      "worker": "v44",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED",
+      "warningCount": 1
+    },
+    {
+      "caseId": "nodegoat-eval-roth",
+      "worker": "v40",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED",
+      "warningCount": 1
+    },
+    {
+      "caseId": "nodegoat-eval-roth",
+      "worker": "v44",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED",
+      "warningCount": 1
+    }
+  ],
+  "riskPolicyChanged": false,
+  "automaticPatchTypesAdded": 0,
+  "remediationReadyCount": 0,
+  "newIndependentGroundTruth": 0,
+  "newRealVulnerabilityTP": 0,
+  "resourceProbe": {
+    "scope": "V44_SELECTED_RECONSTRUCTED_PACKETS_NOT_FULL_BACKEND_OR_SELECTION_COMPARISON",
+    "inputsPerVersion": 4,
+    "repeats": 2,
+    "heapLimitMiB": 192,
+    "v40ElapsedMsRange": [208, 278],
+    "v44ElapsedMsRange": [207, 286],
+    "v40PeakRssBytes": 205111296,
+    "v44PeakRssBytes": 214532096,
+    "performanceImprovementClaimed": false
+  },
+  "regression": {
+    "workerTestsPassed": 1049,
+    "relatedBackendTestsPassed": 97,
+    "evaluationPythonTestsPassed": 270,
+    "pythonWorkerTestsPassed": 117,
+    "existingApplications": 15,
+    "applicationRepeats": 2,
+    "existingApplicationProductOutputsPreserved": true,
+    "browserAndLiveGithubRun": false,
+    "userServersRestarted": false
+  },
+  "caveats": [
+    "Four matching sink paths belong to two causes in one NodeGoat family, not four independent vulnerabilities.",
+    "Three known risk paths remain missed by the product; do not hide them behind supported-only recall.",
+    "Only FlintCMS is a real upstream fixed pair; NodeGoat/Juice controlled copies are Grade B, not upstream fixes.",
+    "Nonblind observed regression; no target execution or external reviewer. No whole-project SAFE or runtime repair guarantee.",
+    "No automatic RESOLVED: structural findings retain NOT_COMPARED. Scores/Risk do not include these candidates."
+  ]
+}

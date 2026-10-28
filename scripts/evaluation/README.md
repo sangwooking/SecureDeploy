@@ -4,6 +4,37 @@ Evaluation only. These tools do not modify engine/Risk policy or existing Review
 Never use production credentials in fixtures. Keep downloaded source, raw results,
 private evidence and process-environment launch helpers outside Git.
 
+## Real vulnerability differential audit (35-A)
+
+`detection35-catalog.json` pins the observed FlintCMS, NodeGoat and Juice Shop
+paths, original/control hashes and A-G remediation-readiness judgments. Only
+FlintCMS has an upstream fixed SHA. The NodeGoat numeric conversion and Juice
+search binding copies are controlled Grade B contrasts, not official patches.
+They preserve routing; runtime compatibility and operating auth are unverified.
+
+Replay the licensed local trees with the existing `applicationEvaluation` H2
+runner from the pinned v40/v44 engine commits, twice per input. Supply
+`-PapplicationProjectId=OWASP--NodeGoat` for the shared multi-project plan.
+External SCA queries and AI are disabled. A private input JSON maps catalog
+input IDs to the resulting files; no source or local paths belong in Git.
+
+```sh
+python3 scripts/evaluation/differential35.py \
+  scripts/evaluation/detection35-catalog.json PRIVATE_INPUT_MAP NEW_PRIVATE_REPORT
+```
+
+The audit checks engine/plan/SHA/repeat identity and exact target Source/Sink,
+and refuses to call disappearance TN without target protection plus reached code.
+MEDIUM review candidates are also counted on normal counterparts. Use
+`public_summary(catalog, report, inputs)` for source-free counts and metrics.
+The metadata was assembled during nonblind regression re-review, not a new blind
+study. Three eval sites are one cause, not three independent vulnerabilities.
+Four matched paths must not conceal the three unconnected known risks.
+All current readiness judgments are guidance/review only: generic JS/Mongo/SQL
+patch validators and runtime compatibility tests are not implemented.
+`detection35-summary.json` records source-free results; its name deliberately
+avoids the historical audit's frozen `*-results.json` evidence namespace.
+
 ## AI/vibe-coded web track
 
 `vibe-catalog.json` pins four licensed, author-attributed AI-assisted apps.
