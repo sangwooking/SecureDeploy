@@ -1,0 +1,797 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "61376922f6740da662e6df59560862d5c4a6cc67",
+  "engineCommit": "e73c10015d5f75fc7f61479bdaa13dc25e4c204e",
+  "baselineWorker": "ts-server-v44",
+  "currentWorker": "ts-server-v45",
+  "engineSourceHashes": {
+    "analyzers/typescript/analyzer.mjs": "1a332a8ca5f7609ba4d675a60fad161115fa3cb8dcc1af5ca82a019c9e4da992",
+    "analyzers/typescript/node-server.mjs": "7cf983a0709904e4f48c158be48b4d35c7023b2ca9ab51fdd32a64b96be7933e",
+    "src/main/java/com/securedeploy/analysis/typescript/TypeScriptServerAnalyzer.java": "5aa61df8ae710d35ee54a2fc826f918bef0d9031846b490a6a43976c91dbb2c4"
+  },
+  "outcome": "PARTIAL_COMMON_ADAPTER_IMPROVEMENT_NOT_END_TO_END_SUCCESS",
+  "endToEndGoalMet": false,
+  "newRealVulnerabilityTP": 0,
+  "actualCases": [
+    {
+      "caseId": "flint-forgotpassword",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "after": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "pair": "NOT_VERIFIED_AS_SUCCESSFUL_REPAIR"
+    },
+    {
+      "caseId": "nodegoat-where",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED"
+    },
+    {
+      "caseId": "juice-search",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "after": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "pair": "NOT_VERIFIED_AS_SUCCESSFUL_REPAIR"
+    },
+    {
+      "caseId": "juice-profile-ssrf",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION"
+    },
+    {
+      "caseId": "nodegoat-eval-preTax",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED"
+    },
+    {
+      "caseId": "nodegoat-eval-afterTax",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED"
+    },
+    {
+      "caseId": "nodegoat-eval-roth",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED"
+    }
+  ],
+  "baselineMetrics": [
+    {
+      "input": "flint-before",
+      "sourceSha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+      "parsed": 100,
+      "entries": 0,
+      "functions": 3,
+      "elapsedMs": [
+        3520,
+        1660
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 22632,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 17258,
+        "STEPS_SETUP": 0,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 31,
+        "STEPS_ENTRY_DISCOVERY": 17227,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": true,
+      "repeatIdentical": true,
+      "score": 30,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL"
+    },
+    {
+      "input": "flint-after",
+      "sourceSha": "4ae34238ce39fde00dfa15082397541758c07af1",
+      "parsed": 100,
+      "entries": 0,
+      "functions": 3,
+      "elapsedMs": [
+        2461,
+        1595
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 22643,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 17302,
+        "STEPS_SETUP": 0,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 31,
+        "STEPS_ENTRY_DISCOVERY": 17271,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": true,
+      "repeatIdentical": true,
+      "score": 30,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL"
+    },
+    {
+      "input": "nodegoat",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "parsed": 44,
+      "entries": 19,
+      "functions": 48,
+      "elapsedMs": [
+        2377,
+        1625
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 11089,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 34211,
+        "STEPS_SETUP": 21,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 0,
+        "STEPS_ENTRY_DISCOVERY": 11833,
+        "STEPS_FLOW": 22357,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": true,
+      "repeatIdentical": true,
+      "score": 16,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL"
+    },
+    {
+      "input": "juice",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "parsed": 100,
+      "entries": 0,
+      "functions": 20,
+      "elapsedMs": [
+        5321,
+        2878
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 48843,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 89362,
+        "STEPS_SETUP": 143,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 533,
+        "STEPS_ENTRY_DISCOVERY": 88686,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": true,
+      "repeatIdentical": true,
+      "score": 0,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL"
+    },
+    {
+      "input": "nodegoat-fixed",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "parsed": 44,
+      "entries": 19,
+      "functions": 48,
+      "elapsedMs": [
+        3719,
+        1744
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 11116,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 34411,
+        "STEPS_SETUP": 21,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 0,
+        "STEPS_ENTRY_DISCOVERY": 11911,
+        "STEPS_FLOW": 22479,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": true,
+      "repeatIdentical": true,
+      "score": 16,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL"
+    },
+    {
+      "input": "juice-sql-fixed",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "parsed": 100,
+      "entries": 0,
+      "functions": 20,
+      "elapsedMs": [
+        4027,
+        2922
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 48847,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 89362,
+        "STEPS_SETUP": 143,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 533,
+        "STEPS_ENTRY_DISCOVERY": 88686,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": true,
+      "repeatIdentical": true,
+      "score": 0,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL"
+    }
+  ],
+  "currentMetrics": [
+    {
+      "input": "flint-before",
+      "sourceSha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+      "parsed": 100,
+      "entries": 0,
+      "functions": 3,
+      "elapsedMs": [
+        4129,
+        2897
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 22632,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 17258,
+        "STEPS_SETUP": 0,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 31,
+        "STEPS_ENTRY_DISCOVERY": 17227,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": false,
+      "legacyRiskAndOtherAnalyzersPreserved": true,
+      "repeatIdentical": true,
+      "score": 30,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL"
+    },
+    {
+      "input": "flint-after",
+      "sourceSha": "4ae34238ce39fde00dfa15082397541758c07af1",
+      "parsed": 100,
+      "entries": 0,
+      "functions": 3,
+      "elapsedMs": [
+        3932,
+        2740
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 22643,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 17302,
+        "STEPS_SETUP": 0,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 31,
+        "STEPS_ENTRY_DISCOVERY": 17271,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": false,
+      "legacyRiskAndOtherAnalyzersPreserved": true,
+      "repeatIdentical": true,
+      "score": 30,
+      "risk": "REVIEW_REQUIRED",
+      "coverage": "PARTIAL"
+    },
+    {
+      "input": "nodegoat",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "parsed": 44,
+      "entries": 19,
+      "functions": 48,
+      "elapsedMs": [
+        4168,
+        3095
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 11089,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 34211,
+        "STEPS_SETUP": 21,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 0,
+        "STEPS_ENTRY_DISCOVERY": 11833,
+        "STEPS_FLOW": 22357,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": false,
+      "legacyRiskAndOtherAnalyzersPreserved": true,
+      "repeatIdentical": true,
+      "score": 16,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL"
+    },
+    {
+      "input": "juice",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "parsed": 100,
+      "entries": 0,
+      "functions": 20,
+      "elapsedMs": [
+        8192,
+        6820
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 48843,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 89360,
+        "STEPS_SETUP": 143,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 533,
+        "STEPS_ENTRY_DISCOVERY": 88684,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": false,
+      "legacyRiskAndOtherAnalyzersPreserved": true,
+      "repeatIdentical": true,
+      "score": 0,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL"
+    },
+    {
+      "input": "nodegoat-fixed",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "parsed": 44,
+      "entries": 19,
+      "functions": 48,
+      "elapsedMs": [
+        4181,
+        2129
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 11116,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 34411,
+        "STEPS_SETUP": 21,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 0,
+        "STEPS_ENTRY_DISCOVERY": 11911,
+        "STEPS_FLOW": 22479,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": false,
+      "legacyRiskAndOtherAnalyzersPreserved": true,
+      "repeatIdentical": true,
+      "score": 16,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL"
+    },
+    {
+      "input": "juice-sql-fixed",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "parsed": 100,
+      "entries": 0,
+      "functions": 20,
+      "elapsedMs": [
+        6803,
+        4165
+      ],
+      "steps": {
+        "AST_NODES_INDEXED": 48847,
+        "STEPS_LIMIT": 100000,
+        "STEPS_USED": 89360,
+        "STEPS_SETUP": 143,
+        "STEPS_POLICY": 0,
+        "STEPS_CLIENT": 533,
+        "STEPS_ENTRY_DISCOVERY": 88684,
+        "STEPS_FLOW": 0,
+        "CLIENT_WORK_LIMIT": 15000,
+        "POLICY_WORK_LIMIT": 25000
+      },
+      "baselineProductOutputIdentical": false,
+      "legacyRiskAndOtherAnalyzersPreserved": true,
+      "repeatIdentical": true,
+      "score": 0,
+      "risk": "BLOCKED",
+      "coverage": "PARTIAL"
+    }
+  ],
+  "controls": [
+    {
+      "id": "http-createServer-preserves-app",
+      "baselineState": "FLOW",
+      "currentState": "FLOW",
+      "baselineWarnings": 1,
+      "currentWarnings": 1,
+      "baselineEntries": 1,
+      "currentEntries": 1,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "http-Server-constructor-app-escape",
+      "baselineState": "DEFERRED",
+      "currentState": "FLOW",
+      "baselineWarnings": 0,
+      "currentWarnings": 1,
+      "baselineEntries": 0,
+      "currentEntries": 1,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "http-Server-call-app-escape",
+      "baselineState": "DEFERRED",
+      "currentState": "FLOW",
+      "baselineWarnings": 0,
+      "currentWarnings": 1,
+      "baselineEntries": 0,
+      "currentEntries": 1,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "explicit-local-bootstrap",
+      "baselineState": "FLOW",
+      "currentState": "FLOW",
+      "baselineWarnings": 1,
+      "currentWarnings": 1,
+      "baselineEntries": 1,
+      "currentEntries": 1,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "explicit-factory-return",
+      "baselineState": "FLOW",
+      "currentState": "FLOW",
+      "baselineWarnings": 1,
+      "currentWarnings": 1,
+      "baselineEntries": 1,
+      "currentEntries": 1,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "function-constructor-bootstrap",
+      "baselineState": "FLOW",
+      "currentState": "FLOW",
+      "baselineWarnings": 1,
+      "currentWarnings": 1,
+      "baselineEntries": 1,
+      "currentEntries": 1,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "class-bootstrap",
+      "baselineState": "DEFERRED",
+      "currentState": "DEFERRED",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 0,
+      "currentEntries": 0,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "exported-class-no-caller",
+      "baselineState": "DEFERRED",
+      "currentState": "DEFERRED",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 0,
+      "currentEntries": 0,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "promise-completion-bootstrap",
+      "baselineState": "DEFERRED",
+      "currentState": "DEFERRED",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 0,
+      "currentEntries": 0,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "external-completion-bootstrap",
+      "baselineState": "DEFERRED",
+      "currentState": "DEFERRED",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 0,
+      "currentEntries": 0,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "database-event-bootstrap",
+      "baselineState": "DEFERRED",
+      "currentState": "DEFERRED",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 0,
+      "currentEntries": 0,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "static-import-bootstrap",
+      "baselineState": "FLOW",
+      "currentState": "FLOW",
+      "baselineWarnings": 1,
+      "currentWarnings": 1,
+      "baselineEntries": 1,
+      "currentEntries": 1,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "dynamic-import-bootstrap",
+      "baselineState": "DEFERRED",
+      "currentState": "DEFERRED",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 0,
+      "currentEntries": 0,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "uninvoked-initializer",
+      "baselineState": "NO_REGISTERED_FLOW",
+      "currentState": "NO_REGISTERED_FLOW",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 0,
+      "currentEntries": 0,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "unmounted-router",
+      "baselineState": "NO_REGISTERED_FLOW",
+      "currentState": "NO_REGISTERED_FLOW",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 0,
+      "currentEntries": 0,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "unrelated-app-not-a-mount",
+      "baselineState": "NO_REGISTERED_FLOW",
+      "currentState": "NO_REGISTERED_FLOW",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 0,
+      "currentEntries": 0,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "terminated-initializer",
+      "baselineState": "NO_REGISTERED_FLOW",
+      "currentState": "NO_REGISTERED_FLOW",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 0,
+      "currentEntries": 0,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "dynamic-registration-target",
+      "baselineState": "DEFERRED",
+      "currentState": "DEFERRED",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 0,
+      "currentEntries": 0,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "separate-request-inputs",
+      "baselineState": "FLOW",
+      "currentState": "FLOW",
+      "baselineWarnings": 1,
+      "currentWarnings": 1,
+      "baselineEntries": 2,
+      "currentEntries": 2,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "constant-safe-handler",
+      "baselineState": "SAFE_TARGET",
+      "currentState": "SAFE_TARGET",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 1,
+      "currentEntries": 1,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "early-blocked-handler",
+      "baselineState": "SAFE_TARGET",
+      "currentState": "SAFE_TARGET",
+      "baselineWarnings": 0,
+      "currentWarnings": 0,
+      "baselineEntries": 1,
+      "currentEntries": 1,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    },
+    {
+      "id": "earlier-middleware-terminates",
+      "baselineState": "KNOWN_BLOCKED_REVIEW_CANDIDATE",
+      "currentState": "KNOWN_BLOCKED_REVIEW_CANDIDATE",
+      "baselineWarnings": 1,
+      "currentWarnings": 1,
+      "baselineEntries": 1,
+      "currentEntries": 1,
+      "scope": "AUTHORED_CONTRACT_CONTROL_NOT_REAL_APP_TP"
+    }
+  ],
+  "existingApplications": [
+    {
+      "projectId": "Zenyonmz--todo-demo",
+      "sourceSha": "9f6b219ffbeadebe05a18783852e9fcdf075b0a5",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "salmandotweb--nextjs-supabase-boilerplate",
+      "sourceSha": "5d9ebfb75cd29732d4dea0882bebb0f6f47b189a",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "imbhargav5--nextbase-nextjs-supabase-starter",
+      "sourceSha": "00ad2da857b84322ff359db098cbf1cb4f4b7282",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "vercel--nextjs-subscription-payments",
+      "sourceSha": "bdd0813206e47e6b218d42f15a7976c8a0d3c3eb",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "mckaywrigley--chatbot-ui",
+      "sourceSha": "81328b61d2a4ab597a7a057be70e785cf756d9f8",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "Razikus--supabase-nextjs-template",
+      "sourceSha": "d519bf18d747bc0956346910414db68adb5a45bf",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "makerkit--nextjs-saas-starter-kit-lite",
+      "sourceSha": "9ff430df9c58516add0136bd01ed800ce551675e",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "nglguarino--echoverse-11labs",
+      "sourceSha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "LellaSriHarsha--power-platform-hub",
+      "sourceSha": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "TinyikoMamban--workflowai-pro",
+      "sourceSha": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "Adriano-Digital2024--CopyMonster",
+      "sourceSha": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "appsecco--dvna",
+      "sourceSha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "appsecco--dvna",
+      "sourceSha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "vercel--next.js",
+      "sourceSha": "2998a2e801caab665d603daefc7445c04309285a",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    },
+    {
+      "projectId": "snyk-labs--nodejs-goof",
+      "sourceSha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "changedSemanticFields": [],
+      "repeatIdentical": true,
+      "versionScopedIdsVerified": true
+    }
+  ],
+  "existingApplicationComparison": "Semantic fields preserved; version-scoped finding IDs checked against the existing identity formula; engine fingerprints differ by design.",
+  "sourceFileHashes": {
+    "flint": {
+      "dev.js": "f2e9cc25c3550d44492a32eed83a2eca45e25947adcd9e092d245ba973873027",
+      "index.js": "f6e13f6fb3b6bbbfa5c230eb87d5307d1a77c9b949322035897183a6e755b269",
+      "package.json": "c98ef9f53c3c40837e5549111780b75893e95b0431d7836a84245d6ffccf8963",
+      "server/apps/admin.js": "da4e64a61255749e1b62be695947f246a2683f19b50513f5d61533042319151b",
+      "server/apps/routes/auth.js": "6fbb97fe04d3fdd8ca646e243cf494a6c9753931967bd4e43577c1a196ea98f2",
+      "server/index.js": "85fdfccc57410fdf8a8ea4a672c7f03634b2047d29553a19c262929e7b2015d0"
+    },
+    "juice": {
+      "app.ts": "5e7f09a5e82cf0de75fc0f5bc69c4f2c96c37bdb9221aa5c3c4de2ba75985051",
+      "lib/utils.ts": "c484e91394eba88d30fc5c9d5e64bc147d944b20072bc5530b03071d6019102e",
+      "package.json": "81771ac97016ceb8f24fb79ffd24751a90a189c1cbfa6625680142880aedf99c",
+      "routes/profileImageUrlUpload.ts": "75140f35e65141135d3abb4b3b86aad1556c0d2a22d733ae1d50a127cd0cbb26",
+      "routes/search.ts": "6e3272ef4065d080295d995a04964e8c5e6b1e06c4b4c8ebed3234286686ee5f",
+      "server.ts": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+    }
+  },
+  "ruleCount": 72,
+  "newRules": 0,
+  "riskPolicyChanged": false,
+  "resourceLimitsIncreased": false,
+  "resourceProbe": {
+    "scope": "V44_SELECTED_SOURCE_RECONSTRUCTED_PACKETS_NOT_FULL_BACKEND_OR_INPUT_SELECTION_COMPARISON",
+    "heapMiB": 192,
+    "versions": {
+      "v44": {
+        "runs": 8,
+        "minMs": 1436,
+        "maxMs": 4297,
+        "peakRssBytes": 190873600
+      },
+      "v45": {
+        "runs": 8,
+        "minMs": 1088,
+        "maxMs": 3216,
+        "peakRssBytes": 195084288
+      }
+    },
+    "performanceImprovementClaimed": false,
+    "caveat": "Reconstructed selected source packets, not complete Backend peak memory; concurrent local evaluations affect timing."
+  },
+  "tests": {
+    "workerPassed": 1067,
+    "relatedBackendPassed": 98,
+    "evaluationPythonPassed": 270,
+    "pythonWorkerPassed": 117,
+    "evaluationJsPassed": 6,
+    "exact34ABESemanticComparisons": 65,
+    "bootstrapControlCases": 22
+  },
+  "knownBlockedMiddleware": {
+    "beforeWarnings": 1,
+    "afterWarnings": 1,
+    "newRegression": false,
+    "interpretation": "Existing false review candidate for a statically terminating earlier middleware; not a successful target flow."
+  },
+  "comparisonPolicy": "REVIEW_REQUIRED_NOT_COMPARED",
+  "newIndependentHoldout": 0,
+  "independentReviewer": false,
+  "userServerRestarted": false,
+  "userDatabaseChanged": false,
+  "liveGithubOrBrowserRun": false,
+  "demo": "Existing NodeGoat controlled original/fix contrast only; no new FlintCMS/Juice end-to-end demo or automatic repair."
+}

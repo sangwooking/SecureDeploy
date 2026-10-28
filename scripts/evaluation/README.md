@@ -4,6 +4,19 @@ Evaluation only. These tools do not modify engine/Risk policy or existing Review
 Never use production credentials in fixtures. Keep downloaded source, raw results,
 private evidence and process-environment launch helpers outside Git.
 
+## Bootstrap continuity (35-B)
+
+`bootstrap35-catalog.json` separates selected-source, activation and Handler
+boundaries from the observed regression results. `bootstrap35.mjs` retains v44
+control expectations; only two HTTP Server listener cases change in v45.
+Run `node --test scripts/evaluation/bootstrap35.test.mjs` and the Worker suite.
+The adapter preserves a verified app identity only; it does not activate class,
+Promise, database event or middleware callbacks. Known blocked middleware still
+produces a review candidate and is not counted as a normal success.
+No new real-app TP, independent holdout or automatic repair is claimed.
+`bootstrap35-summary.json` records the fixed engine SHA, source hashes, exact
+target outcomes, version-aware regression checks and bounded resource samples.
+
 ## Real vulnerability differential audit (35-A)
 
 `detection35-catalog.json` pins the observed FlintCMS, NodeGoat and Juice Shop

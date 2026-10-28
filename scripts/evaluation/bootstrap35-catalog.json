@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "baseline": "61376922f6740da662e6df59560862d5c4a6cc67",
+  "baselineWorker": "ts-server-v44",
+  "worker": "ts-server-v45",
+  "method": "NONBLIND_REGRESSION_SOURCE_AND_MINIMAL_CONTROL_DIAGNOSIS",
+  "diagnosisScope": "Baseline observations below refer to v44; v45 adapter-only changes and exact replay results are recorded separately.",
+  "productEngineChanged": true,
+  "newRealVulnerabilityTP": 0,
+  "endToEndGoalMet": false,
+  "ruleCount": 72,
+  "sourceCatalog": "detection35-catalog.json",
+  "meaning": "Static source edges are not runtime execution proof; downstream blockers do not replace the first observed failure.",
+  "flint": {
+    "vulnerableSha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+    "fixedSha": "4ae34238ce39fde00dfa15082397541758c07af1",
+    "startupEvidence": [
+      {"filePath":"package.json","line":5,"fact":"main names index.js; not evidence of constructing or starting an exported class"},
+      {"filePath":"package.json","line":28,"fact":"start names nodemon with dev.js; script is never run by evaluator"},
+      {"filePath":"dev.js","line":1,"fact":"require('.')"},
+      {"filePath":"dev.js","line":3,"fact":"new exported class instance"},
+      {"filePath":"dev.js","line":7,"fact":"explicit startServer invocation"},
+      {"filePath":"index.js","line":24,"fact":"module.exports class expression"},
+      {"filePath":"index.js","line":94,"fact":"async startServer method"},
+      {"filePath":"index.js","line":123,"fact":"createServer(logger) after initialization"},
+      {"filePath":"server/index.js","line":19,"fact":"Express app created inside exported factory"},
+      {"filePath":"server/index.js","line":20,"fact":"Server(app) passed to external shutdown wrapper"},
+      {"filePath":"server/index.js","line":53,"fact":"/admin mount receives admin factory return"},
+      {"filePath":"server/apps/admin.js","line":12,"fact":"auth Router factory mounted"},
+      {"filePath":"server/apps/routes/auth.js","line":78,"fact":"POST /forgotpassword"},
+      {"filePath":"server/apps/routes/auth.js","line":79,"fact":"request email input"},
+      {"filePath":"server/apps/routes/auth.js","line":80,"fact":"User.findOne selector; upstream patch adds string conversion"}
+    ],
+    "firstObservedFailure": {
+      "category":"FILE_NOT_SELECTED",
+      "filePath":"dev.js",
+      "parseStatus":"LIMIT_EXCEEDED",
+      "reason":"SOURCE_FILE_COUNT_LIMIT",
+      "scope":"documented development launch path; deployment launch code outside retained source remains unknown"
+    },
+    "independentSubsequentBoundaries": [
+      {"category":"BOOTSTRAP_UNCONNECTED","evidence":"class expression is unsupported; startServer is not invoked by discovery","controlIds":["class-bootstrap","exported-class-no-caller"]},
+      {"category":"SOURCE_OR_SINK_UNMODELED","evidence":"database open callback registers the User model; snapshot reports MONGOOSE_MODEL_REGISTRATION_UNKNOWN","meaning":"not proof that findOne itself lacks a supported contract"},
+      {"category":"BOOTSTRAP_UNCONNECTED","evidence":"http.Server app receiver escape and external shutdown wrapper would require separate contracts","controlIds":["http-Server-call-app-escape"]}
+    ],
+    "targetStages": {"HTTPRegistration":"NOT_OBSERVED","handler":"NOT_LINKED","requestSource":"NOT_REACHED","sink":"NOT_REACHED","ruleJudgment":"NOT_EVALUATED_ON_TARGET_PATH"},
+    "fixedMeaning":"No warning in the real fixed version is not TN or verified repair because request registration is absent in both versions."
+  },
+  "juice": {
+    "sourceSha":"717f5efa886b0417eeecb52378b03cf10567b7e2",
+    "startupEvidence": [
+      {"filePath":"package.json","line":64,"fact":"start names compiled build/app; build output is not executed or generated"},
+      {"filePath":"app.ts","line":7,"fact":"dynamic dependency validation import"},
+      {"filePath":"app.ts","line":10,"fact":"dynamic server import"},
+      {"filePath":"app.ts","line":11,"fact":"await server.start()"},
+      {"filePath":"server.ts","line":13,"fact":"default import of node:http"},
+      {"filePath":"server.ts","line":54,"fact":"utils namespace import is not linked by Node loader"},
+      {"filePath":"server.ts","line":131,"fact":"Express app allocation"},
+      {"filePath":"server.ts","line":132,"fact":"new http.Server(app)"},
+      {"filePath":"server.ts","line":171,"fact":"configureApp declaration, not itself a call"},
+      {"filePath":"server.ts","line":339,"fact":"profile image URL registration through asyncHandler and prior upload middleware"},
+      {"filePath":"server.ts","line":630,"fact":"product search registration through asyncHandler"},
+      {"filePath":"server.ts","line":715,"fact":"readiness Promise completion gates configureApp"},
+      {"filePath":"server.ts","line":716,"fact":"configureApp called inside completion callback"},
+      {"filePath":"lib/utils.ts","line":254,"fact":"asyncHandler returns a function invoking fn and forwarding rejection to next"},
+      {"filePath":"routes/search.ts","line":23,"fact":"query reaches SQL string construction"},
+      {"filePath":"routes/profileImageUrlUpload.ts","line":24,"fact":"body imageUrl reaches fetch under user-presence branch"}
+    ],
+    "firstObservedFailure": {
+      "category":"BOOTSTRAP_UNCONNECTED",
+      "filePath":"app.ts",
+      "reason":"dynamic import/start path is not modeled; app function has zero traced functions",
+      "controlIds":["static-import-bootstrap","dynamic-import-bootstrap"],
+      "scope":"source startup path; discovery separately loads server.ts from Express import, without proving startup completion"
+    },
+    "independentSubsequentBoundaries": [
+      {"category":"BOOTSTRAP_UNCONNECTED","evidence":"new http.Server(app) falls through unresolved call and invalidates app identity","controlIds":["http-createServer-preserves-app","http-Server-constructor-app-escape"]},
+      {"category":"BOOTSTRAP_UNCONNECTED","evidence":"configureApp is inside unmodeled Promise completion; its snapshot functionsAnalyzed is zero","controlIds":["explicit-local-bootstrap","promise-completion-bootstrap","external-completion-bootstrap"]},
+      {"category":"HANDLER_UNCONNECTED","evidence":"utils namespace import and returned asynchronous wrapper require separate verified forwarding contract","meaning":"downstream blocker, not the sole cause of zero request entries"},
+      {"category":"UNSUPPORTED","evidence":"model initialization, external middleware, filesystem readiness effects and dynamic configuration remain unverified"}
+    ],
+    "targetStages":{"HTTPRegistration":"NOT_OBSERVED","handler":"NOT_LINKED","requestSource":"NOT_REACHED","sink":"NOT_REACHED","ruleJudgment":"NOT_EVALUATED_ON_TARGET_PATH"},
+    "fixedMeaning":"Controlled SQL binding copy is Grade B, not upstream patch. No-warning without request reachability is not TN."
+  },
+  "commonality": {
+    "sameFirstFailure":false,
+    "sharedSecondaryBoundary":"http.Server(app) identity loss, with and without new",
+    "singleSmallChangeProvenToSolveRealPath":false,
+    "decision":"Implement only the verified HTTP Server app-listener adapter. Keep class activation, Promise callbacks, database events and middleware sequencing unresolved. This is not an end-to-end detection success.",
+    "nextDecision":"HTTP adapter is implemented; review class activation and Promise completion separately rather than adding one implicit runtime model."
+  },
+  "additionalControlFinding": {
+    "controlId":"earlier-middleware-terminates",
+    "kind":"KNOWN_BLOCKED_REVIEW_CANDIDATE",
+    "fact":"An earlier res.end middleware is not interpreted before inspecting the final Handler; the existing static review candidate remains.",
+    "notAnExploit":"The fixed controlled request cannot reach the sink under standard middleware sequencing.",
+    "policy":"Keep separate from normal TN and from real-app TP; no product change in this diagnostic milestone."
+  },
+  "engineReferences": [
+    {"filePath":"analyzers/typescript/node-server.mjs","line":95,"meaning":"baseline module import binding"},
+    {"filePath":"analyzers/typescript/node-server.mjs","line":150,"meaning":"baseline native HTTP get property; no Server property contract"},
+    {"filePath":"analyzers/typescript/node-server.mjs","line":299,"meaning":"createServer adapter contract only"},
+    {"filePath":"analyzers/typescript/node-server.mjs","line":380,"meaning":"baseline static dependency discovery and importer traversal"},
+    {"filePath":"analyzers/typescript/analyzer.mjs","line":861,"meaning":"unresolved calls invalidate referenced arguments; callbacks are not invoked"},
+    {"filePath":"analyzers/typescript/analyzer.mjs","line":1286,"meaning":"final Express Handler inspection; runtime middleware remains unverified"}
+  ],
+  "engineReferenceRevision":"61376922f6740da662e6df59560862d5c4a6cc67",
+  "implementedContract": {
+    "module":"http or node:http with verified origin",
+    "operation":"Server(app) or new Server(app), exactly one verified Express app argument",
+    "effect":"retain app identity, return existing HTTP server symbolic value, do not invoke callbacks",
+    "unknown":"https.Server, options overloads, unknown listeners, modified module/constructor/prototype, dynamic or unverified origin",
+    "newRules":0,
+    "resourceLimitIncreases":0,
+    "compatibility":"new Worker version; old snapshots retain NOT_COMPARED and are not recalculated"
+  },
+  "officialContractReference":"https://raw.githubusercontent.com/nodejs/node/v22.13.0/lib/_http_server.js",
+  "officialContractScope":"Server accepts the listener in its first argument and supports calls without new; not evidence of deployed Node version or callback completion.",
+  "independentReviewer":false,
+  "newHoldout":0,
+  "runtimeTargetsExecuted":false,
+  "uiOrDatabaseChanged":false,
+  "localUserServerRestarted":false
+}
