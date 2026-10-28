@@ -1,5 +1,31 @@
 # Bounded server analysis runtime
 
+## Typed source mapping and scheduling (v43)
+
+Directory inventory entries are not source-file candidates. An explicit static
+`moduleResolution: "bundler"` uses ordered typed-source file lookup before index
+fallback, including supported `.js` to TypeScript substitution. Missing preferred
+files are not replaced by another parsed candidate. Legacy unspecified/node10
+mapping retains conservative unique-candidate selection. Node16/NodeNext,
+conditional directory packages, multiple path targets, inherited or unknown
+nearest configs and incomplete candidate inventories remain UNKNOWN. This is
+source mapping, not proof that a runtime implements tsconfig aliases. Node ESM
+and CommonJS keep their separate resolver.
+
+Backend selection can schedule static single-target aliases from the nearest
+bounded JSONC config alongside existing relative-import hints. Hints do not prove
+HTTP registration, execution or protection. Existing file/character reservations,
+related-depth and worker limits are unchanged. Next registration reuses bounded
+parse-time binding/write/directive facts instead of walking the same AST again;
+no request values or authentication decisions are cached. Uninspected source and
+resource exhaustion remain explicit. A new worker version prevents historical
+results from being treated as directly comparable fixes.
+
+Regression controls: `module-selection34d.test.mjs`, `next-index34d.test.mjs`,
+`TypeScriptSelection34dTest` and the selection-pressure Backend integration test.
+`scripts/evaluation/module_selection34d.mjs` compares previously observed 34-A/B
+controls, not independent real-application accuracy.
+
 ## Next request wrapper summaries (v42)
 
 An exported const App Router handler may reference a static function or call a
