@@ -20,7 +20,7 @@ class SupabaseAnalysisTest {
         var converter=new ServerAnalysisConverter();String json=converter.convertToDatabaseColumn(result);
         assertThat(json).doesNotContain("CREATE TABLE","GRANT UPDATE(body)");
         assertThat(converter.convertToEntityAttribute(json)).isEqualTo(result);
-        String old=json.replace("ts-server-v45","ts-server-v33").replace("supabase-rls-v4","supabase-rls-v3");
+        String old=json.replace("ts-server-v46","ts-server-v33").replace("supabase-rls-v4","supabase-rls-v3");
         assertThat(converter.convertToDatabaseColumn(converter.convertToEntityAttribute(old))).isEqualTo(old);
     }
     @Test void localIdentityAliasesAndMatchPersistAsEvidenceNotAuthorizationOrNewFindings(){

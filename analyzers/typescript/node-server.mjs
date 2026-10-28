@@ -7,11 +7,15 @@ import {fieldValidation} from './field-validation.mjs';
 import {webSecurity} from './web-security.mjs';
 import {rateLimiting} from './rate-limit.mjs';
 import {exportLinks} from './export-links.mjs';
+import {middlewareControl} from './middleware-control.mjs';
 
 // Library contracts over AST values only. Never require/import/eval target modules.
 export function nodeServer(api) {
   const {ts,modules,limits,result,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames}=api;
   const loaded=new Map(), loading=new Set(), apps=[], routes=[];
+  const controlParents=new Map();
+  const routeControls=new WeakMap();
+  const controls=middlewareControl(api);
   const httpModules=new Map();
   const resolver=moduleResolution(api);
   const exportsSupport=exportLinks(api);
@@ -286,14 +290,21 @@ export function nodeServer(api) {
         if(!handler.target||handler.unknown){note(state.mod,'EXPRESS_HANDLER_UNKNOWN');return {value:receiver};}
         if(routes.length>=limits.maxResults){note(state.mod,'EXPRESS_REGISTRATION_LIMIT');return {value:receiver};}
         const route={target:handler.target,location:loc(node,state.mod,'EXPRESS_REGISTRATION',state.fn),uncertain:state.uncertain,middleware:args.length>2,setupContext:state.context,web:web.route(receiver,args,node,state,method),rate:rate.route(receiver,args,node,state,method)};
+        routeControls.set(route,{owner:receiver,handler,before:receiver.routes.length,opaque:!!receiver.controlOpaque,prefix:args.slice(1,-1)});
         receiver.routes.push(route);routes.push(route);return {value:receiver};
       }
       if(method==='use') {
         rate.use(receiver,args,node,state);
         web.use(receiver,args,node,state);
         const mounted=args.at(-1);
-        if(mounted?.tag==='express-router'&&args.length<=2&&(args.length===1||literal(args[0])))receiver.mounts.push(mounted);
-        else note(state.mod,'EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN');
+        if(mounted?.tag==='express-router'&&args.length<=2&&(args.length===1||literal(args[0]))){
+          receiver.mounts.push(mounted);
+          const parents=controlParents.get(mounted)??[];
+          parents.push({owner:receiver,opaque:!!receiver.controlOpaque,controlBefore:receiver.routes.length});controlParents.set(mounted,parents);
+          // A previously mounted router may mutate the request/response before
+          // later siblings. Its callbacks are not executed by this local proof.
+          receiver.controlOpaque=true;
+        }else{receiver.controlOpaque=true;note(state.mod,'EXPRESS_MIDDLEWARE_EFFECTS_UNKNOWN');}
         return {value:receiver};
       }
       if(['set','disable','enable','listen','engine'].includes(method))return {value:receiver};
@@ -423,10 +434,42 @@ export function nodeServer(api) {
     }
     const reachable=new Set();const visit=app=>{if(reachable.has(app)||app.unknown||app.ref.unknown)return;reachable.add(app);for(const child of app.mounts){tick(child.routes[0]?.target.mod??[...modules.values()][0]);visit(child);}};
     for(const app of apps)visit(app);
+    const passiveRoutes=new WeakMap();
+    const controlBefore=(owner,count,mod)=>{
+      for(let i=0;i<count;i++){
+        tick(mod);const prior=owner.routes[i];
+        const control=routeControls.get(prior);
+        if(!passiveRoutes.has(prior))passiveRoutes.set(prior,!prior.uncertain&&!prior.setupContext.unresolved
+          &&controls.passive([...control.prefix,control.handler]));
+        if(!passiveRoutes.get(prior))return false;
+      }
+      return true;
+    };
+    const controlScope=(owner,mod,seen=new Set())=>{
+      tick(mod);
+      if(seen.has(owner)||seen.size>limits.maxDepth)return false;
+      const visited=new Set([...seen,owner]);
+      return (controlParents.get(owner)??[]).every(p=>!p.opaque&&controlBefore(p.owner,p.controlBefore,mod)&&controlScope(p.owner,mod,visited));
+    };
     for(const app of reachable)for(const route of app.routes) {
       const mod=route.target.mod;
+      const control=routeControls.get(route);
       if(mod.entries.length>=limits.maxResults){note(mod,'EXPRESS_ENTRY_LIMIT');continue;}
-      mod.entries.push({fn:route.target,kind:'EXPRESS_HANDLER',registration:route.location,uncertain:route.uncertain||!!route.setupContext.unresolved,middleware:route.middleware,web:route.web,rate:route.rate});mod.record.entrypoints++;
+      let blocked;
+      try{
+        if(control.prefix.length&&!control.opaque&&!route.uncertain&&!route.setupContext.unresolved){
+          const local=controls.proof(control.prefix);
+          if(local&&controlBefore(control.owner,control.before,mod)&&controlScope(control.owner,mod))blocked=local;
+        }
+      }catch{note(mod,'EXPRESS_MIDDLEWARE_CONTROL_BUDGET_OR_UNSUPPORTED');}
+      if(blocked){
+        mod.middlewareControlAnalyzed=true;
+        note(mod,'EXPRESS_LOCAL_ROUTE_CHAIN_EXIT_PROVEN_NOT_GLOBAL_SAFETY');
+        append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ROUTE_HANDLER_NOT_REACHED',operation:'LOCAL_SYNCHRONOUS_CHAIN_EXIT',
+          location:route.location,trace:blocked.trace,limitations:['DECLARED_EXPRESS_CONTROL_NOT_RUNTIME_PROOF','OTHER_ROUTES_AND_AUTHORIZATION_NOT_PROVEN',
+            ...(blocked.truncated?['CONTROL_TRACE_BOUNDED']:[])]},mod);
+      }else mod.entries.push({fn:route.target,kind:'EXPRESS_HANDLER',registration:route.location,uncertain:route.uncertain||!!route.setupContext.unresolved,middleware:route.middleware,web:route.web,rate:route.rate});
+      mod.record.entrypoints++;
       append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ENTRY_REGISTERED',operation:'EXPRESS_ROUTER_MOUNTED',
         location:route.location,trace:[loc(route.target.node,mod,'EXPRESS_HANDLER_TARGET',route.target)],
         limitations:['STATIC_REGISTRATION_ONLY','MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED']},mod);

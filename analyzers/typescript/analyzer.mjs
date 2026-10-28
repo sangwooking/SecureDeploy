@@ -18,7 +18,7 @@ import {exportLinks} from './export-links.mjs';
 import {wrapperLinks} from './wrapper-links.mjs';
 import {externalNext} from './external-next.mjs';
 
-export const VERSION = 'ts-server-v45';
+export const VERSION = 'ts-server-v46';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -1304,7 +1304,7 @@ export function analyze(input, overrides = {}) {
     mod.record.tracedHttpCallSites = new Set(result.httpUses.filter(s => s.location.filePath === mod.filePath)
       .map(s => `${s.location.line}:${s.location.column}`)).size;
     if (mod.record.httpCallSites > mod.record.tracedHttpCallSites) note(mod, 'HTTP_CALLS_OUTSIDE_TRACED_FLOW');
-    if (mod.visited.size) {
+    if (mod.visited.size||mod.middlewareControlAnalyzed) {
       if (mod.visited.size < mod.functions.size) note(mod, 'UNREACHED_FUNCTIONS_NOT_ANALYZED');
       mod.record.flowStatus = mod.record.limitations.size ? 'PARTIAL' : 'SUPPORTED_FLOW_ANALYZED';
     } else note(mod, 'NO_SUPPORTED_SERVER_ENTRY_OR_CALL');
