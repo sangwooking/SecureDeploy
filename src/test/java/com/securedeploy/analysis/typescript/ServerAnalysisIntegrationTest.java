@@ -56,6 +56,11 @@ class ServerAnalysisIntegrationTest {
         var safeFiles=new HashMap<>(files);safeFiles.put("app/api/task/handler.ts","export async function run(request){return fetch('https://example.invalid/fixed');}");
         var safe=uploadSources(token,safeFiles);assertThat(safe.at("/serverAnalysis/validatedFindings")).isEmpty();
         assertThat(safe.path("securityScore")).isEqualTo(unsafe.path("securityScore"));
+        safeFiles.put("app/api/task/handler.ts","export async function run(request){const url=new URL(request.url).searchParams.get('url');if(url!=='https://example.invalid/fixed')return Response.json({ok:false});return fetch(url);}");
+        var guarded=uploadSources(token,safeFiles);
+        assertThat(guarded.at("/serverAnalysis/findings")).isEmpty();
+        assertThat(guarded.at("/serverAnalysis/httpUses").findValuesAsText("kind")).contains("FIXED_DESTINATION","STRICT_STRING_EQUALITY");
+        assertThat(guarded.path("securityScore")).isEqualTo(unsafe.path("securityScore"));
         files.put("app/api/task/route.ts","import {toNextJsHandler} from 'better-auth/next-js';import {betterAuth} from 'better-auth';const auth=betterAuth({callback:async request=>fetch(request.url)});export const {GET,POST}=toNextJsHandler(auth);");
         var unknown=uploadSources(token,files);assertThat(unknown.at("/serverAnalysis/validatedFindings")).isEmpty();
         assertThat(unknown.at("/serverAnalysis/nodeUses").findValuesAsText("kind")).contains("EXTERNAL_IMPLEMENTATION_UNKNOWN");

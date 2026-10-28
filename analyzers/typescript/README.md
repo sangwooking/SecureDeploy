@@ -25,6 +25,14 @@ Auth.js v4 Pages handlers, v5 handlers/auth wrappers, Better Auth session APIs,
 cookie plugins and arbitrary callback semantics are not added by this contract.
 Existing resource limits, Rule IDs, Risk and NOT_COMPARED policy remain unchanged.
 
+The v44 precision follow-up refines only a local scalar identifier on the equality
+branch of a direct `===`/`!==` comparison with a bounded absolute HTTP(S) string
+literal. The HTTP observation retains a STRICT_STRING_EQUALITY location and a
+fixed-destination fact, not merely the absence of a warning. Reassignment or
+unknown closure writes invalidate that fact. Prior aliases, object properties,
+loose/dynamic comparisons, disjunctions and generic validators are not refined.
+This does not prove DNS, redirects, runtime reachability or authorization safety.
+
 ## Typed source mapping and scheduling (v43)
 
 Directory inventory entries are not source-file candidates. An explicit static

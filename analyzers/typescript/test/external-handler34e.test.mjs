@@ -8,6 +8,7 @@ for(const c of externalHandlerCases)test('external Next adapter: '+c.id,()=>{
  const high=r.findings.filter(f=>f.ruleId==='TS_SSRF_INPUT_FLOW'&&f.confidence==='HIGH');
  // One Sink keeps one finding even when GET and POST share it.
  assert.equal(high.length,c.truth==='FLOW'?1:0);
+ if(c.truth==='NORMAL')assert.equal(r.findings.length,0);
  if(c.truth==='FLOW'){
   assert.ok(high.every(f=>f.source.filePath&&f.sink.filePath));
   assert.ok(r.nodeUses.some(u=>u.operation.startsWith('BETTER_AUTH_NEXT_')&&u.kind==='CALLBACK_BOUND'));

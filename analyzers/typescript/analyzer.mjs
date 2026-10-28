@@ -942,6 +942,23 @@ export function analyze(input, overrides = {}) {
     refineAllowlist(node, true, yes); refineAllowlist(node, false, no);
     regexSupport.refine(node,true,yes);regexSupport.refine(node,false,no);
     refineUrlAllowlist(node, true, yes); refineUrlAllowlist(node, false, no);
+    refineExactUrlString(node, true, yes); refineExactUrlString(node, false, no);
+  }
+  function refineExactUrlString(original, accepted, state) {
+    const node=unwrap(original);
+    if(!ts.isBinaryExpression(node))return;
+    const op=node.operatorToken.kind;
+    if(![ts.SyntaxKind.EqualsEqualsEqualsToken,ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(op)
+        ||accepted!==(op===ts.SyntaxKind.EqualsEqualsEqualsToken))return;
+    const left=unwrap(node.left),right=unwrap(node.right);
+    const name=ts.isIdentifier(left)?left:right,literal=name===left?right:left;
+    if(!ts.isIdentifier(name)||!ts.isStringLiteral(literal)||literal.text.length>1000)return;
+    const current=state.vars.get(name.text);
+    if(!current||current.uninitialized||current.ref||destinationOf(constant(literal.text)).kind!=='FIXED_DESTINATION')return;
+    const check=loc(original,state.mod,'STRICT_STRING_EQUALITY',state.fn);
+    // Only the equality branch's local scalar changes. Aliases and other branches retain their facts.
+    state.vars.set(name.text,{...constant(literal.text),exactUrlStringCheck:check});
+    state.context.defenses.push(check);
   }
   function refineUrlAllowlist(original, accepted, state, depth = 0) {
     if (depth > 3) return;
@@ -978,8 +995,9 @@ export function analyze(input, overrides = {}) {
   function observeHttp(input, node, state) {
     const {mod, fn} = state;
     let destination = destinationOf(input);
-    if (state.uncertain || input.traceTruncated) destination = unresolvedDestination();
-    const defenses = Object.values(input.ref?.checks ?? {});
+    const exact=hasConstant(input)&&input.exactUrlStringCheck;
+    if (state.uncertain&&!exact || input.traceTruncated) destination = unresolvedDestination();
+    const defenses = [...Object.values(input.ref?.checks ?? {}),...(exact?[exact]:[])];
     const limits = ['REDIRECT_DNS_REACHABILITY_NOT_VERIFIED', 'PATH_FEASIBILITY_NOT_VERIFIED'];
     if (destination.kind === 'ALLOWLISTED_DESTINATION') limits.push('PORT_POLICY_NOT_VERIFIED');
     if (destination.kind === 'UNRESOLVED_DESTINATION') { limits.push('DESTINATION_FLOW_UNRESOLVED'); note(mod, 'DESTINATION_FLOW_UNRESOLVED'); }
