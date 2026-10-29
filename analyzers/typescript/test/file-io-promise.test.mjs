@@ -19,6 +19,8 @@ test('two file operations keep distinct source positions without writing target 
  const r=analyze({files:fileIoCases.find(c=>c.id==='two-writes').files});
  const io=r.nodeUses.filter(u=>u.kind==='FILE_IO_PROMISE_CREATED');
  assert.equal(io.length,2);assert.notEqual(io[0].location.column,io[1].location.column);
+ assert.ok(io.every(u=>u.trace.some(t=>t.kind==='NATIVE_PROMISIFY_WRITEFILE')));
+ assert.ok(r.nodeUses.some(u=>u.kind==='FILE_IO_FULFILLMENT_VALUE_UNDEFINED'));
 });
 test('immutable ESM aliases and a direct return wrapper preserve only conditional completion',()=>{
  const r=analyze({files:[{filePath:'entry.mjs',content:`import express from 'express';import {writeFile as save} from 'node:fs/promises';

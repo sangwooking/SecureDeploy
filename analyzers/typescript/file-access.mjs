@@ -109,7 +109,7 @@ export function fileAccess(api){
   if(n==='util:promisify'){
    if(args.length===1&&args[0]?.fileNative==='fs:writeFile'&&stable(callable,state)&&stable(args[0],state))
     // util.promisify returns a new wrapper, not an alias of the fs namespace.
-    return {value:native('fs:promisifiedWriteFile')};
+    return {value:{...native('fs:promisifiedWriteFile'),fileIoOrigin:at('NATIVE_PROMISIFY_WRITEFILE')}};
    note(state.mod,'FILE_PROMISIFY_ORIGIN_UNKNOWN');return {value:unknown()};
   }
   const io=state.nodeMode&&(n==='fs:promisifiedWriteFile'||n==='fs/promises:writeFile');
@@ -169,7 +169,7 @@ export function fileAccess(api){
     message:'사용자가 입력한 경로로 서버가 파일을 읽거나 변경할 가능성이 있습니다.',
     recommendation:'사용자 경로 대신 서버의 고정 파일 ID를 사용하세요. 경로가 필요하면 실제 저장 기준과 경로 구성요소 경계를 검사하고, 심볼릭 링크·접근 권한·검증 후 변경을 별도로 확인하세요. 임시 디렉터리에서 정상 파일과 탈출 거부를 검증한 뒤 재검사하세요.'},state.mod);
   }
-  return {value:io?api.ioPromise(node,state,n):unknown()};
+  return {value:io?api.ioPromise(node,state,n,callable.fileIoOrigin):unknown()};
  }
  return {dependency,imported,property,call,stable};
 }

@@ -14,8 +14,10 @@ export function asyncBoundaries(api){
   state.asyncFrame={summary:{awaited:false,unknown:false,rejected:false},post:false};
   evidence('ASYNC_CALL_CONNECTED',state.fn.node,state);evidence('PRE_AWAIT_REACHABLE',state.fn.node,state);
  }
- function fileIo(node,state,origin){
-  evidence('FILE_IO_PROMISE_CREATED',node,state,[loc(node,state.mod,origin,state.fn)]);
+ function fileIo(node,state,origin,definition){
+  const trace=[...(definition?[definition]:[]),loc(node,state.mod,origin,state.fn)];
+  evidence('FILE_IO_PROMISE_CREATED',node,state,trace);
+  evidence('FILE_IO_FULFILLMENT_VALUE_UNDEFINED',node,state,trace);
   note(state.mod,'FILE_IO_COMPLETION_AND_FILESYSTEM_STATE_UNVERIFIED');
   note(state.mod,'FILE_IO_RUNTIME_NODE_VERSION_AND_NATIVE_IMPLEMENTATION_UNVERIFIED');
   return {...promise('CONDITIONAL',constant(undefined)),ioPromise:true};

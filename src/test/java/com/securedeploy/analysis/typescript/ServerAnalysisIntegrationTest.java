@@ -55,7 +55,7 @@ class ServerAnalysisIntegrationTest {
         assertThat(safe.at("/coverage/status")).isEqualTo(conditional.at("/coverage/status"));
         var unknown=uploadSource(token,"entry.cjs",prefix+"app.post('/',async(req,res)=>{try{await write('unused.txt','data');}catch(e){}eval(req.body.code);});");
         assertThat(unknown.at("/serverAnalysis/validatedFindings")).isEmpty();
-        assertThat(unknown.at("/serverAnalysis/files").findValuesAsText("limitations").toString()).doesNotContain("SUCCESS_CONFIRMED");
+        assertThat(unknown.at("/serverAnalysis/nodeUses").findValuesAsText("kind")).contains("ASYNC_EXCEPTION_FLOW_UNKNOWN");
     }
 
     @Test void zipMiddlewareTerminationPersistsControlEvidenceWithoutSuppressingRealNextFlow() throws Exception {

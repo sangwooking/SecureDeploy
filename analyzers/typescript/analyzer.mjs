@@ -129,7 +129,7 @@ export function analyze(input, overrides = {}) {
     functionName: safeName(fn?.name ?? 'module'), kind });
   const regexSupport=regexFlow({ts,unwrap,expr,note,tick,loc,step,constant,unknown});
   const dataObjects=objectData({tick,note,step,loc,sources:exposureSources});
-  const filesSupport=fileAccess({ts,modules,value,unknown,constant,union,step,loc,note,tick,append,result,ioPromise:(node,state,origin)=>asyncSupport.fileIo(node,state,origin)});
+  const filesSupport=fileAccess({ts,modules,value,unknown,constant,union,step,loc,note,tick,append,result,ioPromise:(node,state,origin,definition)=>asyncSupport.fileIo(node,state,origin,definition)});
   function tick(mod) {
     try { charged(); } catch {
       mod.record.limitations.add(steps >= limits.maxSteps ? 'ANALYSIS_STEP_BUDGET_EXCEEDED' : 'ANALYSIS_TIME_BUDGET_EXCEEDED');
@@ -1161,7 +1161,7 @@ export function analyze(input, overrides = {}) {
       if (node.incrementor) expr(node.incrementor, branch);
       mergeVars(state, [state, branch]); return { ...r, stops: false };
     } else if (ts.isTryStatement(node)) {
-      if(state.asyncFrame){note(mod,'ASYNC_EXCEPTION_FLOW_UNKNOWN');state.asyncFrame.summary.unknown=true;return {values:[],stops:true,asyncStopped:true};}
+      if(state.asyncFrame){note(mod,'ASYNC_EXCEPTION_FLOW_UNKNOWN');asyncSupport.evidence('ASYNC_EXCEPTION_FLOW_UNKNOWN',node,state);state.asyncFrame.summary.unknown=true;return {values:[],stops:true,asyncStopped:true};}
       const thrown=node.tryBlock.statements.length===1 && ts.isThrowStatement(node.tryBlock.statements[0]) ? unwrap(node.tryBlock.statements[0].expression) : undefined;
       const known=thrown && ts.isNewExpression(thrown) && ts.isIdentifier(thrown.expression) && thrown.expression.text==='Error'
         && !state.vars.has('Error') && !mod.imports.has('Error') && !mod.declared.has('Error')
