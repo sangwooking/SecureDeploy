@@ -34,13 +34,13 @@ test('constructor branch exploration consumes the existing budgets',()=>{
   assert.ok(r.findings.every(f=>f.confidence!=='HIGH'));
  }
 });
-test('constructor conditions do not activate async helpers, promises or event callbacks',()=>{
- for(const body of [
-  `async function activate(){app.post('/',(req,res)=>eval(req.body.code));}class Service{constructor(){if(true)activate();}}new Service();`,
-  `class Service{constructor(){if(true)Promise.resolve().then(()=>app.post('/',(req,res)=>eval(req.body.code)));}}new Service();`,
+test('constructor conditions connect direct async prefixes but never activate promise callbacks',()=>{
+ for(const [body,entries]of [
+  [`async function activate(){app.post('/',(req,res)=>eval(req.body.code));}class Service{constructor(){if(true)activate();}}new Service();`,1],
+  [`class Service{constructor(){if(true)Promise.resolve().then(()=>app.post('/',(req,res)=>eval(req.body.code)));}}new Service();`,0],
  ]){
   const r=analyze({files:[{filePath:'entry.js',content:`const app=require('express')();`+body}]});
-  assert.equal(r.findings.length,0);assert.equal(r.files[0].entrypoints,0);
+  assert.equal(r.findings.length,entries);assert.equal(r.files[0].entrypoints,entries);
   assert.ok(r.files[0].limitations.length>0);
  }
 });

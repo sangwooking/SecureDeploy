@@ -99,8 +99,6 @@ export function classModels(api) {
       const selected=callable.ref?.properties.get('this'),method=callable.classBoundMethod;
       if(callable.ref?.unknown||method.unknown||method.ref?.unknown||!selected||selected.ref?.unknown||method.target.classModel.ref.unknown||ts.isNewExpression(node))
         return {value:rejected('CLASS_THIS_BINDING_UNKNOWN',node,state)};
-      if(method.target.node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword))
-        return {value:unknownCall('CLASS_ASYNC_EXECUTION_UNKNOWN',node,state,[selected,...args])};
       evidence('METHOD_CALL_CONNECTED',node,state,[loc(method.target.node,method.target.mod,'CLASS_METHOD_TARGET',method.target)]);
       return {value:invoke(method.target,args,state.depth+1,state.context,state.stack,state.uncertain||!!selected.constructorConditional,state.exposureUncertain,selected)};
     }
@@ -108,8 +106,6 @@ export function classModels(api) {
     const model=callable.target.classModel,selected=callable.target.lexicalThis??receiver;
     if(callable.unknown||callable.ref?.unknown||model.ref.unknown||!selected||selected.classModel!==model||selected.unknown||selected.ref?.unknown||ts.isNewExpression(node))
       return {value:rejected('CLASS_METHOD_RECEIVER_UNKNOWN',node,state)};
-    if(callable.target.node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword))
-      return {value:unknownCall('CLASS_ASYNC_EXECUTION_UNKNOWN',node,state,[selected,...args])};
     evidence('METHOD_CALL_CONNECTED',node,state,[loc(callable.target.node,model.mod,'CLASS_METHOD_TARGET',callable.target)]);
     // The existing bounded invoker performs the argument/return propagation.
   }

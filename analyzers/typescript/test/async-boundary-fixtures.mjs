@@ -1,0 +1,28 @@
+const pre=`const app=require('express')();`;
+const fixture=(id,expected,helper,handler)=>({id,expected,files:[{filePath:'entry.js',content:pre+helper+`app.post('/',async(req,res)=>{${handler}});`}]});
+export const asyncCases=[
+ fixture('no-await-helper','HIGH',`async function run(v){eval(v);}`,'run(req.body.code);'),
+ fixture('class-pre-await','HIGH',`class Service{async run(v){eval(v);await external();}}const service=new Service();`,'service.run(req.body.code);'),
+ fixture('pre-await-normal','NORMAL',`async function run(v){eval(Number(v));await external();}`,'run(req.body.code);'),
+ fixture('promise-not-value','NORMAL',`async function identity(v){return v;}`,'eval(identity(req.body.code));'),
+ fixture('unknown-await','UNKNOWN',`async function run(v){await external();eval(v);}`,'run(req.body.code);'),
+ fixture('literal-await','CONDITIONAL',`async function run(v){await 0;eval(v);}`,'run(req.body.code);'),
+ fixture('native-resolve','CONDITIONAL',`async function run(v){await Promise.resolve(0);eval(v);}`,'run(req.body.code);'),
+ fixture('native-reject','BLOCKED',`async function run(v){await Promise.reject(0);eval(v);}`,'run(req.body.code);'),
+ fixture('explicit-throw','BLOCKED',`async function run(v){throw Error('stop');eval(v);}`,'run(req.body.code);'),
+ fixture('early-return','BLOCKED',`async function run(v){return;eval(v);}`,'run(req.body.code);'),
+ fixture('await-caller-value','CONDITIONAL',`async function value(){return 'fixed';}`,'const v=await value();eval(req.body.code);'),
+ fixture('await-caller-normal','NORMAL',`async function value(){return 'fixed';}`,'const v=await value();eval(v);'),
+ fixture('post-await-safe','NORMAL',`async function run(v){await 0;eval(Number(v));}`,'run(req.body.code);'),
+ fixture('then-chain','UNKNOWN',`async function run(v){await external().then(()=>v);eval(v);}`,'run(req.body.code);'),
+ fixture('dynamic-import','UNKNOWN',`async function run(v){await import(external);eval(v);}`,'run(req.body.code);'),
+ fixture('shadowed-promise','UNKNOWN',`const Promise=external;async function run(v){await Promise.resolve(0);eval(v);}`,'run(req.body.code);'),
+ fixture('mutated-promise','UNKNOWN',`Promise.resolve=external;async function run(v){await Promise.resolve(0);eval(v);}`,'run(req.body.code);'),
+ fixture('promise-alias','UNKNOWN',`const P=Promise;P.resolve=external;async function run(v){await Promise.resolve(0);eval(v);}`,'run(req.body.code);'),
+ fixture('unknown-thenable','UNKNOWN',`async function run(v){await Promise.resolve(external);eval(v);}`,'run(req.body.code);'),
+ fixture('two-functions','HIGH',`async function first(v){eval(v);await external();}async function second(){return '1';}`,'first(req.body.code);second();'),
+ fixture('two-instances','NORMAL',`class Service{constructor(v){this.value=v;}async run(){eval(this.value);}}`,'const a=new Service(req.body.code),b=new Service("1");b.run();'),
+ fixture('after-await-this','UNKNOWN',`class Service{constructor(v){this.value=v;}async run(){await 0;eval(this.value);}}`,'const service=new Service(req.body.code);service.run();'),
+ fixture('mutable-argument','UNKNOWN',`async function run(obj){await 0;eval(obj.value);}`,'run({value:req.body.code});'),
+ fixture('callee-not-awaited','HIGH',`async function run(v){eval(v);await external();}`,'run(req.body.code);res.end();'),
+];

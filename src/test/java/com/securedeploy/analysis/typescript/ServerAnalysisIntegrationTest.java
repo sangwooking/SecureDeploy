@@ -58,7 +58,7 @@ class ServerAnalysisIntegrationTest {
             assertThat(finding.at("/evidence/0/sink/kind").asText()).isEqualTo("EVAL_CALL");
         }
         var snapshot=blocked.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v48");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v49");
         assertThat(snapshot.path("validatedFindings")).isEmpty();
         assertThat(snapshot.path("nodeUses").findValuesAsText("kind")).contains("ROUTE_HANDLER_NOT_REACHED","RESPONSE_END");
         assertThat(snapshot.at("/files/0/entrypoints").asInt()).isEqualTo(1);
@@ -77,7 +77,7 @@ class ServerAnalysisIntegrationTest {
         files.put("app/api/task/route.ts","import {toNextJsHandler} from 'better-auth/next-js';import {run} from './handler';export const {GET,POST}=toNextJsHandler(run);");
         files.put("app/api/task/handler.ts","export async function run(request){return fetch(new URL(request.url).searchParams.get('url'));}");
         var unsafe=uploadSources(token,files);var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v48");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v49");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         assertThat(snapshot.at("/validatedFindings/0/ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
         assertThat(snapshot.at("/validatedFindings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
@@ -127,7 +127,7 @@ class ServerAnalysisIntegrationTest {
                 "app/api/task/route.ts","import {wrap} from '../../../lib/wrapper';export const GET=wrap(async(request)=>fetch(new URL(request.url).searchParams.get('url')));");
         var unsafe=uploadSources(token,sources);
         var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v48");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v49");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
         assertThat(finding.path("ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
@@ -165,7 +165,7 @@ class ServerAnalysisIntegrationTest {
                 "service.ts","function query(db,id){return db.prepare('SELECT * FROM records WHERE id='+id).all();}export {query};");
         var unsafe=uploadSources(token,sources);
         var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v48");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v49");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
         assertThat(finding.path("ruleId").asText()).isEqualTo("TS_SQL_INPUT_FLOW");
@@ -189,6 +189,22 @@ class ServerAnalysisIntegrationTest {
         var unresolved=uploadSources(token,unknownSources);
         assertThat(unresolved.at("/serverAnalysis/validatedFindings")).isEmpty();
         assertThat(unresolved.path("serverAnalysis").toString()).contains("MODULE_WILDCARD_OR_NAMESPACE_EXPORT_NOT_SUPPORTED");
+    }
+
+    @Test void asyncBoundaryPersistsPrefixEvidenceAndKeepsUnknownCompletionOutOfFinalFindings() throws Exception {
+        String token=signup();
+        String prefix="const app=require('express')();const run=require('./helper');app.post('/',(req,res)=>run(req.body.code));";
+        var before=uploadSources(token,Map.of("entry.js",prefix,"helper.js","module.exports=async(value)=>{eval(value);await external();};"));
+        assertThat(before.at("/serverAnalysis/validatedFindings/0/ruleId").asText()).isEqualTo("JS_EVAL_INPUT_FLOW");
+        assertThat(before.at("/serverAnalysis/validatedFindings/0/comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        assertThat(before.at("/serverAnalysis/nodeUses").findValuesAsText("kind")).contains("ASYNC_CALL_CONNECTED","PRE_AWAIT_REACHABLE","AWAIT_SUSPENDED","UNSUPPORTED_ASYNC_BOUNDARY");
+        var unknown=uploadSources(token,Map.of("entry.js",prefix,"helper.js","module.exports=async(value)=>{await external();eval(value);};"));
+        assertThat(unknown.at("/serverAnalysis/validatedFindings")).isEmpty();
+        assertThat(unknown.path("serverAnalysis").toString()).contains("UNSUPPORTED_ASYNC_BOUNDARY");
+        assertThat(unknown.path("securityScore")).isEqualTo(before.path("securityScore"));
+        var possible=uploadSources(token,Map.of("entry.js",prefix,"helper.js","module.exports=async(value)=>{await 0;eval(value);};"));
+        assertThat(possible.at("/serverAnalysis/findings/0/confidence").asText()).isEqualTo("MEDIUM");
+        assertThat(possible.at("/serverAnalysis/validatedFindings")).isEmpty();
     }
 
     @Test void conditionalClassBootstrapPersistsReachabilityWithoutPromotingUncertainty() throws Exception {
@@ -229,7 +245,7 @@ class ServerAnalysisIntegrationTest {
             };
             """);
         var unsafe=uploadSources(token,sources);
-        assertThat(unsafe.at("/serverAnalysis/analyzerVersion").asText()).isEqualTo("ts-server-v48");
+        assertThat(unsafe.at("/serverAnalysis/analyzerVersion").asText()).isEqualTo("ts-server-v49");
         assertThat(unsafe.at("/serverAnalysis/validatedFindings").findValuesAsText("ruleId")).contains("JS_EVAL_INPUT_FLOW");
         assertThat(unsafe.at("/serverAnalysis/nodeUses").findValuesAsText("kind")).contains("CLASS_CONSTRUCTED","METHOD_CALL_CONNECTED","ENTRY_REGISTERED");
         var safe=new HashMap<>(sources);safe.put("service.js",sources.get("service.js").replace("eval(req.body.code)","Number(req.body.code)"));

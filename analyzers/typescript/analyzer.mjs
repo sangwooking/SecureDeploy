@@ -17,8 +17,9 @@ import {fileAccess} from './file-access.mjs';
 import {exportLinks} from './export-links.mjs';
 import {wrapperLinks} from './wrapper-links.mjs';
 import {externalNext} from './external-next.mjs';
+import {asyncBoundaries} from './async-boundary.mjs';
 
-export const VERSION = 'ts-server-v48';
+export const VERSION = 'ts-server-v49';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -106,6 +107,7 @@ export function analyze(input, overrides = {}) {
     status: 'COMPLETE', files: [], findings: [], sqlUses: [], httpUses: [], exposureUses: [], nodeUses: [], resourceUses: [], authorizationContexts: [], limitations: [LIMITATION] };
   const modules = new Map();
   let nodeSupport;
+  let asyncSupport;
   const functionNodes=new WeakSet();
   let chars = 0, steps = 0, totalFunctions = 0;
   let phase='SETUP', astNodes=0;
@@ -360,6 +362,7 @@ export function analyze(input, overrides = {}) {
     return target.exports.get(imported.exported)??exportSupport.functionAt(target,imported.exported,sourceModule);
   }
   function property(base, key, node, state) {
+    if(state.context.asyncPostAwait&&base.ref){note(state.mod,'POST_AWAIT_HEAP_STATE_UNKNOWN');return unknown();}
     const { mod, fn } = state;
     const fileProperty=filesSupport.property(base,key,node,state);if(fileProperty)return fileProperty;
     if(base.inputShape==='FORM_FIELD'&&['name','type','size'].includes(key)){
@@ -537,6 +540,7 @@ export function analyze(input, overrides = {}) {
     const node = unwrap(original);
     if (!node) return unknown();
     if(state.constructorAbrupt)return {...unknown(),constructorAbrupt:true};
+    if(state.asyncStop)return unknown();
     const { mod, fn } = state;
     tick(mod);
     if ((node.flags & ts.NodeFlags.OptionalChain) && state.optionalNode !== node) {
@@ -554,6 +558,7 @@ export function analyze(input, overrides = {}) {
     if (ts.isIdentifier(node)) {
       const found = state.vars.get(node.text) ?? mod.constants.get(node.text);
       if (found?.uninitialized) { note(mod, 'LEXICAL_READ_BEFORE_INITIALIZATION'); return unknown(); }
+      if(found&&state.context.asyncPostAwait&&found.ref){note(mod,'POST_AWAIT_HEAP_STATE_UNKNOWN');return unknown();}
       if (found) return state.nodeMode?nodeSupport.applyFields(found,state):found;
       const fileBinding=filesSupport.imported(node,state);if(fileBinding)return fileBinding;
       const target = resolve(mod, node.text);
@@ -563,8 +568,11 @@ export function analyze(input, overrides = {}) {
     }
     if (ts.isAwaitExpression(node)) {
       const v=expr(node.expression,state);
-      if(state.nodeMode&&v.tag==='mongoose-query'){nodeSupport.awaitValue(v,node,state);return unknown();}
-      return v;
+      if(state.nodeMode&&v.tag==='mongoose-query'){
+        nodeSupport.awaitValue(v,node,state);
+        return state.asyncFrame?asyncSupport.awaitValue(unknown(),node,state):unknown();
+      }
+      return state.nodeMode&&state.asyncFrame?asyncSupport.awaitValue(v,node,state):v;
     }
     const environment=serverEnvironmentValue(node,state);
     if(environment)return environment;
@@ -709,6 +717,8 @@ export function analyze(input, overrides = {}) {
       const global = ts.isIdentifier(callee) && !state.vars.has(callee.text) && !mod.imports.has(callee.text) && !mod.declared.has(callee.text);
       const args = (node.arguments ?? []).map(a => expr(a, state));
       if(state.constructorAbrupt)return {...unknown(),constructorAbrupt:true};
+      if(state.asyncStop)return unknown();
+      const promiseCall=asyncSupport.intrinsic(callee,args,state);if(promiseCall)return promiseCall;
       const fileMember=receiverInput?.fileNative&&ts.isPropertyAccessExpression(callee)?filesSupport.property(receiverInput,callee.name.text,callee,state):callable;
       const fileCall=filesSupport.call(node,fileMember,args,state);
       if(fileCall)return fileCall.value;
@@ -719,13 +729,15 @@ export function analyze(input, overrides = {}) {
       if(state.nodeMode) {
         const member=ts.isPropertyAccessExpression(callee)?property(receiverInput,callee.name.text,callee,state):callable;
         const supported=nodeSupport.call(node,callee,receiverInput,args,state,global,member);
-        if(supported){if(supported.value?.constructorAbrupt)state.constructorAbrupt=true;return supported.value;}
+        if(supported){if(supported.value?.constructorAbrupt)state.constructorAbrupt=true;if(supported.value?.asyncThrown){state.asyncStop=true;state.asyncRejected=true;}return supported.value;}
         if(member?.target&&!member.unknown&&!member.ref?.unknown) {
+          if(state.context.asyncPostAwait){note(mod,'POST_AWAIT_HELPER_CONTEXT_UNKNOWN');return unknown();}
           nodeSupport.escapeFields(state);
           if(ts.isNewExpression(node))return nodeSupport.construct(member.target,args,state);
           const passed=args.map(a=>step(a,loc(node,mod,'FUNCTION_ARGUMENT',fn),mod));
           const returned=invoke(member.target,passed,state.depth+1,state.context,state.stack,state.uncertain||!!receiverInput?.constructorConditional,state.exposureUncertain,receiverInput);
           if(returned.constructorAbrupt)state.constructorAbrupt=true;
+          if(returned.asyncThrown){state.asyncStop=true;state.asyncRejected=true;}
           if(member.effects?.length)invalidateWrites(member.effects,state,union(...args));
           if(returned.tag==='express-router'&&!returned.unknown&&!returned.ref?.unknown)
             append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'CALL_LINKED',operation:'STATIC_ROUTER_FACTORY_RETURN',
@@ -912,7 +924,7 @@ export function analyze(input, overrides = {}) {
       }
       return { ...v, ref: refs.get(v.ref) };
     };
-    return { ...state, fieldFacts:[...(state.fieldFacts??[])],vars: new Map([...state.vars].map(([name, v]) => [name, clone(v)])),
+    return { ...state, ...(state.asyncFrame?{asyncFrame:{...state.asyncFrame}}:{}),fieldFacts:[...(state.fieldFacts??[])],vars: new Map([...state.vars].map(([name, v]) => [name, clone(v)])),
       thisValue:state.nodeMode&&state.thisValue?clone(state.thisValue):state.thisValue,forkRefs: refs };
   }
   function mergeVars(state, branches) {
@@ -1057,6 +1069,7 @@ export function analyze(input, overrides = {}) {
     const { mod, fn } = state;
     tick(mod);
     if(state.constructorAbrupt)return {values:[],stops:true,constructorAbrupt:true};
+    if(state.asyncStop)return {values:[],stops:true,asyncStopped:true,asyncRejected:!!state.asyncRejected};
     if (ts.isBlock(node)) {
       const prior = new Map(state.vars), locals = new Set();
       const names = name => { if (ts.isIdentifier(name)) locals.add(name.text);
@@ -1077,12 +1090,14 @@ export function analyze(input, overrides = {}) {
       if (!d.initializer && !(node.declarationList.flags & ts.NodeFlags.BlockScoped) && ts.isIdentifier(d.name) && state.vars.has(d.name.text)) continue;
       const v = d.initializer ? expr(d.initializer, state) : constant(undefined);
       if(state.constructorAbrupt)return {values:[],stops:true,constructorAbrupt:true};
+      if(state.asyncStop)return {values:[],stops:true,asyncStopped:true,asyncRejected:!!state.asyncRejected};
       bind(d.name, step(v, loc(d, mod, 'VARIABLE', fn), mod), state);
     }
     else if(state.nodeMode&&ts.isClassDeclaration(node)&&node.name)state.vars.set(node.name.text,nodeSupport.classValue(node,state));
     else if (ts.isExpressionStatement(node)) expr(node.expression, state);
     else if (ts.isReturnStatement(node)) {
-      let returned=!node.expression&&state.fn.classConstructor?constant(undefined):expr(node.expression,state);
+      let returned=!node.expression&&(state.fn.classConstructor||state.asyncFrame)?constant(undefined):expr(node.expression,state);
+      if(state.asyncStop)return {values:[],stops:true,asyncStopped:true,asyncRejected:!!state.asyncRejected};
       if(state.fn.nextServerReturn) {
         const body=responseBody(returned),location=loc(node,state.mod,'SERVER_FUNCTION_RETURN',state.fn);
         returned={...returned,environmentResponses:[{...body,unresolved:body.unresolved||state.uncertain||state.exposureUncertain,location}]};
@@ -1091,11 +1106,14 @@ export function analyze(input, overrides = {}) {
       if(state.fn.classConstructor)constructorNormalPath(state);
       return {values:[state.nodeMode&&state.uncertain&&!(state.fn.classConstructor&&!node.expression)?{...returned,unknown:true}:returned],stops:true};
     }
-    else if (ts.isThrowStatement(node)) { expr(node.expression, state); return { values: [], stops: true,
+    else if (ts.isThrowStatement(node)) { expr(node.expression, state);
+      if(state.context.asyncExecution){if(state.asyncFrame)state.asyncFrame.summary.rejected=true;return {values:[],stops:true,asyncRejected:true};}
+      return { values: [], stops: true,
       ...(state.context.classConstructorFlow?{constructorAbrupt:true}:{}) }; }
     else if (ts.isIfStatement(node)) {
       const condition = expr(node.expression, state);
       if(state.constructorAbrupt)return {values:[],stops:true,constructorAbrupt:true};
+      if(state.asyncStop)return {values:[],stops:true,asyncStopped:true,asyncRejected:!!state.asyncRejected};
       if(state.context.classConstructorFlow)nodeSupport.constructorBranch(node,state,truth(condition));
       if (truth(condition) === true) return statement(node.thenStatement, state);
       if (truth(condition) === false) return node.elseStatement ? statement(node.elseStatement, state) : { values: [], stops: false };
@@ -1119,6 +1137,7 @@ export function analyze(input, overrides = {}) {
       if (continuing.length) mergeVars(state, continuing);
       if(state.context.classConstructorFlow&&continuing.length===1)state.context=continuing[0].context;
       return { values: [...ar.values, ...br.values], stops: ar.stops && br.stops,
+        ...(ar.asyncRejected&&br.asyncRejected?{asyncRejected:true}:{}),
         ...(ar.constructorAbrupt&&br.constructorAbrupt?{constructorAbrupt:true}:{}) };
     } else if (ts.isForStatement(node) || ts.isForOfStatement(node) || ts.isForInStatement(node) || ts.isWhileStatement(node) || ts.isDoStatement(node)) {
       note(mod, 'LOOP_FLOW_PARTIAL');
@@ -1131,6 +1150,7 @@ export function analyze(input, overrides = {}) {
       if (node.incrementor) expr(node.incrementor, branch);
       mergeVars(state, [state, branch]); return { ...r, stops: false };
     } else if (ts.isTryStatement(node)) {
+      if(state.asyncFrame){note(mod,'ASYNC_EXCEPTION_FLOW_UNKNOWN');state.asyncFrame.summary.unknown=true;return {values:[],stops:true,asyncStopped:true};}
       const thrown=node.tryBlock.statements.length===1 && ts.isThrowStatement(node.tryBlock.statements[0]) ? unwrap(node.tryBlock.statements[0].expression) : undefined;
       const known=thrown && ts.isNewExpression(thrown) && ts.isIdentifier(thrown.expression) && thrown.expression.text==='Error'
         && !state.vars.has('Error') && !mod.imports.has('Error') && !mod.declared.has('Error')
@@ -1158,7 +1178,7 @@ export function analyze(input, overrides = {}) {
     } else if (![ts.SyntaxKind.EmptyStatement, ts.SyntaxKind.BreakStatement, ts.SyntaxKind.FunctionDeclaration].includes(node.kind)) {
       note(mod, 'STATEMENT_UNSUPPORTED'); invalidateWrites(writtenNames(node, state), state); state.uncertain = true;
     }
-    return { values: [], stops:!!state.constructorAbrupt,...(state.constructorAbrupt?{constructorAbrupt:true}:{}) };
+    return { values: [], stops:!!state.constructorAbrupt||!!state.asyncStop,...(state.constructorAbrupt?{constructorAbrupt:true}:{}),...(state.asyncStop?{asyncStopped:true,asyncRejected:!!state.asyncRejected}:{}) };
   }
   const canonicalFunctions = new WeakMap();
   function constructorNormalPath(state){
@@ -1189,7 +1209,8 @@ export function analyze(input, overrides = {}) {
   }
   function invoke(fn, args, depth, context, stack, uncertain = false, exposureUncertain = false,thisValue,constructing=false) {
     const { mod, node } = fn;
-    if(context.classConstructorFlow&&(node.asteriskToken||node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword))){
+    const asyncMode=!!fn.nodeMode&&node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword);
+    if(context.classConstructorFlow&&node.asteriskToken){
       note(mod,'CLASS_ASYNC_EXECUTION_UNKNOWN');context.unresolved=true;
       for(const v of [...args,thisValue])if(v?.ref)invalidateNodeReference(v.ref,{mod,nodeMode:true},unknown());
       return unknown();
@@ -1202,8 +1223,10 @@ export function analyze(input, overrides = {}) {
       note(mod, 'CALL_DEPTH_EXCEEDED'); return { ...union(...args), unknown: true };
     }
     tick(mod); mod.visited.add(canonicalFunctions.get(fn) ?? fn); mod.record.functionsAnalyzed = mod.visited.size;
+    if(asyncMode)context=Object.assign(Object.create(context),{asyncExecution:true});
     const state = { mod, fn, vars: new Map(fn.closure??[]), depth, context, uncertain, exposureUncertain,
       nodeMode:!!fn.nodeMode,nodeMutations:new Set(),thisValue:fn.lexicalThis??thisValue,constructing,stack: new Set([...stack, fn]) };
+    if(asyncMode)asyncSupport.begin(state);
     const names = (binding, callback) => {
       if (ts.isIdentifier(binding)) callback(binding.text);
       else if (ts.isObjectBindingPattern(binding) || ts.isArrayBindingPattern(binding))
@@ -1227,9 +1250,10 @@ export function analyze(input, overrides = {}) {
     if (!node.body) return unknown();
     if (!ts.isBlock(node.body)&&!state.nodeMode) return expr(node.body, state);
     const r = ts.isBlock(node.body)?statement(node.body,state):{values:[expr(node.body,state)],stops:true};
-    if(context.classConstructorFlow&&r.constructorAbrupt&&!r.values.length)return {...unknown(),constructorAbrupt:true};
+    if(!asyncMode&&context.asyncExecution&&r.asyncRejected&&!r.values.length)return {...unknown(),asyncThrown:true};
+    if(!asyncMode&&context.classConstructorFlow&&r.constructorAbrupt&&!r.values.length)return {...unknown(),constructorAbrupt:true};
     if(fn.classConstructor&&!r.stops)constructorNormalPath(state);
-    if(context.classConstructorFlow&&!fn.classConstructor&&r.constructorAbrupt&&r.values.length){
+    if(!asyncMode&&context.classConstructorFlow&&!fn.classConstructor&&r.constructorAbrupt&&r.values.length){
       context.unresolved=true;if(context.constructorRoot)context.constructorRoot.pathsTruncated=true;
       note(mod,'CONSTRUCTOR_HELPER_COMPLETION_UNKNOWN');
     }
@@ -1240,7 +1264,7 @@ export function analyze(input, overrides = {}) {
       const seen=new Set();
       const apply=v=>{
         if(!v?.ref||seen.has(v.ref))return;tick(mod);seen.add(v.ref);
-        if(v.ref.nodeIdentity&&state.nodeMutations.has(v.ref.nodeIdentity))invalidateNodeReference(v.ref,state,unknown());
+        if(v.ref.nodeIdentity&&(state.asyncFrame?.preMutations??state.nodeMutations).has(v.ref.nodeIdentity))invalidateNodeReference(v.ref,state,unknown());
         else for(const child of v.ref.properties.values())apply(child);
       };
       for(const arg of [...args,thisValue])apply(arg);
@@ -1252,6 +1276,7 @@ export function analyze(input, overrides = {}) {
       }
     }
     const returns=[...r.values,...(!r.stops?[constant(undefined)]:[])];
+    if(asyncMode)return asyncSupport.finish(r,state);
     const combined=union(...returns);
     const withResponses={...combined,environmentResponses:returns.flatMap(v=>v.environmentResponses??[]).slice(0,20)};
     const completed=fn.classConstructor?{...withResponses,constructorConditional:!!state.uncertain}:withResponses;
@@ -1299,6 +1324,7 @@ export function analyze(input, overrides = {}) {
   writePass?.();
   phase='ENTRY_DISCOVERY';
   entryContracts({ts,modules,tick,note,loc,append,result});
+  asyncSupport=asyncBoundaries({ts,modules,tick,note,unknown,constant,loc,append,result,fork});
   nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody,invalidateNodeReference});
   nodeSupport.discover();
   phase='FLOW';

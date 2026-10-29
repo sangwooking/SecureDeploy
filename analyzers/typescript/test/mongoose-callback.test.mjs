@@ -19,9 +19,10 @@ for(const c of callbackCases)test('Mongoose callback contract: '+c.id,()=>{
     assert.ok(f.flow.every(l=>c.input.files.some(s=>s.filePath===l.filePath)));
   }
   if(c.id==='callback-body-not-run')assert.equal(r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW').length,0);
-  if(c.id==='repeat-exec'||c.id==='callback-await'||c.id==='promise-repeat'){
+  if(c.id==='repeat-exec'||c.id==='callback-await'){
     assert.ok(uses.some(u=>u.limitations.includes('MONGOOSE_REPEAT_OR_MIXED_EXECUTION_UNKNOWN')));
   }
+  if(c.id==='promise-repeat')assert.ok(r.files.some(f=>f.limitations.includes('UNSUPPORTED_ASYNC_BOUNDARY')));
   assert.deepEqual(analyze(c.input),r);
 });
 test('unmodeled callback effects do not suppress an unrelated existing environment response path',()=>{
