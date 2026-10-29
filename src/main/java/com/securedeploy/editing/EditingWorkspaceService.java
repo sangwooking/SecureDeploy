@@ -348,6 +348,30 @@ public class EditingWorkspaceService {
         }
         throw fail(HttpStatus.BAD_REQUEST, "지원하지 않는 내보내기 형식입니다.");
     }
+    public record GeneratedDifference(String path,String fileId,String originalHash,String currentHash,String proposedHash,String patch) { }
+    synchronized List<GeneratedDifference> generatedDifferences(String id,long revision,String inputHash,Map<String,byte[]> replacements) {
+        var state=owned(id);verifyGenerated(state,revision,inputHash,replacements);
+        var diffs=new ArrayList<GeneratedDifference>();
+        try {for(var e:replacements.entrySet()) {var f=state.files.stream().filter(v->v.original.path().equals(e.getKey())).findFirst().orElseThrow();
+            String diff=patch(e.getKey(),f.current(),e.getValue(),0);if(diff.length()>128*1024)throw new IllegalArgumentException();
+            diffs.add(new GeneratedDifference(e.getKey(),f.id,f.hash,SourceArchive.hash(f.current()),SourceArchive.hash(e.getValue()),diff));
+        }}catch(IOException e){throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"변경안을 표시하지 못했습니다.");}
+        return List.copyOf(diffs);
+    }
+    synchronized Workspace applyGenerated(String id,long revision,String inputHash,Map<String,byte[]> replacements) {
+        var state=owned(id);verifyGenerated(state,revision,inputHash,replacements);
+        // All checks finish before either file changes; original entries are never modified.
+        for(var e:replacements.entrySet()){var f=state.files.stream().filter(v->v.original.path().equals(e.getKey())).findFirst().orElseThrow();f.edit=e.getValue().clone();f.changeOrigin="PACKAGE_MANAGER_APPROVED";}
+        state.revision++;return describe(state);
+    }
+    private void verifyGenerated(State state,long revision,String inputHash,Map<String,byte[]> replacements) {
+        if(state.revision!=revision||!"EXACT_GIT_COMMIT".equals(state.identity)||!replacements.keySet().equals(Set.of("package.json","package-lock.json")))throw fail(HttpStatus.CONFLICT,"원본 revision 또는 허용 파일 범위가 다릅니다.");
+        var entries=currentEntries(state,true);
+        try {if(!manifest(entries).equals(inputHash))throw fail(HttpStatus.CONFLICT,"작업 공간 파일 해시가 변경되었습니다.");}finally{entries.forEach(e->Arrays.fill(e.bytes(),(byte)0));}
+        long bytes=state.files.stream().mapToLong(f->f.original.bytes().length+(f.edit==null?0:f.edit.length)).sum();
+        for(var e:replacements.entrySet()){var f=state.files.stream().filter(v->v.original.path().equals(e.getKey())&&v.editable()).findFirst().orElseThrow();if(SourceArchive.text(e.getValue())==null)throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"변경 파일 형식이 지원되지 않습니다.");bytes+=e.getValue().length-(f.edit==null?0:f.edit.length);}
+        if(bytes>SourceArchive.MAX_BYTES)throw fail(HttpStatus.PAYLOAD_TOO_LARGE,"수정본 크기 제한입니다.");
+    }
     record ScanInput(long userId, String name, WorkspaceScanSnapshot provenance, List<SourceArchive.Entry> entries) implements AutoCloseable {
         @Override public void close() { entries.forEach(e -> Arrays.fill(e.bytes(), (byte) 0)); }
     }

@@ -38,6 +38,12 @@ public final class DependencyAdviceBrowserServer {
                 });
             }else{
                 var mock=mock(AiProvider.class);when(mock.providerType()).thenReturn(AiProviderType.OPENAI);when(mock.isAvailable()).thenReturn(true);when(mock.executionOrigin()).thenReturn("MOCK");when(mock.consumeLastTokenUsage()).thenReturn(Optional.empty());
+                when(mock.generateSemanticReview(any(),any())).thenAnswer(i->{
+                    var slices=(java.util.List<com.securedeploy.ai.semantic.SecuritySlice>)i.getArgument(0);
+                    if(slices.isEmpty())return java.util.List.of();var slice=slices.get(0);var c=slice.contexts().get(0);
+                    var e=new com.securedeploy.ai.semantic.SemanticCandidate.Evidence(c.contextId(),c.filePath().contains("invalid")?"invented.ts":c.filePath(),c.startLine(),c.endLine(),c.functionName(),"입력 처리와 미확인 함수의 보호 조치를 직접 확인해야 합니다.");
+                    return java.util.List.of(new com.securedeploy.ai.semantic.SemanticCandidate.Proposal(slice.sliceId(),com.securedeploy.ai.semantic.SemanticCandidate.CandidateType.COMMAND_INJECTION_CANDIDATE,"미완료 흐름 추가 검토",com.securedeploy.ai.dto.AiConfidence.LOW,"Mock 통제 의견입니다. 실제 보안 문제로 확정하지 않습니다.",true,java.util.List.of(e),java.util.List.of("미확인 함수의 입력 처리와 실행 경로를 확인하세요."),slice.existingFindings().stream().map(com.securedeploy.ai.semantic.SecuritySlice.ExistingFinding::findingId).toList()));
+                });
                 when(mock.generateDependencyAdvice(any())).thenAnswer(i->{var d=json.readTree(((WorkspacePatch.Prompt)i.getArgument(0)).untrustedData());return new DependencyAiAdvice.Output(d.path("evidenceHash").asText(),d.path("packageName").asText(),d.path("lockedVersion").asText(),d.path("advisoryId").asText(),"PROPOSE_UPDATE",d.path("verifiedCandidateVersions").get(0).asText(),
                         "잠금 버전에 보안 공지가 연결되어 있습니다.","사용 방식에 따라 영향을 받을 수 있어 검토가 필요합니다.","실제 실행 경로와 영향은 확인되지 않았습니다.","상위 의존성과 범위를 제한한 업데이트를 검토하세요.",List.of("변경 내용을 검토하고 재검사하세요."),List.of("Mock 통제 응답이며 실제 모델 품질과 호환성은 미검증입니다."));});selected=mock;
             }

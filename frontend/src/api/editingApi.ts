@@ -58,3 +58,11 @@ export const startWorkspaceScan = (w: EditingWorkspace) => call<WorkspaceScan>(`
   method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ revision: w.revision, changedFileIds: w.changedFileIds, approved: true, externalLookupAcknowledged: true }),
 });
 export const loadWorkspaceScan = (id: string) => call<WorkspaceScan>(`/scans/${encodeURIComponent(id)}`);
+
+export interface WorkspaceSemanticReview {id:string;state:string;inputHash:string;revision:number;origin:string;available:boolean;model:string;transmittedData:string;selectedContexts:number;omittedContexts:number;result:import('../types/securityReview').SemanticSnapshot|null;limitations:string[]}
+export const prepareWorkspaceSemantic=(w:EditingWorkspace)=>call<WorkspaceSemanticReview>(`/${w.id}/semantic-review`,{method:'POST',headers:jsonHeaders(),body:JSON.stringify({revision:w.revision})});
+export const generateWorkspaceSemantic=(w:EditingWorkspace,p:WorkspaceSemanticReview)=>call<WorkspaceSemanticReview>(`/${w.id}/semantic-review/${p.id}/generate`,{method:'POST',headers:jsonHeaders(),body:JSON.stringify({inputHash:p.inputHash,approved:true})});
+export interface DependencyFilesProposal {id:string;state:string;revision:number;inputHash:string;adviceId:string;origin:string;packageName:string;fromVersion:string;toVersion:string;executionEnabled:boolean;differences:{path:string;fileId:string;originalHash:string;currentHash:string;proposedHash:string;patch:string}[];changedPackages:string[];message:string}
+export const prepareDependencyFiles=(w:EditingWorkspace,adviceId:string)=>call<DependencyFilesProposal>(`/${w.id}/dependency-files`,{method:'POST',headers:jsonHeaders(),body:JSON.stringify({revision:w.revision,adviceId})});
+export const generateDependencyFiles=(w:EditingWorkspace,p:DependencyFilesProposal)=>call<DependencyFilesProposal>(`/${w.id}/dependency-files/${p.id}/generate`,{method:'POST',headers:jsonHeaders(),body:JSON.stringify({inputHash:p.inputHash,approved:true})});
+export const applyDependencyFiles=(w:EditingWorkspace,p:DependencyFilesProposal)=>call<EditingWorkspace>(`/${w.id}/dependency-files/${p.id}/apply`,{method:'POST',headers:jsonHeaders(),body:JSON.stringify({inputHash:p.inputHash,approved:true})});

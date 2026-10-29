@@ -144,6 +144,20 @@ class WorkspacePatchTest {
         assertTrue(valid.verificationSteps().stream().anyMatch(x->x.contains("API")));
         assertTrue(valid.limitations().stream().anyMatch(x->x.contains("NOT_COMPARED")));
     }
+    @Test void generatedBatchPreflightsBothFilesAndAppliesExactlyOneRevision() throws Exception {
+        workspaces.delete(workspace.id());
+        doAnswer(i->List.of(new SourceArchive.Entry("package.json","{}\n".getBytes(StandardCharsets.UTF_8),false,0100644),new SourceArchive.Entry("package-lock.json","{}\n".getBytes(StandardCharsets.UTF_8),false,0100644))).when(sources).github(anyLong(),any());
+        workspace=workspaces.create(4,null);String hash;
+        try(var capture=workspaces.captureScan(workspace.id(),1)){hash=capture.provenance().inputHash();}
+        var invalid=Map.of("package.json","{\"changed\":true}\n".getBytes(StandardCharsets.UTF_8),"package-lock.json",new byte[]{0,-1});
+        final String expected=hash;
+        assertThrows(RuntimeException.class,()->workspaces.applyGenerated(workspace.id(),1,expected,invalid));assertEquals(1,workspaces.get(workspace.id()).revision());assertTrue(workspaces.get(workspace.id()).changedFileIds().isEmpty());
+        var valid=Map.of("package.json","{\"changed\":true}\n".getBytes(StandardCharsets.UTF_8),"package-lock.json","{\"changed\":true}\n".getBytes(StandardCharsets.UTF_8));
+        assertThrows(RuntimeException.class,()->workspaces.applyGenerated(workspace.id(),1,"wrong",valid));
+        var next=workspaces.applyGenerated(workspace.id(),1,hash,valid);assertEquals(2,next.revision());assertEquals(2,next.changedFileIds().size());
+        try(var capture=workspaces.captureScan(workspace.id(),2)){assertTrue(capture.provenance().files().stream().allMatch(f->f.changeOrigin().equals("PACKAGE_MANAGER_APPROVED")));}
+        assertThrows(RuntimeException.class,()->workspaces.applyGenerated(workspace.id(),1,expected,valid));
+    }
     @Test void previewHasExactIdentityAndNoExternalCallOrMutation() {
         var p=prepare();assertEquals("APPROVAL_REQUIRED",p.state());assertEquals("debug=true",p.before());assertNull(p.after());assertNull(p.diff());
         assertEquals(workspace.sourceRevision(),p.sourceRevision());assertEquals(file.originalHash(),p.originalHash());

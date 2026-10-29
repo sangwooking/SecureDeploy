@@ -1,3 +1,4 @@
+import { WorkspaceAutomationPanels } from './WorkspaceAutomationPanels';
 import { useEffect, useRef, useState } from 'react';
 import { createEditingWorkspace, deleteEditingWorkspace, exportEditingWorkspace, loadEditingDiff, loadEditingFile, loadEditingWorkspace, saveEditingFile } from '../api/editingApi';
 import type { EditingContent, EditingDiff, EditingFile, EditingWorkspace } from '../api/editingApi';
@@ -22,7 +23,7 @@ function FileTree({ files, selected, disabled, onSelect }: { files: EditingFile[
   return render(root);
 }
 
-export function SourceEditingWorkspace({ result, onBack, initialPath }: { result: SecurityReviewResponse; onBack: () => void; initialPath?: string }) {
+export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdviceId }: { result: SecurityReviewResponse; onBack: () => void; initialPath?: string; initialAdviceId?: string }) {
   const key = `securedeploy.editing.${result.reviewId}`;
   const [workspace, setWorkspace] = useState<EditingWorkspace | null>(null);
   const [selected, setSelected] = useState<EditingFile | null>(null);
@@ -140,6 +141,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath }: { result
         <button type="button" className="secondary-button" disabled={busy} onClick={clear}>작업 공간 삭제</button>
       </div>
       <nav className="editing-stages" aria-label="수정 단계">{([['edit','코드 편집'],['diff','변경 검토 · 다운로드'],['scan','재검사 · 비교']] as const).map(([id,label],index)=><button key={id} type="button" aria-current={stage===id?'step':undefined} onClick={()=>setStage(id)}><span className="stage-number" aria-hidden="true">{index+1}</span>{label}</button>)}</nav>
+      <WorkspaceAutomationPanels workspace={workspace} adviceId={initialAdviceId} disabled={busy||dirty||expired} onApplied={async next=>{setWorkspace(next);setDiffs(null);setApproved(false);if(selected){const value=await loadEditingFile(next.id,selected.id);setContent(value);setText(value.text.replace(/\r\n/g,'\n'));}}}/>
       <div hidden={stage!=='scan'}><WorkspaceScanPanel workspace={workspace} original={result} disabled={busy || dirty || expired} /></div>
       {!expired && <>
         <div hidden={stage!=='edit'}>

@@ -11,9 +11,9 @@ export function ScaAssessmentNotice({ sca }: { sca?: ScaResult | null; riskAsses
   return <p className="review-caution">라이브러리 보안 확인이 완료되지 않았습니다. 미조회·미해결 항목의 안전 여부는 확인되지 않았습니다.</p>;
 }
 
-export function DependencySecuritySection({ sca, riskAssessment, remediation, reviewId }: {
+export function DependencySecuritySection({ sca, riskAssessment, remediation, reviewId, onEditDependency }: {
   sca?: ScaResult | null; riskAssessment?: RiskAssessment | null; remediation?: RemediationSnapshot | null;
-  reviewId?: number | null;
+  reviewId?: number | null; onEditDependency?:(id:string)=>void;
 }) {
   if (!sca) return <section className="sca-section" aria-label="사용 중인 라이브러리 문제">
     <h2>{securityTerms.libraries}</h2><p>이 이력에는 외부 라이브러리 검사 결과가 없습니다. 다시 검사해 주세요.</p>
@@ -43,7 +43,7 @@ export function DependencySecuritySection({ sca, riskAssessment, remediation, re
       ? '조회한 정확한 버전에서 알려진 취약점이 반환되지 않았습니다. 프로젝트 전체의 안전을 보장하지 않습니다.'
       : '표시할 라이브러리 문제가 없습니다. 미조회 항목과 분석 상태를 확인해 주세요.'}</p>}
     <DependencyActionGroups sca={sca} />
-    <DependencyUpdatePlans reviewId={reviewId} />
+    <DependencyUpdatePlans reviewId={reviewId} onEditDependency={onEditDependency} />
     <div className="vulnerability-list">{canonical.map(dep => <DependencyFindingCard components={sca.components}
       key={[dep.ecosystem, dep.packageName, dep.installedVersion, dep.osvId].join('|')} dependency={dep}
       remediation={remediation} intelligence={riskAssessment?.threatIntelligence}

@@ -4,7 +4,7 @@ import { fetchDependencyUpdatePlans } from '../api/securityReviewApi';
 import type { DependencyUpdatePlans as Plans } from '../types/dependencyUpdatePlan';
 
 const kind: Record<string,string> = { DIRECT:'직접 의존성', TRANSITIVE:'간접 의존성', MIXED:'직접·간접 경로 혼재', UNKNOWN:'직접·간접 미확인' };
-export function DependencyUpdatePlans({reviewId}: {reviewId?:number|null}) {
+export function DependencyUpdatePlans({reviewId,onEditDependency}: {reviewId?:number|null;onEditDependency?:(id:string)=>void}) {
   const [result,setResult]=useState<Plans|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
   const generation=useRef(0);
   useEffect(()=>{generation.current++;setResult(null);setError('');setBusy(false);return()=>{generation.current++;};},[reviewId]);
@@ -23,7 +23,7 @@ export function DependencyUpdatePlans({reviewId}: {reviewId?:number|null}) {
     {result&&<>
       <p>기본 계획: 근거 기반 안내 · 호환성: 미검증 · 적용 가능 Patch: 없음</p>
       <p>잠금 파일 재생성과 원본 파일 해시 검증 전까지 검토 필요 상태를 유지합니다.</p>
-      {reviewId&&<DependencyAiAdvicePanel reviewId={reviewId} evidence={result} />}
+      {reviewId&&<DependencyAiAdvicePanel reviewId={reviewId} evidence={result} onEditDependency={onEditDependency} />}
       {!result.plans.length&&<p>이 저장 결과에는 업데이트 계획으로 연결할 보안 공지가 없습니다. 전체 안전을 의미하지 않습니다.</p>}
       {result.plans.map((p,i)=><details key={`${p.ecosystem}:${p.packageName}:${p.lockedVersion}:${p.advisoryId}:${i}`}>
         <summary>{p.packageName}@{p.lockedVersion} · {p.advisoryId} · 검토 필요</summary>

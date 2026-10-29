@@ -48,12 +48,15 @@ public class RealOpenAiProvider implements AiProvider {
     }
 
     private JsonNode structuredOutput(String schemaName, com.securedeploy.editing.WorkspacePatch.Prompt prompt) {
+        return structuredOutput(schemaName,prompt,2000,8192);
+    }
+    private JsonNode structuredOutput(String schemaName, com.securedeploy.editing.WorkspacePatch.Prompt prompt,int maxOutputTokens,int maxTextChars) {
         lastTokenUsage.remove();
         if(!isAvailable())throw new IllegalStateException("Provider unavailable");
         var body=new LinkedHashMap<String,Object>();
         body.put("model",aiProperties.getOpenai().getModel());body.put("store",false);
         body.put("instructions",prompt.instructions());body.put("input",List.of(Map.of("role","user","content",prompt.untrustedData())));
-        body.put("max_output_tokens",2000);
+        body.put("max_output_tokens",maxOutputTokens);
         body.put("text",Map.of("format",Map.of("type","json_schema","name",schemaName,"strict",true,"schema",prompt.schema())));
         var response=restClient().post().uri("/responses").contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION,"Bearer "+aiProperties.getOpenai().getApiKey()).body(body)
@@ -68,7 +71,7 @@ public class RealOpenAiProvider implements AiProvider {
         if(!"completed".equals(response.path("status").asText()))throw new IllegalStateException("Incomplete patch response");
         try {
             String text=extractOutputText(response);
-            if(text.length()>8192)throw new IllegalArgumentException("Patch output limit");
+            if(text.length()>maxTextChars)throw new IllegalArgumentException("Patch output limit");
             var tree=objectMapper.reader().with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
                     .with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
                     .with(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION).readTree(text);
@@ -79,19 +82,8 @@ public class RealOpenAiProvider implements AiProvider {
     @Override
     public List<com.securedeploy.ai.semantic.SemanticCandidate.Proposal> generateSemanticReview(
             List<com.securedeploy.ai.semantic.SecuritySlice> slices, com.securedeploy.ai.semantic.SemanticPrompt prompt) {
-        lastTokenUsage.remove();
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("model", aiProperties.getOpenai().getModel());
-        body.put("store", false);
-        body.put("instructions", prompt.instructions());
-        body.put("input", List.of(Map.of("role", "user", "content", prompt.untrustedData())));
-        body.put("max_output_tokens", prompt.maxOutputTokens());
-        body.put("text", Map.of("format", Map.of("type", "json_schema", "name", "semantic_review", "strict", true,
-                "schema", com.securedeploy.ai.semantic.SemanticOutputValidator.schema(slices))));
-        var response = sendOpenAi(body);
-        if (!"completed".equals(response.path("status").asText())) throw new IllegalStateException("Incomplete semantic response");
-        try { return com.securedeploy.ai.semantic.SemanticOutputValidator.parse(objectMapper.readTree(extractOutputText(response)), objectMapper); }
-        catch (JsonProcessingException invalid) { throw new IllegalArgumentException("Invalid semantic JSON"); }
+        var request=new com.securedeploy.editing.WorkspacePatch.Prompt(prompt.instructions(),prompt.untrustedData(),com.securedeploy.ai.semantic.SemanticOutputValidator.schema(slices));
+        return com.securedeploy.ai.semantic.SemanticOutputValidator.parse(structuredOutput("semantic_review",request,prompt.maxOutputTokens(),48000),objectMapper);
     }
 
     @Override

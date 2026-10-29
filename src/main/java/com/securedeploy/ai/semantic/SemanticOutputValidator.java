@@ -107,7 +107,9 @@ public class SemanticOutputValidator {
     }
     private static boolean text(String value,int max) { return value!=null && !value.isBlank() && value.length()<=max; }
     private static boolean sameRisk(CandidateType type, String rule) {
-        return (type==CandidateType.MISSING_AUTHENTICATION && "PERMIT_ALL_USAGE".equals(rule))
-                || (type==CandidateType.SENSITIVE_DATA_EXPOSURE && Set.of("HARDCODED_SECRET","HARDCODED_PASSWORD","HARDCODED_FRONTEND_SECRET").contains(rule));
+        return (type==CandidateType.COMMAND_INJECTION_CANDIDATE && "JS_SHELL_COMMAND_INPUT_FLOW".equals(rule))
+                || (type==CandidateType.SSRF_CANDIDATE && "JS_SSRF_INPUT_FLOW".equals(rule))
+                || (type==CandidateType.MISSING_AUTHENTICATION && "PERMIT_ALL_USAGE".equals(rule))
+                || (type==CandidateType.SENSITIVE_DATA_EXPOSURE && Set.of("HARDCODED_SECRET","HARDCODED_PASSWORD","HARDCODED_FRONTEND_SECRET","TS_SENSITIVE_DATA_EXPOSURE").contains(rule));
     }
 }

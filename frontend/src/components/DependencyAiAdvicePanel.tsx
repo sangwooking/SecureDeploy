@@ -3,7 +3,7 @@ import { dependencyAdviceProvider, prepareDependencyAdvice, generateDependencyAd
 import type { DependencyAdviceView, DependencyAdviceProvider } from '../types/dependencyUpdatePlan';
 import type { DependencyUpdatePlans } from '../types/dependencyUpdatePlan';
 
-export function DependencyAiAdvicePanel({reviewId,evidence}:{reviewId:number;evidence:DependencyUpdatePlans}) {
+export function DependencyAiAdvicePanel({reviewId,evidence,onEditDependency}:{reviewId:number;evidence:DependencyUpdatePlans;onEditDependency?:(id:string)=>void}) {
   const [provider,setProvider]=useState<DependencyAdviceProvider|null>(null),[choice,setChoice]=useState('');
   const [view,setView]=useState<DependencyAdviceView|null>(null),[consent,setConsent]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
   const generation=useRef(0);
@@ -40,6 +40,7 @@ export function DependencyAiAdvicePanel({reviewId,evidence}:{reviewId:number;evi
       <button type="button" className="secondary-button" disabled={busy} onClick={()=>void perform(()=>getDependencyAdvice(reviewId,view.id))}>기존 요청 상태 확인</button>
       {view.output&&<div className="dependency-ai-result">
         <p>{view.provider.origin==='MOCK'?'Mock 생성 의견 · 실제 AI 품질 미검증':view.provider.origin==='OPENAI'?'OpenAI Provider 응답 · 구조·근거 대조 통과 · 품질은 별도 검토':'출처 미검증 Provider 의견'}</p>
+        {view.state==='GENERATED'&&onEditDependency&&<button type="button" onClick={()=>onEditDependency(view.id)}>Workspace에서 수정 파일 제안 준비</button>}
         <h4>검증된 분석 사실</h4><p>{view.output.packageName}@{view.output.lockedVersion} · {view.output.advisoryId}</p>
         <p>서버가 허용한 검토 후보: {view.output.candidateVersion||'추가 검토 필요'}</p>
         <h4>무슨 문제인가요? · AI 의견</h4><p>{view.output.explanation}</p>

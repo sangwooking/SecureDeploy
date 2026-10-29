@@ -569,3 +569,7 @@ select { min-height: 44px; }
 .dependency-ai-advice select { display: block; width: 100%; max-width: 100%; box-sizing: border-box; }
 .dependency-ai-advice pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; }
 .dependency-ai-advice label { display: block; }
+
+.workspace-automation { overflow-wrap:anywhere; }
+.workspace-automation pre { white-space:pre-wrap; max-width:100%; }
+.workspace-automation label { display:block; }

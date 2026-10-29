@@ -37,13 +37,8 @@ public class SemanticReviewService {
         if (provider.providerType()!=AiProviderType.OPENAI || limits.getMaxRequests()==0)
             return empty(mode, UNAVAILABLE, "External provider unavailable or request budget disabled.", notices);
         if (collection.slices().isEmpty()) return empty(mode, NO_SUPPORTED_CONTEXT, "No supported Java endpoint context; not a safety verdict.", notices);
-        var slices = new ArrayList<>(collection.slices().stream().map(slice -> attachFindings(slice, review)).toList());
-        SemanticPrompt prompt = null;
-        int omitted = collection.omittedSlices();
-        while (!slices.isEmpty() && prompt==null) {
-            try { prompt = prompts.buildSemanticReviewPrompt(slices, mapper, limits); }
-            catch (IllegalArgumentException budget) { slices.remove(slices.size()-1); omitted++; }
-        }
+        var prepared=prepare(review,collection);
+        var slices=prepared.slices(); var prompt=prepared.prompt(); int omitted=prepared.omitted();
         if (prompt==null) return empty(mode, UNAVAILABLE, "No slice fits the outbound context budget.", notices);
         provider.consumeLastTokenUsage();
         SemanticOutputValidator.Validated validated = new SemanticOutputValidator.Validated(List.of(),List.of(),0,0);
@@ -57,7 +52,7 @@ public class SemanticReviewService {
             notices.add("Semantic provider/output validation failed. No template candidates were invented.");
         } finally {
             usage = AiUsageResponse.from(tracker.track(AiFeatureType.SEMANTIC_REVIEW, AiProviderType.OPENAI, null, null,
-                    provider.consumeLastTokenUsage().orElse(new AiTokenUsage(0,0,0,false))));
+                    provider.consumeLastTokenUsage().orElse(new AiTokenUsage(0,0,0,true))));
         }
         if (omitted>0) notices.add("Additional slices omitted by selection/context limits: " + omitted);
         return new SemanticSnapshot(1,UUID.randomUUID().toString(),mode,status,validated.candidates(),validated.supporting(),
@@ -65,9 +60,17 @@ public class SemanticReviewService {
                 status==FAILED ? "NOT_VALIDATED" : validated.rejected()>0 ? "REJECTED_ITEMS_REMOVED" : "LOCATION_VALIDATED_NOT_SECURITY_PROVEN",
                 "openai",properties.getOpenai().getModel(),SemanticOutputValidator.PROMPT_VERSION,Instant.now(),1,usage,List.copyOf(notices));
     }
+    public record Prepared(List<SecuritySlice> slices,SemanticPrompt prompt,int omitted) { }
+    public Prepared prepare(SecurityReviewResponse review,SecuritySliceCollector.Collection collection) {
+        var slices=new ArrayList<>(collection.slices().stream().map(slice->attachFindings(slice,review)).toList());
+        SemanticPrompt prompt=null;int omitted=collection.omittedSlices();
+        String kind=slices.stream().allMatch(s->s.entryPoint().equals("WORKER_REGISTERED_EXPRESS_HANDLER"))?"WORKER_REGISTERED_EXPRESS_CONTEXT":"JAVA_SPRING_SYNTAX_ONLY";
+        while(!slices.isEmpty()&&prompt==null){try{prompt=prompts.buildSemanticReviewPrompt(slices,mapper,limits,kind);}catch(IllegalArgumentException e){slices.remove(slices.size()-1);omitted++;}}
+        return new Prepared(List.copyOf(slices),prompt,omitted);
+    }
     private SecuritySlice attachFindings(SecuritySlice slice, SecurityReviewResponse review) {
         if (review.riskAssessment()==null) return slice;
-        List<SecuritySlice.ExistingFinding> linked = new ArrayList<>();
+        List<SecuritySlice.ExistingFinding> linked = new ArrayList<>(slice.existingFindings());
         for (var finding : review.riskAssessment().codeFindings()) {
             review.vulnerabilities().stream().filter(v -> Objects.equals(v.vulnerabilityId(), finding.vulnerabilityId()))
                     .filter(v -> slice.contexts().stream().anyMatch(c -> c.filePath().equals(v.filePath()) && v.line()>=c.startLine() && v.line()<=c.endLine()))

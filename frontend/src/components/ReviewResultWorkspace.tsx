@@ -29,10 +29,11 @@ interface Props {
   reportActions: ReactNode;
   progress: ReactNode;
   rescanActions?: ReactNode;
+  onEditDependency?: (id:string)=>void;
   onEditFile?: (path: string) => void;
 }
 
-export function ReviewResultWorkspace({ result, view, onViewChange, statusActions, reportActions, progress, rescanActions, onEditFile }: Props) {
+export function ReviewResultWorkspace({ result, view, onViewChange, statusActions, reportActions, progress, rescanActions, onEditFile, onEditDependency }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLElement>(null);
   useEffect(() => { root.current?.scrollIntoView({ block: 'start' }); }, []);
@@ -109,7 +110,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
             <LegacyCodeList result={result} statusActions={statusActions} />
           </details>}
           <details className="coverage-details"><summary>라이브러리 조회와 분석 범위 확인</summary>
-            <DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} />
+            <DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} onEditDependency={onEditDependency} />
           </details>
           <SemanticReviewSection snapshot={result.semanticReview} />
           <ServerAnalysisSection snapshot={result.serverAnalysis} onEditFile={onEditFile} />
@@ -119,7 +120,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
         </details>}
       </>}
       {view === 'PROGRESS' && <ReviewProgressPanel result={result} />}
-      {view === 'LIBRARIES' && <DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} />}
+      {view === 'LIBRARIES' && <DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} onEditDependency={onEditDependency} />}
       {view === 'GUIDANCE' && <>
         <h2>수정·확인 가이드</h2><p>문제 하나를 선택해 저장된 수정 제안과 직접 확인 방법을 보세요. 적용 전 사용 방식과 호환성을 확인하세요.</p>
         <Guidance result={result} findings={findings} />
@@ -135,7 +136,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
         <AnalysisCoverageSection coverage={result.coverage} sca={result.sca} semantic={result.semanticReview} />
         <details><summary>저장된 배포 평가와 분석 범위</summary><RiskAssessmentSection assessment={assessment} /></details>
         <details><summary>코드에서 발견된 문제 · 원본과 판단 근거</summary><LegacyCodeList result={result} statusActions={statusActions} /></details>
-        <details><summary>사용 중인 라이브러리 문제 · 보안 공지와 악용 정보</summary><DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} /></details>
+        <details><summary>사용 중인 라이브러리 문제 · 보안 공지와 악용 정보</summary><DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} onEditDependency={onEditDependency} /></details>
         <details><summary>AI 추가 검토 기록</summary><SemanticReviewSection snapshot={result.semanticReview} /></details>
         <ServerAnalysisSection snapshot={result.serverAnalysis} onEditFile={onEditFile} />
         <RemediationNotice snapshot={result.remediation} />
@@ -165,6 +166,7 @@ function FirstSteps({ result, navigate, flowCount, configCount }: { result: Secu
 
 function FindingCollection({ result, findings, statusActions, onEditFile }: {
   result: SecurityReviewResponse; findings: RiskFinding[]; statusActions: FindingStatusActions;
+
   onEditFile?: (path: string) => void;
 }) {
   const [severity, setSeverity] = useState<Severity | 'ALL'>('ALL');
