@@ -43,3 +43,42 @@ test('binding a shared method to a different instance uses that instance only',(
     const f=mounted.register.bind(unmounted);f();`}]});
   assert.equal(r.findings.length,0);assert.equal(r.files[0].entrypoints,0);
 });
+test('constructor dispatch uses the actual own method, never a shadowed prototype method',()=>{
+  const body=`const app=require('express')();class Service{
+    constructor(app,handler){this.app=app;this.register=handler;this.register();}
+    register(){this.app.post('/',(req,res)=>eval(req.body.code));}}
+  `;
+  const known=analyze({files:[{filePath:'entry.js',content:body+`new Service(app,()=>1);`}]});
+  assert.equal(known.findings.length,0);assert.equal(known.files[0].entrypoints,0);
+  const unresolved=analyze({files:[{filePath:'entry.js',content:body+`new Service(app,external);`}]});
+  assert.equal(unresolved.findings.length,0);assert.equal(unresolved.files[0].entrypoints,0);
+  assert.ok(unresolved.files[0].limitations.includes('CALL_TARGET_UNRESOLVED'));
+});
+test('changed this fields do not retain an earlier mounted app identity',()=>{
+  const body=`const express=require('express');const app=express();class Service{
+    constructor(app){this.app=app;}register(){this.app.post('/',(req,res)=>eval(req.body.code));}}
+    const service=new Service(app);`;
+  const changed=analyze({files:[{filePath:'entry.js',content:body+`service.app=express.Router();service.register();`}]});
+  assert.equal(changed.findings.length,0);assert.equal(changed.files[0].entrypoints,0);
+  const unresolved=analyze({files:[{filePath:'entry.js',content:body+`service.app=external;service.register();`}]});
+  assert.equal(unresolved.findings.length,0);assert.equal(unresolved.files[0].entrypoints,0);
+  assert.ok(unresolved.files[0].limitations.includes('CALL_TARGET_UNRESOLVED'));
+});
+test('registering a class callback on an external event does not execute it',()=>{
+  const r=analyze({files:[{filePath:'entry.js',content:`const app=require('express')();
+    const events=require('events');const emitter=new events.EventEmitter();
+    class Service{constructor(app){this.app=app;emitter.on('ready',()=>this.register());}
+      register(){this.app.post('/',(req,res)=>eval(req.body.code));}}
+    new Service(app);`}]});
+  assert.equal(r.findings.length,0);assert.equal(r.files[0].entrypoints,0);
+  assert.ok(r.files[0].limitations.includes('CALL_TARGET_UNRESOLVED'));
+});
+test('class discovery does not bypass the existing function, AST or step budgets',()=>{
+  const c=classCases.find(c=>c.id==='constructor-route');
+  for(const budget of [{maxFunctions:1},{maxSteps:30},{maxNodes:20}]){
+    const r=analyze({files:c.files},budget);
+    assert.equal(r.findings.length,0);
+    assert.ok(r.status!=='COMPLETE');
+    assert.ok(r.files.some(f=>f.limitations.length>0));
+  }
+});
