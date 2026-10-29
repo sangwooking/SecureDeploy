@@ -1214,8 +1214,9 @@ export function analyze(input, overrides = {}) {
   function invoke(fn, args, depth, context, stack, uncertain = false, exposureUncertain = false,thisValue,constructing=false) {
     const { mod, node } = fn;
     const asyncMode=!!fn.nodeMode&&node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword);
-    if(context.classConstructorFlow&&node.asteriskToken){
+    if(node.asteriskToken&&(context.classConstructorFlow||context.asyncExecution||asyncMode)){
       note(mod,'CLASS_ASYNC_EXECUTION_UNKNOWN');context.unresolved=true;
+      note(mod,'GENERATOR_EXECUTION_NOT_MODELED');
       for(const v of [...args,thisValue])if(v?.ref)invalidateNodeReference(v.ref,{mod,nodeMode:true},unknown());
       return unknown();
     }

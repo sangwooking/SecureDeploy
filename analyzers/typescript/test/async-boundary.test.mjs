@@ -74,3 +74,10 @@ test('a synchronous function constructor throw stops its async caller prefix',()
  app.post('/',async(req,res)=>{new Broken();eval(req.body.code);});`}]});
  assert.equal(r.findings.length,0);
 });
+test('generator bodies are not activated by calls from async code',()=>{
+ for(const kind of ['function*','async function*']){
+  const r=analyze({files:[{filePath:'entry.js',content:`const app=require('express')();${kind} values(v){eval(v);}
+  app.post('/',async(req,res)=>values(req.body.code));`}]});
+  assert.equal(r.findings.length,0);assert.ok(r.files[0].limitations.includes('GENERATOR_EXECUTION_NOT_MODELED'));
+ }
+});
