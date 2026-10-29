@@ -108,11 +108,14 @@ export function fileAccess(api){
   if(!n.includes(':')){note(state.mod,'FILE_MODULE_NOT_CALLABLE');return {value:unknown()};}
   if(n==='util:promisify'){
    if(args.length===1&&args[0]?.fileNative==='fs:writeFile'&&stable(callable,state)&&stable(args[0],state))
-    return {value:native('fs:promisifiedWriteFile',args[0].ref)};
+    // util.promisify returns a new wrapper, not an alias of the fs namespace.
+    return {value:native('fs:promisifiedWriteFile')};
    note(state.mod,'FILE_PROMISIFY_ORIGIN_UNKNOWN');return {value:unknown()};
   }
   const io=state.nodeMode&&(n==='fs:promisifiedWriteFile'||n==='fs/promises:writeFile');
-  const ioArity=args.length>=2&&args.length<=3&&(!args[2]||known(args[2])&&typeof args[2].constant==='string');
+  const textCandidate=v=>v&&!v.ref&&v.tag!=='function'&&(!known(v)||typeof v.constant==='string');
+  const encoding=!args[2]||known(args[2])&&(args[2].constant===undefined||['utf8','utf-8','ascii','base64','hex','latin1','binary','ucs2','ucs-2','utf16le','utf-16le'].includes(args[2].constant));
+  const ioArity=args.length>=2&&args.length<=3&&textCandidate(args[0])&&textCandidate(args[1])&&encoding;
   if(io&&(!stable(callable,state)||!ioArity)){
    note(state.mod,'FILE_IO_PROMISE_CONTRACT_UNKNOWN');return {value:unknown()};
   }

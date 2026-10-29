@@ -48,3 +48,21 @@ test('unrelated native promisify creation is not a writeFile mutation or a suppo
  assert.equal(run(`write('unused.txt','data')`).findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW'&&f.confidence==='MEDIUM').length,1);
  assert.equal(run(`read('unused.txt')`).findings.length,0);
 });
+test('unsupported overloads and altered promise tokens do not allow continuation',()=>{
+ for(const code of [`await write('unused.txt',null);`,`await write('unused.txt',()=>{});`,`await write('unused.txt','data','not-an-encoding');`,`await write({},'data');`,`const p=write('unused.txt','data');p.then=external;await p;`]){
+  const r=analyze({files:[{filePath:'entry.cjs',content:`const fs=require('fs');const {promisify}=require('util');const write=promisify(fs.writeFile);const app=require('express')();app.post('/',async(req,res)=>{${code}eval(req.body.code);});`}]});
+  assert.equal(r.findings.length,0,code);
+ }
+});
+test('conditional file write keeps post-await heap uncertainty after branch merge',()=>{
+ const r=analyze({files:[{filePath:'entry.cjs',content:`const {writeFile}=require('fs/promises');const app=require('express')();
+ app.post('/',async(req,res)=>{const holder={value:req.body.code};if(req.body.save)await writeFile('unused.txt','data');eval(holder.value);});`}]});
+ assert.ok(r.findings.every(f=>f.confidence==='MEDIUM'));
+ assert.ok(r.files[0].limitations.includes('OBJECT_BRANCH_MERGE_PARTIAL'));
+});
+test('a captured native promisified wrapper is distinct from later namespace uncertainty',()=>{
+ const r=analyze({files:[{filePath:'entry.cjs',content:`const fs=require('fs');const {promisify}=require('util');const write=promisify(fs.writeFile);
+ const app=require('express')();app.post('/',async(req,res)=>{if(!fs.existsSync('unused.txt'))await write('unused.txt','data');eval(req.body.code);});`}]});
+ const f=r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW');assert.equal(f.length,1);assert.equal(f[0].confidence,'MEDIUM');
+ assert.ok(r.nodeUses.some(u=>u.kind==='FILE_IO_FULFILLMENT_POSSIBLE'));
+});
