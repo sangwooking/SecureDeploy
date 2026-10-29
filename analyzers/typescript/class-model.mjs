@@ -60,7 +60,7 @@ export function classModels(api) {
         ts.forEachChild(n,scan);};scan(ctor.target.node);
       if(!simple)return unknownCall('CLASS_CONSTRUCTOR_CONTROL_FLOW_UNKNOWN',node,state,args);
       const constructorRoot={abrupt:false,normalPaths:[],pathsTruncated:false};
-      const context=Object.assign(Object.create(state.context),{classConstructorFlow:true,constructorRoot});
+      const context=Object.assign(Object.create(state.context),{classConstructorFlow:true,constructorRoot,asyncExecution:false});
       const returned=invoke(ctor.target,args,state.depth+1,context,state.stack,state.uncertain,false,instance,true);
       if(returned.constructorAbrupt){
         constructorRoot.abrupt=true;note(state.mod,'CLASS_CONSTRUCTOR_THROW_PROVEN');

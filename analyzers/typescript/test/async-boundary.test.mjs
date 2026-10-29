@@ -65,7 +65,12 @@ test('mutated and escaped Promise instances cannot keep fulfillment proof',()=>{
 });
 test('a constructor throw inside async becomes rejection rather than aborting the caller bootstrap',()=>{
  const r=analyze({files:[{filePath:'entry.js',content:`const app=require('express')();
- class Broken{constructor(){throw Error('stop');}}async function fail(){new Broken();}
+ class Broken{constructor(){throw Error('stop');}}async function fail(){new Broken();app.post('/unreachable',(req,res)=>eval(req.body.other));}
  class Service{constructor(){fail();app.post('/',(req,res)=>eval(req.body.code));}}new Service();`}]});
  assert.equal(r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW').length,1);
+});
+test('a synchronous function constructor throw stops its async caller prefix',()=>{
+ const r=analyze({files:[{filePath:'entry.js',content:`const app=require('express')();function Broken(){throw Error('stop');}
+ app.post('/',async(req,res)=>{new Broken();eval(req.body.code);});`}]});
+ assert.equal(r.findings.length,0);
 });

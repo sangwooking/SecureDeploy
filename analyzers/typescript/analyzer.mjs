@@ -733,7 +733,11 @@ export function analyze(input, overrides = {}) {
         if(member?.target&&!member.unknown&&!member.ref?.unknown) {
           if(state.context.asyncPostAwait){note(mod,'POST_AWAIT_HELPER_CONTEXT_UNKNOWN');return unknown();}
           nodeSupport.escapeFields(state);
-          if(ts.isNewExpression(node))return nodeSupport.construct(member.target,args,state);
+          if(ts.isNewExpression(node)){
+            const constructed=nodeSupport.construct(member.target,args,state);
+            if(constructed.asyncThrown){state.asyncStop=true;state.asyncRejected=true;}
+            return constructed;
+          }
           const passed=args.map(a=>step(a,loc(node,mod,'FUNCTION_ARGUMENT',fn),mod));
           const returned=invoke(member.target,passed,state.depth+1,state.context,state.stack,state.uncertain||!!receiverInput?.constructorConditional,state.exposureUncertain,receiverInput);
           if(returned.constructorAbrupt)state.constructorAbrupt=true;

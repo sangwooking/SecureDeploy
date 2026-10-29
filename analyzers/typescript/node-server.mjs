@@ -409,6 +409,7 @@ export function nodeServer(api) {
     }
     const instance=object('node-instance');instance.constructorTarget=target;
     const returned=invoke(target,args,state.depth+1,state.context,state.stack,state.uncertain,false,instance,true);
+    if(returned.asyncThrown)return returned;
     if(returned.tag==='function'&&!returned.unknown)return returned;
     if(returned.ref&&!returned.unknown)return returned;
     if(returned.unknown){instance.unknown=true;instance.ref.unknown=true;}
