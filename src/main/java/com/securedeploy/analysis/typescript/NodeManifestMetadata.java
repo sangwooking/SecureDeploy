@@ -65,7 +65,7 @@ final class NodeManifestMetadata {
     private static List<String> iterable(Iterator<String> names){var result=new ArrayList<String>();names.forEachRemaining(result::add);return result;}
     // A bounded command grammar, not a shell lexer. No quoting, expansion or wrappers.
     private static String bootstrap(String command,com.fasterxml.jackson.databind.JsonNode config,String main){
-        if(command.length()>260||!command.matches("[A-Za-z0-9_./, *\\t-]+"))return null;
+        if(command.length()>260||!command.matches("[A-Za-z0-9_./, \\t-]+"))return null;
         String[] words=command.trim().split("[ \\t]+");
         if(words.length==2&&words[0].equals("node"))return validTarget(words[1])?words[1]:null;
         if(!words[0].equals("nodemon"))return null;

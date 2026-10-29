@@ -25,7 +25,11 @@ export function classModels(api) {
       if(stat(m)&&(ts.isMethodDeclaration(m)||ts.isGetAccessor(m)||ts.isSetAccessor(m))){
         note(state.mod,'CLASS_STATIC_MEMBER_NOT_INVOKED');continue;
       }
-      if(ts.isConstructorDeclaration(m)&&m.body&&!model.ctor){model.ctor=functionValue(m,state,'constructor');continue;}
+      if(ts.isConstructorDeclaration(m)&&m.body&&!model.ctor){
+        if(m.parameters.some(p=>p.modifiers?.length||ts.getDecorators(p)?.length))
+          return rejected('CLASS_PARAMETER_PROPERTY_OR_DECORATOR_UNKNOWN',m,state);
+        model.ctor=functionValue(m,state,'constructor');continue;
+      }
       if(!ts.isMethodDeclaration(m)||!m.body||!m.name||!ts.isIdentifier(m.name)||m.asteriskToken)
         return rejected('CLASS_FIELD_OR_ACCESSOR_UNKNOWN',m,state);
       const method=functionValue(m,state,m.name.text);
