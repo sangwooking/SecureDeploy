@@ -29,3 +29,17 @@ test('constructor function fields stay explicitly unsupported rather than losing
   assert.equal(r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW').length,0);
   assert.ok(r.files.some(f=>f.limitations.includes('CLASS_CONSTRUCTOR_CONTROL_FLOW_UNKNOWN')));
 });
+test('TypeScript parameter properties cannot masquerade as explicit field assignments',()=>{
+  const r=analyze({files:[{filePath:'entry.ts',content:`const app=require('express')();
+    class Service{constructor(public app){}register(){this.app.post('/',(req,res)=>eval(req.body.code));}}
+    new Service(app).register();`}]});
+  assert.equal(r.findings.length,0);
+  assert.ok(r.files[0].limitations.includes('CLASS_PARAMETER_PROPERTY_OR_DECORATOR_UNKNOWN'));
+});
+test('binding a shared method to a different instance uses that instance only',()=>{
+  const r=analyze({files:[{filePath:'entry.js',content:`const express=require('express');const app=express();
+    class Service{constructor(app){this.app=app;}register(){this.app.post('/',(req,res)=>eval(req.body.code));}}
+    const mounted=new Service(app),unmounted=new Service(express.Router());
+    const f=mounted.register.bind(unmounted);f();`}]});
+  assert.equal(r.findings.length,0);assert.equal(r.files[0].entrypoints,0);
+});
