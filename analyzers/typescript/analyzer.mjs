@@ -18,8 +18,9 @@ import {exportLinks} from './export-links.mjs';
 import {wrapperLinks} from './wrapper-links.mjs';
 import {externalNext} from './external-next.mjs';
 import {asyncBoundaries} from './async-boundary.mjs';
+import {asyncExceptions} from './async-exception.mjs';
 
-export const VERSION = 'ts-server-v50';
+export const VERSION = 'ts-server-v51';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -113,6 +114,7 @@ export function analyze(input, overrides = {}) {
   const modules = new Map();
   let nodeSupport;
   let asyncSupport;
+  let exceptionSupport;
   const functionNodes=new WeakSet();
   let chars = 0, steps = 0, totalFunctions = 0;
   let phase='SETUP', astNodes=0;
@@ -1161,7 +1163,7 @@ export function analyze(input, overrides = {}) {
       if (node.incrementor) expr(node.incrementor, branch);
       mergeVars(state, [state, branch]); return { ...r, stops: false };
     } else if (ts.isTryStatement(node)) {
-      if(state.asyncFrame){note(mod,'ASYNC_EXCEPTION_FLOW_UNKNOWN');asyncSupport.evidence('ASYNC_EXCEPTION_FLOW_UNKNOWN',node,state);state.asyncFrame.summary.unknown=true;return {values:[],stops:true,asyncStopped:true};}
+      if(state.asyncFrame)return exceptionSupport.handle(node,state);
       const thrown=node.tryBlock.statements.length===1 && ts.isThrowStatement(node.tryBlock.statements[0]) ? unwrap(node.tryBlock.statements[0].expression) : undefined;
       const known=thrown && ts.isNewExpression(thrown) && ts.isIdentifier(thrown.expression) && thrown.expression.text==='Error'
         && !state.vars.has('Error') && !mod.imports.has('Error') && !mod.declared.has('Error')
@@ -1336,7 +1338,8 @@ export function analyze(input, overrides = {}) {
   writePass?.();
   phase='ENTRY_DISCOVERY';
   entryContracts({ts,modules,tick,note,loc,append,result});
-  asyncSupport=asyncBoundaries({ts,modules,tick,note,unknown,constant,loc,append,result,fork});
+  asyncSupport=asyncBoundaries({ts,modules,tick,note,unknown,constant,loc,append,result,fork,rejection:(state,node)=>exceptionSupport.rejection(state,node)});
+  exceptionSupport=asyncExceptions({ts,tick,note,unknown,constant,fork,statement,mergeVars,evidence:asyncSupport.evidence});
   nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody,invalidateNodeReference});
   nodeSupport.discover();
   phase='FLOW';

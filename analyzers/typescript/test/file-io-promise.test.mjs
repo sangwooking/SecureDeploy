@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import {analyze} from '../analyzer.mjs';
 import {fileIoCases} from './file-io-promise-fixtures.mjs';
 for(const c of fileIoCases)test(`file IO Promise: ${c.id}`,()=>{
+ const expected=['catch-not-modeled','rethrow-not-modeled','finally-not-modeled'].includes(c.id)?'CONDITIONAL':c.expected;
  const r=analyze({files:c.files}),f=r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW');
- assert.equal(f.length,['HIGH','CONDITIONAL'].includes(c.expected)?1:0,c.id);
- if(c.expected==='HIGH')assert.equal(f[0].confidence,'HIGH');
- if(c.expected==='CONDITIONAL'){
+ assert.equal(f.length,['HIGH','CONDITIONAL'].includes(expected)?1:0,c.id);
+ if(expected==='HIGH')assert.equal(f[0].confidence,'HIGH');
+ if(expected==='CONDITIONAL'){
   assert.equal(f[0].confidence,'MEDIUM');
   assert.ok(r.nodeUses.some(u=>u.kind==='FILE_IO_FULFILLMENT_POSSIBLE'));
   assert.ok(r.nodeUses.some(u=>u.kind==='REJECTION_PATH_POSSIBLE'));

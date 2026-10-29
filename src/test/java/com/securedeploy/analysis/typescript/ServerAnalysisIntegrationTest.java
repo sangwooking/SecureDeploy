@@ -43,7 +43,7 @@ class ServerAnalysisIntegrationTest {
         String prefix="const app=require('express')();const fs=require('fs');const {promisify}=require('util');const write=promisify(fs.writeFile);";
         var conditional=uploadSource(token,"entry.cjs",prefix+"app.post('/',async(req,res)=>{await write('unused.txt','data');eval(req.body.code);});");
         var snapshot=conditional.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v50");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v51");
         assertThat(snapshot.path("validatedFindings")).isEmpty();
         assertThat(snapshot.path("findings").findValuesAsText("confidence")).contains("MEDIUM");
         assertThat(snapshot.path("nodeUses").findValuesAsText("kind")).contains("FILE_IO_PROMISE_CREATED","FILE_IO_FULFILLMENT_POSSIBLE","REJECTION_PATH_POSSIBLE");
@@ -55,7 +55,27 @@ class ServerAnalysisIntegrationTest {
         assertThat(safe.at("/coverage/status")).isEqualTo(conditional.at("/coverage/status"));
         var unknown=uploadSource(token,"entry.cjs",prefix+"app.post('/',async(req,res)=>{try{await write('unused.txt','data');}catch(e){}eval(req.body.code);});");
         assertThat(unknown.at("/serverAnalysis/validatedFindings")).isEmpty();
-        assertThat(unknown.at("/serverAnalysis/nodeUses").findValuesAsText("kind")).contains("ASYNC_EXCEPTION_FLOW_UNKNOWN");
+        assertThat(unknown.at("/serverAnalysis/nodeUses").findValuesAsText("kind")).contains("ASYNC_CATCH_ENTERED","ASYNC_EXCEPTION_PATH_CONTINUES");
+        assertThat(unknown.at("/serverAnalysis/findings").findValuesAsText("confidence")).containsOnly("MEDIUM");
+    }
+
+    @Test void asyncExceptionsPersistConditionalEvidenceWithoutPromotingResolvedOrRuntimeSuccess() throws Exception {
+        String token=signup();String prefix="const app=require('express')();app.post('/',async(req,res)=>{";
+        var handled=uploadSource(token,"entry.cjs",prefix+"try{await Promise.reject('x');}catch(e){}eval(req.body.code);});");
+        var snapshot=handled.path("serverAnalysis");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v51");
+        assertThat(snapshot.path("validatedFindings")).isEmpty();
+        assertThat(snapshot.path("findings").findValuesAsText("confidence")).containsOnly("MEDIUM");
+        assertThat(snapshot.path("nodeUses").findValuesAsText("kind")).contains("ASYNC_REJECTION_CAPTURED","ASYNC_CATCH_ENTERED","ASYNC_EXCEPTION_PATH_CONTINUES");
+        assertThat(detail(token,handled.path("reviewId").asLong()).path("serverAnalysis")).isEqualTo(snapshot);
+        mvc.perform(get("/api/reviews/"+handled.path("reviewId").asLong()).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+        var returned=uploadSource(token,"entry.cjs",prefix+"try{await Promise.reject('x');}catch(e){return;}eval(req.body.code);});");
+        assertThat(returned.at("/serverAnalysis/findings")).isEmpty();
+        var unknown=uploadSource(token,"entry.cjs",prefix+"try{await external();}catch(e){}eval(req.body.code);});");
+        assertThat(unknown.at("/serverAnalysis/findings")).isEmpty();
+        assertThat(unknown.path("serverAnalysis").toString()).contains("UNSUPPORTED_ASYNC_BOUNDARY");
+        assertThat(unknown.path("securityScore")).isEqualTo(handled.path("securityScore"));
+        assertThat(returned.path("securityScore")).isEqualTo(handled.path("securityScore"));
     }
 
     @Test void zipMiddlewareTerminationPersistsControlEvidenceWithoutSuppressingRealNextFlow() throws Exception {
@@ -78,7 +98,7 @@ class ServerAnalysisIntegrationTest {
             assertThat(finding.at("/evidence/0/sink/kind").asText()).isEqualTo("EVAL_CALL");
         }
         var snapshot=blocked.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v50");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v51");
         assertThat(snapshot.path("validatedFindings")).isEmpty();
         assertThat(snapshot.path("nodeUses").findValuesAsText("kind")).contains("ROUTE_HANDLER_NOT_REACHED","RESPONSE_END");
         assertThat(snapshot.at("/files/0/entrypoints").asInt()).isEqualTo(1);
@@ -97,7 +117,7 @@ class ServerAnalysisIntegrationTest {
         files.put("app/api/task/route.ts","import {toNextJsHandler} from 'better-auth/next-js';import {run} from './handler';export const {GET,POST}=toNextJsHandler(run);");
         files.put("app/api/task/handler.ts","export async function run(request){return fetch(new URL(request.url).searchParams.get('url'));}");
         var unsafe=uploadSources(token,files);var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v50");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v51");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         assertThat(snapshot.at("/validatedFindings/0/ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
         assertThat(snapshot.at("/validatedFindings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
@@ -147,7 +167,7 @@ class ServerAnalysisIntegrationTest {
                 "app/api/task/route.ts","import {wrap} from '../../../lib/wrapper';export const GET=wrap(async(request)=>fetch(new URL(request.url).searchParams.get('url')));");
         var unsafe=uploadSources(token,sources);
         var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v50");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v51");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
         assertThat(finding.path("ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
@@ -185,7 +205,7 @@ class ServerAnalysisIntegrationTest {
                 "service.ts","function query(db,id){return db.prepare('SELECT * FROM records WHERE id='+id).all();}export {query};");
         var unsafe=uploadSources(token,sources);
         var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v50");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v51");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
         assertThat(finding.path("ruleId").asText()).isEqualTo("TS_SQL_INPUT_FLOW");
@@ -265,7 +285,7 @@ class ServerAnalysisIntegrationTest {
             };
             """);
         var unsafe=uploadSources(token,sources);
-        assertThat(unsafe.at("/serverAnalysis/analyzerVersion").asText()).isEqualTo("ts-server-v50");
+        assertThat(unsafe.at("/serverAnalysis/analyzerVersion").asText()).isEqualTo("ts-server-v51");
         assertThat(unsafe.at("/serverAnalysis/validatedFindings").findValuesAsText("ruleId")).contains("JS_EVAL_INPUT_FLOW");
         assertThat(unsafe.at("/serverAnalysis/nodeUses").findValuesAsText("kind")).contains("CLASS_CONSTRUCTED","METHOD_CALL_CONNECTED","ENTRY_REGISTERED");
         var safe=new HashMap<>(sources);safe.put("service.js",sources.get("service.js").replace("eval(req.body.code)","Number(req.body.code)"));

@@ -1,0 +1,50 @@
+import{test}from'node:test';import assert from'node:assert/strict';
+import{analyze}from'../analyzer.mjs';import{asyncExceptionCases}from'./async-exception-fixtures.mjs';
+for(const c of asyncExceptionCases)test(`bounded async exception: ${c.id}`,()=>{
+ const r=analyze({files:c.files}),f=r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW');
+ assert.equal(f.length,c.expected==='CONDITIONAL'?1:0,c.id+':'+JSON.stringify(r.files));
+ if(f.length)assert.equal(f[0].confidence,'MEDIUM');
+ if(c.expected==='UNKNOWN')assert.ok(r.files.some(f=>f.limitations.length));
+ assert.deepEqual(analyze({files:c.files}),r);
+});
+const run=body=>analyze({files:[{filePath:'entry.cjs',content:`const app=require('express')();app.post('/',async(req,res)=>{${body}});`}]});
+test('unknown catch calls stop before later sinks and do not prove handled completion',()=>{
+ const r=run(`try{await Promise.reject('x');}catch(e){external();eval(req.body.code);}eval(req.body.other);`);
+ assert.equal(r.findings.length,0);assert.ok(r.files[0].limitations.includes('ASYNC_EXCEPTION_CALL_COMPLETION_UNKNOWN'));
+});
+test('property reads, writes and temporal dead zone are not accepted as exception-free handling',()=>{
+ for(const body of [`try{throw 'x';}catch(e){const v=e.value;}eval(req.body.code);`,`try{throw 'x';}catch(e){holder.value=1;}eval(req.body.code);`,`try{unknownName;}catch(e){return;}eval(req.body.code);`,`try{const a=b;const b=1;}catch(e){return;}eval(req.body.code);`])assert.equal(run(body).findings.length,0);
+});
+test('catch is not entered on modeled fulfillment and finally return overrides try return',()=>{
+ const r=run(`try{await Promise.resolve(0);}catch(e){eval(req.body.other);}eval(req.body.code);`);
+ assert.equal(r.findings.length,1);assert.ok(!r.nodeUses.some(u=>u.kind==='ASYNC_CATCH_ENTERED'));
+ const safe=run(`try{return req.body.code;}finally{return '1';}eval(req.body.other);`);assert.equal(safe.findings.length,0);
+});
+test('handled primitive returns remain symbolic promises rather than immediate tainted values',()=>{
+ const input={files:[{filePath:'entry.js',content:`const app=require('express')();async function value(){try{await Promise.reject('x');}catch(e){return '1';}}
+ app.post('/',async(req,res)=>{const v=await value();eval(v);eval(req.body.code);});`}]};
+ const r=analyze(input);assert.equal(r.findings.length,1);assert.equal(r.findings[0].confidence,'MEDIUM');
+});
+test('catch cannot see a block-local try declaration and outer bindings are restored',()=>{
+ const r=run(`const x='1';try{const x=req.body.code;await Promise.reject('x');}catch(e){eval(x);}`);
+ assert.equal(r.findings.length,0);
+});
+test('post-suspension this state and separate invocations are not merged into a safe proof',()=>{
+ const r=analyze({files:[{filePath:'entry.js',content:`const app=require('express')();class S{constructor(v){this.value=v;}async run(){try{await Promise.reject('x');}catch(e){eval(this.value);}}}
+ app.post('/',(req,res)=>{new S(req.body.code).run();new S('1').run();});`}]});
+ assert.equal(r.findings.length,0);
+});
+test('bounded exception paths preserve depth and step exhaustion as incomplete',()=>{
+ const r=analyze({files:asyncExceptionCases[0].files},{maxSteps:45});assert.equal(r.findings.length,0);assert.ok(r.files.some(f=>f.limitations.length));
+});
+test('a confirmed synchronous throw can register an existing handler but an unknown await cannot',()=>{
+ const source=operation=>`const app=require('express')();const handler=(req,res)=>eval(req.body.code);async function boot(){try{${operation}}catch(e){app.post('/',handler);}}boot();`;
+ const known=analyze({files:[{filePath:'entry.js',content:source(`throw 'x';`)}]});
+ assert.equal(known.findings.length,1);assert.equal(known.findings[0].confidence,'MEDIUM');
+ const opaque=analyze({files:[{filePath:'entry.js',content:source(`await external();`)}]});assert.equal(opaque.findings.length,0);
+});
+test('unverified Error shadow and inline callbacks are not silently executed as native handling',()=>{
+ const r=run(`const Error=external;try{throw 'x';}catch(e){throw Error('x');}eval(req.body.code);`);
+ assert.equal(r.findings.length,0);assert.ok(r.files[0].limitations.includes('ASYNC_EXCEPTION_EXPRESSION_COMPLETION_UNKNOWN'));
+ const inline=run(`try{throw 'x';}catch(e){external(()=>eval(req.body.code));}`);assert.equal(inline.findings.length,0);
+});
