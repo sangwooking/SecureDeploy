@@ -1,0 +1,488 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "dd939a2e5ea48f785d69ab125913532b4cf8de9b",
+  "implementationCommit": "f2beffaa1d169ac796740bb24160aba5341297f7",
+  "worker": "ts-server-v51",
+  "evaluationVersion": "static-route-v1",
+  "evaluationOnly": true,
+  "normalWorkerJsonCannotActivate": true,
+  "newRules": 0,
+  "findingRuleIds": 72,
+  "newRealTP": 0,
+  "newConfirmedRealFP": 0,
+  "remediationReady": 0,
+  "independent": false,
+  "blind": false,
+  "productChanges": {
+    "findings": false,
+    "riskScorePolicy": false,
+    "apiDbUi": false,
+    "workerVersion": false,
+    "engineFingerprint": "CHANGED_BY_CODE_HASH_NOT_FINDING_SEMANTICS"
+  },
+  "helperAudit": {
+    "call": {
+      "file": "index.js",
+      "line": 108
+    },
+    "declaration": {
+      "file": "server/utils/database.js",
+      "line": 18
+    },
+    "moduleAndExport": "RESOLVED",
+    "firstReferenceLoss": "SHORT_CIRCUIT_BRANCH_REFERENCE_MERGE",
+    "separateBoundary": "POST_AWAIT_HEAP_STATE_UNKNOWN",
+    "changedReferencesRemainUnknown": true,
+    "syntheticCases": 5,
+    "referenceRestorationImplemented": false,
+    "dbConnectionOrEventExecutionVerified": false
+  },
+  "prototypeContract": {
+    "categories": {
+      "A": "STATIC_SETUP_LINKED_NOT_RUNTIME_PROOF",
+      "B": "REGISTERED_MOUNT_UNVERIFIED",
+      "C": "UNCALLED_FACTORY_REGISTRATION",
+      "D": "HANDLER_UNCONNECTED",
+      "E": "ORIGIN_OR_STATE_UNKNOWN"
+    },
+    "maxRows": 100,
+    "maxTracedHandlers": 20,
+    "maxObservationLinks": 200,
+    "sharedStepLimit": 100000,
+    "factoryInvoked": false,
+    "productResultsPromoted": false,
+    "gradeBControls": 21,
+    "extraBoundaryTests": 6,
+    "expectedUniqueRiskObservations": 7,
+    "normalControlsTreatedAsWholeProjectTN": false
+  },
+  "flint": {
+    "beforeSha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+    "afterSha": "4ae34238ce39fde00dfa15082397541758c07af1",
+    "handler": {
+      "file": "server/apps/routes/auth.js",
+      "line": 78
+    },
+    "requestSourceLine": 79,
+    "unknownQueryCallLine": 80,
+    "observed": "REQUEST_INPUT_REACHES_UNMODELED_CALL_IN_CONDITIONAL_HANDLER",
+    "mongooseReceiver": "UNVERIFIED",
+    "riskDistinction": "NOT_VERIFIED",
+    "actualHttpEntriesBeforeAndAfter": 0
+  },
+  "realTargetResults": [
+    {
+      "caseId": "flint-forgotpassword",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "after": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "pair": "NOT_VERIFIED_AS_SUCCESSFUL_REPAIR"
+    },
+    {
+      "caseId": "nodegoat-where",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED"
+    },
+    {
+      "caseId": "juice-search",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "after": "NOT_SUPPORTED_REQUEST_CONNECTION",
+      "pair": "NOT_VERIFIED_AS_SUCCESSFUL_REPAIR"
+    },
+    {
+      "caseId": "juice-profile-ssrf",
+      "before": "NOT_SUPPORTED_REQUEST_CONNECTION"
+    },
+    {
+      "caseId": "nodegoat-eval-preTax",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED"
+    },
+    {
+      "caseId": "nodegoat-eval-afterTax",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED"
+    },
+    {
+      "caseId": "nodegoat-eval-roth",
+      "before": "TP",
+      "after": "TN_TARGET_ONLY",
+      "pair": "VERIFIED_STATIC_TARGET_CONTRAST_NOT_RUNTIME_OR_RESOLVED"
+    }
+  ],
+  "productionRegression": {
+    "availableHistoricalInputs": 8,
+    "availableInputRepeats": 2,
+    "targetInputs": 6,
+    "targetInputRepeats": 2,
+    "all14EqualExceptCodeFingerprint": true,
+    "nodeGoatSinkPathsPreserved": 4,
+    "nodeGoatRiskCauses": 2,
+    "unconnectedFlintAndJuicePaths": 3,
+    "missingHistoricalInputs": [
+      {
+        "projectId": "Zenyonmz--todo-demo",
+        "sourceSha": "9f6b219ffbeadebe05a18783852e9fcdf075b0a5",
+        "status": "NOT_RUN",
+        "reason": "INPUT_UNAVAILABLE"
+      },
+      {
+        "projectId": "salmandotweb--nextjs-supabase-boilerplate",
+        "sourceSha": "5d9ebfb75cd29732d4dea0882bebb0f6f47b189a",
+        "status": "NOT_RUN",
+        "reason": "INPUT_UNAVAILABLE"
+      },
+      {
+        "projectId": "imbhargav5--nextbase-nextjs-supabase-starter",
+        "sourceSha": "00ad2da857b84322ff359db098cbf1cb4f4b7282",
+        "status": "NOT_RUN",
+        "reason": "INPUT_UNAVAILABLE"
+      },
+      {
+        "projectId": "vercel--nextjs-subscription-payments",
+        "sourceSha": "bdd0813206e47e6b218d42f15a7976c8a0d3c3eb",
+        "status": "NOT_RUN",
+        "reason": "INPUT_UNAVAILABLE"
+      },
+      {
+        "projectId": "mckaywrigley--chatbot-ui",
+        "sourceSha": "81328b61d2a4ab597a7a057be70e785cf756d9f8",
+        "status": "NOT_RUN",
+        "reason": "INPUT_UNAVAILABLE"
+      },
+      {
+        "projectId": "Razikus--supabase-nextjs-template",
+        "sourceSha": "d519bf18d747bc0956346910414db68adb5a45bf",
+        "status": "NOT_RUN",
+        "reason": "INPUT_UNAVAILABLE"
+      },
+      {
+        "projectId": "makerkit--nextjs-saas-starter-kit-lite",
+        "sourceSha": "9ff430df9c58516add0136bd01ed800ce551675e",
+        "status": "NOT_RUN",
+        "reason": "INPUT_UNAVAILABLE"
+      }
+    ],
+    "all15InputsReplayed": false
+  },
+  "prototypeInputScope": "RECORDED_PARSED_SOURCES_RECONSTRUCTED_METADATA_NOT_FULL_PRODUCTION_INPUT",
+  "metadataNotReconstructed": [
+    "PACKAGE_EXPORTS_IMPORTS_MAPS",
+    "BOOTSTRAP_SCRIPT_HINTS",
+    "WORKSPACE_LINKS",
+    "POLICIES",
+    "INSTALLED_PACKAGE_RESOLUTION",
+    "LIVE_DATABASE"
+  ],
+  "prototypeInputs": [
+    {
+      "input": "dvna-remediated",
+      "projectId": "appsecco--dvna",
+      "sourceSha": "4b16c488839ac5428b9c2573c96d886bee885b02",
+      "inputSha256": "01cf863fbf3718a9e1534b17a5947a383522639604930b43d00dbb1ff6b19a0a",
+      "categories": {
+        "D": 2,
+        "A": 28
+      },
+      "traceStates": {
+        "HANDLER_UNCONNECTED": 2,
+        "USE_PRODUCTION_ANALYSIS": 28
+      },
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 14859,
+      "repeatIdentical": true
+    },
+    {
+      "input": "dvna-vulnerable",
+      "projectId": "appsecco--dvna",
+      "sourceSha": "9ba473add536f66ac9007966acb2a775dd31277a",
+      "inputSha256": "3cf89a58d9c350d8370ac4a2e6216f1dfbc161cb019948b65c0a51f4d0327a7a",
+      "categories": {
+        "D": 2,
+        "A": 30
+      },
+      "traceStates": {
+        "HANDLER_UNCONNECTED": 2,
+        "USE_PRODUCTION_ANALYSIS": 30
+      },
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 11718,
+      "repeatIdentical": true
+    },
+    {
+      "input": "flint-after",
+      "projectId": "JasonEtco--flintcms",
+      "sourceSha": "4ae34238ce39fde00dfa15082397541758c07af1",
+      "inputSha256": "5fa407b997e3b127a76b005a059c5a9db929fc73d85027bc5cb8164ba5f5aa90",
+      "categories": {
+        "B": 3,
+        "C": 12,
+        "D": 1,
+        "E": 2
+      },
+      "traceStates": {
+        "ANALYZED_CONDITIONAL": 10,
+        "PRIOR_ROUTE_OR_MIDDLEWARE_UNKNOWN": 2,
+        "MIDDLEWARE_CONTEXT_UNKNOWN": 3,
+        "HANDLER_UNCONNECTED": 1,
+        "FACTORY_LOCAL_RECEIVER_NOT_CREATED": 2
+      },
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 6,
+      "steps": 21732,
+      "repeatIdentical": true
+    },
+    {
+      "input": "flint-before",
+      "projectId": "JasonEtco--flintcms",
+      "sourceSha": "49e4b6a49e8ba378313845162cd32ba06a2681d6",
+      "inputSha256": "c1b14daf05d1d0e975ddd8aaedc92ea56f4a3edc0d01f5e671ceef719ac250c6",
+      "categories": {
+        "B": 3,
+        "C": 12,
+        "D": 1,
+        "E": 2
+      },
+      "traceStates": {
+        "ANALYZED_CONDITIONAL": 10,
+        "PRIOR_ROUTE_OR_MIDDLEWARE_UNKNOWN": 2,
+        "MIDDLEWARE_CONTEXT_UNKNOWN": 3,
+        "HANDLER_UNCONNECTED": 1,
+        "FACTORY_LOCAL_RECEIVER_NOT_CREATED": 2
+      },
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 3,
+      "steps": 21663,
+      "repeatIdentical": true
+    },
+    {
+      "input": "goof-validation",
+      "projectId": "snyk-labs--nodejs-goof",
+      "sourceSha": "add14ba59e98240d9e00a235dd7d42cd61ae9912",
+      "inputSha256": "5e2b3beb90c65dd21af69d0142abb33c28ef5b1f20f7f4811d6bd778ee1151a1",
+      "categories": {
+        "D": 16,
+        "A": 2
+      },
+      "traceStates": {
+        "HANDLER_UNCONNECTED": 16,
+        "USE_PRODUCTION_ANALYSIS": 2
+      },
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 3136,
+      "repeatIdentical": true
+    },
+    {
+      "input": "juice-sql-fixed",
+      "projectId": "juice-shop--juice-shop",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "inputSha256": "b244fd4ee96c98fdbdda4840407184763c275d845fdfe389842e4949d314551e",
+      "categories": {
+        "E": 1,
+        "B": 2
+      },
+      "traceStates": {
+        "RECEIVER_STATE_UNKNOWN": 1,
+        "BUDGET_OR_UNSUPPORTED": 1,
+        "PRIOR_ROUTE_OR_MIDDLEWARE_UNKNOWN": 1
+      },
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 100000,
+      "repeatIdentical": true
+    },
+    {
+      "input": "juice",
+      "projectId": "juice-shop--juice-shop",
+      "sourceSha": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+      "inputSha256": "0b84f8bd8804e48754b0f4b2a82cfa32e83370a252888c9fafd107f939d25bb6",
+      "categories": {
+        "E": 1,
+        "B": 2
+      },
+      "traceStates": {
+        "RECEIVER_STATE_UNKNOWN": 1,
+        "BUDGET_OR_UNSUPPORTED": 1,
+        "PRIOR_ROUTE_OR_MIDDLEWARE_UNKNOWN": 1
+      },
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 100000,
+      "repeatIdentical": true
+    },
+    {
+      "input": "next-supabase",
+      "projectId": "vercel--next.js",
+      "sourceSha": "2998a2e801caab665d603daefc7445c04309285a",
+      "inputSha256": "5d3a72aadc0518184fd96dbd548bb91dbc203e6a02d383d7253bf34a26b0236e",
+      "categories": {},
+      "traceStates": {},
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 686,
+      "repeatIdentical": true
+    },
+    {
+      "input": "nodegoat-fixed",
+      "projectId": "OWASP--NodeGoat",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "inputSha256": "7662a17ec051fdb95eee2ce2ee1426c7739c3e70b0c1dd4212c8688e91bea96e",
+      "categories": {
+        "B": 1
+      },
+      "traceStates": {
+        "ANALYZED_CONDITIONAL": 1
+      },
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 10016,
+      "repeatIdentical": true
+    },
+    {
+      "input": "nodegoat",
+      "projectId": "OWASP--NodeGoat",
+      "sourceSha": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+      "inputSha256": "147a946551bc5879c3e0503d9ac0071df0ff94d104903a9d883b2cfab82ec2f6",
+      "categories": {
+        "B": 1
+      },
+      "traceStates": {
+        "ANALYZED_CONDITIONAL": 1
+      },
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 9965,
+      "repeatIdentical": true
+    },
+    {
+      "input": "vibe",
+      "projectId": "nglguarino--echoverse-11labs",
+      "sourceSha": "549568d6f58609b0a650c10292ac0dd1f9fddf7e",
+      "inputSha256": "e08a3f0d735b0591357bd73539de363e0ec35373bdf3b4b1f6db1609c931152d",
+      "categories": {},
+      "traceStates": {},
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 1466,
+      "repeatIdentical": true
+    },
+    {
+      "input": "vibe",
+      "projectId": "LellaSriHarsha--power-platform-hub",
+      "sourceSha": "d17092f574c7a9c833bee1da8b37e358efcdafef",
+      "inputSha256": "c97f7a66927130818980c5644466c8a3e00e821d8161bbaa704b559dbb90b84a",
+      "categories": {},
+      "traceStates": {},
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 1326,
+      "repeatIdentical": true
+    },
+    {
+      "input": "vibe",
+      "projectId": "TinyikoMamban--workflowai-pro",
+      "sourceSha": "1ab6e6fba96ad6cadec64bfa9132398313b40986",
+      "inputSha256": "0b251b012a959dacffdb14db2c25c260cd15dfd6f232921ea18c78b72d93b54b",
+      "categories": {},
+      "traceStates": {},
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 4072,
+      "repeatIdentical": true
+    },
+    {
+      "input": "vibe",
+      "projectId": "Adriano-Digital2024--CopyMonster",
+      "sourceSha": "99cf465570ad96abbf0e3325cc655025903e1ba6",
+      "inputSha256": "108a63d9795826c2ace5c64925e8a34d5983b730dd7b4b64654298d85f47b501",
+      "categories": {},
+      "traceStates": {},
+      "ruleObservations": 0,
+      "unmodeledRequestInputCalls": 0,
+      "steps": 5826,
+      "repeatIdentical": true
+    }
+  ],
+  "resources": {
+    "scope": "RECORDED_PARSED_SOURCES_RECONSTRUCTED_METADATA_NOT_FULL_BACKEND",
+    "heapMiB": 192,
+    "limitsIncreased": false,
+    "rows": [
+      {
+        "mode": "baseline",
+        "minMs": 231,
+        "maxMs": 525,
+        "maxRssBytes": 202539008
+      },
+      {
+        "mode": "normal",
+        "minMs": 236,
+        "maxMs": 503,
+        "maxRssBytes": 197296128
+      },
+      {
+        "mode": "prototype",
+        "minMs": 273,
+        "maxMs": 500,
+        "maxRssBytes": 202817536
+      }
+    ],
+    "juicePrototypeStepLimitReached": true,
+    "performanceImprovementClaimed": false
+  },
+  "integration": {
+    "realReact": true,
+    "realIsolatedH2": true,
+    "zipWorkerPersistenceEvidence": true,
+    "productFindingVisible": true,
+    "prototypeLeak": false,
+    "unauthenticatedStatus": 401,
+    "otherUserStatus": 403,
+    "viewports": [
+      1440,
+      390
+    ],
+    "noHorizontalOverflow": true,
+    "liveGitHub": false,
+    "oldSnapshotCompatibility": "RELATED_BACKEND_TESTS_NOT_USER_DATABASE_REPLAY"
+  },
+  "validation": {
+    "workerTests": 1329,
+    "relatedBackendTests": 202,
+    "evaluationJavaScriptTests": 22,
+    "evaluationPythonTests": 280,
+    "pythonWorkerTests": 117,
+    "frontendTests": 199,
+    "frontendBuild": true,
+    "prior34Controls": 65,
+    "testFailures": 0
+  },
+  "preservation": {
+    "userDatabaseChanged": false,
+    "userServerRestarted": false,
+    "externalSourcesExecuted": false,
+    "paidAIInvoked": false,
+    "rlsV4AndDeploymentV2Changed": false,
+    "authorizationIntentChanged": false,
+    "privateDocumentsTracked": false
+  },
+  "nextBoundaries": [
+    "SAFE_REFERENCE_IDENTITY_ACROSS_BRANCH_AND_AWAIT_WITHOUT_HEAP_RESTORATION",
+    "PROVEN_MONGOOSE_MODEL_ORIGIN_BEFORE_SELECTOR_SINK",
+    "EXPLICIT_FACTORY_INVOCATION_MOUNT_AND_MIDDLEWARE_REACHABILITY",
+    "JUICE_BOOTSTRAP_BUDGET_AND_WRAPPER_UNCERTAINTY"
+  ],
+  "claimsExcluded": [
+    "NEW_REAL_TP",
+    "INDEPENDENT_HOLDOUT",
+    "ALL_FIFTEEN_PASSED",
+    "REAL_HTTP_EXPOSURE_FROM_CANDIDATE",
+    "AUTOMATIC_REMEDIATION_READINESS",
+    "RUNTIME_SECURITY_OR_FIX_SUCCESS"
+  ]
+}
