@@ -47,7 +47,7 @@ export function asyncExceptions(api){
     :ts.isExpressionStatement(s)&&!whole?[s.expression]:ts.isReturnStatement(s)||ts.isThrowStatement(s)&&!errorConstruction?[s.expression]:[];
    if(expressions.some(n=>!simple(n))){restore();return opaque(s,state,'ASYNC_EXCEPTION_VALUE_EFFECT_UNKNOWN');}
    const r=statement(s,state);values.push(...r.values);
-   if(r.stops){restore();return {...r,values};}
+   if(r.stops){restore();return {...r,values,...(ts.isThrowStatement(s)&&r.asyncRejected?{exceptionThrowAt:s}:{})};}
    if(calls.length||awaited&&state.asyncFrame.summary.unknown){restore();return opaque(s,state,'ASYNC_EXCEPTION_CALL_COMPLETION_UNKNOWN');}
   }
   restore();return {values,stops:false};
@@ -62,7 +62,10 @@ export function asyncExceptions(api){
   evidence('ASYNC_TRY_ENTERED',node,start);
   const first=run(node.tryBlock,start),paths=[];
   if(!first.asyncRejected)paths.push({state:start,result:first});
-  if(first.asyncRejected&&!start.exceptionScope.errors.length)start.exceptionScope.errors.push(copy(start));
+  if(first.asyncRejected&&(!start.asyncRejected||!start.exceptionScope.errors.length)){
+   start.exceptionScope.errors.push(copy(start));
+   evidence('ASYNC_THROW_CAPTURED',first.exceptionThrowAt??node.tryBlock,start);
+  }
   for(const error of start.exceptionScope.errors){
    error.exceptionScope=undefined;error.exceptionHandler=true;error.asyncStop=false;error.asyncRejected=false;error.constructorAbrupt=false;
    error.asyncFrame.summary.rejected=false;error.asyncFrame.summary.unknown=false;
