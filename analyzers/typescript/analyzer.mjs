@@ -18,7 +18,7 @@ import {exportLinks} from './export-links.mjs';
 import {wrapperLinks} from './wrapper-links.mjs';
 import {externalNext} from './external-next.mjs';
 
-export const VERSION = 'ts-server-v46';
+export const VERSION = 'ts-server-v47';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -451,7 +451,7 @@ export function analyze(input, overrides = {}) {
         read: () => hasConstant(key) ? property(receiver, String(key.constant), node, state) : { ...union(receiver, key), unknown: true },
         write: (v, target) => {
           if(dataObjects.plain(receiver)&&exposureSources(v).length)v=step(v,loc(node,mod,'OBJECT_DATA_PROPERTY_WRITE',fn),mod);
-          if(nodeSupport?.write(receiver,key,v,target))return;
+          if(nodeSupport?.write(receiver,key,v,target,node))return;
           if(dataObjects.write(receiver,key,v,target,node))return;
           if (receiver.ref?.http && receiver.tag === 'url') {
             note(mod, 'URL_PROPERTY_WRITE');
@@ -893,6 +893,7 @@ export function analyze(input, overrides = {}) {
     if (node.kind === ts.SyntaxKind.TrueKeyword) return constant(true);
     if (node.kind === ts.SyntaxKind.FalseKeyword) return constant(false);
     if (node.kind === ts.SyntaxKind.NullKeyword) return constant(null);
+    if(state.nodeMode&&ts.isClassExpression(node))return nodeSupport.classValue(node,state);
     if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) return state.nodeMode?nodeSupport.functionValue(node,state,node.parent?.name?.text??'handler'):unsupportedClosure(node, state);
     note(mod, 'EXPRESSION_UNSUPPORTED'); invalidateWrites(writtenNames(node, state), state); state.uncertain = true; return unknown();
   }
@@ -1073,6 +1074,7 @@ export function analyze(input, overrides = {}) {
       const v = d.initializer ? expr(d.initializer, state) : constant(undefined);
       bind(d.name, step(v, loc(d, mod, 'VARIABLE', fn), mod), state);
     }
+    else if(state.nodeMode&&ts.isClassDeclaration(node)&&node.name)state.vars.set(node.name.text,nodeSupport.classValue(node,state));
     else if (ts.isExpressionStatement(node)) expr(node.expression, state);
     else if (ts.isReturnStatement(node)) {
       let returned=expr(node.expression,state);
@@ -1261,7 +1263,7 @@ export function analyze(input, overrides = {}) {
   writePass?.();
   phase='ENTRY_DISCOVERY';
   entryContracts({ts,modules,tick,note,loc,append,result});
-  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody});
+  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody,invalidateNodeReference});
   nodeSupport.discover();
   phase='FLOW';
   for (const mod of modules.values()) for (const entry of mod.entries) {

@@ -8,6 +8,7 @@ import {webSecurity} from './web-security.mjs';
 import {rateLimiting} from './rate-limit.mjs';
 import {exportLinks} from './export-links.mjs';
 import {middlewareControl} from './middleware-control.mjs';
+import {classModels} from './class-model.mjs';
 
 // Library contracts over AST values only. Never require/import/eval target modules.
 export function nodeServer(api) {
@@ -52,6 +53,7 @@ export function nodeServer(api) {
     return result;
   };
   const summaries=constructorSummaries({...api,functionValue,object,validMongo});
+  const classes=classModels({...api,functionValue,object});
   const sequelize=sequelizeContracts({...api,object,native,findModule,observe});
   const mongoose=mongooseContracts({...api,object,native});
   const fields=fieldValidation({...api,native});
@@ -103,7 +105,10 @@ export function nodeServer(api) {
       }
       for(const s of mod.ast.statements) {
         tick(mod);
-        if(ts.isVariableStatement(s)||ts.isExpressionStatement(s)||ts.isIfStatement(s)||ts.isThrowStatement(s)||ts.isReturnStatement(s)) {
+        if(ts.isClassDeclaration(s)){
+          const defined=classes.define(s,state);if(s.name)state.vars.set(s.name.text,defined);
+          if(s.modifiers?.some(m=>m.kind===ts.SyntaxKind.ExportKeyword))exports.ref.properties.set(s.modifiers.some(m=>m.kind===ts.SyntaxKind.DefaultKeyword)?'default':s.name?.text,defined);
+        }else if(ts.isVariableStatement(s)||ts.isExpressionStatement(s)||ts.isIfStatement(s)||ts.isThrowStatement(s)||ts.isReturnStatement(s)) {
           if(statement(s,state).stops){state.context.unresolved=true;note(mod,'NODE_INITIALIZATION_STOPPED_OR_UNRESOLVED');break;}
         }else if(ts.isExportDeclaration(s)){
           if(!s.isTypeOnly&&(!s.exportClause||!ts.isNamedExports(s.exportClause))){
@@ -143,6 +148,7 @@ export function nodeServer(api) {
     }finally{loading.delete(mod);}
   }
   function property(base,key,node,state) {
+    const classProperty=classes.property(base,key,node,state);if(classProperty)return classProperty;
     const rateProperty=rate.property(base,key);if(rateProperty)return rateProperty;
     const fileProperty=api.filesSupport.property(base,key,node,state);if(fileProperty)return fileProperty;
     const mongooseProperty=mongoose.property(base,key);if(mongooseProperty)return mongooseProperty;
@@ -176,16 +182,22 @@ export function nodeServer(api) {
     if(base.tag==='express-response')return native('response-'+key,state.mod);
     const field=fields.read(base,key,node,state);if(field)return field;
   }
-  function write(receiver,key,v,state) {
+  function write(receiver,key,v,state,node=state.fn.node) {
     web.write(receiver,state);
     if(!state.nodeMode||!literal(key)||!receiver.ref)return false;
+    if(['class','class-prototype'].includes(receiver.tag)){receiver.ref.unknown=true;note(state.mod,'CLASS_PROTOTYPE_OR_STATIC_MUTATION_UNKNOWN');return true;}
+    if(receiver.classModel&&['__proto__','prototype','constructor'].includes(String(key.constant))){
+      receiver.ref.unknown=true;note(state.mod,'CLASS_INSTANCE_PROTOTYPE_MUTATION_UNKNOWN');return true;
+    }
     if(receiver.native){receiver.ref.unknown=true;note(state.mod,'NODE_LIBRARY_MUTATION_UNKNOWN');return true;}
     if(receiver.tag==='function'&&['__proto__','prototype','constructor','caller','arguments'].includes(String(key.constant)))return false;
     if(['node-module','node-exports','express-locals','node-instance','object','function'].includes(receiver.tag)&&!receiver.unknown&&!receiver.ref.unknown) {
       const ref=state.forkRefs?.get(receiver.ref)??receiver.ref;
       if(state.forkRefs&&ref.nodeIdentity)state.nodeMutations?.add(ref.nodeIdentity);
       if(ref.mongooseTracked)ref.mongooseRevision=(ref.mongooseRevision??0)+1;
-      ref.properties.set(String(key.constant),v);return true;
+      ref.properties.set(String(key.constant),v);
+      if(receiver.classModel)classes.evidence('INSTANCE_PROPERTY_CONNECTED',node,state,v.trace);
+      return true;
     }
     return false;
   }
@@ -221,6 +233,7 @@ export function nodeServer(api) {
   }
   function call(node,callee,receiver,args,state,global,callable) {
     if(!state.nodeMode)return;
+    const classCall=classes.call(node,receiver,args,state,callable);if(classCall)return classCall;
     // A verified HTTP listener registration retains the app identity; it does
     // not execute requests, listen callbacks or application initialization.
     if(callable?.native==='node-http-server-constructor'&&!callable.unknown&&!callable.ref?.unknown
@@ -402,6 +415,27 @@ export function nodeServer(api) {
     return instance;
   }
   function discover() {
+    const anchor=modules.values().next().value;
+    if(anchor)for(const manifest of (api.input.nodeManifests??[]).slice(0,100)){
+      if(typeof manifest.filePath!=='string'||manifest.filePath.length>240)continue;
+      for(const [key,target]of Object.entries(manifest).filter(([k])=>/^bootstrap\d+$/.test(k)).slice(0,20)){
+        tick(anchor);
+        if(typeof target!=='string'||target.length>240||!target.match(/^[A-Za-z0-9_@./-]+$/)||target.startsWith('/'))continue;
+        const p=path.posix.normalize(path.posix.join(path.posix.dirname(manifest.filePath),target));
+        if(p==='..'||p.startsWith('../'))continue;
+        const selected=modules.get(p);
+        // Evidence locations remain inside the selected source inventory. The
+        // declaration itself is metadata, not a fabricated source token location.
+        if(selected){
+          const location=loc(selected.ast,selected,'BOOTSTRAP_CANDIDATE',{name:'module'});
+          append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'BOOTSTRAP_CANDIDATE',operation:'STATIC_SCRIPT_HINT',location,trace:[],
+            limitations:['SELECTION_HINT_NOT_EXECUTION_PROOF','DECLARATION_LOCATION_IN_METADATA_NOT_SOURCE_TOKEN']},selected);
+          append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'BOOTSTRAP_SELECTED',operation:'SUPPLIED_SOURCE_SELECTED',
+            location:loc(selected.ast,selected,'BOOTSTRAP_SELECTED',{name:'module'}),trace:[],
+            limitations:['SELECTION_NOT_HTTP_OR_RUNTIME_PROOF']},selected);
+        }
+      }
+    }
     const roots=new Set(),parents=new Map();
     for(const mod of modules.values()) {
       let root=false;
@@ -479,7 +513,7 @@ export function nodeServer(api) {
     }
     for(const route of routes)if(![...reachable].some(app=>app.routes.includes(route)))note(route.target.mod,'UNMOUNTED_ROUTER_NOT_ANALYZED');
   }
-  return {property,write,call,construct,discover,functionValue,awaitValue:mongoose.consume,webEntry:web.entry,rateEntry:rate.entry,
+  return {property,write,call,construct,discover,functionValue,classValue:classes.define,awaitValue:mongoose.consume,webEntry:web.entry,rateEntry:rate.entry,
     applyFields:fields.apply,typeOfField:fields.typeName,compareFields:fields.compare,refineFields:fields.refine,
     invalidateFields:fields.invalidate,mergeFields:fields.merge,escapeFields:fields.escape};
 }

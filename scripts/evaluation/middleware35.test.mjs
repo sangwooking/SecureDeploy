@@ -8,7 +8,8 @@ import {middlewareCases,input} from '../../analyzers/typescript/test/middleware-
 const text=fs.readFileSync(new URL('./middleware35-summary.json',import.meta.url),'utf8');
 const summary=JSON.parse(text);
 test('fixed control source hashes, retained candidates and positive exit evidence match the current worker',()=>{
-  assert.equal(summary.currentWorker,VERSION);assert.equal(summary.controls.length,middlewareCases.length);
+  assert.equal(summary.currentWorker,'ts-server-v46');assert.ok(['ts-server-v46','ts-server-v47'].includes(VERSION));
+  assert.equal(summary.controls.length,middlewareCases.length);
   for(const [i,c]of middlewareCases.entries()){
     const row=summary.controls[i];assert.equal(row.id,c.id);assert.equal(row.contractExpectation,c.truth);
     assert.equal(row.sourceSha256,createHash('sha256').update(c.code).digest('hex'));

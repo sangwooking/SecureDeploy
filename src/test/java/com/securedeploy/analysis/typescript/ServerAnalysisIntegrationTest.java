@@ -58,7 +58,7 @@ class ServerAnalysisIntegrationTest {
             assertThat(finding.at("/evidence/0/sink/kind").asText()).isEqualTo("EVAL_CALL");
         }
         var snapshot=blocked.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v46");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v47");
         assertThat(snapshot.path("validatedFindings")).isEmpty();
         assertThat(snapshot.path("nodeUses").findValuesAsText("kind")).contains("ROUTE_HANDLER_NOT_REACHED","RESPONSE_END");
         assertThat(snapshot.at("/files/0/entrypoints").asInt()).isEqualTo(1);
@@ -77,7 +77,7 @@ class ServerAnalysisIntegrationTest {
         files.put("app/api/task/route.ts","import {toNextJsHandler} from 'better-auth/next-js';import {run} from './handler';export const {GET,POST}=toNextJsHandler(run);");
         files.put("app/api/task/handler.ts","export async function run(request){return fetch(new URL(request.url).searchParams.get('url'));}");
         var unsafe=uploadSources(token,files);var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v46");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v47");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         assertThat(snapshot.at("/validatedFindings/0/ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
         assertThat(snapshot.at("/validatedFindings/0/priority").asText()).isEqualTo("REVIEW_REQUIRED");
@@ -127,7 +127,7 @@ class ServerAnalysisIntegrationTest {
                 "app/api/task/route.ts","import {wrap} from '../../../lib/wrapper';export const GET=wrap(async(request)=>fetch(new URL(request.url).searchParams.get('url')));");
         var unsafe=uploadSources(token,sources);
         var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v46");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v47");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
         assertThat(finding.path("ruleId").asText()).isEqualTo("TS_SSRF_INPUT_FLOW");
@@ -165,7 +165,7 @@ class ServerAnalysisIntegrationTest {
                 "service.ts","function query(db,id){return db.prepare('SELECT * FROM records WHERE id='+id).all();}export {query};");
         var unsafe=uploadSources(token,sources);
         var snapshot=unsafe.path("serverAnalysis");
-        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v46");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v47");
         assertThat(snapshot.path("validatedFindings")).hasSize(1);
         var finding=snapshot.at("/validatedFindings/0");
         assertThat(finding.path("ruleId").asText()).isEqualTo("TS_SQL_INPUT_FLOW");
@@ -189,6 +189,27 @@ class ServerAnalysisIntegrationTest {
         var unresolved=uploadSources(token,unknownSources);
         assertThat(unresolved.at("/serverAnalysis/validatedFindings")).isEmpty();
         assertThat(unresolved.path("serverAnalysis").toString()).contains("MODULE_WILDCARD_OR_NAMESPACE_EXPORT_NOT_SUPPORTED");
+    }
+
+    @Test void explicitClassRoutePersistsSourceSinkWithoutChangingRiskPolicy() throws Exception {
+        String token=signup();
+        var sources=Map.of("server.js","""
+            const app=require('express')();const Service=require('./service');
+            const instance=new Service(app);instance.register();
+            ""","service.js","""
+            module.exports=class Service{
+              constructor(app){this.app=app;}
+              register(){this.app.post('/',(req,res)=>eval(req.body.code));}
+            };
+            """);
+        var unsafe=uploadSources(token,sources);
+        assertThat(unsafe.at("/serverAnalysis/analyzerVersion").asText()).isEqualTo("ts-server-v47");
+        assertThat(unsafe.at("/serverAnalysis/validatedFindings").findValuesAsText("ruleId")).contains("JS_EVAL_INPUT_FLOW");
+        assertThat(unsafe.at("/serverAnalysis/nodeUses").findValuesAsText("kind")).contains("CLASS_CONSTRUCTED","METHOD_CALL_CONNECTED","ENTRY_REGISTERED");
+        var safe=new HashMap<>(sources);safe.put("service.js",sources.get("service.js").replace("eval(req.body.code)","Number(req.body.code)"));
+        var fixed=uploadSources(token,safe);
+        assertThat(fixed.at("/serverAnalysis/validatedFindings")).isEmpty();
+        assertThat(fixed.at("/serverAnalysis/files").findValuesAsText("parseStatus")).containsOnly("PARSED");
     }
 
     @Test void sequelizeRawQueryPersistsWithSourceAndSinkAcrossAllIntakes() throws Exception {
