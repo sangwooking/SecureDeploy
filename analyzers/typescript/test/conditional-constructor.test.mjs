@@ -56,3 +56,16 @@ test('a registration on the throw-only continuation is incompatible with the ret
  register(){this.app.post('/',(req,res)=>eval(req.body.code));}}new Service(app,external);`}]});
  assert.equal(r.findings.length,0);assert.ok(r.nodeUses.some(u=>u.operation==='CONSTRUCTOR_THROW_BEFORE_COMPLETION'));
 });
+test('constructor throws stop later expression operands, arguments and initializers',()=>{
+ const route=`app.post('/',(req,res)=>eval(req.body.code))`;
+ for(const tail of [
+  `new Broken(),${route};`,
+  `unknown(new Broken(),${route});`,
+  `const first=new Broken(),second=${route};`,
+  `if(new Broken())${route};`,
+  `new Broken()?${route}:${route};`,
+ ]){
+  const r=analyze({files:[{filePath:'entry.js',content:`const app=require('express')();class Broken{constructor(){throw Error('stop');}}${tail}`}]});
+  assert.equal(r.findings.length,0,tail);assert.equal(r.files[0].entrypoints,0,tail);
+ }
+});

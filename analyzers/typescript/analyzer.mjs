@@ -536,6 +536,7 @@ export function analyze(input, overrides = {}) {
   function expr(original, state) {
     const node = unwrap(original);
     if (!node) return unknown();
+    if(state.constructorAbrupt)return {...unknown(),constructorAbrupt:true};
     const { mod, fn } = state;
     tick(mod);
     if ((node.flags & ts.NodeFlags.OptionalChain) && state.optionalNode !== node) {
@@ -707,6 +708,7 @@ export function analyze(input, overrides = {}) {
       const callable = receiverInput ? undefined : expr(callee, state);
       const global = ts.isIdentifier(callee) && !state.vars.has(callee.text) && !mod.imports.has(callee.text) && !mod.declared.has(callee.text);
       const args = (node.arguments ?? []).map(a => expr(a, state));
+      if(state.constructorAbrupt)return {...unknown(),constructorAbrupt:true};
       const fileMember=receiverInput?.fileNative&&ts.isPropertyAccessExpression(callee)?filesSupport.property(receiverInput,callee.name.text,callee,state):callable;
       const fileCall=filesSupport.call(node,fileMember,args,state);
       if(fileCall)return fileCall.value;
@@ -1054,6 +1056,7 @@ export function analyze(input, overrides = {}) {
   function statement(node, state) {
     const { mod, fn } = state;
     tick(mod);
+    if(state.constructorAbrupt)return {values:[],stops:true,constructorAbrupt:true};
     if (ts.isBlock(node)) {
       const prior = new Map(state.vars), locals = new Set();
       const names = name => { if (ts.isIdentifier(name)) locals.add(name.text);
@@ -1073,6 +1076,7 @@ export function analyze(input, overrides = {}) {
     if (ts.isVariableStatement(node)) for (const d of node.declarationList.declarations) {
       if (!d.initializer && !(node.declarationList.flags & ts.NodeFlags.BlockScoped) && ts.isIdentifier(d.name) && state.vars.has(d.name.text)) continue;
       const v = d.initializer ? expr(d.initializer, state) : constant(undefined);
+      if(state.constructorAbrupt)return {values:[],stops:true,constructorAbrupt:true};
       bind(d.name, step(v, loc(d, mod, 'VARIABLE', fn), mod), state);
     }
     else if(state.nodeMode&&ts.isClassDeclaration(node)&&node.name)state.vars.set(node.name.text,nodeSupport.classValue(node,state));
@@ -1091,6 +1095,7 @@ export function analyze(input, overrides = {}) {
       ...(state.context.classConstructorFlow?{constructorAbrupt:true}:{}) }; }
     else if (ts.isIfStatement(node)) {
       const condition = expr(node.expression, state);
+      if(state.constructorAbrupt)return {values:[],stops:true,constructorAbrupt:true};
       if(state.context.classConstructorFlow)nodeSupport.constructorBranch(node,state,truth(condition));
       if (truth(condition) === true) return statement(node.thenStatement, state);
       if (truth(condition) === false) return node.elseStatement ? statement(node.elseStatement, state) : { values: [], stops: false };
