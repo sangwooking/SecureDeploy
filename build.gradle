@@ -99,7 +99,7 @@ tasks.register('editingBrowserServer', JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'com.securedeploy.editing.EditingBrowserServer'
     maxHeapSize = '512m'
-    environment = System.getenv().findAll { key, value -> key in ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'JAVA_HOME'] }
+    environment = System.getenv().findAll { key, value -> key in ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'JAVA_HOME', 'SECUREDEPLOY_EDITING_TEST_PORT'] }
 }
 
 tasks.register('productReadinessServer', JavaExec) {

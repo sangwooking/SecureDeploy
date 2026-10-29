@@ -3,7 +3,7 @@ const {chromium,request}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),crypto=require('node:crypto');
 const {execFileSync}=require('node:child_process');
 const {stage,pane,resultView}=require('./editor-navigation.cjs');
-const api='http://127.0.0.1:8085',origin=process.env.FRONTEND_URL||'http://localhost:5173',widths=[1440,1024,768,390,320];
+const api=process.env.EDITING_API_URL||'http://127.0.0.1:8085',origin=process.env.FRONTEND_URL||'http://localhost:5173',widths=[1440,1024,768,390,320];
 const deterministic=process.env.PATCH_METHOD==='DETERMINISTIC';
 const applyLabel=deterministic?'검토한 자동 수정안 적용':'검토한 AI 수정안 적용';
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
@@ -14,7 +14,7 @@ try{for(const width of widths)for(const kind of ['fixed','selected']){
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  // Isolated-port proxy only; production CORS is not evaluated here.
  await page.route('**/*',async rt=>{const u=new URL(rt.request().url());if(u.pathname.startsWith('/api/')){
-  const response=await rt.fetch({url:api+u.pathname+u.search,headers:{...rt.request().headers(),origin:'http://localhost:5173'}});return rt.fulfill({response});
+  const response=await rt.fetch({url:api+u.pathname+u.search,headers:{...rt.request().headers(),origin:'http://localhost:5173'}});return rt.fulfill({response,headers:{...response.headers(),'access-control-allow-origin':origin}});
  }if(u.origin===origin)return rt.continue();outbound.push(u.origin);return rt.abort();});
  try{
   console.log(JSON.stringify({width,kind,stage:'start'}));

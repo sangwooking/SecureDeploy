@@ -127,6 +127,23 @@ class WorkspacePatchTest {
         doAnswer(i->{workspaces.save(workspace.id(),file.id(),new EditingWorkspaceService.Change(workspace.revision(),file.originalHash(),input+"// manual\n"),false);return denoOutput(i.getArgument(0),"{status: 'ok'}");}).when(provider).generateWorkspacePatch(any());
         assertEquals("STALE",generate(pending).state());assertEquals(input+"// manual\n",workspaces.content(workspace.id(),file.id()).text());
     }
+    @Test void providerCannotOmitUncertaintyOrReplaceRequiredResponseChecks() throws Exception {
+        deno();
+        var proposal=prepareDeno();
+        doAnswer(i->{
+            var v=denoOutput(i.getArgument(0),"{status: 'ok'}");
+            return new WorkspacePatch.Output(v.decision(),v.fileId(),v.startLine(),v.expectedHash(),v.replacement(),v.explanation(),List.of("모델이 제시한 추가 확인"),List.of());
+        }).when(provider).generateWorkspacePatch(any());
+        assertEquals("INVALID",generate(proposal).state());
+        assertEquals(input,workspaces.content(workspace.id(),file.id()).text());
+        now.set(now.get().plusSeconds(11));
+        doAnswer(i->denoOutput(i.getArgument(0),"{status: 'ok'}")).when(provider).generateWorkspacePatch(any());
+        var valid=generate(prepareDeno());
+        assertEquals("PROPOSED",valid.state());
+        assertTrue(valid.verificationSteps().stream().anyMatch(x->x.contains("STANDARD")));
+        assertTrue(valid.verificationSteps().stream().anyMatch(x->x.contains("API")));
+        assertTrue(valid.limitations().stream().anyMatch(x->x.contains("NOT_COMPARED")));
+    }
     @Test void previewHasExactIdentityAndNoExternalCallOrMutation() {
         var p=prepare();assertEquals("APPROVAL_REQUIRED",p.state());assertEquals("debug=true",p.before());assertNull(p.after());assertNull(p.diff());
         assertEquals(workspace.sourceRevision(),p.sourceRevision());assertEquals(file.originalHash(),p.originalHash());

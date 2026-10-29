@@ -293,7 +293,9 @@ public class EditingWorkspaceService {
                     session.diff=diff;session.after=output.replacement();
                 }
                 session.state=output.decision().equals("PATCH")?"PROPOSED":"NEEDS_REVIEW";
-                session.explanation=output.explanation();session.checks=List.copyOf(output.verificationSteps());
+                session.explanation=output.explanation();
+                // Provider text cannot remove the server-required compatibility and re-scan checks.
+                var checks=new LinkedHashSet<>(session.checks);checks.addAll(output.verificationSteps());session.checks=List.copyOf(checks);
                 var limits=new ArrayList<>(session.limits);limits.addAll(output.limitations());session.limits=List.copyOf(limits);
             }catch(RuntimeException | IOException invalid){session.state="INVALID";session.explanation="허용된 변경 범위를 확인할 수 없는 AI 응답을 거부했습니다. 파일은 변경되지 않았습니다.";}
         }

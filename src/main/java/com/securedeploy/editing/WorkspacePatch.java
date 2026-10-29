@@ -84,7 +84,7 @@ public final class WorkspacePatch {
         if(output.explanation()==null||output.explanation().isBlank()||output.explanation().length()>600
                 || !output.explanation().equals(sanitizer.text(output.explanation(),600))
                 || output.verificationSteps()==null || output.verificationSteps().isEmpty() || output.verificationSteps().size()>6
-                || output.limitations()==null || output.limitations().size()>6)throw new IllegalArgumentException();
+                || output.limitations()==null || output.limitations().isEmpty() || output.limitations().size()>6)throw new IllegalArgumentException();
         for(String text:java.util.stream.Stream.concat(output.verificationSteps().stream(),output.limitations().stream()).toList())
             if(text==null||text.isBlank()||text.length()>400||!text.equals(sanitizer.text(text,400)))throw new IllegalArgumentException();
         // Properties keep the server-derived constant; TypeScript also needs the separate AST contract check.

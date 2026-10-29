@@ -59,14 +59,16 @@ public final class EditingBrowserServer {
         }
     }
     public static void main(String[] args) throws Exception {
+        int port=Integer.parseInt(System.getenv().getOrDefault("SECUREDEPLOY_EDITING_TEST_PORT","8085"));
+        if(port==8080||port<1024||port>65535)throw new IllegalArgumentException("ISOLATED_PORT_REQUIRED");
         var context = new SpringApplicationBuilder(SecureDeployApplication.class, Fixture.class).run(
-                "--server.address=127.0.0.1","--server.port=8085",
+                "--server.address=127.0.0.1","--server.port="+port,
                 "--spring.datasource.url=jdbc:h2:mem:editing_browser;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE",
                 "--spring.datasource.username=sa","--spring.datasource.password=","--spring.datasource.driver-class-name=org.h2.Driver",
                 "--spring.jpa.hibernate.ddl-auto=create-drop","--spring.sql.init.mode=never","--spring.flyway.enabled=false",
                 "--securedeploy.jwt.secret=editing-browser-synthetic-isolated-signing-key-0001",
                 "--securedeploy.ai.provider=OPENAI","--securedeploy.ai.openai.model=mock-fixture-no-external","--securedeploy.ai.openai.api-key=","--securedeploy.github.app.enabled=false",
-                "--securedeploy.storage.temp-dir=/private/tmp/securedeploy-editing-browser",
+                "--securedeploy.storage.temp-dir=/private/tmp/securedeploy-editing-browser-"+port,
                 "--securedeploy.sca.enabled=false","--securedeploy.threat-intelligence.enabled=false",
                 "--logging.level.root=OFF","--spring.main.banner-mode=off");
         try (var connection = context.getBean(javax.sql.DataSource.class).getConnection()) {
@@ -92,6 +94,6 @@ public final class EditingBrowserServer {
             context.getBean(com.securedeploy.project.progress.ReviewProgressService.class).complete(saved);
         } finally {com.securedeploy.global.util.FileUtils.deleteRecursively(root);}
         }
-        System.out.println("EDITING_BROWSER_READY H2_ONLY GITHUB_SOURCE_MOCK port=8085");
+        System.out.println("EDITING_BROWSER_READY H2_ONLY GITHUB_SOURCE_MOCK port="+port);
     }
 }
