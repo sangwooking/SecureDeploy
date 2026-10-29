@@ -1,3 +1,4 @@
+import { DependencyAiAdvicePanel } from './DependencyAiAdvicePanel';
 import { useEffect, useRef, useState } from 'react';
 import { fetchDependencyUpdatePlans } from '../api/securityReviewApi';
 import type { DependencyUpdatePlans as Plans } from '../types/dependencyUpdatePlan';
@@ -20,8 +21,9 @@ export function DependencyUpdatePlans({reviewId}: {reviewId?:number|null}) {
     {!reviewId?<p>저장된 분석 이력에서 수정 근거를 확인할 수 있습니다.</p>:<button type="button" className="secondary-button" disabled={busy} onClick={()=>void load()}>{busy?'근거 확인 중':'근거 기반 업데이트 계획 보기'}</button>}
     {error&&<p role="alert">{error}</p>}
     {result&&<>
-      <p>실제 모델 검증: 미실행 · 호환성: 미검증 · 적용 가능 Patch: 없음</p>
+      <p>기본 계획: 근거 기반 안내 · 호환성: 미검증 · 적용 가능 Patch: 없음</p>
       <p>잠금 파일 재생성과 원본 파일 해시 검증 전까지 검토 필요 상태를 유지합니다.</p>
+      {reviewId&&<DependencyAiAdvicePanel reviewId={reviewId} evidence={result} />}
       {!result.plans.length&&<p>이 저장 결과에는 업데이트 계획으로 연결할 보안 공지가 없습니다. 전체 안전을 의미하지 않습니다.</p>}
       {result.plans.map((p,i)=><details key={`${p.ecosystem}:${p.packageName}:${p.lockedVersion}:${p.advisoryId}:${i}`}>
         <summary>{p.packageName}@{p.lockedVersion} · {p.advisoryId} · 검토 필요</summary>

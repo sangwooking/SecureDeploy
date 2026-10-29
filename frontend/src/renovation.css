@@ -565,3 +565,7 @@ select { min-height: 44px; }
 }
 
 .dependency-update-plans { overflow-wrap: anywhere; }
+
+.dependency-ai-advice select { display: block; width: 100%; max-width: 100%; box-sizing: border-box; }
+.dependency-ai-advice pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; }
+.dependency-ai-advice label { display: block; }

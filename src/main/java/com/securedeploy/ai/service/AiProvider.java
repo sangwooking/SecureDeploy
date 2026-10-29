@@ -16,6 +16,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AiProvider {
+    default String executionOrigin() { return "UNVERIFIED_PROVIDER"; }
+    default com.securedeploy.ai.dependency.DependencyAiAdvice.Output generateDependencyAdvice(com.securedeploy.editing.WorkspacePatch.Prompt prompt) {
+        throw new UnsupportedOperationException("Dependency advice unavailable");
+    }
+
     default com.securedeploy.editing.WorkspacePatch.Output generateWorkspacePatch(com.securedeploy.editing.WorkspacePatch.Prompt prompt) {
         throw new UnsupportedOperationException("Workspace patch generation is unavailable");
     }

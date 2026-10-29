@@ -45,6 +45,10 @@ class WorkspacePatchApiTest {
         workspace=created.path("id").asText();base="/api/editing-workspaces/"+workspace;file=created.at("/files/0/id").asText();hash=created.at("/files/0/originalHash").asText();
     }
     @Test void dependencyPlanEndpointIsOwnedReadOnlyAndDoesNotClaimModelExecution() throws Exception {
+        String providerPath="/api/reviews/"+reviewId+"/dependencies/ai-proposals/provider";
+        mvc.perform(get(providerPath)).andExpect(status().isUnauthorized());
+        mvc.perform(get(providerPath).header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
+        mvc.perform(get(providerPath).header("Authorization","Bearer "+owner)).andExpect(status().isOk());
         String path="/api/reviews/"+reviewId+"/dependencies/update-plans";
         mvc.perform(get(path)).andExpect(status().isUnauthorized());
         mvc.perform(get(path).header("Authorization","Bearer "+other)).andExpect(status().isForbidden());

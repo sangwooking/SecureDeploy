@@ -2,6 +2,7 @@ package com.securedeploy.ai.dto;
 
 public enum AiFeatureType {
     WORKSPACE_PATCH,
+    DEPENDENCY_UPDATE_ADVICE,
     VULNERABILITY_REVIEW,
     PROJECT_SUMMARY,
     REMEDIATION_SUGGESTION,

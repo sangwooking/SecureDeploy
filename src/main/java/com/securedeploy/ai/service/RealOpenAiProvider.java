@@ -36,15 +36,25 @@ import org.springframework.web.client.RestClient;
 
 @Component
 public class RealOpenAiProvider implements AiProvider {
+    @Override public String executionOrigin() { return "OPENAI"; }
     @Override
     public com.securedeploy.editing.WorkspacePatch.Output generateWorkspacePatch(com.securedeploy.editing.WorkspacePatch.Prompt prompt) {
+        return com.securedeploy.editing.WorkspacePatch.parse(structuredOutput("workspace_patch_v1",prompt));
+    }
+
+    @Override
+    public com.securedeploy.ai.dependency.DependencyAiAdvice.Output generateDependencyAdvice(com.securedeploy.editing.WorkspacePatch.Prompt prompt) {
+        return com.securedeploy.ai.dependency.DependencyAiAdvice.parse(structuredOutput("dependency_update_advice_v1",prompt),objectMapper);
+    }
+
+    private JsonNode structuredOutput(String schemaName, com.securedeploy.editing.WorkspacePatch.Prompt prompt) {
         lastTokenUsage.remove();
         if(!isAvailable())throw new IllegalStateException("Provider unavailable");
         var body=new LinkedHashMap<String,Object>();
         body.put("model",aiProperties.getOpenai().getModel());body.put("store",false);
         body.put("instructions",prompt.instructions());body.put("input",List.of(Map.of("role","user","content",prompt.untrustedData())));
         body.put("max_output_tokens",2000);
-        body.put("text",Map.of("format",Map.of("type","json_schema","name","workspace_patch_v1","strict",true,"schema",prompt.schema())));
+        body.put("text",Map.of("format",Map.of("type","json_schema","name",schemaName,"strict",true,"schema",prompt.schema())));
         var response=restClient().post().uri("/responses").contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION,"Bearer "+aiProperties.getOpenai().getApiKey()).body(body)
                 .exchange((request,result)->{
@@ -62,7 +72,7 @@ public class RealOpenAiProvider implements AiProvider {
             var tree=objectMapper.reader().with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
                     .with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
                     .with(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION).readTree(text);
-            return com.securedeploy.editing.WorkspacePatch.parse(tree);
+            return tree;
         } catch(java.io.IOException invalid){throw new IllegalArgumentException("Invalid patch response");}
     }
 

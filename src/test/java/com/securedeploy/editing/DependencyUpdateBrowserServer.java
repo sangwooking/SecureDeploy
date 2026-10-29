@@ -61,13 +61,16 @@ public final class DependencyUpdateBrowserServer {
     public static void main(String[] args) throws Exception {
         root=Path.of(System.getenv().getOrDefault("SECUREDEPLOY_AI02_INPUT","/private/tmp/securedeploy-ai02-real")).toRealPath();
         if(!Files.isRegularFile(root.resolve("official-feed.json")))throw new IllegalArgumentException("CAPTURE_REQUIRED");
-        var context=new SpringApplicationBuilder(SecureDeployApplication.class,Replay.class).run(
-                "--server.address=127.0.0.1","--server.port=58042",
+        boolean advice="1".equals(System.getenv("SECUREDEPLOY_AI03_ADVICE"));
+        boolean live="1".equals(System.getenv("SECUREDEPLOY_AI03_LIVE"));
+        var app=advice?new SpringApplicationBuilder(SecureDeployApplication.class,Replay.class,DependencyAdviceBrowserServer.AdviceFixture.class):new SpringApplicationBuilder(SecureDeployApplication.class,Replay.class);
+        var context=app.run(
+                "--server.address=127.0.0.1","--server.port="+(advice?58043:58042),
                 "--spring.datasource.url=jdbc:h2:mem:ai02_isolated;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE",
                 "--spring.datasource.username=sa","--spring.datasource.password=","--spring.datasource.driver-class-name=org.h2.Driver",
                 "--spring.jpa.hibernate.ddl-auto=create-drop","--spring.sql.init.mode=never",
                 "--securedeploy.jwt.secret=ai02-synthetic-isolated-only-signing-key-0000001",
-                "--securedeploy.ai.provider=TEMPLATE","--securedeploy.ai.openai.api-key=","--securedeploy.github.app.enabled=false",
+                "--securedeploy.ai.provider="+(advice?"OPENAI":"TEMPLATE"),"--securedeploy.ai.openai.model="+(live?"gpt-5.4-mini":"mock-fixture-no-external"),"--securedeploy.ai.openai.api-key=","--securedeploy.github.app.enabled=false",
                 "--securedeploy.storage.temp-dir="+root.resolve("api-temp"),"--securedeploy.sca.enabled=true",
                 "--securedeploy.threat-intelligence.enabled=false","--logging.level.root=OFF","--spring.main.banner-mode=off");
         try(var db=context.getBean(javax.sql.DataSource.class).getConnection()){
@@ -87,6 +90,6 @@ public final class DependencyUpdateBrowserServer {
             context.getBean(com.securedeploy.project.progress.ReviewProgressService.class).complete(saved);
         }
         Runtime.getRuntime().addShutdownHook(new Thread(context::close));
-        System.out.println("AI02_READY H2_ONLY port=58042 TEMPLATE_ONLY OFFICIAL_FEED_REPLAY PINNED_REAL_SOURCE");
+        System.out.println("DEPENDENCY_READY H2_ONLY port="+(advice?58043:58042)+" provider="+(advice?(live?"LIVE_MAX_TWO_PUBLIC_METADATA_ONLY":"MOCK"):"TEMPLATE")+" OFFICIAL_FEED_REPLAY PINNED_REAL_SOURCE");
     }
 }

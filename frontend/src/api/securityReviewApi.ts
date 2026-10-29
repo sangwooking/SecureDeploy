@@ -240,3 +240,20 @@ export async function fetchDependencyUpdatePlans(reviewId: number): Promise<Depe
   const response = await fetch(`${API_BASE_URL}/api/reviews/${reviewId}/dependencies/update-plans`, { headers: authHeaders() });
   return parseJsonResponse<DependencyUpdatePlans>(response, '업데이트 근거를 불러오지 못했습니다.');
 }
+
+export async function dependencyAdviceProvider(reviewId:number):Promise<import('../types/dependencyUpdatePlan').DependencyAdviceProvider> {
+ const response=await fetch(`${API_BASE_URL}/api/reviews/${reviewId}/dependencies/ai-proposals/provider`,{headers:authHeaders()});
+ return parseJsonResponse(response,'AI Provider 상태 확인 실패');
+}
+export async function prepareDependencyAdvice(reviewId:number,evidenceHash:string,planIndex:number):Promise<import('../types/dependencyUpdatePlan').DependencyAdviceView> {
+ const response=await fetch(`${API_BASE_URL}/api/reviews/${reviewId}/dependencies/ai-proposals`,{method:'POST',headers:jsonHeaders(),body:JSON.stringify({evidenceHash,planIndex})});
+ return parseJsonResponse(response,'AI 전송 범위 확인 실패');
+}
+export async function generateDependencyAdvice(reviewId:number,id:string,evidenceHash:string):Promise<import('../types/dependencyUpdatePlan').DependencyAdviceView> {
+ const response=await fetch(`${API_BASE_URL}/api/reviews/${reviewId}/dependencies/ai-proposals/${encodeURIComponent(id)}/generate`,{method:'POST',headers:jsonHeaders(),body:JSON.stringify({evidenceHash,approved:true})});
+ return parseJsonResponse(response,'AI 수정 방향 생성 실패');
+}
+export async function getDependencyAdvice(reviewId:number,id:string):Promise<import('../types/dependencyUpdatePlan').DependencyAdviceView> {
+ const response=await fetch(`${API_BASE_URL}/api/reviews/${reviewId}/dependencies/ai-proposals/${encodeURIComponent(id)}`,{headers:authHeaders()});
+ return parseJsonResponse(response,'AI 요청 상태 확인 실패');
+}

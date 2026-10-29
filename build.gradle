@@ -126,3 +126,11 @@ tasks.register('dependencyUpdateBrowserServer', JavaExec) {
     maxHeapSize = '512m'
     environment = System.getenv().findAll { key, value -> key in ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'JAVA_HOME', 'SECUREDEPLOY_AI02_INPUT'] }
 }
+
+tasks.register('dependencyAdviceBrowserServer', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.securedeploy.editing.DependencyAdviceBrowserServer'
+    maxHeapSize = '512m'
+    environment = System.getenv().findAll { key, value -> key in ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'JAVA_HOME', 'SECUREDEPLOY_AI02_INPUT', 'SECUREDEPLOY_AI03_ADVICE', 'SECUREDEPLOY_AI03_LIVE'] || (key == 'OPENAI_API_KEY' && System.getenv('SECUREDEPLOY_AI03_LIVE') == '1') }
+}
