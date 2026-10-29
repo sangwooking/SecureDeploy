@@ -48,6 +48,11 @@ function union(...values) {
   const trace = allTrace.slice(0, 20);
   const same = values.length && values.every(v => v === values[0]);
   if (same) return values[0];
+  // Branch copies of one unchanged native write function retain its identity.
+  // Native provenance is independently checked before any completion is modeled.
+  if(['fs:promisifiedWriteFile','fs/promises:writeFile'].includes(values[0]?.fileNative)&&values[0].ref?.nodeIdentity
+      &&values.every(v=>!v.unknown&&!v.ref?.unknown&&v.fileNative===values[0].fileNative
+        &&v.ref.nodeIdentity===values[0].ref.nodeIdentity&&v.ref.properties.size===0))return values[0];
   // Forked, untouched HTTP bindings retain their native contract, never a changed receiver.
   if (['node-http', 'node-http-get'].includes(values[0]?.native) && values[0].ref?.nodeIdentity
       && values.every(v => !v.unknown && !v.ref?.unknown && v.native === values[0].native

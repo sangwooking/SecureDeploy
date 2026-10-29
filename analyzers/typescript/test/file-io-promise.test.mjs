@@ -66,3 +66,12 @@ test('a captured native promisified wrapper is distinct from later namespace unc
  const f=r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW');assert.equal(f.length,1);assert.equal(f[0].confidence,'MEDIUM');
  assert.ok(r.nodeUses.some(u=>u.kind==='FILE_IO_FULFILLMENT_POSSIBLE'));
 });
+test('short circuit forks retain an unchanged wrapper but not a changed or mixed callable',()=>{
+ const base=`const fs=require('fs');const {promisify}=require('util');const write=promisify(fs.writeFile);const app=require('express')();
+ app.post('/',async(req,res)=>{if(req.body.create&&!fs.existsSync('unused.txt')){CHANGE await write('unused.txt','data');eval(req.body.code);}});`;
+ const run=change=>analyze({files:[{filePath:'entry.cjs',content:base.replace('CHANGE',change)}]});
+ assert.equal(run('').findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW'&&f.confidence==='MEDIUM').length,1);
+ assert.equal(run('write=external;').findings.length,0);
+ const mixed=analyze({files:[{filePath:'entry.cjs',content:`const {writeFile}=require('fs/promises');const app=require('express')();app.post('/',async(req,res)=>{const p=req.body.other?writeFile('one','a'):external();await p;eval(req.body.code);});`}]});
+ assert.equal(mixed.findings.length,0);
+});
