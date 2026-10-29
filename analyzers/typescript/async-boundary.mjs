@@ -7,6 +7,8 @@ export function asyncBoundaries(api){
   ref:{properties:new Map(),unknown:false,trace:[],nodeIdentity:{}},asyncResult:{settlement,payload}});
  function evidence(kind,node,state,trace=[]){append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind,operation:'BOUNDED_ASYNC_FLOW',
   location:loc(node,state.mod,kind,state.fn),trace,limitations:['STATIC_ASYNC_MODEL_NOT_RUNTIME_COMPLETION_PROOF',
+   ...(state.uncertain?['CONDITIONAL_ASYNC_PATH']:[]),
+   ...(state.context.asyncPostAwait?['POST_AWAIT_HEAP_AND_INTERLEAVING_UNVERIFIED']:[]),
    ...(kind==='COMPLETION_CONFIRMED_BY_SUPPORTED_MODEL'?['AWAIT_OPERAND_SETTLEMENT_ONLY_NOT_FUNCTION_OR_IO_COMPLETION']:[])]},state.mod);}
  function begin(state){
   state.asyncFrame={summary:{awaited:false,unknown:false,rejected:false},post:false};
