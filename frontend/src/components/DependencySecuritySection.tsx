@@ -1,3 +1,4 @@
+import { DependencyUpdatePlans } from './DependencyUpdatePlans';
 import type { RiskAssessment, ScaResult, RemediationSnapshot } from '../types/securityReview';
 import { DependencyFindingCard } from './DependencyFindingCard';
 import { IncompleteDependencyCard } from './IncompleteDependencyCard';
@@ -42,6 +43,7 @@ export function DependencySecuritySection({ sca, riskAssessment, remediation, re
       ? '조회한 정확한 버전에서 알려진 취약점이 반환되지 않았습니다. 프로젝트 전체의 안전을 보장하지 않습니다.'
       : '표시할 라이브러리 문제가 없습니다. 미조회 항목과 분석 상태를 확인해 주세요.'}</p>}
     <DependencyActionGroups sca={sca} />
+    <DependencyUpdatePlans reviewId={reviewId} />
     <div className="vulnerability-list">{canonical.map(dep => <DependencyFindingCard components={sca.components}
       key={[dep.ecosystem, dep.packageName, dep.installedVersion, dep.osvId].join('|')} dependency={dep}
       remediation={remediation} intelligence={riskAssessment?.threatIntelligence}

@@ -31,6 +31,7 @@ export function SemanticReviewSection({ snapshot }: { snapshot?: SemanticSnapsho
     </div>
     <p>{semanticStatusText(snapshot)}</p>
     {!snapshot ? <p>이 분석 이력에는 저장된 추가 검토 결과가 없습니다.</p> : <>
+      <p>추가 검토는 선택된 지원 코드 문맥에 한정됩니다. PARTIAL·UNKNOWN이나 미연결 코드 전체를 AI가 검토했다는 뜻이 아닙니다. 현재 문맥 수집은 Java 중심이며 TypeScript 서버 전체 의미 검토는 지원하지 않습니다.</p>
       <p className="semantic-disclaimer">AI 보조 분석 후보이며 확정 취약점이 아닙니다. 기존 위험 기반 배포 판단과 취약점 수에는 합산하지 않습니다.</p>
       {snapshot.candidates.length > 0 ? <>
         <strong>{snapshot.candidates.length}개 항목 직접 확인</strong>
@@ -69,8 +70,9 @@ function Candidate({ candidate }: { candidate: SemanticCandidate }) {
     <ol>{guide.steps.map(step => <li key={step}>{step}</li>)}</ol>
     <h4>문제가 확인되면</h4><p>{guide.action}</p>
     <details className="technical-details"><summary>기술 정보 보기</summary>
-    <h4>AI 원본 검토 의견</h4><p>{candidate.reason}</p>
+    <h4>AI 추정 · 직접 확인이 필요한 의견</h4><p>{candidate.reason}</p>
     <ul>{candidate.verificationSteps.map((step, index) => <li key={index}>{step}</li>)}</ul>
+    <h4>검증된 참조 위치 · AI 설명은 별도 의견</h4>
     <ul>{candidate.evidence.map((evidence, index) => <li key={index}>
       <code>{evidence.filePath}:{evidence.startLine}-{evidence.endLine}</code>
       <p>{evidence.functionName}</p><p>{evidence.evidenceDescription}</p>

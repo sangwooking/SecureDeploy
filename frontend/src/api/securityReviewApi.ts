@@ -1,3 +1,4 @@
+import type { DependencyUpdatePlans } from '../types/dependencyUpdatePlan';
 import type {
   AuthResponse,
   DeleteResponse,
@@ -233,4 +234,9 @@ export async function parseJsonResponse<T>(response: Response, fallbackMessage: 
   }
 
   return response.json();
+}
+
+export async function fetchDependencyUpdatePlans(reviewId: number): Promise<DependencyUpdatePlans> {
+  const response = await fetch(`${API_BASE_URL}/api/reviews/${reviewId}/dependencies/update-plans`, { headers: authHeaders() });
+  return parseJsonResponse<DependencyUpdatePlans>(response, '업데이트 근거를 불러오지 못했습니다.');
 }

@@ -563,3 +563,5 @@ select { min-height: 44px; }
   .result-workspace-header h2 { font-size: 24px; }
   .result-navigation > button { padding: 12px 6px; font-size: 13px; }
 }
+
+.dependency-update-plans { overflow-wrap: anywhere; }

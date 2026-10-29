@@ -44,6 +44,7 @@ export function WorkspaceScanPanel({ workspace, original, disabled }: {
   };
   return <section className="workspace-scan" aria-label="수정본 보안 재검사">
     <h3>수정본 다시 검사</h3>
+    <p>수정 검증: REVIEW_REQUIRED · 정상 기능·API 호환성: NOT_VERIFIED. 재검사 완료나 공지 감소는 전체 안전성 또는 실제 운영 수정 완료를 의미하지 않습니다.</p>
     {workspace.identityStatus === 'UNVERIFIED_REUPLOAD' && <p role="note">원본 일치 미검증 ZIP: 별도 프로젝트의 새 기준 검사로 저장합니다. 과거 Review의 경고를 해결 처리하지 않습니다.</p>}
     <details className="scan-consent" open={!result}><summary>검사할 수정본과 외부 조회 확인</summary>
     <p>저장된 수정본 버전 {workspace.revision} 전체를 기본 검사(STANDARD)로 확인해요. 편집을 계속해도 실행 중인 검사 입력은 바뀌지 않습니다.</p>

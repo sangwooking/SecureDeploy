@@ -44,6 +44,17 @@ class WorkspacePatchApiTest {
         var created=postJson("/api/editing-workspaces/github/"+reviewId,Map.of(),owner,200);
         workspace=created.path("id").asText();base="/api/editing-workspaces/"+workspace;file=created.at("/files/0/id").asText();hash=created.at("/files/0/originalHash").asText();
     }
+    @Test void dependencyPlanEndpointIsOwnedReadOnlyAndDoesNotClaimModelExecution() throws Exception {
+        String path="/api/reviews/"+reviewId+"/dependencies/update-plans";
+        mvc.perform(get(path)).andExpect(status().isUnauthorized());
+        mvc.perform(get(path).header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
+        String before=mvc.perform(get("/api/reviews/"+reviewId).header("Authorization","Bearer "+owner)).andReturn().getResponse().getContentAsString();
+        mvc.perform(get(path).header("Authorization","Bearer "+owner)).andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control","no-store"))
+                .andExpect(jsonPath("$.modelVerification").value("NOT_RUN"))
+                .andExpect(jsonPath("$.origin").value("SAVED_SCA_EVIDENCE"));
+        assertEquals(json.readTree(before),json.readTree(mvc.perform(get("/api/reviews/"+reviewId).header("Authorization","Bearer "+owner)).andReturn().getResponse().getContentAsString()));
+    }
     @AfterEach void cleanup()throws Exception{if(base!=null)mvc.perform(delete(base).header("Authorization","Bearer "+owner));}
     String signup(String email)throws Exception{return postJson("/api/auth/signup",Map.of("email",email,"name","patch fixture","password","Synthetic-Only-124!"),null,200).path("accessToken").asText();}
     JsonNode postJson(String path,Object body,String token,int status)throws Exception{
