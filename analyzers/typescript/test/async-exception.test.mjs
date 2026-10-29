@@ -45,7 +45,9 @@ test('a confirmed synchronous throw can register an existing handler but an unkn
  const opaque=analyze({files:[{filePath:'entry.js',content:source(`await external();`)}]});assert.equal(opaque.findings.length,0);
 });
 test('unverified Error shadow and inline callbacks are not silently executed as native handling',()=>{
- const r=run(`const Error=external;try{throw 'x';}catch(e){throw Error('x');}eval(req.body.code);`);
- assert.equal(r.findings.length,0);assert.ok(r.files[0].limitations.includes('ASYNC_EXCEPTION_EXPRESSION_COMPLETION_UNKNOWN'));
+ for(const setup of [`const Error=external;`,`Error=external;`,`external(Error);`]){
+  const r=run(`${setup}try{throw 'x';}catch(e){throw Error('x');}eval(req.body.code);`);
+  assert.equal(r.findings.length,0);assert.ok(r.files[0].limitations.includes('ASYNC_EXCEPTION_EXPRESSION_COMPLETION_UNKNOWN'));
+ }
  const inline=run(`try{throw 'x';}catch(e){external(()=>eval(req.body.code));}`);assert.equal(inline.findings.length,0);
 });

@@ -39,6 +39,8 @@ export function asyncExceptions(api){
    const whole=ts.isExpressionStatement(s)&&ts.isCallExpression(s.expression);
    const errorConstruction=ts.isThrowStatement(s)&&calls.length===1&&ts.isIdentifier(calls[0].expression)&&calls[0].expression.text==='Error'
     &&!state.vars.has('Error')&&!state.mod.declared.has('Error')&&!state.mod.imports.has('Error')
+    &&!state.mod.syntaxIndex.writes.has('Error')&&!state.mod.syntaxIndex.exportWrites.has('Error')
+    &&!state.mod.syntaxIndex.aliases.has('Error')&&!(state.mod.syntaxIndex.argumentUses.get('Error')?.length)
     &&(calls[0].arguments??[]).every(a=>ts.isStringLiteral(a));
    if(calls.length&&(!whole&&!errorConstruction||whole&&calls.length>1)){restore();return opaque(s,state,'ASYNC_EXCEPTION_EXPRESSION_COMPLETION_UNKNOWN');}
    const expressions=ts.isVariableStatement(s)?s.declarationList.declarations.map(d=>d.initializer)
