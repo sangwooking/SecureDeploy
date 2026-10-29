@@ -38,6 +38,24 @@ class ServerAnalysisIntegrationTest {
     @MockBean PrivateGitHubSourceService connected;
     @TempDir Path temp;
 
+    @Test void evaluationCandidatesNeverLeakIntoProductZipFindingsOrSnapshot() throws Exception {
+        String token=signup();
+        String source="const express=require('express');const router=express.Router();router.post('/',(req,res)=>eval(req.body.code));";
+        var detached=uploadSource(token,"routes.cjs",source+"module.exports=router;");
+        var snapshot=detached.path("serverAnalysis");
+        assertThat(snapshot.path("analyzerVersion").asText()).isEqualTo("ts-server-v51");
+        assertThat(snapshot.path("validatedFindings")).isEmpty();assertThat(snapshot.path("findings")).isEmpty();
+        assertThat(snapshot.has("rows")).isFalse();assertThat(snapshot.has("observations")).isFalse();
+        assertThat(snapshot.toString()).doesNotContain("static-route-v1","EVALUATION_ONLY_NOT_HTTP_EXPOSURE");
+        assertThat(detail(token,detached.path("reviewId").asLong()).path("serverAnalysis")).isEqualTo(snapshot);
+        mvc.perform(get("/api/reviews/"+detached.path("reviewId").asLong()).header("Authorization","Bearer "+signup())).andExpect(status().isForbidden());
+        var mounted=uploadSource(token,"routes.cjs",source+"const app=express();app.use('/api',router);");
+        assertThat(mounted.at("/serverAnalysis/validatedFindings")).hasSize(1);
+        assertThat(mounted.at("/serverAnalysis/validatedFindings/0/ruleId").asText()).isEqualTo("JS_EVAL_INPUT_FLOW");
+        assertThat(mounted.at("/serverAnalysis/validatedFindings/0/comparisonPolicy").asText()).isEqualTo("NOT_COMPARED");
+        assertThat(mounted.path("securityScore")).isEqualTo(detached.path("securityScore"));
+    }
+
     @Test void fileIoPossibleCompletionPersistsWithoutPromotingConditionalRiskOrRuntimeSuccess() throws Exception {
         String token=signup();
         String prefix="const app=require('express')();const fs=require('fs');const {promisify}=require('util');const write=promisify(fs.writeFile);";

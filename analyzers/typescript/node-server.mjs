@@ -9,6 +9,7 @@ import {rateLimiting} from './rate-limit.mjs';
 import {exportLinks} from './export-links.mjs';
 import {middlewareControl} from './middleware-control.mjs';
 import {classModels} from './class-model.mjs';
+import {staticRoutes} from './static-routes.mjs';
 
 // Library contracts over AST values only. Never require/import/eval target modules.
 export function nodeServer(api) {
@@ -59,6 +60,7 @@ export function nodeServer(api) {
   const fields=fieldValidation({...api,native});
   const web=webSecurity({...api,native,object});
   const rate=rateLimiting({...api,native,object});
+  const candidates=api.routeAudit?staticRoutes({...api,audit:api.routeAudit,controls,functionValue}):undefined;
   function findModule(mod,spec,mode='require') { return resolver.resolve(mod,spec,mode); }
   function dependency(mod,spec,mode='require') {
     const limiter=rate.dependency(mod,spec);if(limiter)return limiter;
@@ -292,6 +294,7 @@ export function nodeServer(api) {
       const app=object('express-router');app.app=callable.native==='express';app.routes=[];app.mounts=[];if(app.app)apps.push(app);return {value:app};
     }
     if(receiver?.tag==='express-router') {
+      candidates?.registration(node,receiver,args,state,method);
       if(receiver.unknown||receiver.ref.unknown){note(state.mod,'EXPRESS_RECEIVER_MUTATION_UNKNOWN');return {value:unknown()};}
       // app.get(setting) reads configuration; it is not a route or an unknown mutator.
       if(receiver.app&&method==='get'&&args.length===1&&literal(args[0])&&typeof args[0].constant==='string') {
@@ -521,6 +524,7 @@ export function nodeServer(api) {
         limitations:['STATIC_REGISTRATION_ONLY','MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED']},mod);
     }
     for(const route of routes)if(![...reachable].some(app=>app.routes.includes(route)))note(route.target.mod,'UNMOUNTED_ROUTER_NOT_ANALYZED');
+    if(candidates)try{candidates.finish(routes,reachable,routeControls,loaded);}catch{api.routeAudit.limitations.add('STATIC_ROUTE_DISCOVERY_BUDGET_OR_UNSUPPORTED');}
   }
   return {property,write,call,construct,discover,functionValue,classValue:classes.define,constructorBranch:classes.branch,awaitValue:mongoose.consume,webEntry:web.entry,rateEntry:rate.entry,
     applyFields:fields.apply,typeOfField:fields.typeName,compareFields:fields.compare,refineFields:fields.refine,

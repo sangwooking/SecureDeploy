@@ -105,7 +105,20 @@ const unwrap = node => {
 };
 
 // Parse supplied strings only: no compiler host, tsconfig, module loading or target execution.
+const ROUTE_EVALUATION=Symbol('evaluation-only-static-routes');
+const OBSERVATION_KEYS=['findings','sqlUses','httpUses','exposureUses','nodeUses','resourceUses','authorizationContexts'];
+export function evaluateStaticRoutes(input,overrides={}){
+  const audit={rows:[],captures:new Map(),limitations:new Set(),links:0};
+  const snapshot=analyze(input,{...overrides,[ROUTE_EVALUATION]:audit});
+  const observations=Object.fromEntries(OBSERVATION_KEYS.map(k=>[k,[]]));
+  const rows=audit.rows.map(row=>({...row,observationRefs:Object.fromEntries(OBSERVATION_KEYS.map(k=>[k,
+    [...(audit.captures.get(row)?.get(k)??[])].map(v=>{let i=observations[k].indexOf(v);if(i<0){i=observations[k].length;observations[k].push(v);}return i;})]))}));
+  return {evaluationVersion:'static-route-v1',engineVersion:VERSION,mode:'EVALUATION_ONLY_NOT_HTTP_EXPOSURE',
+    finalUserFindings:[],riskApplied:false,rows,observations,files:snapshot.files,status:snapshot.status,
+    limitations:[...audit.limitations],budgetUsage:snapshot.supabaseAnalysis.budgetUsage};
+}
 export function analyze(input, overrides = {}) {
+  const routeAudit=overrides[ROUTE_EVALUATION];let activeCandidate;
   const limits = { ...DEFAULTS, ...Object.fromEntries(Object.entries(overrides).filter(([k, v]) =>
     k in DEFAULTS && Number.isInteger(v) && v > 0).map(([k, v]) => [k, Math.min(v, DEFAULTS[k])])) };
   const deadline = Date.now() + limits.timeoutMs;
@@ -150,6 +163,17 @@ export function analyze(input, overrides = {}) {
   function append(list, item, mod) {
     if (list.length >= limits.maxResults) { note(mod, 'RESULT_LIMIT_EXCEEDED'); return; }
     if (!list.some(existing => JSON.stringify(existing) === JSON.stringify(item))) list.push(item);
+    if(routeAudit&&activeCandidate){
+      const key=OBSERVATION_KEYS.find(k=>result[k]===list);
+      if(key){
+        const canonical=list.find(v=>JSON.stringify(v)===JSON.stringify(item));
+        const captured=routeAudit.captures.get(activeCandidate),items=captured.get(key);
+        if(!items.has(canonical)){
+          if(routeAudit.links>=limits.maxResults){routeAudit.limitations.add('STATIC_ROUTE_OBSERVATION_LIMIT');return;}
+          routeAudit.links++;items.add(canonical);
+        }
+      }
+    }
   }
   function literal(text, node, mod, fn) {
     return { ...constant(text), exposures: credentialShape(text) ? [loc(node, mod, 'CREDENTIAL_SHAPED_LITERAL', fn)] : [] };
@@ -888,6 +912,9 @@ export function analyze(input, overrides = {}) {
       }
       // Unknown calls preserve input provenance, but do not prove sanitizer correctness or a complete path.
       const incoming = union(...args, ...(receiverInput ? [receiverInput] : []));
+      if(routeAudit&&activeCandidate&&incoming.trace.length)append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'UNMODELED_CALL_INPUT',
+        operation:'STATIC_CANDIDATE_CALL_TARGET_UNKNOWN',location:loc(node,mod,'UNMODELED_CALL_INPUT',fn),trace:incoming.trace,
+        limitations:['SINK_CONTRACT_NOT_VERIFIED','EVALUATION_ONLY_NOT_HTTP_EXPOSURE']},mod);
       for (const callback of [callable, ...args]) if (callback?.effects?.length) {
         invalidateWrites(callback.effects, state, incoming); note(mod, 'CLOSURE_SIDE_EFFECTS_UNRESOLVED');
       }
@@ -1344,11 +1371,15 @@ export function analyze(input, overrides = {}) {
   entryContracts({ts,modules,tick,note,loc,append,result});
   asyncSupport=asyncBoundaries({ts,modules,tick,note,unknown,constant,loc,append,result,fork,rejection:(state,node)=>exceptionSupport.rejection(state,node)});
   exceptionSupport=asyncExceptions({ts,tick,note,unknown,constant,fork,statement,mergeVars,evidence:asyncSupport.evidence});
-  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody,invalidateNodeReference});
+  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody,invalidateNodeReference,routeAudit});
   nodeSupport.discover();
   phase='FLOW';
   for (const mod of modules.values()) for (const entry of mod.entries) {
+    if(routeAudit&&(!entry.staticCandidate||!['B','C'].includes(entry.staticCandidate.category)||entry.staticCandidate.traceStatus!=='QUEUED_CONDITIONAL'))continue;
+    if(routeAudit){activeCandidate=entry.staticCandidate;activeCandidate.traceStatus='ANALYZED_CONDITIONAL';
+      routeAudit.captures.set(activeCandidate,new Map(OBSERVATION_KEYS.map(k=>[k,new Set()])));}
     const context = { entry: loc(entry.registrationNode ?? entry.fn.node, mod, entry.kind, entry.fn), checks: [], defenses: [], resources: [] };
+    if(routeAudit)context.unresolved=true;
     try {
       if(entry.fn.wrapper)append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'CALLBACK_BOUND',
         operation:'STATIC_NEXT_WRAPPER_BINDING',location:context.entry,trace:entry.fn.wrapperLocations,
@@ -1369,7 +1400,7 @@ export function analyze(input, overrides = {}) {
         ?[value('express-request'),value('express-response'),unknown()]:[value('context')], 0, context, new Set(),!!entry.uncertain);
       if (returned.responseLocations?.length) observeExposure(returned, entry.fn.node, { mod:entry.fn.mod, fn: entry.fn, uncertain: false }, 'HTTP_RESPONSE_RETURN');
       observeEnvironmentResponses(returned,{mod:entry.fn.mod,fn:entry.fn});
-    } catch { note(mod, 'ANALYSIS_BUDGET_EXCEEDED'); }
+    } catch { note(mod, 'ANALYSIS_BUDGET_EXCEEDED');if(activeCandidate)activeCandidate.traceStatus='BUDGET_OR_UNSUPPORTED'; }
     for (const field of ['checks', 'defenses', 'resources']) {
       context[field] = context[field].filter((item, i, all) => all.findIndex(other => JSON.stringify(item) === JSON.stringify(other)) === i);
       if (context[field].length > 100) { context[field] = context[field].slice(0, 100); note(mod, 'CONTEXT_DETAILS_LIMIT_EXCEEDED'); }
@@ -1379,6 +1410,7 @@ export function analyze(input, overrides = {}) {
       '조건 분기만으로 인증·소유권 검증을 입증하지 않습니다.',
       '전역 미들웨어·세션 검증·리소스 소유권과 실패 시 차단 경로를 직접 확인하세요.'
     ] }, mod);
+    activeCandidate=undefined;
   }
   for (const mod of modules.values()) {
     mod.record.tracedPrepareCallSites = new Set(result.sqlUses.filter(s => s.location.filePath === mod.filePath)
