@@ -18,7 +18,7 @@ import {exportLinks} from './export-links.mjs';
 import {wrapperLinks} from './wrapper-links.mjs';
 import {externalNext} from './external-next.mjs';
 
-export const VERSION = 'ts-server-v47';
+export const VERSION = 'ts-server-v48';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -717,12 +717,13 @@ export function analyze(input, overrides = {}) {
       if(state.nodeMode) {
         const member=ts.isPropertyAccessExpression(callee)?property(receiverInput,callee.name.text,callee,state):callable;
         const supported=nodeSupport.call(node,callee,receiverInput,args,state,global,member);
-        if(supported)return supported.value;
+        if(supported){if(supported.value?.constructorAbrupt)state.constructorAbrupt=true;return supported.value;}
         if(member?.target&&!member.unknown&&!member.ref?.unknown) {
           nodeSupport.escapeFields(state);
           if(ts.isNewExpression(node))return nodeSupport.construct(member.target,args,state);
           const passed=args.map(a=>step(a,loc(node,mod,'FUNCTION_ARGUMENT',fn),mod));
-          const returned=invoke(member.target,passed,state.depth+1,state.context,state.stack,state.uncertain,state.exposureUncertain,receiverInput);
+          const returned=invoke(member.target,passed,state.depth+1,state.context,state.stack,state.uncertain||!!receiverInput?.constructorConditional,state.exposureUncertain,receiverInput);
+          if(returned.constructorAbrupt)state.constructorAbrupt=true;
           if(member.effects?.length)invalidateWrites(member.effects,state,union(...args));
           if(returned.tag==='express-router'&&!returned.unknown&&!returned.ref?.unknown)
             append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'CALL_LINKED',operation:'STATIC_ROUTER_FACTORY_RETURN',
@@ -1065,7 +1066,7 @@ export function analyze(input, overrides = {}) {
       for (const s of node.statements) if (ts.isFunctionDeclaration(s) && s.name) state.vars.set(s.name.text, state.nodeMode?nodeSupport.functionValue(s,state,s.name.text):unsupportedClosure(s, state));
       const restore = () => { for (const name of locals) { if (prior.has(name)) state.vars.set(name, prior.get(name)); else state.vars.delete(name); } };
       const returns = [];
-      for (const s of node.statements) { const r = statement(s, state); returns.push(...r.values); if (r.stops) { restore(); return { values: returns, stops: true }; } }
+      for (const s of node.statements) { const r = statement(s, state); returns.push(...r.values); if (r.stops) { restore(); return { ...r, values: returns, stops: true }; } }
       restore();
       return { values: returns, stops: false };
     }
@@ -1077,20 +1078,28 @@ export function analyze(input, overrides = {}) {
     else if(state.nodeMode&&ts.isClassDeclaration(node)&&node.name)state.vars.set(node.name.text,nodeSupport.classValue(node,state));
     else if (ts.isExpressionStatement(node)) expr(node.expression, state);
     else if (ts.isReturnStatement(node)) {
-      let returned=expr(node.expression,state);
+      let returned=!node.expression&&state.fn.classConstructor?constant(undefined):expr(node.expression,state);
       if(state.fn.nextServerReturn) {
         const body=responseBody(returned),location=loc(node,state.mod,'SERVER_FUNCTION_RETURN',state.fn);
         returned={...returned,environmentResponses:[{...body,unresolved:body.unresolved||state.uncertain||state.exposureUncertain,location}]};
       }
-      return {values:[state.nodeMode&&state.uncertain?{...returned,unknown:true}:returned],stops:true};
+      if(state.constructorAbrupt)return {values:[],stops:true,constructorAbrupt:true};
+      if(state.fn.classConstructor)constructorNormalPath(state);
+      return {values:[state.nodeMode&&state.uncertain&&!(state.fn.classConstructor&&!node.expression)?{...returned,unknown:true}:returned],stops:true};
     }
-    else if (ts.isThrowStatement(node)) { expr(node.expression, state); return { values: [], stops: true }; }
+    else if (ts.isThrowStatement(node)) { expr(node.expression, state); return { values: [], stops: true,
+      ...(state.context.classConstructorFlow?{constructorAbrupt:true}:{}) }; }
     else if (ts.isIfStatement(node)) {
       const condition = expr(node.expression, state);
+      if(state.context.classConstructorFlow)nodeSupport.constructorBranch(node,state,truth(condition));
       if (truth(condition) === true) return statement(node.thenStatement, state);
       if (truth(condition) === false) return node.elseStatement ? statement(node.elseStatement, state) : { values: [], stops: false };
       state.context.checks.push(loc(node.expression, mod, 'CONDITIONAL_CHECK', fn));
       const a = fork(state), b = fork(state);
+      if(state.context.classConstructorFlow){
+        for(const [branch,kind]of [[a,'POSSIBLE_THEN_BRANCH'],[b,'POSSIBLE_ELSE_BRANCH']])
+          branch.context=Object.assign(Object.create(state.context),{constructorBranches:[...(state.context.constructorBranches??[]),loc(node.expression,mod,kind,fn)].slice(-20)});
+      }
       if(state.context.wrapperFlow){
         a.uncertain=b.uncertain=true;note(mod,'WRAPPER_CONDITIONAL_EXECUTION_UNKNOWN');
       }
@@ -1103,7 +1112,9 @@ export function analyze(input, overrides = {}) {
       if (ar.stops || br.stops) state.context.defenses.push(loc(node, mod, 'EARLY_EXIT_BRANCH_PRESENT', fn));
       const continuing = [!ar.stops && a, !br.stops && b].filter(Boolean);
       if (continuing.length) mergeVars(state, continuing);
-      return { values: [...ar.values, ...br.values], stops: ar.stops && br.stops };
+      if(state.context.classConstructorFlow&&continuing.length===1)state.context=continuing[0].context;
+      return { values: [...ar.values, ...br.values], stops: ar.stops && br.stops,
+        ...(ar.constructorAbrupt&&br.constructorAbrupt?{constructorAbrupt:true}:{}) };
     } else if (ts.isForStatement(node) || ts.isForOfStatement(node) || ts.isForInStatement(node) || ts.isWhileStatement(node) || ts.isDoStatement(node)) {
       note(mod, 'LOOP_FLOW_PARTIAL');
       const branch = { ...fork(state), uncertain: true };
@@ -1142,9 +1153,17 @@ export function analyze(input, overrides = {}) {
     } else if (![ts.SyntaxKind.EmptyStatement, ts.SyntaxKind.BreakStatement, ts.SyntaxKind.FunctionDeclaration].includes(node.kind)) {
       note(mod, 'STATEMENT_UNSUPPORTED'); invalidateWrites(writtenNames(node, state), state); state.uncertain = true;
     }
-    return { values: [], stops: false };
+    return { values: [], stops:!!state.constructorAbrupt,...(state.constructorAbrupt?{constructorAbrupt:true}:{}) };
   }
   const canonicalFunctions = new WeakMap();
+  function constructorNormalPath(state){
+    const root=state.context.constructorRoot;if(!root)return;
+    tick(state.mod);
+    if(root.normalPaths.length>=Math.min(20,limits.maxResults)){
+      root.pathsTruncated=true;state.context.unresolved=true;note(state.mod,'CONSTRUCTOR_COMPLETION_PATH_LIMIT');return;
+    }
+    root.normalPaths.push(state.context.constructorBranches??[]);
+  }
   function serverEnvironmentValue(node,state) {
     const {mod,fn}=state;
     const index=mod.syntaxIndex;
@@ -1165,6 +1184,11 @@ export function analyze(input, overrides = {}) {
   }
   function invoke(fn, args, depth, context, stack, uncertain = false, exposureUncertain = false,thisValue,constructing=false) {
     const { mod, node } = fn;
+    if(context.classConstructorFlow&&(node.asteriskToken||node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword))){
+      note(mod,'CLASS_ASYNC_EXECUTION_UNKNOWN');context.unresolved=true;
+      for(const v of [...args,thisValue])if(v?.ref)invalidateNodeReference(v.ref,{mod,nodeMode:true},unknown());
+      return unknown();
+    }
     if (depth > limits.maxDepth || stack.has(fn)) {
       if(fn.nodeMode){
         const effectState={mod,nodeMode:true};
@@ -1198,6 +1222,12 @@ export function analyze(input, overrides = {}) {
     if (!node.body) return unknown();
     if (!ts.isBlock(node.body)&&!state.nodeMode) return expr(node.body, state);
     const r = ts.isBlock(node.body)?statement(node.body,state):{values:[expr(node.body,state)],stops:true};
+    if(context.classConstructorFlow&&r.constructorAbrupt&&!r.values.length)return {...unknown(),constructorAbrupt:true};
+    if(fn.classConstructor&&!r.stops)constructorNormalPath(state);
+    if(context.classConstructorFlow&&!fn.classConstructor&&r.constructorAbrupt&&r.values.length){
+      context.unresolved=true;if(context.constructorRoot)context.constructorRoot.pathsTruncated=true;
+      note(mod,'CONSTRUCTOR_HELPER_COMPLETION_UNKNOWN');
+    }
     // Branch-local heap copies cannot prove a mutation-free return to the caller.
     if(state.nodeMode){
       // Only effects on this call's reachable identities invalidate caller aliases.
@@ -1219,7 +1249,8 @@ export function analyze(input, overrides = {}) {
     const returns=[...r.values,...(!r.stops?[constant(undefined)]:[])];
     const combined=union(...returns);
     const withResponses={...combined,environmentResponses:returns.flatMap(v=>v.environmentResponses??[]).slice(0,20)};
-    return state.nodeMode&&returns.length>1&&returns.length<=4?{...withResponses,nodeAlternatives:returns}:withResponses;
+    const completed=fn.classConstructor?{...withResponses,constructorConditional:!!state.uncertain}:withResponses;
+    return state.nodeMode&&returns.length>1&&returns.length<=4?{...completed,nodeAlternatives:returns}:completed;
   }
   // Reserve bounded declaration passes before flow tracing consumes the remainder.
   // Its ticks still count against the same global cap; no target code is run.

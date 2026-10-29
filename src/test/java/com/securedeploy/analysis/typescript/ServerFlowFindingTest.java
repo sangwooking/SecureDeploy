@@ -12,7 +12,7 @@ class ServerFlowFindingTest {
     @Test void httpListenerAdapterReachesExistingFindingWithoutChangingComparisonPolicy() {
         String start="const express=require('express'),http=require('node:http');const app=express();new http.Server(app);";
         var risky=analyzer.analyze(project(start+"app.post('/',(req,res)=>eval(req.body.value));"));
-        assertThat(risky.analyzerVersion()).isEqualTo("ts-server-v47");
+        assertThat(risky.analyzerVersion()).isEqualTo("ts-server-v48");
         assertThat(risky.validatedFindings()).hasSize(1);
         var finding=risky.validatedFindings().get(0);
         assertThat(finding.ruleId()).isEqualTo("JS_EVAL_INPUT_FLOW");
@@ -105,7 +105,7 @@ class ServerFlowFindingTest {
         String start = "export default { fetch(request,env) { let id = new URL(request.url).searchParams.get('id'); ";
         var unsafe = analyzer.analyze(project(start + "return env.DB.prepare(id + (id = '0')).all(); }}"));
         var safe = analyzer.analyze(project(start + "return env.DB.prepare((id = '0') + id).all(); }}"));
-        assertThat(unsafe.analyzerVersion()).isEqualTo("ts-server-v47");
+        assertThat(unsafe.analyzerVersion()).isEqualTo("ts-server-v48");
         assertThat(unsafe.validatedFindings()).hasSize(1).allSatisfy(f -> {
             assertThat(f.priority().name()).isEqualTo("REVIEW_REQUIRED");
             assertThat(f.comparisonPolicy()).isEqualTo("NOT_COMPARED");
@@ -116,8 +116,8 @@ class ServerFlowFindingTest {
     @Test void v2SnapshotsRemainImmutableAndAreNotReconnectedByTheNewAnalyzer() {
         var converter = new ServerAnalysisConverter();
         var snapshot = analyzer.analyze(project(UNSAFE));
-        for(String version:List.of("ts-server-v2","ts-server-v24","ts-server-v25","ts-server-v26","ts-server-v27","ts-server-v28","ts-server-v29","ts-server-v30","ts-server-v31","ts-server-v32","ts-server-v33","ts-server-v34","ts-server-v35","ts-server-v36","ts-server-v37","ts-server-v38","ts-server-v39","ts-server-v40","ts-server-v41","ts-server-v42","ts-server-v43","ts-server-v44","ts-server-v45","ts-server-v46")){
-            String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v47",version);
+        for(String version:List.of("ts-server-v2","ts-server-v24","ts-server-v25","ts-server-v26","ts-server-v27","ts-server-v28","ts-server-v29","ts-server-v30","ts-server-v31","ts-server-v32","ts-server-v33","ts-server-v34","ts-server-v35","ts-server-v36","ts-server-v37","ts-server-v38","ts-server-v39","ts-server-v40","ts-server-v41","ts-server-v42","ts-server-v43","ts-server-v44","ts-server-v45","ts-server-v46","ts-server-v47")){
+            String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v48",version);
             var old = converter.convertToEntityAttribute(previous);
             assertThat(old.analyzerVersion()).isEqualTo(version);
             assertThat(converter.convertToDatabaseColumn(old)).isEqualTo(previous);

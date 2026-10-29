@@ -490,6 +490,14 @@ export function nodeServer(api) {
     };
     for(const app of reachable)for(const route of app.routes) {
       const mod=route.target.mod;
+      const root=route.setupContext.constructorRoot;
+      const conditions=route.setupContext.constructorBranches??[];
+      const compatible=path=>!conditions.some(a=>path.some(b=>a.filePath===b.filePath&&a.line===b.line&&a.column===b.column&&a.functionName===b.functionName&&a.kind!==b.kind));
+      if(root&&(root.abrupt||!root.pathsTruncated&&root.normalPaths.length&&!root.normalPaths.some(compatible))){
+        note(mod,'CONSTRUCTOR_BOOTSTRAP_DID_NOT_COMPLETE');
+        append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ROUTE_HANDLER_NOT_REACHED',operation:'CONSTRUCTOR_THROW_BEFORE_COMPLETION',
+          location:route.location,trace:[],limitations:['SYNCHRONOUS_CONSTRUCTOR_THROW_ONLY_NOT_EVENT_OR_PROMISE_PROOF']},mod);continue;
+      }
       const control=routeControls.get(route);
       if(mod.entries.length>=limits.maxResults){note(mod,'EXPRESS_ENTRY_LIMIT');continue;}
       let blocked;
@@ -508,12 +516,12 @@ export function nodeServer(api) {
       }else mod.entries.push({fn:route.target,kind:'EXPRESS_HANDLER',registration:route.location,uncertain:route.uncertain||!!route.setupContext.unresolved,middleware:route.middleware,web:route.web,rate:route.rate});
       mod.record.entrypoints++;
       append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ENTRY_REGISTERED',operation:'EXPRESS_ROUTER_MOUNTED',
-        location:route.location,trace:[loc(route.target.node,mod,'EXPRESS_HANDLER_TARGET',route.target)],
+        location:route.location,trace:[loc(route.target.node,mod,'EXPRESS_HANDLER_TARGET',route.target),...(route.setupContext.constructorBranches??[])].slice(0,20),
         limitations:['STATIC_REGISTRATION_ONLY','MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED']},mod);
     }
     for(const route of routes)if(![...reachable].some(app=>app.routes.includes(route)))note(route.target.mod,'UNMOUNTED_ROUTER_NOT_ANALYZED');
   }
-  return {property,write,call,construct,discover,functionValue,classValue:classes.define,awaitValue:mongoose.consume,webEntry:web.entry,rateEntry:rate.entry,
+  return {property,write,call,construct,discover,functionValue,classValue:classes.define,constructorBranch:classes.branch,awaitValue:mongoose.consume,webEntry:web.entry,rateEntry:rate.entry,
     applyFields:fields.apply,typeOfField:fields.typeName,compareFields:fields.compare,refineFields:fields.refine,
     invalidateFields:fields.invalidate,mergeFields:fields.merge,escapeFields:fields.escape};
 }

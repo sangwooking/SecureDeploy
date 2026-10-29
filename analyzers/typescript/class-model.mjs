@@ -28,7 +28,9 @@ export function classModels(api) {
       if(ts.isConstructorDeclaration(m)&&m.body&&!model.ctor){
         if(m.parameters.some(p=>p.modifiers?.length||ts.getDecorators(p)?.length))
           return rejected('CLASS_PARAMETER_PROPERTY_OR_DECORATOR_UNKNOWN',m,state);
-        model.ctor=functionValue(m,state,'constructor');continue;
+        model.ctor=functionValue(m,state,'constructor');
+        if(model.ctor.target)model.ctor.target.classConstructor=true;
+        continue;
       }
       if(!ts.isMethodDeclaration(m)||!m.body||!m.name||!ts.isIdentifier(m.name)||m.asteriskToken)
         return rejected('CLASS_FIELD_OR_ACCESSOR_UNKNOWN',m,state);
@@ -51,13 +53,20 @@ export function classModels(api) {
       evidence('CONSTRUCTOR_ARGUMENT_CONNECTED',node,state,[loc(ctor.target.node,model.mod,'CONSTRUCTOR_PARAMETERS',ctor.target)]);
       let simple=true;
       const scan=n=>{tick(state.mod);if(n!==ctor.target.node&&ts.isFunctionLike(n))return;
-        if(ts.isReturnStatement(n)||ts.isThrowStatement(n)||ts.isTryStatement(n)||ts.isIfStatement(n)
+        if(ts.isReturnStatement(n)&&n.expression||ts.isTryStatement(n)
             ||ts.isIterationStatement(n,false)||ts.isSwitchStatement(n))simple=false;
         if(ts.isBinaryExpression(n)&&ts.isPropertyAccessExpression(n.left)&&n.left.expression.kind===ts.SyntaxKind.ThisKeyword
             &&(ts.isArrowFunction(n.right)||ts.isFunctionExpression(n.right)))simple=false;
         ts.forEachChild(n,scan);};scan(ctor.target.node);
       if(!simple)return unknownCall('CLASS_CONSTRUCTOR_CONTROL_FLOW_UNKNOWN',node,state,args);
-      const returned=invoke(ctor.target,args,state.depth+1,state.context,state.stack,state.uncertain,false,instance,true);
+      const constructorRoot={abrupt:false,normalPaths:[],pathsTruncated:false};
+      const context=Object.assign(Object.create(state.context),{classConstructorFlow:true,constructorRoot});
+      const returned=invoke(ctor.target,args,state.depth+1,context,state.stack,state.uncertain,false,instance,true);
+      if(returned.constructorAbrupt){
+        constructorRoot.abrupt=true;note(state.mod,'CLASS_CONSTRUCTOR_THROW_PROVEN');
+        return {...unknown(),constructorAbrupt:true};
+      }
+      instance.constructorConditional=!!returned.constructorConditional||!!context.unresolved;
       if(returned.unknown){instance.unknown=true;instance.ref.unknown=true;note(state.mod,'CLASS_CONSTRUCTOR_EFFECT_UNKNOWN');}
       if(returned.ref&&!returned.unknown)return returned;
     }
@@ -93,7 +102,7 @@ export function classModels(api) {
       if(method.target.node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword))
         return {value:unknownCall('CLASS_ASYNC_EXECUTION_UNKNOWN',node,state,[selected,...args])};
       evidence('METHOD_CALL_CONNECTED',node,state,[loc(method.target.node,method.target.mod,'CLASS_METHOD_TARGET',method.target)]);
-      return {value:invoke(method.target,args,state.depth+1,state.context,state.stack,state.uncertain,state.exposureUncertain,selected)};
+      return {value:invoke(method.target,args,state.depth+1,state.context,state.stack,state.uncertain||!!selected.constructorConditional,state.exposureUncertain,selected)};
     }
     if(!callable?.target?.classModel)return;
     const model=callable.target.classModel,selected=callable.target.lexicalThis??receiver;
@@ -104,5 +113,10 @@ export function classModels(api) {
     evidence('METHOD_CALL_CONNECTED',node,state,[loc(callable.target.node,model.mod,'CLASS_METHOD_TARGET',callable.target)]);
     // The existing bounded invoker performs the argument/return propagation.
   }
-  return {define,property,call,evidence};
+  function branch(node,state,decision){
+    const kind=decision===undefined?'CONSTRUCTOR_BRANCH_CONDITIONAL':'CONSTRUCTOR_BRANCH_DECIDED';
+    evidence(kind,node.expression,state,[loc(decision===false?(node.elseStatement??node):node.thenStatement,state.mod,
+      decision===undefined?'POSSIBLE_BRANCH':decision?'THEN_BRANCH':'ELSE_OR_SKIPPED_BRANCH',state.fn)]);
+  }
+  return {define,property,call,evidence,branch};
 }

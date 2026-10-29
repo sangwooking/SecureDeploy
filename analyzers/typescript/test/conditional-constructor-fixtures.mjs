@@ -1,0 +1,37 @@
+const pre=`const express=require('express');const app=express();`;
+const route=`this.app.post('/',(req,res)=>eval(req.body.code));`;
+const service=(body,methods=`register(){${route}}`)=>`class Service{constructor(app,enabled){${body}}${methods}}`;
+const make=(id,truth,body,args='app,true',tail='')=>({id,truth,files:[{filePath:'entry.js',content:pre+service(body)+`new Service(${args});`+tail}]});
+export const conditionalConstructorCases=[
+ make('true','HIGH',`this.app=app;if(enabled)this.register();`),
+ make('false','BLOCKED',`this.app=app;if(enabled)this.register();`,'app,false'),
+ make('local-constant','HIGH',`const selected=true;this.app=app;if(selected)this.register();`),
+ make('strict-equality','HIGH',`this.app=app;if(enabled==='yes')this.register();`,`app,'yes'`),
+ make('changed-flag','BLOCKED',`enabled=false;this.app=app;if(enabled)this.register();`),
+ make('unknown-flag','CONDITIONAL',`this.app=app;if(enabled)this.register();`,'app,external'),
+ make('unknown-environment','CONDITIONAL',`this.app=app;if(process.env.FEATURE_FLAG)this.register();`),
+ make('static-else','HIGH',`this.app=app;if(enabled){}else this.register();`,'app,false'),
+ make('unknown-both-handlers','TWO_CONDITIONAL',`this.app=app;if(enabled)this.register();else this.app.post('/other',(req,res)=>eval(req.body.other));`,'app,external'),
+ make('return-blocks-later-register','BLOCKED',`this.app=app;if(enabled)return;this.register();`),
+ make('return-false','HIGH',`this.app=app;if(enabled)return;this.register();`,'app,false'),
+ make('throw-blocks-later-register','BLOCKED',`this.app=app;if(enabled)throw Error('stopped');this.register();`),
+ make('throw-false','HIGH',`this.app=app;if(enabled)throw Error('stopped');this.register();`,'app,false'),
+ make('unknown-return','CONDITIONAL',`this.app=app;if(enabled)return;this.register();`,'app,external'),
+ make('unknown-throw','CONDITIONAL',`this.app=app;if(enabled)throw Error('stopped');this.register();`,'app,external'),
+ make('before-throw-does-not-complete','BLOCKED',`this.app=app;this.register();throw Error('stopped');`),
+ make('throw-blocks-bootstrap-tail','BLOCKED',`throw Error('stopped');`,'app,true',`app.post('/later',(req,res)=>eval(req.body.code));`),
+ make('unselected-throw','HIGH',`this.app=app;if(false)throw Error('stopped');this.register();`),
+ make('conditional-field','UNKNOWN',`if(enabled)this.app=app;this.register();`,'app,external'),
+ make('known-field','HIGH',`if(enabled)this.app=app;this.register();`),
+ make('unknown-field-overwrite','UNKNOWN',`this.app=app;if(enabled)this.app=external;this.register();`,'app,external'),
+ make('safe-handler','NORMAL',`this.app=app;if(enabled)this.app.post('/',(req,res)=>Number(req.body.code));`),
+ make('blocked-middleware','NORMAL',`this.app=app;if(true)this.app.post('/',(req,res)=>res.end(),(req,res)=>eval(req.body.code));`),
+ make('escape','UNKNOWN',`this.app=app;if(true)external(this);this.register();`),
+ make('return-value','UNKNOWN',`return external;`),
+ {id:'two-instances',truth:'HIGH',files:[{filePath:'entry.js',content:pre+service(`this.app=app;if(enabled)this.register();`)+`new Service(app,false);new Service(app,true);`}]},
+ {id:'not-constructed',truth:'BLOCKED',files:[{filePath:'entry.js',content:pre+service(`this.app=app;if(true)this.register();`)}]},
+ {id:'nested-method',truth:'HIGH',files:[{filePath:'entry.js',content:pre+service(`this.app=app;if(enabled)this.begin();`,`begin(){this.register();}register(){${route}}`)+`new Service(app,true);`}]},
+ {id:'getter',truth:'UNKNOWN',files:[{filePath:'entry.js',content:pre+`class Service{get enabled(){return external();}constructor(app){this.app=app;if(this.enabled){${route}}}}new Service(app);`}]},
+ {id:'inheritance',truth:'UNKNOWN',files:[{filePath:'entry.js',content:pre+`class Base{}class Service extends Base{constructor(app){super();if(true)app.post('/',(req,res)=>eval(req.body.code));}}new Service(app);`}]},
+ {id:'event-not-emitted',truth:'UNKNOWN',files:[{filePath:'entry.js',content:pre+service(`this.app=app;if(true)external.on('ready',()=>this.register());`)+`new Service(app);`}]},
+];
