@@ -19,11 +19,12 @@ export function asyncBoundaries(api){
     ||!['resolve','reject'].includes(callee.name.text))return;
   if(state.vars.has('Promise')||state.mod.declared.has('Promise')||state.mod.imports.has('Promise'))return;
   if(intrinsicTrusted===undefined){
-   intrinsicTrusted=true;
+   let trusted=true;
    for(const m of modules.values()){
     tick(state.mod);const i=m.syntaxIndex;
-    if(!i||['Promise','global','globalThis'].some(n=>i.writes.has(n)||i.exportWrites.has(n)||i.aliases.has(n)||(i.argumentUses.get(n)?.length??0)>0))intrinsicTrusted=false;
+    if(!i||['Promise','global','globalThis'].some(n=>i.writes.has(n)||i.exportWrites.has(n)||i.aliases.has(n)||(i.argumentUses.get(n)?.length??0)>0))trusted=false;
    }
+   intrinsicTrusted=trusted;
   }
   if(!intrinsicTrusted){note(state.mod,'PROMISE_INTRINSIC_ORIGIN_UNKNOWN');return promise('UNKNOWN');}
   if(args.length>1)return promise('UNKNOWN');

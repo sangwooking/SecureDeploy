@@ -52,6 +52,8 @@ test('async recursion and suspension keep the existing depth and step limits',()
  const c=asyncCases.find(c=>c.id==='class-pre-await');
  const r=analyze({files:c.files},{maxSteps:30});
  assert.ok(r.files.some(f=>f.limitations.length));
+ const limited=analyze({files:asyncCases.find(c=>c.id==='native-resolve').files},{maxSteps:40});
+ assert.equal(limited.findings.length,0);
  const loop=analyze({files:[{filePath:'entry.js',content:`const app=require('express')();async function recurse(){return recurse();}
  app.post('/',async(req,res)=>{await recurse();eval(req.body.code);});`}]});
  assert.equal(loop.findings.length,0);assert.ok(loop.files[0].limitations.includes('CALL_DEPTH_EXCEEDED'));
