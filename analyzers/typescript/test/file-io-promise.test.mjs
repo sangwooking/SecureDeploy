@@ -42,3 +42,9 @@ test('budget exhaustion cannot cache partial native provenance as trusted',()=>{
  const input={files:fileIoCases.find(c=>c.id==='promisified-write').files};
  const r=analyze(input,{maxSteps:40});assert.equal(r.findings.length,0);assert.ok(r.files.some(f=>f.limitations.length));
 });
+test('unrelated native promisify creation is not a writeFile mutation or a supported completion',()=>{
+ const setup=`const fs=require('fs');const {promisify}=require('util');const read=promisify(fs.readFile);const write=promisify(fs.writeFile);const app=require('express')();`;
+ const run=call=>analyze({files:[{filePath:'entry.cjs',content:setup+`app.post('/',async(req,res)=>{await ${call};eval(req.body.code);});`}]});
+ assert.equal(run(`write('unused.txt','data')`).findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW'&&f.confidence==='MEDIUM').length,1);
+ assert.equal(run(`read('unused.txt')`).findings.length,0);
+});

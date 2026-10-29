@@ -24,6 +24,10 @@ export function fileAccess(api){
      if(origin(n.expression,depth+1)==='util:promisify'&&n.arguments.length===1&&origin(n.arguments[0],depth+1)==='fs:writeFile')return 'fs:promisifiedWriteFile';
     }
    };
+   // Constructing another native promisified wrapper does not mutate fs.writeFile.
+   // Its completion contract remains unsupported by this model.
+   const nativePromisifyArgument=(call,arg)=>ts.isCallExpression(call)&&origin(call.expression)==='util:promisify'
+    &&call.arguments.length===1&&/^fs:[A-Za-z]+$/.test(origin(arg)??'');
    for(let pass=0;pass<4;pass++)for(const [name,ds]of i.declarations){
     tick(m);if(names.has(name))continue;
     for(const d of ds){
@@ -39,7 +43,7 @@ export function fileAccess(api){
     tick(m);
     if(i.writes.has(name)||i.exportWrites.has(name)||i.argumentReferenceIncomplete.has(name))trusted=false;
     for(const use of i.argumentUses.get(name)??[]){
-     if(!(ts.isCallExpression(use.call)&&origin(use.call.expression)==='util:promisify'&&use.call.arguments.length===1&&origin(use.call.arguments[0])==='fs:writeFile'))trusted=false;
+     if(!nativePromisifyArgument(use.call,use.call.arguments[0]))trusted=false;
     }
     if((i.aliases.get(name)??[]).some(a=>!names.has(a.declaration.name.text)))trusted=false;
    }
@@ -54,7 +58,7 @@ export function fileAccess(api){
       if(origin(target))trusted=false;
      }
      if(ts.isCallExpression(n))for(const a of n.arguments){
-      if(origin(a)&&!(origin(n.expression)==='util:promisify'&&n.arguments.length===1&&origin(a)==='fs:writeFile'))trusted=false;
+      if(origin(a)&&!nativePromisifyArgument(n,a))trusted=false;
      }
      ts.forEachChild(n,scan);
     };scan(m.ast);
