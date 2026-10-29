@@ -721,6 +721,10 @@ export function analyze(input, overrides = {}) {
       const callee = unwrap(node.expression);
       const receiverInput = ts.isPropertyAccessExpression(callee) ? expr(callee.expression, state) : undefined;
       const callable = receiverInput ? undefined : expr(callee, state);
+      if(state.exceptionScope&&callable?.target&&(callable.unknown||callable.ref?.unknown)){
+        note(mod,'ASYNC_HELPER_REFERENCE_UNVERIFIED');
+        asyncSupport.evidence('ASYNC_HELPER_REFERENCE_UNVERIFIED',node,state,[loc(callable.target.node,callable.target.mod,'UNVERIFIED_HELPER_DECLARATION',callable.target)]);
+      }
       const global = ts.isIdentifier(callee) && !state.vars.has(callee.text) && !mod.imports.has(callee.text) && !mod.declared.has(callee.text);
       const args = (node.arguments ?? []).map(a => expr(a, state));
       if(state.constructorAbrupt)return {...unknown(),constructorAbrupt:true};

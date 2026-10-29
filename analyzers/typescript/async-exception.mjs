@@ -40,7 +40,7 @@ export function asyncExceptions(api){
    const errorConstruction=ts.isThrowStatement(s)&&calls.length===1&&ts.isIdentifier(calls[0].expression)&&calls[0].expression.text==='Error'
     &&!state.vars.has('Error')&&!state.mod.declared.has('Error')&&!state.mod.imports.has('Error')
     &&(calls[0].arguments??[]).every(a=>ts.isStringLiteral(a));
-   if(calls.length&&!whole&&!errorConstruction){restore();return opaque(s,state,'ASYNC_EXCEPTION_EXPRESSION_COMPLETION_UNKNOWN');}
+   if(calls.length&&(!whole&&!errorConstruction||whole&&calls.length>1)){restore();return opaque(s,state,'ASYNC_EXCEPTION_EXPRESSION_COMPLETION_UNKNOWN');}
    const expressions=ts.isVariableStatement(s)?s.declarationList.declarations.map(d=>d.initializer)
     :ts.isExpressionStatement(s)&&!whole?[s.expression]:ts.isReturnStatement(s)||ts.isThrowStatement(s)&&!errorConstruction?[s.expression]:[];
    if(expressions.some(n=>!simple(n))){restore();return opaque(s,state,'ASYNC_EXCEPTION_VALUE_EFFECT_UNKNOWN');}

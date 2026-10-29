@@ -26,8 +26,9 @@ test('handled primitive returns remain symbolic promises rather than immediate t
  const r=analyze(input);assert.equal(r.findings.length,1);assert.equal(r.findings[0].confidence,'MEDIUM');
 });
 test('catch cannot see a block-local try declaration and outer bindings are restored',()=>{
- const r=run(`const x='1';try{const x=req.body.code;await Promise.reject('x');}catch(e){eval(x);}`);
- assert.equal(r.findings.length,0);
+ const r=run(`const x=req.body.code;try{const x='1';await Promise.reject('x');}catch(e){eval(x);}`);
+ assert.equal(r.findings.length,1);assert.equal(r.findings[0].confidence,'MEDIUM');
+ assert.ok(r.nodeUses.some(u=>u.kind==='ASYNC_CATCH_ENTERED'));
 });
 test('post-suspension this state and separate invocations are not merged into a safe proof',()=>{
  const r=analyze({files:[{filePath:'entry.js',content:`const app=require('express')();class S{constructor(v){this.value=v;}async run(){try{await Promise.reject('x');}catch(e){eval(this.value);}}}
