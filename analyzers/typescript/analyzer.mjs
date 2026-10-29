@@ -19,7 +19,7 @@ import {wrapperLinks} from './wrapper-links.mjs';
 import {externalNext} from './external-next.mjs';
 import {asyncBoundaries} from './async-boundary.mjs';
 
-export const VERSION = 'ts-server-v49';
+export const VERSION = 'ts-server-v50';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -124,7 +124,7 @@ export function analyze(input, overrides = {}) {
     functionName: safeName(fn?.name ?? 'module'), kind });
   const regexSupport=regexFlow({ts,unwrap,expr,note,tick,loc,step,constant,unknown});
   const dataObjects=objectData({tick,note,step,loc,sources:exposureSources});
-  const filesSupport=fileAccess({ts,value,unknown,constant,union,step,loc,note,tick,append,result});
+  const filesSupport=fileAccess({ts,modules,value,unknown,constant,union,step,loc,note,tick,append,result,ioPromise:(node,state,origin)=>asyncSupport.fileIo(node,state,origin)});
   function tick(mod) {
     try { charged(); } catch {
       mod.record.limitations.add(steps >= limits.maxSteps ? 'ANALYSIS_STEP_BUDGET_EXCEEDED' : 'ANALYSIS_TIME_BUDGET_EXCEEDED');
@@ -362,7 +362,7 @@ export function analyze(input, overrides = {}) {
     return target.exports.get(imported.exported)??exportSupport.functionAt(target,imported.exported,sourceModule);
   }
   function property(base, key, node, state) {
-    if(state.context.asyncPostAwait&&base.ref){note(state.mod,'POST_AWAIT_HEAP_STATE_UNKNOWN');return unknown();}
+    if(state.context.asyncPostAwait&&base.ref&&!filesSupport.stable(base,state)){note(state.mod,'POST_AWAIT_HEAP_STATE_UNKNOWN');return unknown();}
     const { mod, fn } = state;
     const fileProperty=filesSupport.property(base,key,node,state);if(fileProperty)return fileProperty;
     if(base.inputShape==='FORM_FIELD'&&['name','type','size'].includes(key)){
@@ -558,7 +558,7 @@ export function analyze(input, overrides = {}) {
     if (ts.isIdentifier(node)) {
       const found = state.vars.get(node.text) ?? mod.constants.get(node.text);
       if (found?.uninitialized) { note(mod, 'LEXICAL_READ_BEFORE_INITIALIZATION'); return unknown(); }
-      if(found&&state.context.asyncPostAwait&&found.ref){note(mod,'POST_AWAIT_HEAP_STATE_UNKNOWN');return unknown();}
+      if(found&&state.context.asyncPostAwait&&found.ref&&!filesSupport.stable(found,state)){note(mod,'POST_AWAIT_HEAP_STATE_UNKNOWN');return unknown();}
       if (found) return state.nodeMode?nodeSupport.applyFields(found,state):found;
       const fileBinding=filesSupport.imported(node,state);if(fileBinding)return fileBinding;
       const target = resolve(mod, node.text);
@@ -949,6 +949,7 @@ export function analyze(input, overrides = {}) {
     state.vars = merged;
     state.uncertain = state.uncertain || branches.some(b => b.uncertain);
     state.exposureUncertain = state.exposureUncertain || branches.some(b => b.exposureUncertain);
+    if(state.asyncFrame)asyncSupport.merge(state,branches);
   }
   function guardBranches(node, condition, yes, no) {
     yes.exposureUncertain = no.exposureUncertain = true;
@@ -1108,6 +1109,7 @@ export function analyze(input, overrides = {}) {
       }
       if(state.constructorAbrupt)return {values:[],stops:true,constructorAbrupt:true};
       if(state.fn.classConstructor)constructorNormalPath(state);
+      if(state.asyncFrame)returned=asyncSupport.returnValue(returned,state);
       return {values:[state.nodeMode&&state.uncertain&&!(state.fn.classConstructor&&!node.expression)?{...returned,unknown:true}:returned],stops:true};
     }
     else if (ts.isThrowStatement(node)) { expr(node.expression, state);

@@ -11,7 +11,7 @@ class FileAccessFlowTest {
     final TypeScriptServerAnalyzer analyzer=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties());
     @Test void requestToFsHasCorroboratedFindingWithoutChangingPolicy() {
         var result=analyzer.analyze(project("const app=require('express')();const fs=require('node:fs');const path=require('node:path');app.post('/',(req,res)=>fs.readFileSync(path.join('/srv/data',req.body.name)));"));
-        assertThat(result.analyzerVersion()).isEqualTo("ts-server-v49");
+        assertThat(result.analyzerVersion()).isEqualTo("ts-server-v50");
         assertThat(result.resourceUses()).hasSize(1);
         assertThat(result.resourceUses().get(0).kind()).isEqualTo("INPUT_IN_FILE_PATH");
         assertThat(result.validatedFindings()).hasSize(1);

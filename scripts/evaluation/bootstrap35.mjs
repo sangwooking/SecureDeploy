@@ -38,9 +38,9 @@ export function evaluateControls() {
   return controls.map(c=>{
     const r=analyze({files:c.files});
     const matching=r.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW');
-    const listenerVersion=['ts-server-v45','ts-server-v46','ts-server-v47','ts-server-v48','ts-server-v49'].includes(VERSION);
-    const expected=['ts-server-v46','ts-server-v47','ts-server-v48','ts-server-v49'].includes(VERSION)&&c.id==='earlier-middleware-terminates'?'SAFE_TARGET'
-      :['ts-server-v47','ts-server-v48','ts-server-v49'].includes(VERSION)&&c.id==='class-bootstrap'?'FLOW'
+    const listenerVersion=['ts-server-v45','ts-server-v46','ts-server-v47','ts-server-v48','ts-server-v49','ts-server-v50'].includes(VERSION);
+    const expected=['ts-server-v46','ts-server-v47','ts-server-v48','ts-server-v49','ts-server-v50'].includes(VERSION)&&c.id==='earlier-middleware-terminates'?'SAFE_TARGET'
+      :['ts-server-v47','ts-server-v48','ts-server-v49','ts-server-v50'].includes(VERSION)&&c.id==='class-bootstrap'?'FLOW'
       :listenerVersion&&['http-Server-constructor-app-escape','http-Server-call-app-escape'].includes(c.id)?'FLOW':c.expect;
     return {id:c.id,expected,baselineExpected:c.expect,expectedCount:['FLOW','KNOWN_BLOCKED_REVIEW_CANDIDATE'].includes(expected)?(c.count??1):0,
       observedCount:matching.length,highCount:matching.filter(f=>f.confidence==='HIGH').length,

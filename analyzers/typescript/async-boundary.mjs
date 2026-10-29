@@ -14,6 +14,21 @@ export function asyncBoundaries(api){
   state.asyncFrame={summary:{awaited:false,unknown:false,rejected:false},post:false};
   evidence('ASYNC_CALL_CONNECTED',state.fn.node,state);evidence('PRE_AWAIT_REACHABLE',state.fn.node,state);
  }
+ function fileIo(node,state,origin){
+  evidence('FILE_IO_PROMISE_CREATED',node,state,[loc(node,state.mod,origin,state.fn)]);
+  note(state.mod,'FILE_IO_COMPLETION_AND_FILESYSTEM_STATE_UNVERIFIED');
+  note(state.mod,'FILE_IO_RUNTIME_NODE_VERSION_AND_NATIVE_IMPLEMENTATION_UNVERIFIED');
+  return {...promise('CONDITIONAL',constant(undefined)),ioPromise:true};
+ }
+ function returnValue(v,state){
+  return primitive(v)?{...v,asyncPrimitiveReturn:true}:v;
+ }
+ function merge(state,branches){
+  if(!state.asyncFrame?.summary.io||!branches.some(b=>b.asyncFrame?.post))return;
+  state.asyncFrame.preMutations=new Set(branches.flatMap(b=>[...(b.asyncFrame?.preMutations??b.nodeMutations)]));
+  state.asyncFrame.post=true;
+  state.context=Object.assign(Object.create(state.context),{asyncPostAwait:true,unresolved:true});
+ }
  function intrinsic(callee,args,state){
   if(!state.nodeMode||!ts.isPropertyAccessExpression(callee)||!ts.isIdentifier(callee.expression)||callee.expression.text!=='Promise'
     ||!['resolve','reject'].includes(callee.name.text))return;
@@ -41,10 +56,16 @@ export function asyncBoundaries(api){
    frame.summary.rejected=true;state.asyncStop=true;state.asyncRejected=true;
    evidence('REJECTION_PATH_POSSIBLE',node,state);return unknown();
   }
-  if(settlement!=='FULFILLED'){
+  const io=settlement==='CONDITIONAL'&&v.ioPromise;
+  if(settlement!=='FULFILLED'&&!io){
    frame.summary.unknown=true;state.asyncStop=true;
    note(state.mod,'UNSUPPORTED_ASYNC_BOUNDARY');evidence('FULFILLMENT_PATH_POSSIBLE',node,state);
    evidence('REJECTION_PATH_POSSIBLE',node,state);evidence('UNSUPPORTED_ASYNC_BOUNDARY',node,state);return unknown();
+  }
+  if(io){
+   frame.summary.io=true;frame.summary.mayReject=true;
+   evidence('FILE_IO_FULFILLMENT_POSSIBLE',node,state);evidence('REJECTION_PATH_POSSIBLE',node,state);
+   note(state.mod,'FILE_IO_REJECTION_STOPS_UNHANDLED_AWAIT_PATH');
   }
   if(!frame.post){
    frame.preMutations=new Set(state.nodeMutations);
@@ -55,19 +76,25 @@ export function asyncBoundaries(api){
   }
   state.uncertain=true;state.exposureUncertain=true;
   evidence('FULFILLMENT_PATH_POSSIBLE',node,state);evidence('POST_AWAIT_CONDITIONAL',node,state);
-  evidence('COMPLETION_CONFIRMED_BY_SUPPORTED_MODEL',node,state);
+  if(!io)evidence('COMPLETION_CONFIRMED_BY_SUPPORTED_MODEL',node,state);
   return v.asyncResult?.payload??v;
  }
  function finish(r,state){
   const summary=state.asyncFrame.summary;
   if((r.asyncRejected||r.constructorAbrupt)&&!r.values.length&&!summary.unknown){evidence('REJECTION_PATH_POSSIBLE',state.fn.node,state);return promise('REJECTED');}
   const returns=[...r.values,...(!r.stops?[constant(undefined)]:[])];
+  if(summary.io&&!summary.unknown&&returns.length>0&&returns.length<=4&&returns.every(v=>v.asyncPrimitiveReturn||primitive(v))){
+   const values=returns.map(v=>{const {asyncPrimitiveReturn,unknown:ignored,...clean}=v;return clean;});
+   const same=values.every(v=>v.tag==='constant'&&Object.hasOwn(v,'constant')&&v.constant===values[0].constant);
+   const booleans=values.every(v=>v.tag==='boolean'||v.tag==='constant'&&typeof v.constant==='boolean');
+   if(same||booleans)return {...promise('CONDITIONAL',same?values[0]:{tag:'boolean',trace:[]}),ioPromise:true};
+  }
   if(!summary.awaited&&!summary.rejected&&!state.uncertain&&returns.length===1){
    if(primitive(returns[0]))return promise('FULFILLED',returns[0]);
    if(returns[0].tag==='async-promise'&&!returns[0].unknown&&!returns[0].ref?.unknown&&returns[0].asyncResult)
-    return promise(returns[0].asyncResult.settlement,returns[0].asyncResult.payload);
+    return {...promise(returns[0].asyncResult.settlement,returns[0].asyncResult.payload),...(returns[0].ioPromise?{ioPromise:true}:{})};
   }
   return promise('UNKNOWN');
  }
- return {begin,intrinsic,awaitValue,finish,evidence};
+ return {begin,intrinsic,awaitValue,finish,evidence,fileIo,returnValue,merge};
 }

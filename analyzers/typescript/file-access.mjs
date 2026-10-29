@@ -1,13 +1,77 @@
 // Static built-in contracts only. Never touch the target filesystem or execute callbacks.
 import path from 'node:path';
 export function fileAccess(api){
- const {ts,value,unknown,constant,union,step,loc,note,tick,append,result}=api;
+ const {ts,modules,value,unknown,constant,union,step,loc,note,tick,append,result}=api;
  const roots=new Map();
+ let ioTrusted;
+ // Source-wide mutation/escape checks also cover aliases retained across an await.
+ function stableIo(){
+  if(ioTrusted!==undefined)return ioTrusted;
+  let trusted=true;
+  for(const m of modules.values()){
+   const i=m.syntaxIndex,names=new Map();
+   const root=s=>['fs','fs/promises','util'].includes(s.replace(/^node:/,''))?s.replace(/^node:/,''):undefined;
+   for(const [name,b]of m.imports){const r=root(b.spec);if(r)names.set(name,b.exported==='default'||b.exported==='*'?r:r+':'+b.exported);}
+   const origin=(n,depth=0)=>{
+    if(!n||depth>8)return;
+    if(ts.isIdentifier(n))return names.get(n.text);
+    if(ts.isPropertyAccessExpression(n)||ts.isElementAccessExpression(n)){
+     const key=ts.isPropertyAccessExpression(n)?n.name.text:ts.isStringLiteral(n.argumentExpression)?n.argumentExpression.text:undefined;
+     const p=origin(n.expression,depth+1);return p&&key?p+':'+key:undefined;
+    }
+    if(ts.isCallExpression(n)){
+     if(ts.isIdentifier(n.expression)&&n.expression.text==='require'&&n.arguments.length===1&&ts.isStringLiteral(n.arguments[0]))return root(n.arguments[0].text);
+     if(origin(n.expression,depth+1)==='util:promisify'&&n.arguments.length===1&&origin(n.arguments[0],depth+1)==='fs:writeFile')return 'fs:promisifiedWriteFile';
+    }
+   };
+   for(let pass=0;pass<4;pass++)for(const [name,ds]of i.declarations){
+    tick(m);if(names.has(name))continue;
+    for(const d of ds){
+     let o=origin(d.initializer);
+     if(ts.isBindingElement(d)&&ts.isObjectBindingPattern(d.parent)){
+      const owner=origin(d.parent.parent.initializer);const key=d.propertyName??d.name;
+      if(owner&&ts.isIdentifier(key))o=owner+':'+key.text;
+     }
+     if(o)names.set(name,o);
+    }
+   }
+   for(const [name]of names){
+    tick(m);
+    if(i.writes.has(name)||i.exportWrites.has(name)||i.argumentReferenceIncomplete.has(name))trusted=false;
+    for(const use of i.argumentUses.get(name)??[]){
+     if(!(ts.isCallExpression(use.call)&&origin(use.call.expression)==='util:promisify'&&use.call.arguments.length===1&&origin(use.call.arguments[0])==='fs:writeFile'))trusted=false;
+    }
+    if((i.aliases.get(name)??[]).some(a=>!names.has(a.declaration.name.text)))trusted=false;
+   }
+   if(names.size||i.dependencies.some(d=>root(d.spec))){
+    const scan=n=>{
+     tick(m);
+     const assignment=ts.isBinaryExpression(n)&&ts.isAssignmentOperator(n.operatorToken.kind);
+     const deletion=ts.isDeleteExpression(n);
+     if(assignment||deletion){
+      let target=assignment?n.left:n.expression;
+      while(ts.isPropertyAccessExpression(target)||ts.isElementAccessExpression(target))target=target.expression;
+      if(origin(target))trusted=false;
+     }
+     if(ts.isCallExpression(n))for(const a of n.arguments){
+      if(origin(a)&&!(origin(n.expression)==='util:promisify'&&n.arguments.length===1&&origin(a)==='fs:writeFile'))trusted=false;
+     }
+     ts.forEachChild(n,scan);
+    };scan(m.ast);
+   }
+  }
+  ioTrusted=trusted;return trusted;
+ }
+ function stable(v,state){
+  if(!state.nodeMode||!v?.fileNative||v.unknown||v.ref?.unknown||v.ref?.properties.size)return false;
+  const supported=['fs','fs/promises','fs:writeFile','fs/promises:writeFile','fs:promisifiedWriteFile','util','util:promisify'].includes(v.fileNative);
+  return supported&&stableIo();
+ }
  const known=v=>v?.tag==='constant'&&!v.unknown&&Object.hasOwn(v,'constant');
  const native=(name,ref)=>value('file-native',[],{fileNative:name,ref:ref??{properties:new Map(),trace:[],unknown:false,nodeIdentity:{}}});
  function dependency(spec){
   const key=spec.replace(/^node:/,'');
-  if(!['fs','fs/promises','path','path/posix','path/win32'].includes(key))return;
+  if(!['fs','fs/promises','path','path/posix','path/win32','util'].includes(key))return;
   const family=key.split('/')[0];
   if(!roots.has(family))roots.set(family,native(family));
   if(!roots.has(key))roots.set(key,native(key,roots.get(family).ref));return roots.get(key);
@@ -25,6 +89,7 @@ export function fileAccess(api){
   if(!base?.fileNative)return;
   if(base.unknown||base.ref?.unknown||base.ref?.properties.has(key))return {...unknown(),trace:base.trace};
   const n=base.fileNative;
+  if(n==='util'&&key==='promisify')return native('util:promisify',base.ref);
   if(n==='fs'&&key==='promises')return native('fs/promises',base.ref);
   if(n==='path'&&['posix','win32'].includes(key))return native('path/'+key,base.ref);
   if(n.startsWith('path')&&['join','resolve','normalize','basename','relative','isAbsolute','extname'].includes(key))return native(n+':'+key,base.ref);
@@ -37,6 +102,16 @@ export function fileAccess(api){
   const n=callable.fileNative,at=kind=>loc(node,state.mod,kind,state.fn);
   if(callable.unknown||callable.ref?.unknown){note(state.mod,'FILE_API_ORIGIN_UNKNOWN');return {value:unknown()};}
   if(!n.includes(':')){note(state.mod,'FILE_MODULE_NOT_CALLABLE');return {value:unknown()};}
+  if(n==='util:promisify'){
+   if(args.length===1&&args[0]?.fileNative==='fs:writeFile'&&stable(callable,state)&&stable(args[0],state))
+    return {value:native('fs:promisifiedWriteFile',args[0].ref)};
+   note(state.mod,'FILE_PROMISIFY_ORIGIN_UNKNOWN');return {value:unknown()};
+  }
+  const io=state.nodeMode&&(n==='fs:promisifiedWriteFile'||n==='fs/promises:writeFile');
+  const ioArity=args.length>=2&&args.length<=3&&(!args[2]||known(args[2])&&typeof args[2].constant==='string');
+  if(io&&(!stable(callable,state)||!ioArity)){
+   note(state.mod,'FILE_IO_PROMISE_CONTRACT_UNKNOWN');return {value:unknown()};
+  }
   if(n.startsWith('path:')||n.startsWith('path/')){
    const [family,method]=n.split(':');const incoming=union(...args);
    const derived=step({...incoming,constant:undefined},at('FILE_PATH_'+method.toUpperCase()),state.mod);
@@ -56,12 +131,12 @@ export function fileAccess(api){
    }
    return {value:{...derived,tag:'path-input',unknown:derived.unknown||!arity||!primitive}};
   }
-  const [family,method]=n.split(':');
+  const [family,rawMethod]=n.split(':'),method=rawMethod==='promisifiedWriteFile'?'writeFile':rawMethod;
   if(!method){note(state.mod,'FILE_MODULE_NOT_CALLABLE');return {value:unknown()};}
   if(method.startsWith('realpath')){
    note(state.mod,'REALPATH_CONTAINMENT_AND_CALLBACK_NOT_VERIFIED');return {value:{...union(...args),unknown:true}};
   }
-  const sync=method.endsWith('Sync'),promise=family==='fs/promises';
+  const sync=method.endsWith('Sync'),promise=family==='fs/promises'||io;
   const stream=method.startsWith('create'),rename=method.startsWith('rename'),write=method.startsWith('write');
   const core=rename||write?2:1,callback=!sync&&!promise&&!stream;
   const options=(method.startsWith('readFile')||write||stream)&&args.length>core+(callback?1:0)?args[core]:undefined;
@@ -87,7 +162,7 @@ export function fileAccess(api){
     message:'사용자가 입력한 경로로 서버가 파일을 읽거나 변경할 가능성이 있습니다.',
     recommendation:'사용자 경로 대신 서버의 고정 파일 ID를 사용하세요. 경로가 필요하면 실제 저장 기준과 경로 구성요소 경계를 검사하고, 심볼릭 링크·접근 권한·검증 후 변경을 별도로 확인하세요. 임시 디렉터리에서 정상 파일과 탈출 거부를 검증한 뒤 재검사하세요.'},state.mod);
   }
-  return {value:unknown()};
+  return {value:io?api.ioPromise(node,state,n):unknown()};
  }
- return {dependency,imported,property,call};
+ return {dependency,imported,property,call,stable};
 }
