@@ -77,3 +77,9 @@ test('short circuit forks retain an unchanged wrapper but not a changed or mixed
  const mixed=analyze({files:[{filePath:'entry.cjs',content:`const {writeFile}=require('fs/promises');const app=require('express')();app.post('/',async(req,res)=>{const p=req.body.other?writeFile('one','a'):external();await p;eval(req.body.code);});`}]});
  assert.equal(mixed.findings.length,0);
 });
+test('pending tokens and separate async instance invocations are not conflated',()=>{
+ const pending=analyze({files:[{filePath:'entry.cjs',content:`const {writeFile}=require('fs/promises');const app=require('express')();app.post('/',async(req,res)=>{const a=writeFile('one','a');const b=writeFile('two','b');await a;await b;eval(req.body.code);});`}]});
+ assert.equal(pending.findings.length,0);assert.ok(pending.files[0].limitations.includes('POST_AWAIT_HEAP_STATE_UNKNOWN'));
+ const instances=analyze({files:[{filePath:'entry.cjs',content:`const {writeFile}=require('fs/promises');const app=require('express')();class Service{async save(value){await writeFile('unused.txt','data');eval(value);}}const a=new Service();const b=new Service();app.post('/',(req,res)=>{a.save(req.body.code);b.save('1');});`}]});
+ const f=instances.findings.filter(f=>f.ruleId==='JS_EVAL_INPUT_FLOW');assert.equal(f.length,1);assert.equal(f[0].confidence,'MEDIUM');
+});

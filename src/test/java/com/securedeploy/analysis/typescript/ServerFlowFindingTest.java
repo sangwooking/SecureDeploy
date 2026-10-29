@@ -116,7 +116,7 @@ class ServerFlowFindingTest {
     @Test void v2SnapshotsRemainImmutableAndAreNotReconnectedByTheNewAnalyzer() {
         var converter = new ServerAnalysisConverter();
         var snapshot = analyzer.analyze(project(UNSAFE));
-        for(String version:List.of("ts-server-v2","ts-server-v24","ts-server-v25","ts-server-v26","ts-server-v27","ts-server-v28","ts-server-v29","ts-server-v30","ts-server-v31","ts-server-v32","ts-server-v33","ts-server-v34","ts-server-v35","ts-server-v36","ts-server-v37","ts-server-v38","ts-server-v39","ts-server-v40","ts-server-v41","ts-server-v42","ts-server-v43","ts-server-v44","ts-server-v45","ts-server-v46","ts-server-v47","ts-server-v48")){
+        for(String version:List.of("ts-server-v2","ts-server-v24","ts-server-v25","ts-server-v26","ts-server-v27","ts-server-v28","ts-server-v29","ts-server-v30","ts-server-v31","ts-server-v32","ts-server-v33","ts-server-v34","ts-server-v35","ts-server-v36","ts-server-v37","ts-server-v38","ts-server-v39","ts-server-v40","ts-server-v41","ts-server-v42","ts-server-v43","ts-server-v44","ts-server-v45","ts-server-v46","ts-server-v47","ts-server-v48","ts-server-v49")){
             String previous = converter.convertToDatabaseColumn(snapshot).replace("ts-server-v50",version);
             var old = converter.convertToEntityAttribute(previous);
             assertThat(old.analyzerVersion()).isEqualTo(version);
