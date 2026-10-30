@@ -11,8 +11,8 @@ import { PatchDiff } from './PatchDiff';
 
 const states: Record<string,string> = { APPROVAL_REQUIRED: '코드 전송 동의 대기', GENERATING: '수정안 생성 중', PROPOSED: '제안 · 미적용',
   REJECTED: '거절됨 · 변경 없음', ACCEPTED: '작업 공간 적용됨 · 해결 미검증', STALE: '코드 변경으로 적용 불가', INVALID: '유효하지 않은 응답', FAILED: '생성 실패', NEEDS_REVIEW: '추가 확인 필요 · 적용 불가' };
-export function AiPatchPanel({ workspace, file, content, findings, flowFindings = [], dirty, disabled, onApplied }: {
-  workspace: EditingWorkspace; file: EditingFile; content: EditingContent; findings: Vulnerability[]; dirty: boolean; disabled: boolean;
+export function AiPatchPanel({ workspace, file, content, findings, flowFindings = [], dirty, disabled, onApplied, initialFinding }: {
+  initialFinding?:string;workspace: EditingWorkspace; file: EditingFile; content: EditingContent; findings: Vulnerability[]; dirty: boolean; disabled: boolean;
   flowFindings?: NonNullable<ServerAnalysisSnapshot['validatedFindings']>;
   onApplied: (value: EditingWorkspace) => Promise<void>;
 }) {
@@ -28,7 +28,7 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
   // Three proposals in this file already prove the workspace-wide preparation cap is reached.
   const preparationLimitReached=proposals.length>=3;
   const active = useRef(true);
-  useEffect(()=>{setFinding('');setSelectedId('');setProposals([]);},[file.id,workspace.id]);
+  useEffect(()=>{setFinding(initialFinding??'');setSelectedId('');setProposals([]);},[file.id,workspace.id,initialFinding]);
   useEffect(()=>{let current=true;setOption(null);
     if(preparationLimitReached){setOption({method:'MANUAL_REVIEW',reason:'작업 공간의 제안 준비 한도에 도달했습니다. 기존 제안을 검토하거나 수동 편집해 주세요.'});return;}
     if(finding&&!dirty&&!disabled&&content.revision===workspace.revision&&content.fileId===file.id)fixOption(workspace,file,content,finding.startsWith('flow:')?0:Number(finding),finding.startsWith('flow:')?finding.slice(5):undefined)

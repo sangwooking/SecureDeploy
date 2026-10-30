@@ -1,8 +1,9 @@
+import {problemItems,groupProblems,groupCounts,itemTitle,itemVulnerability,itemLocation} from './problemGroups';
 import {FlowFindingDetail} from './FlowFindingDetail';
 import { projectLink, type ResultSelection } from './workspaceRoute';
 import { DependencyUpdatePlans } from './DependencyUpdatePlans';
 import { RelatedSemanticReview } from './RelatedSemanticReview';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useMemo, type ReactNode } from 'react';
 import type { RiskFinding, SecurityReviewResponse, Severity } from '../types/securityReview';
 import { CodeFindingCard, type FindingStatusActions } from './CodeFindingCard';
 import { DependencyFindingCard } from './DependencyFindingCard';
@@ -39,20 +40,25 @@ interface Props {
 }
 
 export function ReviewResultWorkspace({ result, view, onViewChange, statusActions, reportActions, progress, rescanActions, onEditFile, onEditDependency, selection }: Props) {
+ const [occurrencePage,setOccurrencePage]=useState(0);
  const [kind,setKind]=useState<'ALL'|'CODE'|'AI'|'ANALYSIS'>(selection?.kind??'ALL');
  const [query,setQuery]=useState(''),[selectedId,setSelectedId]=useState(selection?.findingId??''),[page,setPage]=useState(0);
  const detail=useRef<HTMLDivElement>(null),rows=useRef<HTMLUListElement>(null);
  const findings=allRiskFindings(result),assessment=result.riskAssessment;
  const flowRows=[...(result.serverAnalysis?.validatedFindings??[]),...(result.serverAnalysis?.pythonAnalysis?.validatedFindings??[])].map(flow=>({findingId:'flow:'+flow.findingId,source:'FLOW' as const,priority:flow.priority,sourceFiles:[flow.location.filePath],advisoryId:undefined,flow}));
- const items=[...findings,...flowRows];
- const rowTitle=(f:typeof items[number])=>'flow' in f?f.flow.title:findingTitle(result,f);
- const rowVulnerability=(f:typeof items[number])=>'flow' in f?undefined:vulnerabilityForFinding(result,f);
+ const items=useMemo(()=>problemItems(result),[result]);
+ const rowTitle=(f:typeof items[number])=>itemTitle(result,f);
+ const rowVulnerability=(f:typeof items[number])=>itemVulnerability(result,f);
  const priority=['BLOCKING','REVIEW_REQUIRED','SHOULD_FIX'].includes(view)?view:'ALL';
- const shown=items.filter(f=>(kind==='ALL'||f.source===kind||kind==='CODE'&&f.source==='FLOW')&&(priority==='ALL'||f.priority===priority)&&`${rowTitle(f)} ${f.sourceFiles.join(' ')} ${f.advisoryId??''}`.toLowerCase().includes(query.toLowerCase()));
+ const shown=useMemo(()=>items.filter(f=>(kind==='ALL'||f.source===kind||kind==='CODE'&&f.source==='FLOW')&&(priority==='ALL'||f.priority===priority)&&`${rowTitle(f)} ${f.sourceFiles.join(' ')} ${f.advisoryId??''}`.toLowerCase().includes(query.toLowerCase())),[items,kind,priority,query,result]);
+ const groups=useMemo(()=>groupProblems(result,shown),[result,shown]);
+ const counts=useMemo(()=>groupCounts(result,groups),[result,groups]);
  const selected=shown.find(f=>f.findingId===selectedId);
+ const selectedGroup=groups.find(g=>g.items.some(f=>f.findingId===selectedId));
  useEffect(()=>{setSelectedId(selection?.findingId??'');setKind(selection?.kind??'ALL');},[view,result.reviewId,selection?.findingId,selection?.kind]);
  useEffect(()=>{setPage(0);},[view,kind,query,result.reviewId]);
- useEffect(()=>{const index=shown.findIndex(f=>f.findingId===selectedId);if(index>=0)setPage(Math.floor(index/20));},[selectedId,kind,query,view,result.reviewId]);
+ useEffect(()=>{const index=groups.findIndex(g=>g.items.some(f=>f.findingId===selectedId));if(index>=0)setPage(Math.floor(index/20));},[selectedId,kind,query,view,result.reviewId]);
+ useEffect(()=>{const i=selectedGroup?.items.findIndex(f=>f.findingId===selectedId)??-1;setOccurrencePage(Math.max(0,Math.floor(i/50)));},[selectedGroup?.id,selectedId]);
  const choose=(id:string)=>{setSelectedId(id);onViewChange(view,{kind,findingId:id||undefined});};
  useEffect(()=>{if(selectedId){detail.current?.focus({preventScroll:true});detail.current?.scrollIntoView({block:'start'});}},[selectedId]);
  const navigate=(next:ResultView)=>{setKind('ALL');setSelectedId('');onViewChange(next);};
@@ -63,7 +69,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
   {result.sourceType==='WORKSPACE'&&<p role="note">작업 공간 수정본 검사입니다. 원격 저장소에 반영된 결과는 아닙니다.</p>}
   <div className="result-primary-actions">{rescanActions}</div>
   <p className="result-state-line">{assessment?deploymentLabels[assessment.prioritizedDeploymentAssessment]:'위험 평가 미기록'} · {summaryStateLabel(result.coverage?.status??'NOT_RECORDED')}</p>
-  <InspectionBoundaryNotice coverage={result.coverage} compact/>
+  <InspectionBoundaryNotice coverage={result.coverage} compact/>{!assessment&&<p role="note">이전 이력에는 위험 평가가 없습니다. 원본 코드 근거를 표시하며 우선순위를 새로 확정하지 않습니다.</p>}
   <nav className="result-navigation result-list-filters" aria-label="분석 결과 메뉴">
    <button type="button" aria-pressed={['SUMMARY','BLOCKING','REVIEW_REQUIRED','SHOULD_FIX'].includes(view)&&kind==='ALL'} onClick={()=>navigate('SUMMARY')}>문제 목록</button>
    <button type="button" aria-pressed={view==='SUMMARY'&&kind==='CODE'} onClick={()=>{onViewChange('SUMMARY',{kind:'CODE'});setKind('CODE');setSelectedId('');}}>코드</button>
@@ -90,11 +96,11 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
    </>:<>
     {!selected&&!selectedId&&<p role="status">목록에서 확인할 문제를 선택하면 근거와 수정 안내가 열립니다.</p>}
     <div className="problem-list-toolbar" hidden={!!selected}><label>문제 검색<input type="search" value={query} onChange={e=>{setQuery(e.target.value);setPage(0);}} placeholder="문제·파일·패키지·공지"/></label><label>검토 우선순위<select value={priority} onChange={e=>onViewChange(e.target.value==='ALL'?'SUMMARY':e.target.value as ResultView)}><option value="ALL">전체</option><option value="BLOCKING">반드시 처리</option><option value="REVIEW_REQUIRED">추가 검토 필요</option><option value="SHOULD_FIX">수정 권장</option></select></label></div>
-    {(assessment||flowRows.length>0)?<><p hidden={!!selected}>{shown.length}개 표시 항목 · 공지·검토 항목을 포함합니다. 정적 코드 흐름은 기존 Risk/Score와 별도이며 고유 취약점 수가 아닙니다.</p><ul className="problem-list" aria-label="발견된 문제 목록" hidden={!!selected} ref={rows}>{shown.slice(page*20,page*20+20).map(f=><li key={f.findingId}><a href={projectLink(result.projectId??0,'findings',result.reviewId??undefined,view,{kind,findingId:f.findingId})} className="problem-row" data-finding-index={items.indexOf(f)} aria-current={selectedId===f.findingId?'true':undefined} onClick={event=>{if(!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey){event.preventDefault();choose(f.findingId);}}}><span className="problem-row-title">{rowTitle(f)}</span><span>{priorityLabels[f.priority]} · {f.source==='DEPENDENCY'?'외부 라이브러리':f.source==='CODE'?'코드':f.source==='FLOW'?'정적 코드 흐름 · 점수 별도':'분석 확인 필요'}</span><small>{f.advisoryId&&<code>{f.advisoryId} · </code>}{f.sourceFiles.join(', ')||'파일 위치 미기록'}{rowVulnerability(f)&&` · 원본 ${rowVulnerability(f)!.line}행`}</small></a></li>)}</ul>
+    {(items.length>0||assessment)?<><p hidden={!!selected}>{counts.groups}개 표시 그룹 · 원본 표시 {counts.originalItems}개 항목 (룰 탐지 {result.vulnerabilityCount}건 / 저장 공지 매칭 {result.sca?.summary.dependencyVulnerabilities??'미기록'}항목) · 확인된 파일·행 위치 {counts.locations}곳 · 상태 기록 {counts.statusRecorded}건. 사용자 완료 표시 {counts.markedResolved}건은 해결 검증이 아닙니다. 항목별 해결 검증 수는 미집계이며 재검사가 필요합니다.</p><ul className="problem-list" aria-label="발견된 문제 목록" hidden={!!selected} ref={rows}>{groups.slice(page*20,page*20+20).map(g=>{const f=g.items[0];return <li key={g.id}><a href={projectLink(result.projectId??0,'findings',result.reviewId??undefined,view,{kind,findingId:f.findingId})} className="problem-row" data-finding-index={items.indexOf(f)} aria-current={selectedId===f.findingId?'true':undefined} onClick={event=>{if(!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey){event.preventDefault();choose(f.findingId);}}}><span className="problem-row-title">{g.title} — {g.items.length}개 원본 항목</span><span>{g.area.label}</span><span>{f.findingId.startsWith('legacy:')?'우선순위 미기록':priorityLabels[f.priority]} · {f.source==='DEPENDENCY'?'외부 라이브러리':f.source==='CODE'?'코드':f.source==='FLOW'?'정적 코드 흐름 · 점수 별도':'분석 확인 필요'}</span><small>{f.advisoryId&&<code>{f.advisoryId} · </code>}{f.sourceFiles.join(', ')||'파일 위치 미기록'}{rowVulnerability(f)&&` · 원본 ${rowVulnerability(f)!.line}행`}</small></a></li>;})}</ul>
      {selectedId&&!selected&&<p role="status">선택한 항목이 이 검사 또는 현재 필터에 없습니다. 목록에서 확인할 문제를 선택해 주세요.</p>}
      {!shown.length&&<p>현재 필터에 표시할 저장된 항목이 없어요. 전체 안전성을 의미하지 않습니다.</p>}
-     {!selected&&shown.length>20&&<nav aria-label="문제 목록 페이지"><button disabled={page===0} onClick={()=>setPage(page-1)}>이전</button><span>{page+1} / {Math.ceil(shown.length/20)}</span><button disabled={(page+1)*20>=shown.length} onClick={()=>setPage(page+1)}>다음</button></nav>}
-     {selected&&<div className="selected-problem" tabIndex={-1} ref={detail}><button type="button" className="secondary-button" onClick={()=>{const index=items.findIndex(f=>f.findingId===selectedId);choose('');requestAnimationFrame(()=>{const button=[...(rows.current?.querySelectorAll<HTMLAnchorElement>('a')??[])].find(b=>b.dataset.findingIndex===String(index));button?.focus();button?.scrollIntoView({block:'center'});});}}>문제 목록으로 돌아가기</button><h3>선택한 문제 상세</h3>{'flow' in selected?<FlowFindingDetail finding={selected.flow} onEditFile={onEditFile}/>:<FindingCollection result={result} findings={[selected]} statusActions={statusActions} onEditFile={onEditFile} onEditDependency={onEditDependency} detailOnly/>}</div>}
+     {!selected&&groups.length>20&&<nav aria-label="문제 목록 페이지"><button disabled={page===0} onClick={()=>setPage(page-1)}>이전</button><span>{page+1} / {Math.ceil(groups.length/20)}</span><button disabled={(page+1)*20>=groups.length} onClick={()=>setPage(page+1)}>다음</button></nav>}
+     {selected&&<div className="selected-problem" tabIndex={-1} ref={detail}><button type="button" className="secondary-button" onClick={()=>{const index=items.findIndex(f=>f.findingId===(selectedGroup?.id??selectedId));choose('');requestAnimationFrame(()=>{const button=[...(rows.current?.querySelectorAll<HTMLAnchorElement>('a')??[])].find(b=>b.dataset.findingIndex===String(index));button?.focus();button?.scrollIntoView({block:'center'});});}}>문제 목록으로 돌아가기</button><h3>선택한 문제 상세</h3>{selectedGroup&&selectedGroup.items.length>1&&<section className="problem-occurrences" aria-label="그룹의 원본 발생 위치"><h4>{selectedGroup.title} · 원본 {selectedGroup.items.length}건</h4><p>표시 유형을 묶었습니다. 같은 원인 또는 한 번의 수정으로 해결된다는 의미가 아닙니다. 각 위치의 근거·상태를 확인하세요.</p><ul>{selectedGroup.items.slice(occurrencePage*50,occurrencePage*50+50).map(f=>{const l=itemLocation(result,f),v=rowVulnerability(f);return <li key={f.findingId}><button type="button" aria-pressed={selectedId===f.findingId} onClick={()=>choose(f.findingId)}>{l.path||'위치 미기록'}{l.line?` · ${l.line}행`:''} · {f.findingId.startsWith('legacy:')?'우선순위 미기록':f.priority} · {v?.status??'상태 미기록'}</button><details><summary>원본 식별자</summary><p>{f.findingId} · {'flow'in f?f.flow.ruleId:f.ruleId??f.advisoryId}</p></details></li>})}</ul>{selectedGroup.items.length>50&&<nav aria-label="발생 위치 페이지"><button disabled={occurrencePage===0} onClick={()=>setOccurrencePage(n=>n-1)}>이전 위치</button><span>{occurrencePage+1} / {Math.ceil(selectedGroup.items.length/50)}</span><button disabled={(occurrencePage+1)*50>=selectedGroup.items.length} onClick={()=>setOccurrencePage(n=>n+1)}>다음 위치</button></nav>}</section>}{'flow' in selected?<FlowFindingDetail finding={selected.flow} onEditFile={onEditFile}/>:<FindingCollection result={result} findings={[selected]} statusActions={statusActions} onEditFile={onEditFile} onEditDependency={onEditDependency} detailOnly/>}</div>}
     </>:<><p>이전 이력에는 위험 평가가 없습니다. 기존 코드 근거와 라이브러리 결과를 확인하세요.</p><LegacyCodeList result={result} statusActions={statusActions}/></>}
    </>}
   </div>
@@ -143,8 +149,8 @@ export function FindingCollection({ result, findings, statusActions, onEditFile,
         finding={finding} reviewId={result.reviewId} />;
       const vulnerability = vulnerabilityForFinding(result, finding);
       if (finding.source === 'CODE' && vulnerability) return <CodeFindingCard key={finding.findingId} vulnerability={vulnerability}
-        finding={finding} remediation={result.remediation} statusActions={statusActions} onEditFile={onEditFile} />;
-      if (finding.dependency) return <DependencyFindingCard key={finding.findingId} dependency={finding.dependency}
+        finding={finding.findingId.startsWith('legacy:')?undefined:finding} remediation={result.remediation} statusActions={statusActions} onEditFile={onEditFile} />;
+      if (finding.dependency) return <DependencyFindingCard reviewId={result.reviewId} key={finding.findingId} dependency={finding.dependency}
         finding={finding} remediation={result.remediation} intelligence={result.riskAssessment?.threatIntelligence} components={result.sca?.components} support={<DependencyUpdatePlans reviewId={result.reviewId} selectedDependency={finding.dependency} onEditDependency={onEditDependency} onEditFile={onEditFile}/>}/>;
       const guide = findingGuidance(finding);
       return <article className="vulnerability-item action-finding" key={finding.findingId}>

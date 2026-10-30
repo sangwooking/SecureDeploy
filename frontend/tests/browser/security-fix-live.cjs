@@ -34,7 +34,7 @@ const facts=r=>({reviewId:r.reviewId,score:r.securityScore,risk:r.riskAssessment
    await page.goto(`${origin}/#/projects/${base.projectId}/findings?review=${base.reviewId}&view=SUMMARY`);
    await resultView(page,kind==='rule'?'수정 권장':'배포 전 직접 확인할 부분');
    if(kind==='flow')assert.equal(before.serverAnalysis.validatedFindings[0].ruleId,'TS_SENSITIVE_DATA_EXPOSURE');
-   await page.getByRole('button',{name:'이 파일 수정하기',exact:true}).first().click();
+   await page.getByRole('button',{name:'이 문제 수정하기',exact:true}).first().click();
    const created=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().includes(`/github/${base.reviewId}`));
    await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).click();workspace=await(await created).json();
    await page.locator('#source-code').waitFor();

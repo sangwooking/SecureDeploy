@@ -22,7 +22,7 @@ public final class DependencyUpdateBrowserServer {
     static Path root;
     static final ObjectMapper json=new ObjectMapper().findAndRegisterModules();
     static List<SourceArchive.Entry> entries(String name) throws Exception {
-        if(!Set.of("runwhen","urisai","semantic-risk","semantic-normal","semantic-unknown","semantic-duplicate","semantic-invalid","patch-express","patch-settings","patch-deno","patch-unknown").contains(name))throw new IllegalArgumentException();
+        if(!Set.of("runwhen","urisai","semantic-risk","semantic-normal","semantic-unknown","semantic-duplicate","semantic-invalid","patch-express","patch-settings","patch-deno","patch-unknown","ux-local-storage","ux-http-tests","ux-next").contains(name))throw new IllegalArgumentException();
         Path dir=root.resolve(name).resolve("before");var entries=new ArrayList<SourceArchive.Entry>();
         try(var files=Files.walk(dir)){for(Path p:files.filter(Files::isRegularFile).sorted().toList()){
             if(Files.isSymbolicLink(p))throw new IllegalArgumentException("NO_SYMLINKS");
@@ -69,8 +69,8 @@ public final class DependencyUpdateBrowserServer {
         if(phase4&&live)throw new IllegalStateException("AI04_MODEL_CALL_NOT_APPROVED");
         var app=advice?new SpringApplicationBuilder(SecureDeployApplication.class,Replay.class,DependencyAdviceBrowserServer.AdviceFixture.class):new SpringApplicationBuilder(SecureDeployApplication.class,Replay.class);
         var context=app.run(
-                "--server.address=127.0.0.1","--server.port="+(phase4?58074:advice?58043:58042),
-                "--spring.datasource.url="+(phase5?"jdbc:postgresql://127.0.0.1:58057/fix01_mock":"jdbc:h2:mem:ai02_isolated;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE"),
+                "--server.address=127.0.0.1","--server.port="+(phase4?58084:advice?58043:58042),
+                "--spring.datasource.url="+(phase5?"jdbc:postgresql://127.0.0.1:58057/ux03_mock":"jdbc:h2:mem:ai02_isolated;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE"),
                 "--spring.datasource.username="+(phase5?"ai05_fixture":"sa"),"--spring.datasource.password=","--spring.datasource.driver-class-name="+(phase5?"org.postgresql.Driver":"org.h2.Driver"),
                 "--spring.jpa.hibernate.ddl-auto="+(phase5?("1".equals(System.getenv("SECUREDEPLOY_FIX01_RESTART"))?"validate":"update"):"create-drop"),"--spring.sql.init.mode=never",
                 "--securedeploy.jwt.secret=ai02-synthetic-isolated-only-signing-key-0000001",
@@ -78,11 +78,11 @@ public final class DependencyUpdateBrowserServer {
                 "--securedeploy.storage.temp-dir="+root.resolve("api-temp"),"--securedeploy.sca.enabled=true","--securedeploy.editing.npm-generation-enabled="+(phase4&&"1".equals(System.getenv("SECUREDEPLOY_AI04_NPM"))),
                 "--securedeploy.threat-intelligence.enabled=false","--logging.level.root=OFF","--spring.main.banner-mode=off");
         try(var db=context.getBean(javax.sql.DataSource.class).getConnection()){
-            if(!(phase5?db.getMetaData().getURL().equals("jdbc:postgresql://127.0.0.1:58057/fix01_mock"):db.getMetaData().getURL().startsWith("jdbc:h2:mem:ai02_isolated"))){context.close();throw new IllegalStateException("H2_ONLY");}
+            if(!(phase5?db.getMetaData().getURL().equals("jdbc:postgresql://127.0.0.1:58057/ux03_mock"):db.getMetaData().getURL().startsWith("jdbc:h2:mem:ai02_isolated"))){context.close();throw new IllegalStateException("H2_ONLY");}
         }
         if("1".equals(System.getenv("SECUREDEPLOY_FIX01_RESTART"))){
             if(!phase5||!phase4)throw new IllegalStateException("FIX01_ISOLATED_RESTART_ONLY");
-            Runtime.getRuntime().addShutdownHook(new Thread(context::close));System.out.println("FIX01_RESTART_READY PERSISTED_DB port=58074");return;
+            Runtime.getRuntime().addShutdownHook(new Thread(context::close));System.out.println("FIX01_RESTART_READY PERSISTED_DB port=58084");return;
         }
         var users=context.getBean(UserRepository.class);var password=context.getBean(org.springframework.security.crypto.password.PasswordEncoder.class).encode("Synthetic-AI02-135!");
         var user=users.saveAndFlush(new UserEntity("ai02-owner@example.invalid",password,"AI02 local evaluation"));
@@ -97,7 +97,7 @@ public final class DependencyUpdateBrowserServer {
             var saved=context.getBean(com.securedeploy.persistence.service.ReviewPersistenceService.class).saveReview(project,outcome.response().withSourceMetadata(metadata),ReviewSourceType.GITHUB,project.getRepositoryUrl(),outcome.snippetGroup(),outcome.intelligence(),ScanMode.STANDARD,outcome.comparisonContext());
             context.getBean(com.securedeploy.project.progress.ReviewProgressService.class).complete(saved);
         }
-        if(phase4)for(String name:(phase5?java.util.List.of("semantic-risk","semantic-normal","semantic-unknown","semantic-duplicate","semantic-invalid","patch-express","patch-settings","patch-deno","patch-unknown"):java.util.List.of("semantic-risk","semantic-normal","semantic-unknown","semantic-duplicate","semantic-invalid"))){
+        if(phase4)for(String name:(phase5?java.util.List.of("semantic-risk","semantic-normal","semantic-unknown","semantic-duplicate","semantic-invalid","patch-express","patch-settings","patch-deno","patch-unknown","ux-local-storage","ux-http-tests","ux-next"):java.util.List.of("semantic-risk","semantic-normal","semantic-unknown","semantic-duplicate","semantic-invalid"))){
             var actor=users.saveAndFlush(new UserEntity(name+"@example.invalid",password,"CONTROL SYNTHETIC"));
             var project=new ProjectEntity("CONTROL "+name,ReviewSourceType.GITHUB,"https://github.com/fixture/"+name);project.assignUser(actor);context.getBean(ProjectRepository.class).saveAndFlush(project);
             var outcome=context.getBean(com.securedeploy.review.service.SecurityReviewFacade.class).analyzeWorkspace("CONTROL "+name,root.resolve(name).resolve("before"));
@@ -105,6 +105,6 @@ public final class DependencyUpdateBrowserServer {
             var saved=context.getBean(com.securedeploy.persistence.service.ReviewPersistenceService.class).saveReview(project,outcome.response().withSourceMetadata(metadata),ReviewSourceType.GITHUB,project.getRepositoryUrl(),outcome.snippetGroup(),outcome.intelligence(),ScanMode.STANDARD,outcome.comparisonContext());context.getBean(com.securedeploy.project.progress.ReviewProgressService.class).complete(saved);
         }
         Runtime.getRuntime().addShutdownHook(new Thread(context::close));
-        System.out.println("DEPENDENCY_READY "+(phase5?"ISOLATED_POSTGRES":"H2_ONLY")+" port="+(phase4?58074:advice?58043:58042)+" provider="+(advice?(live?"LIVE_MAX_TWO_PUBLIC_METADATA_ONLY":"MOCK"):"TEMPLATE")+" OFFICIAL_FEED_REPLAY PINNED_REAL_SOURCE");
+        System.out.println("DEPENDENCY_READY "+(phase5?"ISOLATED_POSTGRES":"H2_ONLY")+" port="+(phase4?58084:advice?58043:58042)+" provider="+(advice?(live?"LIVE_MAX_TWO_PUBLIC_METADATA_ONLY":"MOCK"):"TEMPLATE")+" OFFICIAL_FEED_REPLAY PINNED_REAL_SOURCE");
     }
 }

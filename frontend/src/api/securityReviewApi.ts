@@ -260,3 +260,8 @@ export async function getDependencyAdvice(reviewId:number,id:string):Promise<imp
 }
 
 export async function fetchUiCapabilities(){const response=await fetch(`${API_BASE_URL}/api/ui-capabilities`,{headers:authHeaders(),cache:'no-store',signal:AbortSignal.timeout(10000)});return parseJsonResponse<import('../components/useUiCapabilities').UiCapabilities>(response,'지원 기능 확인 실패');}
+
+export async function refreshSavedAdvisory(reviewId:number,findingId:string):Promise<Omit<SupplementalDependencyResponse,'provenance'>&{provenance:'OFFICIAL_METADATA_REFRESH'}>{
+ const response=await fetch(`${API_BASE_URL}/api/reviews/${reviewId}/dependencies/advisory-details`,{method:'POST',cache:'no-store',headers:jsonHeaders(),body:JSON.stringify({findingId}),signal:AbortSignal.timeout(15000)});
+ return parseJsonResponse<Omit<SupplementalDependencyResponse,'provenance'>&{provenance:'OFFICIAL_METADATA_REFRESH'}>(response,'공식 공지 보완 조회 실패');
+}

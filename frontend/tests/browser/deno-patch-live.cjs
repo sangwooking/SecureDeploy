@@ -24,7 +24,7 @@ try{for(const width of widths)for(const kind of ['fixed','selected']){
   const history=await get('/api/reviews'),base=history.find(r=>r.sourceType==='GITHUB'),before=await get(`/api/reviews/${base.reviewId}`),flow=before.serverAnalysis.validatedFindings[0];
   assert.equal(flow.ruleId,'TS_SENSITIVE_DATA_EXPOSURE');
   await page.goto(`${origin}/#/projects/${base.projectId}/findings?review=${base.reviewId}&view=SUMMARY`);await resultView(page,'배포 전 직접 확인할 부분');
-  await page.getByLabel('서버 코드 흐름 검사',{exact:true}).getByRole('button',{name:'이 파일 수정하기',exact:true}).first().click();
+  await page.getByLabel('서버 코드 흐름 검사',{exact:true}).getByRole('button',{name:'이 문제 수정하기',exact:true}).first().click();
   const acquire=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith(`/github/${base.reviewId}`));
   await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).click();workspace=await(await acquire).json();await page.locator('#source-code').waitFor();
   const original=await page.locator('#source-code').inputValue(),file=workspace.files.find(f=>f.path===flow.location.filePath),ai=page.getByLabel('보안 수정안',{exact:true});

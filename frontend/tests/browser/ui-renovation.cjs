@@ -20,10 +20,10 @@ try{for(const [width,email] of [[1440,'editing-browser'],[1024,'scan-1440'],[768
  await page.screenshot({path:`/private/tmp/sd-ui-after-new-${width}.png`});
  await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);await page.getByRole('navigation',{name:'분석 결과 메뉴'}).waitFor();
  await page.screenshot({path:`/private/tmp/sd-ui-after-summary-${width}.png`});
- await resultView(page,'수정 권장');await page.getByRole('button',{name:'이 파일 수정하기',exact:true}).first().waitFor();
+ await resultView(page,'수정 권장');await page.getByRole('button',{name:'이 문제 수정하기',exact:true}).first().waitFor();
  const card=page.locator('.action-finding').first(),pad=await card.evaluate(e=>parseFloat(getComputedStyle(e).paddingLeft));assert.ok(pad>=16);
  await page.keyboard.press('Tab');await card.locator('summary').first().focus();assert.ok(await card.locator('summary').first().evaluate(e=>getComputedStyle(e).outlineStyle!=='none'));
- await page.screenshot({path:`/private/tmp/sd-ui-after-finding-${width}.png`});await page.getByRole('button',{name:'이 파일 수정하기',exact:true}).first().click();
+ await page.screenshot({path:`/private/tmp/sd-ui-after-finding-${width}.png`});await page.getByRole('button',{name:'이 문제 수정하기',exact:true}).first().click();
  await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).click();await page.locator('#source-code').waitFor();
  assert.equal(await page.locator('#source-code').inputValue(),'debug=true\nserver.error.include-stacktrace=always\n');
  assert.ok(await page.locator('#source-code').evaluate(e=>e.getBoundingClientRect().width)>=(width>=1024?500:width>=768?500:220));

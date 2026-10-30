@@ -29,9 +29,10 @@ export function DependencyUpdatePlans({reviewId,onEditDependency,selectedDepende
   const selectedIndex=matching.length===1?matching[0]:-1;
   const shownPlans=result?.plans.filter((_,i)=>!selectedDependency||i===selectedIndex)??[];
   return <section className="dependency-update-plans" aria-label="근거 기반 의존성 수정 검토">
-    <h3>프로젝트에 맞는 업데이트 검토</h3>
-    <p>저장된 공지·잠금 버전·상위 선언을 연결한 검토 계획입니다. AI 코드 생성이나 적용 완료를 의미하지 않습니다.</p>
+    <h3>업데이트 방법 확인</h3>
+    <p>현재 버전 → 공지의 수정 경계를 대조한 뒤 선언·잠금 파일과 호환성을 확인합니다. 실제 변경 생성은 Workspace에서 지원 계약을 확인한 경우에만 제공합니다. AI 코드 생성이나 적용 완료를 의미하지 않습니다.</p>
     <p className="source-label">근거 기반 안내 · AI 제안과 구분</p>
+    {selectedDependency&&selectedDependency.ecosystem==='NPM'&&!selectedDependency.sourceFiles.includes('package-lock.json')&&<p role="note">이 항목은 루트 package-lock.json 계약으로 확인되지 않았습니다. 중첩 프로젝트·다른 잠금 형식의 npm 파일 자동 생성은 지원하지 않으며 실제 선언 위치에서 수동 업데이트를 검토하세요.</p>}
     {selectedDependency&&<><p>{selectedDependency.packageName} {selectedDependency.installedVersion}에 연결된 공지와 상위 의존성을 확인하고, 패키지 관리자로 변경 파일을 생성한 뒤 호환성을 검증하세요.</p><p>공지의 수정 버전은 AI 추천이나 프로젝트 전체의 안전한 버전을 의미하지 않습니다.</p></>}
     {selectedDependency&&onEditFile&&selectedDependency.sourceFiles[0]&&<button type="button" className="primary-button" onClick={()=>onEditFile(selectedDependency.sourceFiles[0])}>수정 작업으로 이동</button>}
     {!reviewId?<p>저장된 검사에서 업데이트 근거를 확인할 수 있어요.</p>:cap.loading||busy?<p role="status">업데이트 계획 지원 확인 중…</p>:!cap.value?.dependencyPlans?<p role="note">{cap.problem?.message??'현재 서버에서 업데이트 계획을 지원하지 않아요.'} 수동으로 수정할 수 있습니다.</p>:null}
@@ -43,7 +44,7 @@ export function DependencyUpdatePlans({reviewId,onEditDependency,selectedDepende
       {selectedDependency&&selectedIndex===-1&&<p role="note">이 공지에 연결된 업데이트 근거가 없거나 여러 계획과 겹칩니다. 다른 공지의 AI 의견을 대신 표시하지 않습니다.</p>}
       {!cap.value?.providerAvailable&&<p>AI Provider 설정이 필요해요. 아래 근거 기반 계획과 수동 수정을 이용할 수 있습니다.</p>}
       {shownPlans.map((p,i)=><details key={`${p.ecosystem}:${p.packageName}:${p.lockedVersion}:${p.advisoryId}:${i}`}>
-        <summary>{p.packageName}@{p.lockedVersion} · {p.advisoryId} · 검토 필요</summary>
+        <summary>{p.packageName}@{p.lockedVersion} → {p.sameMajorCandidates.join(', ')||'같은 major 후보 미확인'} · {p.advisoryId} · 적용 가능 미확인</summary>
         <h4>확인된 근거</h4><p>{p.explanation}</p>
         <p>{kind[p.dependencyKind]??kind.UNKNOWN} · 버전 근거: {p.sourceFiles.join(', ')||'미확인'}</p>
         <p>이 공지에 기록된 수정 버전: {p.fixedVersionEvidence.join(', ')||'확인되지 않음'}</p>

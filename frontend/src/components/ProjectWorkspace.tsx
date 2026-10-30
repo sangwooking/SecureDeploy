@@ -4,7 +4,7 @@ import type { ProjectDetail } from '../types/workspace';
 import type { ReviewHistoryResponse, ScanMode, SecurityReviewResponse } from '../types/securityReview';
 import type { UploadPolicy } from '../types/uploadPolicy';
 import { PriorityCounts, dateLabel, reviewStatus } from './WorkspaceSummary';
-import { projectLink, projectTabs, type WorkspaceRoute } from './workspaceRoute';
+import { projectLink, projectTabs, parseWorkspaceRoute, type WorkspaceRoute } from './workspaceRoute';
 import { ProjectReviewResult } from './ProjectReviewResult';
 import { RescanForm } from './RescanForm';
 import { GitHubSourceInfo } from './GitHubSourceInfo';
@@ -71,7 +71,9 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
     <button className="secondary-button" onClick={() => setRevision(value => value + 1)}>다시 불러오기</button></section>;
   const { project, history, review } = data;
   const latestSelected = review?.reviewId === project.latestReview?.reviewId;
-  const editingReviewId=review?.sourceType==='WORKSPACE'&&review.workspaceScan?.baselineVerified&&history.some(h=>h.reviewId===review.workspaceScan?.originalReviewId)?review.workspaceScan.originalReviewId:route.reviewId;
+  const previousSelection=parseWorkspaceRoute(lastResults.current?.href??'');
+  const editingReviewId=review?.sourceType==='WORKSPACE'&&review.workspaceScan?.baselineVerified&&history.some(h=>h.reviewId===review.workspaceScan?.originalReviewId)?review.workspaceScan.originalReviewId:route.reviewId??review?.reviewId;
+  const editSelection=route.selection??(previousSelection.page==='project'&&previousSelection.projectId===route.projectId&&previousSelection.reviewId===editingReviewId?previousSelection.selection:undefined);
   return <section className="project-workspace">
     <p className="result-breadcrumb"><a href="#/projects">내 프로젝트</a> / {project.name}</p>
     <header className="workspace-section project-heading"><p className="eyebrow">프로젝트</p><h2>{project.name}</h2>
@@ -80,7 +82,7 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
       <div className="project-heading-meta"><strong className={`policy-label policy-${project.latestReview?.riskSummary?.deploymentAssessment.toLowerCase() ?? 'unknown'}`}>{reviewStatus(project.latestReview)}</strong><p>최근 분석: {dateLabel(project.latestReview?.createdAt)}</p></div>
     </header>
     <details className="project-more"><summary>프로젝트 정보·관리</summary><a href={projectLink(project.projectId,'settings')}>프로젝트 설정·삭제</a>{project.repositoryUrl&&<p>{project.repositoryUrl}</p>}</details>
-    <nav className="project-navigation" aria-label="프로젝트 메뉴">{projectTabs.map(tab => <a key={tab.id} href={tab.id==='findings'&&lastResults.current?.projectId===project.projectId?lastResults.current.href:projectLink(project.projectId, tab.id,tab.id==='edit'?editingReviewId:undefined)} aria-current={route.tab === tab.id ? 'page' : undefined}>{tab.label}</a>)}</nav>
+    <nav className="project-navigation" aria-label="프로젝트 메뉴">{projectTabs.map(tab => <a key={tab.id} href={tab.id==='findings'&&lastResults.current?.projectId===project.projectId?lastResults.current.href:projectLink(project.projectId, tab.id,tab.id==='edit'?editingReviewId:undefined,undefined,tab.id==='edit'?editSelection:undefined)} aria-current={route.tab === tab.id ? 'page' : undefined}>{tab.label}</a>)}</nav>
     {notice && <p role="status" className="feedback-message feedback-success">{notice}</p>}
     {error && <p role="alert" className="error-message">{error}</p>}
     {busy && <p role="status">요청을 처리하고 있습니다. 잠시 기다려 주세요.</p>}
@@ -88,7 +90,7 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
       {review ? <>
         {!latestSelected && <p className="review-caution">과거 분석 #{review.reviewId}의 저장된 결과입니다. 현재 상태가 아닙니다. <a href={projectLink(project.projectId, 'findings')}>최신 분석 보기</a></p>}
         <ProjectReviewResult key={`${review.reviewId}:${revision}`} result={review} view={route.view} selection={route.selection}
-          editing={route.tab==='edit'} onEditingChange={value=>{window.location.hash=projectLink(project.projectId,value?'edit':'findings',route.reviewId);}}
+          editing={route.tab==='edit'} onEditingChange={(value,selection)=>{window.location.hash=projectLink(project.projectId,value?'edit':'findings',route.reviewId??review.reviewId,route.view,selection);}}
           onView={(view,selection) => { window.location.hash = projectLink(project.projectId, view==='PROGRESS'?'history':'findings', route.reviewId??review.reviewId??undefined, view,selection); }}
           onRescan={() => { window.location.hash = projectLink(project.projectId, 'rescan'); }} />
       </> : <><p>저장된 검사 결과가 없어 수정할 원본을 아직 확인할 수 없어요.</p><a className="primary-button" href={projectLink(project.projectId,'rescan')}>프로젝트 검사하기</a></>}

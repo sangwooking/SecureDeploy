@@ -398,6 +398,31 @@ class ScaReviewIntegrationTest {
         assertThat(error.toString()).doesNotContain("synthetic-private-source", "/tmp/");
         assertThat(jdbc.queryForObject("select count(*) from reviews", Integer.class)).isEqualTo(before);
     }
+    @Test void savedAdvisoryRefreshIsOwnedReadOnlyAndDoesNotReplaceOriginalRisk() throws Exception {
+        String owner=signup();var seed=upload(owner);long review=seed.path("reviewId").asLong();var before=json(mvc.perform(get("/api/reviews/"+review).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());String finding=before.at("/riskAssessment/dependencyFindings/0/findingId").asText();
+        var response=json(mvc.perform(post("/api/reviews/"+review+"/dependencies/advisory-details").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(Map.of("findingId",finding))))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        assertThat(response.path("provenance").asText()).isEqualTo("OFFICIAL_METADATA_REFRESH");assertThat(response.path("status").asText()).isEqualTo("COMPLETE");assertThat(response.at("/findings/0/fixedVersions/0").asText()).isEqualTo("4.17.21");
+        var after=json(mvc.perform(get("/api/reviews/"+review).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        assertThat(after).isEqualTo(before);
+    }
+    @Test void savedAdvisoryRejectsForeignAndUnrelatedIdentityBeforeLookup() throws Exception {
+        String owner=signup();var seed=upload(owner);long review=seed.path("reviewId").asLong();var before=json(mvc.perform(get("/api/reviews/"+review).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());String finding=before.at("/riskAssessment/dependencyFindings/0/findingId").asText();clearInvocations(provider);
+        mvc.perform(post("/api/reviews/"+review+"/dependencies/advisory-details").header("Authorization","Bearer "+signup()).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(Map.of("findingId",finding)))).andExpect(status().isForbidden());
+        mvc.perform(post("/api/reviews/"+review+"/dependencies/advisory-details").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content("{\"findingId\":\"other-advisory\"}")).andExpect(status().isNotFound());verify(provider,never()).lookup(anyList());
+        mvc.perform(get("/api/ux03-nonexistent").header("Authorization","Bearer "+owner)).andExpect(status().isNotFound());
+    }
+    @Test void missingSavedFixMetadataCanBeSupplementedWithoutMutatingSnapshot() throws Exception {
+        var fresh=new java.util.concurrent.atomic.AtomicBoolean(false);
+        doAnswer(i->{List<DependencyComponent> c=i.getArgument(0);var d=c.stream().filter(x->x.packageName().equals("lodash")).findFirst().orElseThrow();
+            var item=new DependencyVulnerability(ScaEcosystem.NPM,d.packageName(),d.version(),"GHSA-fixture-1",List.of("CVE-2099-0001"),"Controlled metadata",Severity.HIGH,7.5,List.of(),fresh.get()?List.of("4.17.21"):List.of(),null,null,List.of(),List.of(d.sourceFile()));
+            return new VulnerabilityDataSource.LookupResult(List.of(item),c.stream().map(DependencyComponent::identity).collect(java.util.stream.Collectors.toSet()),false,List.of());}).when(provider).lookup(anyList());
+        String owner=signup();var seed=upload(owner);long review=seed.path("reviewId").asLong();var before=json(mvc.perform(get("/api/reviews/"+review).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        assertThat(before.at("/sca/dependencyVulnerabilities/0/fixedVersions").isEmpty()).isTrue();fresh.set(true);
+        var supplemented=json(mvc.perform(post("/api/reviews/"+review+"/dependencies/advisory-details").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(Map.of("findingId",before.at("/riskAssessment/dependencyFindings/0/findingId").asText())))).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        assertThat(supplemented.at("/findings/0/fixedVersions/0").asText()).isEqualTo("4.17.21");
+        assertThat(json(mvc.perform(get("/api/reviews/"+review).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray())).isEqualTo(before);
+    }
     private JsonNode upload(String token) throws Exception {
         return upload(token, Map.of("package-lock.json", fixture("package-lock.json")));
     }

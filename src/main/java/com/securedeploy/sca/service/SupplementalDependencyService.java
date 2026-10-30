@@ -75,6 +75,24 @@ public class SupplementalDependencyService {
         } finally { end(userId); }
     }
 
+    /** Refresh only public metadata for an already-owned saved advisory. Never persists or re-scores. */
+    public SupplementalDependencyResponse savedAdvisory(Long reviewId,String findingId) {
+        long user=currentUser.currentUserId();var review=reviews.findReviewDetail(reviewId,user);
+        var risk=review.riskAssessment();var finding=risk==null?null:risk.dependencyFindings().stream()
+                .filter(f->f.findingId().equals(findingId)&&f.dependency()!=null).findFirst().orElse(null);
+        if(finding==null)throw new SecureDeployException(HttpStatus.NOT_FOUND,"저장된 보안 공지에 접근할 수 없습니다.");
+        var dep=finding.dependency();var component=VersionClassifier.component(dep.ecosystem(),dep.packageName(),dep.installedVersion(),null,null,"saved-advisory",0);
+        if(component.versionResolution()!=VersionResolution.EXACT)throw invalid("정확한 잠금·선언 버전을 확인해야 합니다.");
+        if(!properties.enabled())return new SupplementalDependencyResponse("OFFICIAL_METADATA_REFRESH",Status.DISABLED,Instant.now(),component.ecosystem(),component.packageName(),component.version(),List.of());
+        begin(user);
+        try {var result=dataSource.lookup(List.of(component));var ids=new HashSet<String>();ids.add(dep.osvId().toUpperCase(Locale.ROOT));dep.aliases().forEach(id->ids.add(id.toUpperCase(Locale.ROOT)));
+            var matches=result.findings().stream().filter(d->d.ecosystem()==dep.ecosystem()&&d.packageName().equals(dep.packageName())&&d.installedVersion().equals(dep.installedVersion())
+                    &&(ids.contains(d.osvId().toUpperCase(Locale.ROOT))||d.aliases().stream().anyMatch(id->ids.contains(id.toUpperCase(Locale.ROOT))))).toList();
+            var status=matches.isEmpty()?Status.UNAVAILABLE:result.incomplete()||!result.analyzedIdentities().contains(component.identity())?Status.PARTIAL:Status.COMPLETE;
+            return new SupplementalDependencyResponse("OFFICIAL_METADATA_REFRESH",status,Instant.now(),component.ecosystem(),component.packageName(),component.version(),matches);
+        }catch(RuntimeException failed){return new SupplementalDependencyResponse("OFFICIAL_METADATA_REFRESH",Status.UNAVAILABLE,Instant.now(),component.ecosystem(),component.packageName(),component.version(),List.of());}
+        finally{end(user);}
+    }
     private SupplementalDependencyResponse response(Status status, DependencyComponent c, List<DependencyVulnerability> findings) {
         return new SupplementalDependencyResponse("USER_PROVIDED", status, Instant.now(), c.ecosystem(), c.packageName(), c.version(), findings);
     }

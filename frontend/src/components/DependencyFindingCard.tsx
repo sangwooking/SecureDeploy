@@ -1,3 +1,6 @@
+import {useEffect,useState} from 'react';
+import {AdvisoryMetadataRefresh} from './AdvisoryMetadataRefresh';
+import {currentSeriesFix,versionBasis} from './dependencyVersion';
 import { EvidenceSupportLayout } from './EvidenceSupportLayout';
 import type { ReactNode } from 'react';
 import type { DependencyComponent, DependencyVulnerability, RemediationSnapshot, RiskFinding, ThreatIntelligenceSnapshot } from '../types/securityReview';
@@ -7,11 +10,15 @@ import { ThreatIntelligenceDetails } from './ThreatIntelligenceDetails';
 import { priorityLabels } from './reviewPresentation';
 import { dependencyText, knownDependencyValue, unconfirmed } from './dependencyGuidance';
 
-export function DependencyFindingCard({ dependency: dep, finding, remediation, intelligence, components, support, embedded = false }: {
-  dependency: DependencyVulnerability; finding?: RiskFinding;
+export function DependencyFindingCard({ dependency: original, reviewId, finding, remediation, intelligence, components, support, embedded = false }: {
+  reviewId?:number|null;dependency: DependencyVulnerability; finding?: RiskFinding;
   remediation?: RemediationSnapshot | null; intelligence?: ThreatIntelligenceSnapshot | null;
   components?: DependencyComponent[]; support?: ReactNode; embedded?: boolean;
 }) {
+  const [supplement,setSupplement]=useState<{original:DependencyVulnerability;reviewId?:number|null;value:DependencyVulnerability}|null>(null);
+  useEffect(()=>setSupplement(null),[reviewId,original]);
+  const dep=supplement?.original===original&&supplement.reviewId===reviewId?supplement.value:original;
+  const fixed=currentSeriesFix(dep);
   const knownExploited = [dep.osvId, ...dep.aliases].some(id => intelligence?.cves[id.toUpperCase()]?.kev.knownExploited === true);
   const evidence=<><span className="source-label">SCA 보안 공지 · 실제 영향은 추가 확인</span>
     <span className={`risk-badge risk-${finding?.priority.toLowerCase() ?? 'review_required'}`}>
@@ -25,10 +32,11 @@ export function DependencyFindingCard({ dependency: dep, finding, remediation, i
     <dl className="dependency-versions">
       <div><dt>라이브러리</dt><dd>{dependencyText(dep.packageName)}</dd></div>
       <div><dt>현재 버전</dt><dd>{dependencyText(dep.installedVersion)}</dd></div>
-      <div><dt>공지의 수정 버전 근거</dt><dd><details><summary>기록된 수정 버전 보기</summary>{dep.fixedVersions.map(knownDependencyValue).filter(Boolean).join(', ') || unconfirmed}</details></dd></div>
+      <div><dt>공지의 수정 버전 근거</dt><dd><strong>{fixed??'현재 계열의 수정 경계 미확인'}</strong><p>공식 공지의 수정 경계 · 적용 가능성/호환성 미확인</p><details><summary>모든 수정 버전 근거</summary>{dep.fixedVersions.map(knownDependencyValue).filter(Boolean).join(', ') || unconfirmed}</details></dd></div>
       <div><dt>{dep.ecosystem === 'PYPI' ? '의존성 선언·연결 위치' : '버전을 확인한 파일'}</dt><dd className="finding-location">{dependencyText(dep.sourceFiles.join(', '))}</dd></div>
     </dl>
-    <DependencyContextDetails locations={dependencyLocations(dep, components)} />
+    {original.fixedVersions.length===0&&<AdvisoryMetadataRefresh reviewId={reviewId} finding={finding} dependency={original} onMetadata={value=>setSupplement({original,reviewId,value})}/>}
+    <p>{versionBasis(dep.sourceFiles)}</p><details><summary>상위 의존성과 선언 위치</summary><DependencyContextDetails locations={dependencyLocations(dep, components)} /></details>
     <details className="action-details"><summary>업데이트 방법 보기</summary>
       <h4>내가 해야 할 일</h4>
       <ol>
@@ -43,7 +51,7 @@ export function DependencyFindingCard({ dependency: dep, finding, remediation, i
       <h4>알려진 보안 문제</h4><p>{dependencyText(dep.summary)}</p>
       {finding && <p>{finding.priorityReason}</p>}
     </details>
-    <FindingRemediation finding={finding} snapshot={remediation} />
+    <details><summary>저장된 AI 설명</summary><FindingRemediation finding={finding} snapshot={remediation} /></details>
     <details className="technical-details"><summary>기술 정보 보기</summary>
       <p className="finding-location"><strong>위치</strong> <code>{dep.sourceFiles.join(', ') || '저장된 위치 없음'}</code></p>
       <dl className="technical-grid">

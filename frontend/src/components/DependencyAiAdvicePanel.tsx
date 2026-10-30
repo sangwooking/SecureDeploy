@@ -26,7 +26,7 @@ export function DependencyAiAdvicePanel({reviewId,evidence,onEditDependency,sele
   {!provider?.available&&<p role="note">AI Provider가 비활성화되어 있거나 준비되지 않았습니다. 기존 근거 기반 한국어 안내를 사용할 수 있습니다.</p>}
   <div className="advice-request-controls"><label>AI 수정 방향을 요청할 공지<select value={choice} disabled={busy||!provider?.available} onChange={e=>{setChoice(e.target.value);setView(null);setConsent(false);}}><option value="">항목 선택</option>{eligible.map(({p,index})=><option key={index} value={index}>{p.packageName}@{p.lockedVersion} · {p.advisoryId}</option>)}</select></label>
    <button type="button" className="secondary-button" disabled={busy||!provider?.available||choice===''||!eligible.some(e=>String(e.index)===choice)} onClick={()=>void perform(()=>prepareDependencyAdvice(reviewId,evidence.evidenceHash,Number(choice)))}>AI 전송 범위 확인</button></div>
-  {!eligible.length&&<p>정확한 npm 잠금 버전·선언 경로·동일 major 수정 후보를 연결할 수 있는 항목이 없습니다.</p>}
+  {!eligible.length&&<p>저장된 계획에 정확한 npm 잠금 버전·확인된 선언 경로·동일 major 수정 후보를 모두 연결할 수 있는 항목이 없습니다. AI 요청을 비활성화했습니다. 별도 공식 메타데이터 조회는 원본 계획을 자동 변경하지 않습니다. 원문 공지에 따른 수동 수정 또는 새 기준 검사를 이용하세요.</p>}
   {error&&<p role="alert">{error}</p>}
   {view&&<div className="advice-response">
    <p className="source-label source-label-advice">{providerOriginLabel(view.provider.origin,view.provider.name)}</p>

@@ -1,3 +1,4 @@
+import {editContext,problemItems} from './problemGroups';
 import { useEffect, useRef, useState } from 'react';
 import { downloadAiReviewReport, downloadReviewReport, updateVulnerabilityStatus } from '../api/securityReviewApi';
 import type { SecurityReviewResponse, Vulnerability, VulnerabilityStatus } from '../types/securityReview';
@@ -8,7 +9,7 @@ import type { ResultView } from './reviewPresentation';
 import { SourceEditingWorkspace } from './SourceEditingWorkspace';
 
 export function ProjectReviewResult({ result, view, onView, onRescan, editing: editingProp, onEditingChange, selection }: {
-  result: SecurityReviewResponse; view: ResultView; onView: (view: ResultView, selection?: ResultSelection) => void; selection?:ResultSelection; onRescan: () => void; editing?:boolean; onEditingChange?:(value:boolean)=>void;
+  result: SecurityReviewResponse; view: ResultView; onView: (view: ResultView, selection?: ResultSelection) => void; selection?:ResultSelection; onRescan: () => void; editing?:boolean; onEditingChange?:(value:boolean,selection?:ResultSelection)=>void;
 }) {
   const capabilities=useUiCapabilities();
   const [current, setCurrent] = useState(result);
@@ -18,7 +19,7 @@ export function ProjectReviewResult({ result, view, onView, onRescan, editing: e
   const [error, setError] = useState('');
   const [dependencyAdviceId,setDependencyAdviceId]=useState<string>();
   const [editingLocal, setEditingLocal] = useState(false);
-  const editing=editingProp??editingLocal;const setEditing=(value:boolean)=>{setEditingLocal(value);onEditingChange?.(value);};
+  const editing=editingProp??editingLocal;const setEditing=(value:boolean,next=selection)=>{setEditingLocal(value);onEditingChange?.(value,next);};
   const [editingPath, setEditingPath] = useState<string>();
   useEffect(()=>{if(!editing){setEditingPath(undefined);setDependencyAdviceId(undefined);}},[editing]);
   const active = useRef(true);
@@ -46,11 +47,12 @@ export function ProjectReviewResult({ result, view, onView, onRescan, editing: e
     } catch (e) { if (active.current) setError(e instanceof Error ? e.message : '리포트를 다운로드하지 못했습니다.'); }
     finally { if (active.current) setReport(null); }
   };
-  if (editing) return <SourceEditingWorkspace embedded key={current.reviewId} result={current} initialPath={editingPath} initialAdviceId={dependencyAdviceId} onBack={() => setEditing(false)} />;
+  const selectedId=selection?.findingId??(selection?.advisory!=null?problemItems(current).filter(f=>f.source==='DEPENDENCY'&&'dependency'in f&&f.dependency)[selection.advisory]?.findingId:undefined);
+  if (editing) return <SourceEditingWorkspace embedded key={current.reviewId} result={current} problemContext={editContext(current,selectedId)} invalidProblem={!!selectedId&&!editContext(current,selectedId)} initialPath={editingPath} initialAdviceId={selection?.adviceId??dependencyAdviceId} onBack={() => setEditing(false)} />;
   return <>
     {error && <p role="alert" className="error-message">{error}</p>}
     <ReviewResultWorkspace selection={selection} result={current} view={view} onViewChange={onView} progress={null}
-      onEditDependency={current.sourceType==='WORKSPACE'?undefined:id=>{setDependencyAdviceId(id);setEditingPath(undefined);setEditing(true);}}
+      onEditDependency={current.sourceType==='WORKSPACE'?undefined:id=>{setDependencyAdviceId(id);setEditingPath(undefined);setEditing(true,{...selection,adviceId:id});}}
       onEditFile={current.sourceType==='WORKSPACE'?undefined:path=>{setDependencyAdviceId(undefined);setEditingPath(path);setEditing(true);}}
       rescanActions={<button className="secondary-button" type="button" onClick={onRescan}>다시 검사하기</button>}
       statusActions={{ updatingId: updating, comments, onComment: (id, comment) => setComments(previous => ({ ...previous, [id]: comment })), onStatus: (v, status) => void update(v, status) }}

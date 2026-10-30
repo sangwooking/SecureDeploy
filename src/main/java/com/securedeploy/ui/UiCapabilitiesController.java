@@ -24,6 +24,7 @@ public class UiCapabilitiesController {
         var result=new java.util.LinkedHashMap<String,Object>(Map.of("schemaVersion",1,"dependencyPlans",true,"dependencyAdvice",true,"workspaceSemanticReview",true,
                 "dependencyFiles",true,"npmGeneration",npm.enabled(),"providerAvailable",available,
                 "providerOrigin",provider.executionOrigin()==null?"UNVERIFIED_PROVIDER":provider.executionOrigin()));
+        result.put("advisoryDetails",true);
         result.put("aiCost",com.securedeploy.ai.usage.AiCostPolicy.disclosure(properties.getOpenai().getModel()));
         result.put("patchScopes",java.util.List.of("SPRING_LITERAL_PROPERTIES","DENO_DIRECT_ENV_JSON","EXPRESS_DIRECT_ENV_JSON"));
         result.put("aiCapabilityMatrix",AiCapabilityMatrix.entries());

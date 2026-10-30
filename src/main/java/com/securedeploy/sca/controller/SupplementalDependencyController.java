@@ -18,4 +18,9 @@ public class SupplementalDependencyController {
             @Valid @RequestBody SupplementalDependencyRequest request) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.lookup(reviewId, request));
     }
+    public record AdvisoryRequest(@jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max=1024) String findingId) { }
+    @PostMapping("/advisory-details")
+    public ResponseEntity<SupplementalDependencyResponse> advisory(@PathVariable Long reviewId,@Valid @RequestBody AdvisoryRequest request) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.savedAdvisory(reviewId,request.findingId()));
+    }
 }

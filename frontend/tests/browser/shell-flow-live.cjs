@@ -51,7 +51,7 @@ try{
    assert.ok(await section.getByLabel('기록된 코드 전달 경로').first().isVisible());
    assert.ok((await section.innerText()).includes('요청 본문'));assert.ok((await section.innerText()).includes(sql?'CWE-89':'CWE-78'));
    if(regex)assert.ok((await section.innerText()).includes('캡처한 값'));
-   assert.ok(await section.getByRole('button',{name:'이 파일 수정하기',exact:true}).isVisible());
+   assert.ok(await section.getByRole('button',{name:'이 문제 수정하기',exact:true}).isVisible());
    assert.equal(await page.getByRole('button',{name:'자동 수정안 만들기',exact:true}).count(),0);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);assert.deepEqual(outbound,[]);
    await page.screenshot({path:`/private/tmp/securedeploy-${sql?'sequelize':'shell'}-flow-${width}.png`,fullPage:true});await page.close();reports.push({width,candidates:count,score:review.securityScore,coverage:review.coverage.status});

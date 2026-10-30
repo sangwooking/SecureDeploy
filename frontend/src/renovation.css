@@ -573,3 +573,17 @@ select { min-height: 44px; }
 .workspace-automation { overflow-wrap:anywhere; }
 .workspace-automation pre { white-space:pre-wrap; max-width:100%; }
 .workspace-automation label { display:block; }
+/* UX03: display grouping preserves the canonical records; long paths remain readable. */
+.problem-row { min-width: 0; }
+.problem-row > *, .problem-occurrences *, .editing-problem-context *, .repair-guide *, .dependency-versions dd { min-width: 0; overflow-wrap: anywhere; }
+.problem-occurrences { margin: 16px 0; padding: 12px; background: #f5f8f7; border: 1px solid #d6e1dd; border-radius: 6px; }
+.problem-occurrences ul { padding-left: 18px; }
+.problem-occurrences li { margin: 8px 0; }
+.finding-source-code { white-space: pre-wrap; overflow-wrap: anywhere; padding: 12px; border: 1px solid #d9e1de; background: #f6f8f7; }
+.editing-problem-context { padding: 12px 16px; margin: 12px 0; background: #f2f8f5; border: 1px solid #bed4ca; border-radius: 6px; }
+.editing-problem-context h3 { margin: 0 0 6px; }
+.editing-problem-context details code { display: block; font-size: 11px; }
+.repair-guide { margin-bottom: 16px; }
+.repair-guide li { margin-bottom: 8px; }
+.source-file-tree details { margin-top: 12px; }
+@media (min-width: 1024px) { .editing-problem-context { position: sticky; top: 8px; z-index: 1; } }

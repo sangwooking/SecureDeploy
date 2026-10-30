@@ -49,6 +49,10 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(LocalDateTime.now(), status.value(), status.getReasonPhrase(), message));
     }
 
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRoute(org.springframework.web.servlet.resource.NoResourceFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(LocalDateTime.now(),404,"Not Found","요청한 API 또는 자료를 찾을 수 없습니다. 서버 지원 버전을 확인해 주세요."));
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception exception) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;

@@ -1,3 +1,4 @@
+import {dependencyGroupKey} from './problemGroups';
 import { useEffect, useState } from 'react';
 import { EvidenceSupportLayout, AdvisoryItemCount } from './EvidenceSupportLayout';
 import { DependencyUpdatePlans } from './DependencyUpdatePlans';
@@ -25,6 +26,8 @@ export function DependencySecuritySection({ sca, riskAssessment, remediation, re
   const canonical = riskAssessment && riskAssessment.schemaVersion >= 2
     ? riskAssessment.dependencyFindings.flatMap(finding => finding.dependency ? [finding.dependency] : [])
     : sca.dependencyVulnerabilities;
+  const map=new Map<string,number[]>();canonical.forEach((d,i)=>{const key=dependencyGroupKey(d);map.set(key,[...(map.get(key)??[]),i]);});
+  const groups=[...map.values()],activeGroup=groups.find(g=>g.includes(selection));
   const unresolved = sca.components.filter(component => component.versionResolution !== 'EXACT');
   return <section className="sca-section" aria-label="사용 중인 라이브러리 문제">
     <div className="section-heading"><h2>{securityTerms.libraries}</h2><span>{inspectionLabel(sca.status)}</span></div>
@@ -47,9 +50,11 @@ export function DependencySecuritySection({ sca, riskAssessment, remediation, re
       ? '조회한 정확한 버전에서 알려진 취약점이 반환되지 않았습니다. 프로젝트 전체의 안전을 보장하지 않습니다.'
       : '표시할 라이브러리 문제가 없습니다. 미조회 항목과 분석 상태를 확인해 주세요.'}</p>}
     <details><summary>상위 패키지와 수정 작업 묶음 확인</summary><DependencyActionGroups sca={sca} /></details>
+    <p>{groups.length}개 패키지·수정 근거 그룹 / 원본 공지 매칭 {canonical.length}항목. 다른 잠금 버전·경로·수정 경계는 별도 표시합니다.</p>
+    {activeGroup&&activeGroup.length>1&&<details><summary>이 그룹의 개별 보안 공지</summary><p>표시를 묶었으며 한 번의 업데이트로 모두 해결된다는 보장은 아닙니다.</p>{activeGroup.map(i=><button type="button" key={i} aria-pressed={selection===i} onClick={()=>{setSelection(i);onSelectionChange?.(i);}}>{canonical[i].osvId} · {canonical[i].installedVersion}</button>)}</details>}
     {canonical.length>0&&<div className="dependency-selector"><label htmlFor={`dependency-selection-${reviewId??'unsaved'}`}>확인할 외부 라이브러리 공지 <AdvisoryItemCount count={canonical.length}/></label>
-      <select id={`dependency-selection-${reviewId??'unsaved'}`} value={selection>=0&&selection<canonical.length?selection:-1} onChange={e=>{setSelection(Number(e.target.value));onSelectionChange?.(Number(e.target.value));}}><option value={-1}>확인할 공지를 선택해 주세요</option>{canonical.map((d,i)=><option key={`${d.ecosystem}:${d.packageName}:${d.installedVersion}:${d.osvId}:${i}`} value={i}>{d.packageName} {d.installedVersion} · {d.osvId}</option>)}</select></div>}
-    {canonical.length>0&&(selection<0||selection>=canonical.length)?<p role="status">공지 항목을 선택하면 분석 근거와 수정 안내를 확인할 수 있어요.</p>:canonical.length>0?(()=>{const dep=canonical[Math.min(selection,canonical.length-1)];return <EvidenceSupportLayout evidence={<DependencyFindingCard embedded components={sca.components} dependency={dep} remediation={remediation} intelligence={riskAssessment?.threatIntelligence} finding={riskAssessment?.dependencyFindings.find(f=>f.ecosystem===dep.ecosystem&&f.packageName===dep.packageName&&f.version===dep.installedVersion&&f.advisoryId===dep.osvId)}/>}
+      <select id={`dependency-selection-${reviewId??'unsaved'}`} value={activeGroup?.[0]??-1} onChange={e=>{setSelection(Number(e.target.value));onSelectionChange?.(Number(e.target.value));}}><option value={-1}>확인할 공지를 선택해 주세요</option>{groups.map(g=>{const d=canonical[g[0]];return <option key={g[0]} value={g[0]}>{d.packageName} {d.installedVersion} · 공지 항목 {g.length}건 · {d.osvId}</option>})}</select></div>}
+    {canonical.length>0&&(selection<0||selection>=canonical.length)?<p role="status">공지 항목을 선택하면 분석 근거와 수정 안내를 확인할 수 있어요.</p>:canonical.length>0?(()=>{const dep=canonical[Math.min(selection,canonical.length-1)];return <EvidenceSupportLayout evidence={<DependencyFindingCard reviewId={reviewId} embedded components={sca.components} dependency={dep} remediation={remediation} intelligence={riskAssessment?.threatIntelligence} finding={riskAssessment?.dependencyFindings.find(f=>f.ecosystem===dep.ecosystem&&f.packageName===dep.packageName&&f.version===dep.installedVersion&&f.advisoryId===dep.osvId)}/>}
       support={<DependencyUpdatePlans reviewId={reviewId} selectedDependency={dep} onEditDependency={onEditDependency} onEditFile={onEditFile}/>}/>;})():<DependencyUpdatePlans reviewId={reviewId} onEditDependency={onEditDependency} onEditFile={onEditFile}/>}
     {unresolved.length > 0 && <details><summary>버전 확인이 필요한 라이브러리 ({unresolved.length}개 위치)</summary>
       <div className="vulnerability-list">{unresolved.map((component, index) => {
