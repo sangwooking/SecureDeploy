@@ -12,7 +12,7 @@ test('missing model output is never replaced with an invented recommendation',()
 });
 test('recorded OpenAI, Mock, unknown origin and package-manager edits are explicit',()=>{
  assert.ok(providerOriginLabel('ARCHIVED_OPENAI').includes('새 호출 없음'));assert.ok(providerOriginLabel('MOCK').includes('실제 모델 미검증'));assert.ok(providerOriginLabel('invented').includes('미확인'));
- const html=render(WorkspaceDiffReview,{files:[{path:'package-lock.json',patch:'- "version": "1.0.0"\n+ "version": "1.0.1"',origin:'PACKAGE_MANAGER_APPROVED'}]});assert.ok(html.includes('패키지 관리자 생성 · 사용자 승인'));assert.ok(!html.includes('승인된 AI 코드 수정'));assert.equal(changeOriginLabel('unknown'),'수정 출처 미기록');
+ const html=render(WorkspaceDiffReview,{files:[{path:'package-lock.json',patch:'- "version": "1.0.0"\n+ "version": "1.0.1"',origin:'PACKAGE_MANAGER_APPROVED'}]});assert.ok(html.includes('패키지 관리자 생성 · 사용자 승인'));assert.ok(!html.includes('승인된 AI 코드 수정'));assert.equal(changeOriginLabel('unknown'),'출처 확인 불가 · 수정 출처 미기록');
 });
 test('project ordering uses saved policy without changing the original list',()=>{
  const {importantProjects}=load('WorkspaceSummary');const rows=[{projectId:1,latestReview:{createdAt:'2026-01-01',riskSummary:{deploymentAssessment:'READY'}}},{projectId:2,latestReview:{createdAt:'2025-01-01',riskSummary:{deploymentAssessment:'BLOCKED'}}},{projectId:3,latestReview:null}];const prior=JSON.stringify(rows);assert.deepEqual(importantProjects(rows).map(p=>p.projectId),[2,1,3]);assert.equal(JSON.stringify(rows),prior);

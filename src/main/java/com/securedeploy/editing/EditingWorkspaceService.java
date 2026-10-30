@@ -22,20 +22,22 @@ public class EditingWorkspaceService {
     // A tiny expression edit can still produce a full long-line diff in UTF-16 memory.
     private static final long PATCH_RESERVATION = 512 * 1024L;
     public record FileInfo(String id, String path, String originalHash, int size, boolean directory,
-                           boolean editable, String readOnlyReason, boolean changed) { }
+                           boolean editable, String readOnlyReason, boolean changed,String changeOrigin,List<ChangeAttribution> provenance) { }
     public record Workspace(String id, long reviewId, long revision, Instant createdAt, Instant expiresAt, String sourceRevision,
-                            String identityStatus, List<FileInfo> files, List<String> changedFileIds) { }
+                            String identityStatus, List<FileInfo> files, List<String> changedFileIds,List<ExportApproval> exports) { }
+    public record ExportApproval(long revision,String format,long userId,Instant at,String provenanceHash) { }
     public record Content(String fileId, long revision, String originalHash, String currentHash, String text, String newline, boolean bom) { }
     public record Change(long revision, String originalHash, String text) { }
     public record Approval(long revision, List<String> changedFileIds, boolean approved) { }
-    public record Difference(long revision, String fileId, String originalHash, String patch) { }
-    public record Download(byte[] bytes, String filename, String type) { }
+    public record Difference(long revision, String fileId, String originalHash, String patch,String changeOrigin,List<ChangeAttribution> provenance) { }
+    public record Download(byte[] bytes, String filename, String type,String provenanceHash,long revision) { }
     private static final class StoredFile {
         final String id = UUID.randomUUID().toString();
         final SourceArchive.Entry original;
         final String hash;
         byte[] edit;
         String changeOrigin = "UNCHANGED";
+        final List<ChangeAttribution> provenance=new ArrayList<>();
         StoredFile(SourceArchive.Entry entry) { original = entry; hash = SourceArchive.hash(entry.bytes()); }
         byte[] current() { return edit == null ? original.bytes() : edit; }
         boolean editable() { return !original.directory() && SourceArchive.text(original.bytes()) != null; }
@@ -50,6 +52,7 @@ public class EditingWorkspaceService {
         final String source, identity;
         final List<StoredFile> files;
         final Map<String,WorkspacePatch.Session> patches = new LinkedHashMap<>();
+        final List<ExportApproval> exports=new ArrayList<>();
         long revision = 1;
         State(long user, long review, long project, ProjectLifecycleGuard.Lease lease, Instant now,
                 String source, String identity, List<SourceArchive.Entry> entries) {
@@ -166,7 +169,11 @@ public class EditingWorkspaceService {
         return new Content(file.id, state.revision, file.hash, SourceArchive.hash(file.current()), bom ? text.substring(1) : text,
                 text.contains("\r\n") ? "CRLF" : "LF", bom);
     }
-    public synchronized Workspace save(String id, String fileId, Change change, boolean revert) {
+    public synchronized Workspace save(String id,String fileId,Change change,boolean revert) {
+        saveInternal(id,fileId,change,revert);var state=owned(id);var f=file(state,fileId);
+        record(state,f,"MANUAL",null,null,null,null,null,false);return describe(state);
+    }
+    private Workspace saveInternal(String id, String fileId, Change change, boolean revert) {
         var state = owned(id); var file = file(state, fileId);
         if (change == null || change.revision() != state.revision || !file.hash.equals(change.originalHash()))
             throw new EditingConflictException("WORKSPACE_REVISION_CONFLICT", "다른 탭에서 저장했거나 원본 해시가 달라졌어요. 현재 편집을 먼저 내보낸 뒤 최신 내용을 확인해 주세요.");
@@ -176,6 +183,7 @@ public class EditingWorkspaceService {
             bytes=editedBytes(file,change.text());
             if (Arrays.equals(bytes, file.original.bytes())) bytes = null;
         }
+        ensureHistory(state,1);
         long size = state.patches.size() * PATCH_RESERVATION;
         for (var item : state.files) size += item.original.bytes().length + (item == file ? (bytes == null ? 0 : bytes.length) : (item.edit == null ? 0 : item.edit.length));
         if (size > SourceArchive.MAX_BYTES) throw SourceArchive.limit();
@@ -188,7 +196,7 @@ public class EditingWorkspaceService {
     }
     public synchronized Difference diff(String id, String fileId) throws IOException {
         var state = owned(id); var file = file(state, fileId);
-        return new Difference(state.revision, file.id, file.hash, patch(file));
+        return new Difference(state.revision, file.id, file.hash, patch(file),file.changeOrigin,List.copyOf(file.provenance));
     }
     public synchronized WorkspacePatch.View preparePatch(String id, WorkspacePatch.Prepare request, WorkspacePatch.Provider provider) {
         return preparePatch(id,request,provider,true);
@@ -250,10 +258,16 @@ public class EditingWorkspaceService {
             if(!finding.ruleId().equals("TS_SENSITIVE_DATA_EXPOSURE")||!finding.comparisonPolicy().equals("NOT_COMPARED")
                     ||!file.original.path().equals(finding.location().filePath())||!Set.of("HTTP_RESPONSE","EXPRESS_HTTP_RESPONSE").contains(finding.location().kind())||finding.evidence().isEmpty())throw new IllegalArgumentException();
             var sources=new ArrayList<com.securedeploy.analysis.typescript.ServerAnalysisSnapshot.Location>();
+            var kinds=Set.of("SERVER_SECRET_ENVIRONMENT_VALUE","REQUEST_SELECTED_ENVIRONMENT_VALUE");
             for(var e:finding.evidence()) {
-                if(!e.sink().equals(finding.location())||!e.source().filePath().equals(file.original.path())
-                        ||!Set.of("SERVER_SECRET_ENVIRONMENT_VALUE","REQUEST_SELECTED_ENVIRONMENT_VALUE").contains(e.source().kind()))throw new IllegalArgumentException();
-                if(!sources.contains(e.source()))sources.add(e.source());
+                if(!e.ruleId().equals(finding.ruleId())||!"HIGH".equals(e.confidence())||!e.sink().equals(finding.location())||!e.source().filePath().equals(file.original.path())||!kinds.contains(e.source().kind()))throw new IllegalArgumentException();
+                if(finding.location().kind().equals("EXPRESS_HTTP_RESPONSE")) {
+                    if(e.flow()==null||!e.flow().contains(e.source())||!e.flow().contains(finding.location())||!snapshot.findings().contains(e))throw new IllegalArgumentException();
+                    for(var location:e.flow())if(kinds.contains(location.kind())) {
+                        if(!location.filePath().equals(file.original.path())||snapshot.exposureUses()==null||snapshot.exposureUses().stream().noneMatch(use->use.location().equals(finding.location())&&use.status().equals("SENSITIVE_FLOW_CANDIDATE")&&use.trace().contains(location)))throw new IllegalArgumentException();
+                        if(!sources.contains(location))sources.add(location);
+                    }
+                }else if(!sources.contains(e.source()))sources.add(e.source());
             }
             String source=WorkspacePatch.normalize(SourceArchive.text(file.current()));
             var contract=new ResponsePatchValidator.Contract(source,finding.location(),List.copyOf(sources));
@@ -267,7 +281,17 @@ public class EditingWorkspaceService {
             if(!WorkspacePatch.DETERMINISTIC.equals(provider)&&finding.location().kind().equals("EXPRESS_HTTP_RESPONSE")) {
                 var context=target.context();
                 if(context==null||!context.code().equals(sanitizer.text(context.code(),6000))||context.code().contains("@")||context.code().contains("<redacted>"))throw new IllegalArgumentException();
-                session.context=context;
+                if(target.fields()==null||target.fields().size()!=sources.size())throw new IllegalArgumentException();
+                var bindings=new ArrayList<ResponsePatchValidator.BoundField>();
+                for(var field:target.fields()) {
+                    var matches=sources.stream().filter(v->v.line()==field.source().line()&&v.column()==field.source().column()).toList();
+                    if(matches.size()!=1||field.startOffset()<target.offset()||field.endOffset()>target.offset()+target.before().length()||field.startOffset()>=field.endOffset())throw new IllegalArgumentException();
+                    var expressionHash=SourceArchive.hash(field.expression().getBytes(StandardCharsets.UTF_8));
+                    String identity=state.project+"|"+state.review+"|"+finding.findingId()+"|"+file.hash+"|"+state.revision+"|"+matches.get(0)+"|"+finding.location()+"|"+field.field()+"|"+expressionHash;
+                    bindings.add(new ResponsePatchValidator.BoundField(finding.findingId(),SourceArchive.hash(identity.getBytes(StandardCharsets.UTF_8)),field.field(),field.source(),context.sink(),field.startOffset(),field.endOffset(),expressionHash));
+                }
+                if(bindings.stream().map(ResponsePatchValidator.BoundField::sourceId).distinct().count()!=sources.size())throw new IllegalArgumentException();
+                session.context=context.withBindings(List.copyOf(bindings));
             }
             session.limits=List.of("응답 필드 제거는 API 계약을 바꿀 수 있습니다. 응답을 사용하는 클라이언트와 호환성을 직접 확인하고 승인하세요.",
                     "서버 환경값 조회에서 HTTP 응답으로 전달되는 필드만 대상으로 합니다. 실제 비밀값·운영 인증·배포 상태·전체 안전성은 미확인입니다.",
@@ -333,8 +357,9 @@ public class EditingWorkspaceService {
         var file=file(state,session.fileId);String current=WorkspacePatch.normalize(SourceArchive.text(file.current()));
         if(!current.regionMatches(session.offset,session.before,0,session.before.length()))throw fail(HttpStatus.CONFLICT,"예상한 변경 위치가 다릅니다.");
         String updated=current.substring(0,session.offset)+session.after+current.substring(session.offset+session.before.length());
-        var next=save(id,file.id,new Change(state.revision,file.hash,updated),false);
-        session.state="ACCEPTED";file.changeOrigin=session.method().equals("DETERMINISTIC_FIX")?"DETERMINISTIC_APPROVED":"MOCK".equals(session.provider.origin())?"MOCK_AI_APPROVED":"AI_APPROVED";return next;
+        var next=saveInternal(id,file.id,new Change(state.revision,file.hash,updated),false);
+        session.state="ACCEPTED";file.changeOrigin=session.method().equals("DETERMINISTIC_FIX")?"DETERMINISTIC_APPROVED":"MOCK".equals(session.provider.origin())?"MOCK_AI_APPROVED":"AI_APPROVED";
+        record(state,file,session.method().equals("DETERMINISTIC_FIX")?"DETERMINISTIC":"MOCK".equals(session.provider.origin())?"MOCK":"OPENAI".equals(session.provider.origin())?"OPENAI":"UNVERIFIED_AI",session.provider.origin(),session.usage==null?session.provider.model():session.usage.model(),session.id,null,null,true);return describe(state);
     }
     private WorkspacePatch.Session patchOwned(State state,String id) {
         var session=state.patches.get(id);if(session==null)throw fail(HttpStatus.NOT_FOUND,"수정 제안에 접근할 수 없습니다.");
@@ -357,13 +382,17 @@ public class EditingWorkspaceService {
         if (approval == null || !approval.approved() || approval.revision() != state.revision
                 || !changed.equals(approval.changedFileIds())) throw fail(HttpStatus.CONFLICT, "현재 revision과 변경 목록을 확인하고 다시 승인해 주세요.");
         if (changed.isEmpty()) throw fail(HttpStatus.CONFLICT, "다운로드할 변경 사항이 없습니다.");
+        if(!Set.of("zip","patch").contains(format))throw fail(HttpStatus.BAD_REQUEST,"지원하지 않는 다운로드 형식입니다.");
+        if(state.exports.size()>=128)throw fail(HttpStatus.TOO_MANY_REQUESTS,"다운로드 승인 이력 한도에 도달했습니다.");
+        String provenanceHash=provenanceHash(fileFacts(state));
+        state.exports.add(new ExportApproval(state.revision,format,state.user,Instant.now(clock),provenanceHash));
         if ("zip".equals(format)) {
-            return new Download(SourceArchive.zip(currentEntries(state, false)), "securedeploy-edited-r" + state.revision + ".zip", "application/zip");
+            return new Download(SourceArchive.zip(currentEntries(state, false)), "securedeploy-edited-r" + state.revision + ".zip", "application/zip",provenanceHash,state.revision);
         }
         if ("patch".equals(format)) {
             var output = new ByteArrayOutputStream();
             for (var f : state.files) if (f.edit != null) output.write(patch(f).getBytes(StandardCharsets.UTF_8));
-            return new Download(output.toByteArray(), "securedeploy-edited-r" + state.revision + ".patch", "text/x-diff;charset=UTF-8");
+            return new Download(output.toByteArray(), "securedeploy-edited-r" + state.revision + ".patch", "text/x-diff;charset=UTF-8",provenanceHash,state.revision);
         }
         throw fail(HttpStatus.BAD_REQUEST, "지원하지 않는 내보내기 형식입니다.");
     }
@@ -377,11 +406,13 @@ public class EditingWorkspaceService {
         }}catch(IOException e){throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"변경안을 표시하지 못했습니다.");}
         return List.copyOf(diffs);
     }
-    synchronized Workspace applyGenerated(String id,long revision,String inputHash,Map<String,byte[]> replacements) {
+    synchronized Workspace applyGenerated(String id,long revision,String inputHash,Map<String,byte[]> replacements) {return applyGenerated(id,revision,inputHash,replacements,null,null);}
+    synchronized Workspace applyGenerated(String id,long revision,String inputHash,Map<String,byte[]> replacements,String directionOrigin,String adviceId) {
         var state=owned(id);verifyGenerated(state,revision,inputHash,replacements);
+        ensureHistory(state,replacements.size());
         // All checks finish before either file changes; original entries are never modified.
         for(var e:replacements.entrySet()){var f=state.files.stream().filter(v->v.original.path().equals(e.getKey())).findFirst().orElseThrow();f.edit=e.getValue().clone();f.changeOrigin="PACKAGE_MANAGER_APPROVED";}
-        state.revision++;return describe(state);
+        state.revision++;for(var path:replacements.keySet()){var f=state.files.stream().filter(v->v.original.path().equals(path)).findFirst().orElseThrow();record(state,f,"NPM",null,null,null,directionOrigin,adviceId,true);}return describe(state);
     }
     private void verifyGenerated(State state,long revision,String inputHash,Map<String,byte[]> replacements) {
         if(state.revision!=revision||!"EXACT_GIT_COMMIT".equals(state.identity)||!replacements.keySet().equals(Set.of("package.json","package-lock.json")))throw fail(HttpStatus.CONFLICT,"원본 revision 또는 허용 파일 범위가 다릅니다.");
@@ -399,10 +430,9 @@ public class EditingWorkspaceService {
         if (state.revision != revision) throw fail(HttpStatus.CONFLICT, "저장된 revision이 변경되었습니다. 최신 변경을 확인해 주세요.");
         var review = reviews.findAccessibleReviewWithVulnerabilities(state.review, "분석 결과에 접근할 수 없습니다.");
         var entries = currentEntries(state, true);
-        var facts = state.files.stream().map(f -> new WorkspaceScanSnapshot.File(f.id, f.original.path(), f.hash,
-                SourceArchive.hash(f.current()), f.edit != null, f.changeOrigin)).toList();
+        var facts = fileFacts(state);
         var source = new WorkspaceScanSnapshot(1, id, state.user, state.review, revision, state.source, state.identity,
-                manifest(entries), Instant.now(clock), null, "EXACT_GIT_COMMIT".equals(state.identity), facts, "");
+                manifest(entries), Instant.now(clock), null, "EXACT_GIT_COMMIT".equals(state.identity), facts, "",List.copyOf(state.exports));
         return new ScanInput(state.user, review.getProjectName(), source, entries);
     }
     synchronized <T> T whileScanLive(String id, java.util.function.Supplier<T> action) {
@@ -437,9 +467,13 @@ public class EditingWorkspaceService {
     private Workspace describe(State state) {
         return new Workspace(state.id, state.review, state.revision, state.created, state.expires, state.source, state.identity,
                 state.files.stream().map(f -> new FileInfo(f.id, f.original.path(), f.hash, f.original.bytes().length, f.original.directory(),
-                        f.editable(), f.editable() ? null : (f.original.directory() ? "DIRECTORY" : "BINARY_SIZE_OR_ENCODING"), f.edit != null)).toList(),
-                state.files.stream().filter(f -> f.edit != null).map(f -> f.id).toList());
+                        f.editable(), f.editable() ? null : (f.original.directory() ? "DIRECTORY" : "BINARY_SIZE_OR_ENCODING"), f.edit != null,f.changeOrigin,List.copyOf(f.provenance))).toList(),
+                state.files.stream().filter(f -> f.edit != null).map(f -> f.id).toList(),List.copyOf(state.exports));
     }
+    private void ensureHistory(State state,int count){if(state.files.stream().mapToInt(f->f.provenance.size()).sum()+count>1024)throw fail(HttpStatus.TOO_MANY_REQUESTS,"변경 출처 이력 한도에 도달했습니다. 현재 편집을 내보내고 새 작업을 시작하세요.");}
+    private void record(State state,StoredFile file,String generator,String origin,String model,String proposal,String direction,String advice,boolean approved){file.provenance.add(new ChangeAttribution(state.revision,generator,origin,model,proposal,direction,advice,approved,state.user,Instant.now(clock),SourceArchive.hash(file.current())));}
+    private List<WorkspaceScanSnapshot.File> fileFacts(State state){return state.files.stream().map(f->new WorkspaceScanSnapshot.File(f.id,f.original.path(),f.hash,SourceArchive.hash(f.current()),f.edit!=null,f.changeOrigin,List.copyOf(f.provenance))).toList();}
+    static String provenanceHash(List<WorkspaceScanSnapshot.File> files){try{return SourceArchive.hash(new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules().writeValueAsBytes(files));}catch(IOException e){throw new IllegalArgumentException();}}
     private String patch(StoredFile file) throws IOException {
         if (file.edit == null) return "";
         return patch(file.original.path(),file.original.bytes(),file.edit,3);

@@ -31,5 +31,6 @@ export interface WorkspaceScanSnapshot {
   sourceRevision: string; identityStatus: string; inputHash: string; capturedAt: string;
   analyzerVersion: string | null; baselineVerified: boolean;
   analysisRoot?: string | null;
-  files: { fileId: string; path: string; originalHash: string; currentHash: string; changed: boolean; changeOrigin: string }[];
+  exports?: {revision:number;format:string;userId:number;at:string;provenanceHash:string}[];
+  files: { fileId: string; path: string; originalHash: string; currentHash: string; changed: boolean; changeOrigin: string; provenance?: import('../api/editingApi').ChangeAttribution[]|null }[];
 }

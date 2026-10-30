@@ -50,7 +50,7 @@ public class WorkspaceDependencyFilesService {
     }
     public EditingWorkspaceService.Workspace apply(String workspace,String id,Consent consent){
         var s=owned(workspace,id);synchronized(this){if(!s.state.equals("PROPOSED")||consent==null||!consent.approved()||!s.hash.equals(consent.inputHash()))throw fail(HttpStatus.CONFLICT,"Diff 확인과 적용 승인이 필요합니다.");
-            advice.get(s.review,s.advice);var result=workspaces.applyGenerated(workspace,s.revision,s.hash,s.files);s.state="ACCEPTED";s.files.values().forEach(b->Arrays.fill(b,(byte)0));s.files=Map.of();return result;}
+            advice.get(s.review,s.advice);var result=workspaces.applyGenerated(workspace,s.revision,s.hash,s.files,s.origin,s.advice);s.state="ACCEPTED";s.files.values().forEach(b->Arrays.fill(b,(byte)0));s.files=Map.of();return result;}
     }
     @jakarta.annotation.PreDestroy public synchronized void clear(){sessions.values().forEach(s->s.files.values().forEach(b->Arrays.fill(b,(byte)0)));sessions.clear();}
     private Session owned(String workspace,String id){workspaces.get(workspace);synchronized(this){var s=sessions.get(id);if(s==null||s.user!=users.currentUserId()||!s.workspace.equals(workspace)||s.expires.isBefore(Instant.now()))throw fail(HttpStatus.NOT_FOUND,"생성 제안이 없거나 만료되었습니다.");return s;}}

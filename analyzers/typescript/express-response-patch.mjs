@@ -29,10 +29,10 @@ export function expressResponsePatch(input,{object,literal}){
  let receiver=call.expression.expression;
  if(ts.isCallExpression(receiver)&&ts.isPropertyAccessExpression(receiver.expression)&&receiver.expression.name.text==='status'&&receiver.arguments.length===1&&ts.isNumericLiteral(receiver.arguments[0])&&Number(receiver.arguments[0].text)>=200&&Number(receiver.arguments[0].text)<=599)receiver=receiver.expression.expression;
  if(!ts.isIdentifier(receiver)||receiver.text!==response)fail();
- const target=call.arguments[0],before=target.getText(f),props=object(before),retained=[],removed=[];
+ const target=call.arguments[0],before=target.getText(f),props=object(before),retained=[],removed=[],fields=[];
  for(let i=0;i<target.properties.length;i++){
   const p=target.properties[i],v=p.initializer;
-  if(ts.isPropertyAccessExpression(v)&&ts.isPropertyAccessExpression(v.expression)&&v.expression.expression.getText(f)==='process'&&v.expression.name.text==='env'&&/^[A-Z_][A-Z0-9_]{0,79}$/.test(v.name.text)&&sources.some(s=>same(pos(v),s)))removed.push(p.name.text);
+  if(ts.isPropertyAccessExpression(v)&&ts.isPropertyAccessExpression(v.expression)&&v.expression.expression.getText(f)==='process'&&v.expression.name.text==='env'&&/^[A-Z_][A-Z0-9_]{0,79}$/.test(v.name.text)&&sources.some(s=>same(pos(v),s))){removed.push(p.name.text);fields.push({field:p.name.text,source:pos(v),startOffset:p.getStart(f),endOffset:p.end,expression:v.getText(f)});}
   else{if(!literal(v))fail();retained.push(props[i].getText());}
  }
  if(!removed.length||!retained.length||removed.length!==sources.length)fail();
@@ -51,5 +51,5 @@ export function expressResponsePatch(input,{object,literal}){
     sources:sources.map(s=>({line:s.line,column:s.column})),sink:{line:sink.line,column:sink.column},removedFields:removed,
     preservedFields:target.properties.filter(p=>!removed.includes(p.name.text)).map(p=>p.name.text)};
  }
- return {before,offset,line,removed,suggestedReplacement,context};
+ return {before,offset,line,removed,suggestedReplacement,context,fields};
 }

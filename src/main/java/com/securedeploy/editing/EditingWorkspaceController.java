@@ -35,6 +35,7 @@ public class EditingWorkspaceController {
         var download = service.download(id, format, request);
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).header("X-Content-Type-Options", "nosniff")
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(download.filename()).build().toString())
+                .header("X-SecureDeploy-Provenance-SHA256",download.provenanceHash()).header("X-SecureDeploy-Revision",Long.toString(download.revision())).header("X-SecureDeploy-Export-Approved","true")
                 .contentType(MediaType.parseMediaType(download.type())).body(download.bytes());
     }
     @DeleteMapping("/{id}")

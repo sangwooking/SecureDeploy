@@ -1,3 +1,4 @@
+import {ChangeProvenance} from './ChangeProvenance';
 import { changeOriginLabel } from './EvidenceSupportLayout';
 import { useState } from 'react';
 import type { SecurityReviewResponse } from '../types/securityReview';
@@ -43,8 +44,9 @@ export function ReviewProgressPanel({ result, compact = false }: { compact?:bool
       <details><summary>수정본 파일·해시 근거</summary><p className="source-revision">원본: {snapshot.workspaceScan.sourceRevision}<br />입력: {snapshot.workspaceScan.inputHash}</p>
         <p className="source-revision">분석기: {snapshot.workspaceScan.analyzerVersion}</p>
         {snapshot.workspaceScan.analysisRoot && <p>분석 위치는 ZIP의 {snapshot.workspaceScan.analysisRoot}/ 폴더 기준입니다. 아래 변경 파일·해시는 전체 원본 경로 기준입니다.</p>}
-        <ul>{snapshot.workspaceScan.files.filter(f => f.changed).map(f => <li key={f.fileId}>{f.path} · {changeOriginLabel(f.changeOrigin)}<br />
+        <ul>{snapshot.workspaceScan.files.filter(f => f.changed).map(f => <li key={f.fileId}>{f.path} · <ChangeProvenance origin={f.changeOrigin} events={f.provenance}/><br />
           <span className="source-revision">{f.originalHash} → {f.currentHash}</span></li>)}</ul></details></div>}
+    {!!snapshot.workspaceScan?.exports?.length&&<details><summary>다운로드 승인 기록</summary><ul>{snapshot.workspaceScan.exports.map((e,i)=><li key={i}>r{e.revision} · {e.format} · 사용자 {e.userId} · {e.at}<p>출처 manifest SHA-256: {e.provenanceHash}</p></li>)}</ul></details>}
     {!snapshot.workspaceScan&&<GitHubCommitComparison before={snapshot.sourceBefore} after={snapshot.sourceAfter} />}
     <div className="progress-assessments">
       {[{ label: '이전', value: before, id: snapshot.baselineReviewId, date: snapshot.baselineAnalyzedAt },

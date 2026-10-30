@@ -1,10 +1,11 @@
 import { authHeaders, jsonHeaders, parseJsonResponse } from './securityReviewApi';
 
 const BASE = `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'}/api/editing-workspaces`;
-export interface EditingFile { id: string; path: string; originalHash: string; size: number; directory: boolean; editable: boolean; readOnlyReason: string | null; changed: boolean }
-export interface EditingWorkspace { id: string; reviewId: number; revision: number; createdAt: string; expiresAt: string; sourceRevision: string; identityStatus: 'UNVERIFIED_REUPLOAD' | 'EXACT_GIT_COMMIT'; files: EditingFile[]; changedFileIds: string[] }
+export interface ChangeAttribution {revision:number;generator:string;providerOrigin?:string|null;model?:string|null;proposalId?:string|null;directionOrigin?:string|null;adviceId?:string|null;approved:boolean;userId:number;at:string;currentHash:string}
+export interface EditingFile { id: string; path: string; originalHash: string; size: number; directory: boolean; editable: boolean; readOnlyReason: string | null; changed: boolean; changeOrigin?:string; provenance?:ChangeAttribution[] }
+export interface EditingWorkspace { id: string; reviewId: number; revision: number; createdAt: string; expiresAt: string; sourceRevision: string; identityStatus: 'UNVERIFIED_REUPLOAD' | 'EXACT_GIT_COMMIT'; files: EditingFile[]; changedFileIds: string[]; exports?:{revision:number;format:string;userId:number;at:string;provenanceHash:string}[] }
 export interface EditingContent { fileId: string; revision: number; originalHash: string; currentHash: string; text: string; newline: 'LF' | 'CRLF'; bom: boolean }
-export interface EditingDiff { revision: number; fileId: string; originalHash: string; patch: string }
+export interface EditingDiff { revision: number; fileId: string; originalHash: string; patch: string; changeOrigin?:string; provenance?:ChangeAttribution[] }
 async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${BASE}${path}`, { cache: 'no-store', ...init, headers: init.headers ?? authHeaders() });
   return parseJsonResponse<T>(response, '수정 작업 공간 요청을 처리하지 못했습니다.');
@@ -33,7 +34,7 @@ export async function exportEditingWorkspace(workspace: EditingWorkspace, format
 export interface PatchProvider { origin?:string; name: string; model: string; available: boolean }
 export interface AiPatch { contextHash?:string|null; usage?:{model?:string;promptTokens:number;completionTokens:number;cachedInputTokens:number;usageKnown:boolean;estimatedCostUsd:number|null;costStatus:string;billable:boolean}|null; id: string; state: string; fileId: string; findingId: number; ruleId: string; reviewId: number;
   sourceRevision: string; revision: number; originalHash: string; currentHash: string; startLine: number;
-  context?: {code:string;startLine:number;endLine:number;endpoint:string;sources:{line:number;column:number}[];sink:{line:number;column:number};removedFields:string[];preservedFields:string[]}|null; before: string; after: string | null; diff: string | null; provider: PatchProvider; explanation: string;
+  context?: {code:string;startLine:number;endLine:number;endpoint:string;sources:{line:number;column:number}[];sink:{line:number;column:number};removedFields:string[];preservedFields:string[];bindings?:{sourceId:string;findingId:string;field:string;source:{line:number;column:number};sink:{line:number;column:number};startOffset:number;endOffset:number;expressionHash:string}[]}|null; before: string; after: string | null; diff: string | null; provider: PatchProvider; explanation: string;
   verificationSteps: string[]; limitations: string[]; flowFindingId?: string | null; method?: 'AI_ASSISTED' | 'DETERMINISTIC_FIX' }
 export interface FixOption { method: 'DETERMINISTIC_FIX' | 'AI_ASSISTED' | 'MANUAL_REVIEW' | 'UNSUPPORTED'; reason: string }
 export const fixOption = (w: EditingWorkspace, file: EditingFile, content: EditingContent, findingId: number, flowFindingId?: string) => call<FixOption>(`/${encodeURIComponent(w.id)}/fix-options`, {

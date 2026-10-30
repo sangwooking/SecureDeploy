@@ -18,7 +18,7 @@ public final class DependencyAdviceBrowserServer {
     @TestConfiguration
     public static class AdviceFixture {
         @Bean @Primary AiProviderResolver guardedAdviceResolver(AiProperties properties,RealOpenAiProvider real,ObjectMapper json)throws Exception{
-            if("1".equals(System.getenv("SECUREDEPLOY_NEXT01_LIVE")))return com.securedeploy.ai.service.Next01LiveGate.create(properties,real);
+            if("1".equals(System.getenv("SECUREDEPLOY_AI03_LIVE"))||"1".equals(System.getenv("SECUREDEPLOY_NEXT01_LIVE")))throw new IllegalStateException("PATCH02_NO_REAL_MODEL_CALLS");
             boolean live="1".equals(System.getenv("SECUREDEPLOY_AI03_LIVE"));
             AiProvider selected;
             if(live){
@@ -47,11 +47,13 @@ public final class DependencyAdviceBrowserServer {
                 });
                 when(mock.generateWorkspacePatch(any())).thenAnswer(i->{var d=json.readTree(((WorkspacePatch.Prompt)i.getArgument(0)).untrustedData());String code=d.path("untrustedCode").asText();
                     if(d.has("context")){
-                        var ctx=d.path("context");if(!ctx.path("code").asText().contains(".get(")||ctx.path("sources").isEmpty()||ctx.path("preservedFields").isEmpty()||!d.has("sourceFileHash")||!d.has("contextHash"))throw new IllegalArgumentException("FIX01_CONTEXT_REQUIRED");
+                        var ctx=d.path("context");if(!ctx.path("endpoint").asText().matches("(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS) .*" )||ctx.path("sources").isEmpty()||ctx.path("preservedFields").isEmpty()||!d.has("sourceFileHash")||!d.has("contextHash"))throw new IllegalArgumentException("FIX01_CONTEXT_REQUIRED");
                         Files.writeString(DependencyUpdateBrowserServer.root.resolve("fix01-mock-prompt.json"),json.writeValueAsString((WorkspacePatch.Prompt)i.getArgument(0)));
-                        com.securedeploy.ai.service.Next01RequestCapture.capture((WorkspacePatch.Prompt)i.getArgument(0),DependencyUpdateBrowserServer.root);
+                        Files.writeString(DependencyUpdateBrowserServer.root.resolve("patch02-prompt-"+ctx.path("sources").size()+".json"),json.writeValueAsString((WorkspacePatch.Prompt)i.getArgument(0)));
                     }
                     String replacement=d.path("ruleId").asText().equals("DEBUG_ENABLED")?code.replace("debug=true","debug=false"):code.replaceAll(",\\s*[A-Za-z_][A-Za-z0-9_]*:\\s*(?:process\\.env\\.[A-Z_][A-Z0-9_]*|Deno\\.env\\.get\\('[A-Z_][A-Z0-9_]*'\\))","");
+                    Path override=DependencyUpdateBrowserServer.root.resolve("patch02-mock-output.json");
+                    if(Files.isRegularFile(override)){var fault=json.readTree(override.toFile());if(fault.path("sourceFileHash").asText().equals(d.path("sourceFileHash").asText())){replacement=fault.path("replacement").asText();Files.writeString(DependencyUpdateBrowserServer.root.resolve("patch02-negative-used.json"),fault.toString());}}
                     return new WorkspacePatch.Output("PATCH",d.path("fileId").asText(),d.path("startLine").asInt(),d.path("expectedHash").asText(),replacement,"Mock 코드 수정 제안입니다. 원본 근거에 연결된 범위만 변경하며 실행 안전성은 확인하지 않았습니다.",List.of("정상 응답과 상태 코드를 확인하고 동일 진입점으로 재검사하세요."),List.of("Mock 생성이며 실제 모델 품질은 미검증입니다. API 호환성과 운영 환경은 별도 확인이 필요합니다."));});
                 when(mock.generateDependencyAdvice(any())).thenAnswer(i->{var d=json.readTree(((WorkspacePatch.Prompt)i.getArgument(0)).untrustedData());return new DependencyAiAdvice.Output(d.path("evidenceHash").asText(),d.path("packageName").asText(),d.path("lockedVersion").asText(),d.path("advisoryId").asText(),"PROPOSE_UPDATE",d.path("verifiedCandidateVersions").get(0).asText(),
                         "잠금 버전에 보안 공지가 연결되어 있습니다.","사용 방식에 따라 영향을 받을 수 있어 검토가 필요합니다.","실제 실행 경로와 영향은 확인되지 않았습니다.","상위 의존성과 범위를 제한한 업데이트를 검토하세요.",List.of("변경 내용을 검토하고 재검사하세요."),List.of("Mock 통제 응답이며 실제 모델 품질과 호환성은 미검증입니다."));});selected=mock;

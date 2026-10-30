@@ -1,10 +1,11 @@
 import type { SecurityReviewResponse } from '../types/securityReview';
 import { PatchDiff } from './PatchDiff';
-import { changeOriginLabel } from './EvidenceSupportLayout';
+import {ChangeProvenance} from './ChangeProvenance';
+import type {ChangeAttribution} from '../api/editingApi';
 import { summaryStateLabel } from './ReviewSummaryPanel';
-export interface FileDifferenceView {path:string;patch:string;origin?:string}
+export interface FileDifferenceView {path:string;patch:string;origin?:string;provenance?:ChangeAttribution[]|null}
 export function WorkspaceDiffReview({files,heading=true}:{files:FileDifferenceView[];heading?:boolean}) {
- return <section className="workspace-diff-review" aria-label="수정 내용 확인">{heading&&<h3>수정 내용 확인</h3>}<p>실제 변경 파일의 Diff입니다. 출처가 기록되지 않은 경우 AI·자동 수정으로 추정하지 않습니다.</p>{files.map(f=><div className="source-diff" key={f.path}><h4>{f.path}</h4><p className="change-origin">{changeOriginLabel(f.origin)}</p><PatchDiff patch={f.patch||'변경 없음'}/></div>)}</section>;
+ return <section className="workspace-diff-review" aria-label="수정 내용 확인">{heading&&<h3>수정 내용 확인</h3>}<p>실제 변경 파일의 Diff입니다. 출처가 기록되지 않은 경우 AI·자동 수정으로 추정하지 않습니다.</p>{files.map(f=><div className="source-diff" key={f.path}><h4>{f.path}</h4><ChangeProvenance origin={f.origin} events={f.provenance}/><PatchDiff patch={f.patch||'변경 없음'}/></div>)}</section>;
 }
 export function WorkspaceComparisonOverview({original,modified}:{original:SecurityReviewResponse;modified:SecurityReviewResponse}) {
  const verified=modified.workspaceScan?.baselineVerified&&modified.workspaceScan.originalReviewId===original.reviewId;

@@ -17,10 +17,14 @@ public class ResponsePatchValidator {
     record Contract(String source,ServerAnalysisSnapshot.Location sink,List<ServerAnalysisSnapshot.Location> sources) { }
     record Position(int line,int column) { }
     public record Context(String code,int startLine,int endLine,String endpoint,List<Position> sources,Position sink,
-                          List<String> removedFields,List<String> preservedFields) {
+                          List<String> removedFields,List<String> preservedFields,List<BoundField> bindings) {
+        public Context(String code,int startLine,int endLine,String endpoint,List<Position> sources,Position sink,List<String> removedFields,List<String> preservedFields){this(code,startLine,endLine,endpoint,sources,sink,removedFields,preservedFields,List.of());}
+        public Context withBindings(List<BoundField> values){return new Context(code,startLine,endLine,endpoint,sources,sink,removedFields,preservedFields,values);}
         public String fingerprint(){try{return SourceArchive.hash(new ObjectMapper().writeValueAsBytes(this));}catch(java.io.IOException error){throw new IllegalArgumentException();}}
     }
-    record Target(String before,int offset,int line,List<String> removed,String suggestedReplacement,Context context) { }
+    record FieldTarget(String field,Position source,int startOffset,int endOffset,String expression) { }
+    public record BoundField(String findingId,String sourceId,String field,Position source,Position sink,int startOffset,int endOffset,String expressionHash) { }
+    record Target(String before,int offset,int line,List<String> removed,String suggestedReplacement,Context context,List<FieldTarget> fields) { }
     Target check(Contract contract,String replacement) {
         if(!properties.isEnabled()||!CAPACITY.tryAcquire())throw new IllegalArgumentException();
         Process process=null;var io=Executors.newFixedThreadPool(2,r->{var t=new Thread(r,"response-patch-parser");t.setDaemon(true);return t;});

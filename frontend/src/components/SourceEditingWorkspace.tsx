@@ -251,7 +251,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
           <ul>{workspace.files.filter(f => f.changed).map(f => <li key={f.id}>{f.path}</li>)}</ul>
           <button type="button" className="secondary-button" disabled={busy || dirty || workspace.changedFileIds.length === 0} onClick={reviewDiff}>전체 변경 Diff 확인</button>
           {dirty && <p>현재 편집 내용을 저장한 후 전체 변경을 확인해 주세요.</p>}
-          {diffs&&<WorkspaceDiffReview heading={false} files={diffs.map(diff=>({path:workspace.files.find(f=>f.id===diff.fileId)?.path??'파일 위치 미확인',patch:diff.patch}))}/>}
+          {diffs&&<WorkspaceDiffReview heading={false} files={diffs.map(diff=>({path:workspace.files.find(f=>f.id===diff.fileId)?.path??'파일 위치 미확인',patch:diff.patch,origin:diff.changeOrigin,provenance:diff.provenance}))}/>}
 
           {diffs && <label className="source-export-approval"><input type="checkbox" checked={approved} disabled={busy} onChange={e => setApproved(e.target.checked)} />수정본 버전 {workspace.revision}의 변경 {workspace.changedFileIds.length}개를 검토했으며 다운로드를 승인합니다.</label>}
           <div className="source-editor-actions"><button type="button" className="secondary-button" disabled={busy || !approved || !diffs || dirty} onClick={() => download('zip')}>수정본 ZIP 다운로드</button>
