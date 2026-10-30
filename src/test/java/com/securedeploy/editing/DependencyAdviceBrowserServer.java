@@ -17,7 +17,8 @@ import static org.mockito.Mockito.*;
 public final class DependencyAdviceBrowserServer {
     @TestConfiguration
     public static class AdviceFixture {
-        @Bean @Primary AiProviderResolver guardedAdviceResolver(AiProperties properties,RealOpenAiProvider real,ObjectMapper json){
+        @Bean @Primary AiProviderResolver guardedAdviceResolver(AiProperties properties,RealOpenAiProvider real,ObjectMapper json)throws Exception{
+            if("1".equals(System.getenv("SECUREDEPLOY_NEXT01_LIVE")))return com.securedeploy.ai.service.Next01LiveGate.create(properties,real);
             boolean live="1".equals(System.getenv("SECUREDEPLOY_AI03_LIVE"));
             AiProvider selected;
             if(live){
@@ -48,6 +49,7 @@ public final class DependencyAdviceBrowserServer {
                     if(d.has("context")){
                         var ctx=d.path("context");if(!ctx.path("code").asText().contains(".get(")||ctx.path("sources").isEmpty()||ctx.path("preservedFields").isEmpty()||!d.has("sourceFileHash")||!d.has("contextHash"))throw new IllegalArgumentException("FIX01_CONTEXT_REQUIRED");
                         Files.writeString(DependencyUpdateBrowserServer.root.resolve("fix01-mock-prompt.json"),json.writeValueAsString((WorkspacePatch.Prompt)i.getArgument(0)));
+                        com.securedeploy.ai.service.Next01RequestCapture.capture((WorkspacePatch.Prompt)i.getArgument(0),DependencyUpdateBrowserServer.root);
                     }
                     String replacement=d.path("ruleId").asText().equals("DEBUG_ENABLED")?code.replace("debug=true","debug=false"):code.replaceAll(",\\s*[A-Za-z_][A-Za-z0-9_]*:\\s*(?:process\\.env\\.[A-Z_][A-Z0-9_]*|Deno\\.env\\.get\\('[A-Z_][A-Z0-9_]*'\\))","");
                     return new WorkspacePatch.Output("PATCH",d.path("fileId").asText(),d.path("startLine").asInt(),d.path("expectedHash").asText(),replacement,"Mock 코드 수정 제안입니다. 원본 근거에 연결된 범위만 변경하며 실행 안전성은 확인하지 않았습니다.",List.of("정상 응답과 상태 코드를 확인하고 동일 진입점으로 재검사하세요."),List.of("Mock 생성이며 실제 모델 품질은 미검증입니다. API 호환성과 운영 환경은 별도 확인이 필요합니다."));});
