@@ -63,6 +63,6 @@ public class WorkspaceSemanticService {
     private Session owned(String workspace,String id){workspaces.get(workspace);synchronized(this){var s=sessions.get(id);if(s==null||s.user!=users.currentUserId()||!s.workspace.equals(workspace)||s.expires.isBefore(Instant.now()))throw fail(HttpStatus.NOT_FOUND,"검토 요청이 없거나 만료되었습니다.");return s;}}
     private boolean available(){var p=resolver.resolve();return properties.getProvider()==AiProviderType.OPENAI&&p.providerType()==AiProviderType.OPENAI&&p.isAvailable();}
     private String origin(){var value=resolver.resolve().executionOrigin();return value==null?"UNVERIFIED_PROVIDER":value;}
-    private synchronized View view(Session s){return new View(s.id,s.state,s.hash,s.revision,s.origin,available(),s.model,s.payload,s.selected,s.omitted,s.result,List.of("AI_SECURITY_CANDIDATE / REVIEW_REQUIRED · 확정 취약점·점수·위험 평가에 합산하지 않습니다.","등록된 Express handler의 미연결 흐름만 선별합니다. 다른 UNKNOWN·전체 프로젝트는 검토하지 않습니다.","문자열·정규식·주석을 제거했습니다. 원본 문맥 손실·미확인 사항이 남습니다."));}
+    private synchronized View view(Session s){return new View(s.id,s.state,s.hash,s.revision,s.origin,available(),s.model,s.payload,s.selected,s.omitted,s.result,List.of("AI_SECURITY_CANDIDATE / REVIEW_REQUIRED · 확정 취약점·점수·위험 평가에 합산하지 않습니다.","등록된 Express handler와 최대 두 개의 같은 파일 직접 호출 함수를 선별합니다. 파일 간 호출과 실행 경로는 미검증입니다. 다른 UNKNOWN·전체 프로젝트는 검토하지 않습니다.","문자열·정규식·주석을 제거했습니다. 원본 문맥 손실·미확인 사항이 남습니다."));}
     private static SecureDeployException fail(HttpStatus s,String m){return new SecureDeployException(s,m);}
 }

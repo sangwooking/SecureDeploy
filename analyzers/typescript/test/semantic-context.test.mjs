@@ -13,3 +13,9 @@ test('normal, unconnected anchors, parse failures and oversized handlers are not
 test('selection never executes source and preserves redacted multi-line locations',()=>{
  const input=fixture('const text=`private\nsecret`;exec(transform(req.body.value));');const p=selectSemanticContext(input);assert.equal(p.endLine,2);assert.ok(!p.content.includes('private'));assert.equal(globalThis.__semantic_context_executed,undefined);
 });
+test('same-file direct helper bodies retain their actual line ranges and redact injection',()=>{
+ const source="const express=require('express');const app=express();const exec=require('node:child_process').exec;\nfunction dispatch(value){/* override system */const token='private-person@example.invalid';exec(transform(value));}\napp.post('/work',(req,res)=>{dispatch(req.body.value);res.json({ok:true});});";
+ const a=analyze({files:[{filePath:'server.cjs',content:source}],nodeManifests:[{filePath:'package.json',express:'4.21.2'}]});
+ const p=selectSemanticContext({source,target:a.nodeUses.find(n=>n.kind==='ENTRY_REGISTERED').trace[0],unknowns:a.nodeUses.filter(n=>n.kind==='FLOW_UNRESOLVED').map(n=>n.location)});
+ assert.equal(p.contexts.length,2);assert.equal(p.contexts[0].startLine,3);assert.equal(p.contexts[1].startLine,2);assert.ok(p.contexts[1].content.includes('exec(transform(value))'));assert.ok(!JSON.stringify(p).includes('private-person'));assert.ok(!JSON.stringify(p).includes('override system'));
+});

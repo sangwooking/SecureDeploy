@@ -400,7 +400,7 @@ export interface AiUsageResponse {
   promptTokens: number;
   completionTokens: number;
   totalTokens: number;
-  estimatedCostUsd: number;
+  estimatedCostUsd: number | null;
   billable: boolean;
   trackedAt: string;
 }

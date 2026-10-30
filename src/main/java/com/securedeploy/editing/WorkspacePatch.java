@@ -8,7 +8,9 @@ import java.util.regex.Pattern;
 /** Closed properties and statically verified response-object patch contracts. */
 public final class WorkspacePatch {
     private WorkspacePatch() { }
-    public record Provider(String name, String model, boolean available) { }
+    public record Provider(String name, String model, boolean available,String origin) {
+        public Provider(String name,String model,boolean available){this(name,model,available,"UNVERIFIED_PROVIDER");}
+    }
     static final Provider DETERMINISTIC = new Provider("DETERMINISTIC", "AST_FIELD_REMOVAL_V1", true);
     public record FixOption(String method, String reason) { }
     public record Prepare(String fileId, long findingId, long revision, String originalHash, String currentHash,String flowFindingId) {
@@ -24,12 +26,15 @@ public final class WorkspacePatch {
     public record View(String id, String state, String fileId, long findingId, String ruleId, long reviewId,
                        String sourceRevision, long revision, String originalHash, String currentHash,
                        int startLine, String before, String after, String diff, Provider provider,
-                       String explanation, List<String> verificationSteps, List<String> limitations,String flowFindingId,String method) { }
+                       String explanation, List<String> verificationSteps, List<String> limitations,String flowFindingId,String method,com.securedeploy.ai.usage.AiUsageRecord usage) {
+        public View(String id,String state,String fileId,long findingId,String ruleId,long reviewId,String sourceRevision,long revision,String originalHash,String currentHash,int startLine,String before,String after,String diff,Provider provider,String explanation,List<String> verificationSteps,List<String> limitations,String flowFindingId,String method){this(id,state,fileId,findingId,ruleId,reviewId,sourceRevision,revision,originalHash,currentHash,startLine,before,after,diff,provider,explanation,verificationSteps,limitations,flowFindingId,method,null);}
+    }
     static final class Session {
         final String id = UUID.randomUUID().toString();
         final String fileId, rule, source, originalHash, currentHash, before;
         String after,diff;
         ResponsePatchValidator.Contract responseContract;
+        com.securedeploy.ai.usage.AiUsageRecord usage;
         final String flowFindingId;
         final long findingId, revision;
         final int line, offset;

@@ -37,13 +37,16 @@ public final class DependencyAdviceBrowserServer {
                     try{return method.invoke(real,args);}catch(InvocationTargetException e){throw e.getCause();}
                 });
             }else{
-                var mock=mock(AiProvider.class);when(mock.providerType()).thenReturn(AiProviderType.OPENAI);when(mock.isAvailable()).thenReturn(true);when(mock.executionOrigin()).thenReturn("MOCK");when(mock.consumeLastTokenUsage()).thenReturn(Optional.empty());
+                var mock=mock(AiProvider.class);when(mock.providerType()).thenReturn(AiProviderType.OPENAI);when(mock.isAvailable()).thenReturn(true);when(mock.executionOrigin()).thenReturn("MOCK");when(mock.consumeLastTokenUsage()).thenReturn(Optional.of(new com.securedeploy.ai.usage.AiTokenUsage(0,0,0,false,0,"mock-fixture-no-external",true)));
                 when(mock.generateSemanticReview(any(),any())).thenAnswer(i->{
                     var slices=(java.util.List<com.securedeploy.ai.semantic.SecuritySlice>)i.getArgument(0);
                     if(slices.isEmpty())return java.util.List.of();var slice=slices.get(0);var c=slice.contexts().get(0);
                     var e=new com.securedeploy.ai.semantic.SemanticCandidate.Evidence(c.contextId(),c.filePath().contains("invalid")?"invented.ts":c.filePath(),c.startLine(),c.endLine(),c.functionName(),"입력 처리와 미확인 함수의 보호 조치를 직접 확인해야 합니다.");
                     return java.util.List.of(new com.securedeploy.ai.semantic.SemanticCandidate.Proposal(slice.sliceId(),com.securedeploy.ai.semantic.SemanticCandidate.CandidateType.COMMAND_INJECTION_CANDIDATE,"미완료 흐름 추가 검토",com.securedeploy.ai.dto.AiConfidence.LOW,"Mock 통제 의견입니다. 실제 보안 문제로 확정하지 않습니다.",true,java.util.List.of(e),java.util.List.of("미확인 함수의 입력 처리와 실행 경로를 확인하세요."),slice.existingFindings().stream().map(com.securedeploy.ai.semantic.SecuritySlice.ExistingFinding::findingId).toList()));
                 });
+                when(mock.generateWorkspacePatch(any())).thenAnswer(i->{var d=json.readTree(((WorkspacePatch.Prompt)i.getArgument(0)).untrustedData());String code=d.path("untrustedCode").asText();
+                    String replacement=d.path("ruleId").asText().equals("DEBUG_ENABLED")?code.replace("debug=true","debug=false"):code.replaceAll(",\\s*[A-Za-z_][A-Za-z0-9_]*:\\s*(?:process\\.env\\.[A-Z_][A-Z0-9_]*|Deno\\.env\\.get\\('[A-Z_][A-Z0-9_]*'\\))","");
+                    return new WorkspacePatch.Output("PATCH",d.path("fileId").asText(),d.path("startLine").asInt(),d.path("expectedHash").asText(),replacement,"Mock 코드 수정 제안입니다. 원본 근거에 연결된 범위만 변경하며 실행 안전성은 확인하지 않았습니다.",List.of("정상 응답과 상태 코드를 확인하고 동일 진입점으로 재검사하세요."),List.of("Mock 생성이며 실제 모델 품질은 미검증입니다. API 호환성과 운영 환경은 별도 확인이 필요합니다."));});
                 when(mock.generateDependencyAdvice(any())).thenAnswer(i->{var d=json.readTree(((WorkspacePatch.Prompt)i.getArgument(0)).untrustedData());return new DependencyAiAdvice.Output(d.path("evidenceHash").asText(),d.path("packageName").asText(),d.path("lockedVersion").asText(),d.path("advisoryId").asText(),"PROPOSE_UPDATE",d.path("verifiedCandidateVersions").get(0).asText(),
                         "잠금 버전에 보안 공지가 연결되어 있습니다.","사용 방식에 따라 영향을 받을 수 있어 검토가 필요합니다.","실제 실행 경로와 영향은 확인되지 않았습니다.","상위 의존성과 범위를 제한한 업데이트를 검토하세요.",List.of("변경 내용을 검토하고 재검사하세요."),List.of("Mock 통제 응답이며 실제 모델 품질과 호환성은 미검증입니다."));});selected=mock;
             }

@@ -184,7 +184,7 @@ public class EditingWorkspaceService {
     public synchronized WorkspacePatch.FixOption fixOption(String id,WorkspacePatch.Prepare request,WorkspacePatch.Provider provider) {
         var state=owned(id);var file=file(state,request.fileId());
         if(!"EXACT_GIT_COMMIT".equals(state.identity))return new WorkspacePatch.FixOption("MANUAL_REVIEW","원본 일치가 검증되지 않아 수동 편집 후 새 분석이 필요합니다.");
-        if(!(file.original.path().endsWith(".properties")||file.original.path().endsWith(".ts")))
+        if(!(file.original.path().endsWith(".properties")||file.original.path().matches(".*\\.[cm]?[jt]s")))
             return new WorkspacePatch.FixOption("UNSUPPORTED","이 파일 유형의 수정안 생성은 지원하지 않습니다.");
         try {
             preparePatch(id,request,request.flowFindingId()!=null?WorkspacePatch.DETERMINISTIC:provider,false);
@@ -196,7 +196,7 @@ public class EditingWorkspaceService {
         }
     }
     public synchronized WorkspacePatch.View prepareDeterministicPatch(String id,WorkspacePatch.Prepare request) {
-        if(request.flowFindingId()==null)throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"자동 수정안은 지원되는 Deno 환경값 응답 Finding만 허용합니다.");
+        if(request.flowFindingId()==null)throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"자동 수정안은 지원되는 Deno·Express 환경값 응답 Finding만 허용합니다.");
         return preparePatch(id,request,WorkspacePatch.DETERMINISTIC,true);
     }
     private WorkspacePatch.View preparePatch(String id, WorkspacePatch.Prepare request, WorkspacePatch.Provider provider,boolean retain) {
@@ -232,11 +232,11 @@ public class EditingWorkspaceService {
     private WorkspacePatch.View prepareResponsePatch(State state,StoredFile file,WorkspacePatch.Prepare request,WorkspacePatch.Provider provider,ReviewEntity review,boolean retain) {
         if(request.findingId()!=0||request.flowFindingId().length()>200||state.patches.size()>=3)throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"지원 범위 또는 수정 제안 한도를 확인해 주세요.");
         try {
-            if(!file.original.path().endsWith(".ts")||!file.hash.equals(request.currentHash()))throw new IllegalArgumentException();
+            if(!file.original.path().matches(".*\\.[cm]?[jt]s")||!file.hash.equals(request.currentHash()))throw new IllegalArgumentException();
             var snapshot=review.getServerAnalysis();if(snapshot==null||snapshot.validatedFindings()==null)throw new IllegalArgumentException();
             var finding=snapshot.validatedFindings().stream().filter(f->f.findingId().equals(request.flowFindingId())).findFirst().orElseThrow();
             if(!finding.ruleId().equals("TS_SENSITIVE_DATA_EXPOSURE")||!finding.comparisonPolicy().equals("NOT_COMPARED")
-                    ||!file.original.path().equals(finding.location().filePath())||!finding.location().kind().equals("HTTP_RESPONSE")||finding.evidence().isEmpty())throw new IllegalArgumentException();
+                    ||!file.original.path().equals(finding.location().filePath())||!Set.of("HTTP_RESPONSE","EXPRESS_HTTP_RESPONSE").contains(finding.location().kind())||finding.evidence().isEmpty())throw new IllegalArgumentException();
             var sources=new ArrayList<com.securedeploy.analysis.typescript.ServerAnalysisSnapshot.Location>();
             for(var e:finding.evidence()) {
                 if(!e.sink().equals(finding.location())||!e.source().filePath().equals(file.original.path())
@@ -277,6 +277,7 @@ public class EditingWorkspaceService {
         session.state="GENERATING";session.explanation="동의한 최소 코드 범위만 전송합니다. 아직 파일은 변경되지 않았습니다.";
         return patchView(state,session,true);
     }
+    synchronized void recordPatchUsage(String id,String proposal,com.securedeploy.ai.usage.AiUsageRecord usage){var state=owned(id);patchOwned(state,proposal).usage=usage;}
     synchronized WorkspacePatch.View finishPatch(String id,String proposal,WorkspacePatch.Output output,String failure) {
         var state=owned(id);var session=patchOwned(state,proposal);
         if(!"GENERATING".equals(session.state))return patchView(state,session,false);
@@ -330,7 +331,7 @@ public class EditingWorkspaceService {
     private WorkspacePatch.View patchView(State state,WorkspacePatch.Session p,boolean internal) {
         boolean show=internal||Set.of("PROPOSED","ACCEPTED").contains(p.state);
         return new WorkspacePatch.View(p.id,p.state,p.fileId,p.findingId,p.rule,state.review,p.source,p.revision,p.originalHash,p.currentHash,p.line,
-                p.before,show?p.after:null,show?p.diff:null,p.provider,p.explanation,p.checks,p.limits,p.flowFindingId,p.method());
+                p.before,show?p.after:null,show?p.diff:null,p.provider,p.explanation,p.checks,p.limits,p.flowFindingId,p.method(),p.usage);
     }
     public synchronized Download download(String id, String format, Approval approval) throws IOException {
         var state = owned(id);

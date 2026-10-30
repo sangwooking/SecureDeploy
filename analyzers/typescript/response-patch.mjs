@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import {expressResponsePatch} from './express-response-patch.mjs';
 import {pathToFileURL} from 'node:url';
 
 const fail=()=>{throw new Error('MANUAL_REVIEW_REQUIRED');};
@@ -23,6 +24,7 @@ function object(text){
   return properties;
 }
 export function responsePatch(input){
+  if(input?.sink?.kind==='EXPRESS_HTTP_RESPONSE')return expressResponsePatch(input,{object,literal});
   const {source,sink,sources,replacement}=input;
   if(typeof source!=='string'||Buffer.byteLength(source)>65536||!sink||!Array.isArray(sources)||sources.length<1||sources.length>20)fail();
   const file=ts.createSourceFile('input.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);

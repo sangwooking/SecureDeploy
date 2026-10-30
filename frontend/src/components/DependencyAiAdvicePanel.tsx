@@ -1,3 +1,4 @@
+import {AiRequestDisclosure} from './AiRequestDisclosure';
 import { ApiRequestError, requestProblem } from '../api/requestProblem';
 import { useEffect, useRef, useState } from 'react';
 import { dependencyAdviceProvider, prepareDependencyAdvice, generateDependencyAdvice, getDependencyAdvice } from '../api/securityReviewApi';
@@ -31,7 +32,7 @@ export function DependencyAiAdvicePanel({reviewId,evidence,onEditDependency,sele
    <p className="source-label source-label-advice">{providerOriginLabel(view.provider.origin,view.provider.name)}</p>
    <h4>{states[view.state]??'요청 상태 확인 필요'}</h4><p>{view.message}</p>
    {view.provider.origin==='ARCHIVED_OPENAI'&&<p className="review-caution">과거 검증 기록의 재표시입니다. 이번 화면에서 모델 호출·새 수정·재검사를 수행한 결과가 아닙니다.</p>}
-   {view.state==='APPROVAL_REQUIRED'&&<><p>전송할 공개 메타데이터입니다. 비공개 프로젝트명·파일 경로·소스는 포함하지 않습니다.</p><pre>{view.transmittedData}</pre><label className="consent-control"><input type="checkbox" checked={consent} disabled={busy} onChange={e=>setConsent(e.target.checked)}/>이 메타데이터의 외부 전송과 API 비용 발생 가능성에 동의합니다.</label><button type="button" className="primary-button" disabled={busy||!consent||!view.provider.available} onClick={()=>void perform(()=>generateDependencyAdvice(reviewId,view.id,view.evidenceHash))}>동의한 근거로 AI 수정 방향 생성</button></>}
+   {view.state==='APPROVAL_REQUIRED'&&<><p>전송할 공개 메타데이터입니다. 비공개 프로젝트명·파일 경로·소스는 포함하지 않습니다.</p><pre>{view.transmittedData}</pre><AiRequestDisclosure task="라이브러리 수정 방향 제안" scope="공개 패키지·잠금 버전·보안 공지·서버가 검증한 수정 후보 메타데이터만 전송합니다."/><label className="consent-control"><input type="checkbox" checked={consent} disabled={busy} onChange={e=>setConsent(e.target.checked)}/>이 메타데이터의 외부 전송과 API 비용 발생 가능성에 동의합니다.</label><button type="button" className="primary-button" disabled={busy||!consent||!view.provider.available} onClick={()=>void perform(()=>generateDependencyAdvice(reviewId,view.id,view.evidenceHash))}>동의한 근거로 AI 수정 방향 생성</button></>}
    {busy&&<p role="status">요청을 처리 중입니다. 파일은 변경하지 않습니다.</p>}
    <button type="button" className="text-action" disabled={busy} onClick={()=>void perform(()=>getDependencyAdvice(reviewId,view.id))}>기존 요청 상태 확인</button>
    <DependencyAdviceResult view={view} onEditDependency={onEditDependency} archived={view.provider.origin==='ARCHIVED_OPENAI'}/>

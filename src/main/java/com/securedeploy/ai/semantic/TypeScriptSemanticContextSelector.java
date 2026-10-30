@@ -29,13 +29,18 @@ public class TypeScriptSemanticContextSelector {
                 if(unknown.isEmpty())continue;
                 if(slices.size()>=limits.getMaxSlices()){omitted++;continue;}
                 try{
-                    var node=extract(source.content(),target,unknown);String content=node.path("content").asText();int from=node.path("startLine").asInt(),to=node.path("endLine").asInt();
-                    if(content.isBlank()||content.length()>limits.getMaxSnippetChars()||from<1||to<from||!content.equals(sanitizer.text(content,limits.getMaxSnippetChars()))||total+content.length()>limits.getMaxContextChars())throw new IllegalArgumentException();
-                    String id=SecuritySliceCollector.id(source.path()+":"+from+":"+source.originalHash());
-                    if(slices.stream().anyMatch(s->s.sliceId().equals(id)))continue;
-                    var linked=analysis.validatedFindings()==null?List.<SecuritySlice.ExistingFinding>of():analysis.validatedFindings().stream().filter(f->f.location().filePath().equals(source.path())&&f.location().line()>=from&&f.location().line()<=to).limit(20).map(f->new SecuritySlice.ExistingFinding(f.findingId(),f.ruleId(),source.path(),f.location().line())).toList();
-                    var context=new SecuritySlice.CodeContext(id,source.path(),from,to,target.functionName(),false,content);
-                    slices.add(new SecuritySlice(id,"WORKER_REGISTERED_EXPRESS_HANDLER","STATIC_REGISTRATION_ENDPOINT_NOT_TRANSMITTED","UNKNOWN","AUTHORIZATION_NOT_VERIFIED",List.of(),List.of(context),linked,List.of("NODE_FLOW_UNRESOLVED","REDACTED_LITERALS_AND_COMMENTS","DIRECT_HANDLER_ONLY_NO_HELPER_BODY","STATIC_REGISTRATION_NOT_RUNTIME_PROOF")));total+=content.length();
+                    var node=extract(source.content(),target,unknown);
+                    String id=SecuritySliceCollector.id(source.path()+":"+target.line()+":"+source.originalHash());
+                    if(slices.stream().anyMatch(v->v.sliceId().equals(id)))continue;
+                    var contexts=new ArrayList<SecuritySlice.CodeContext>();int chars=0;
+                    var nodes=node.path("contexts");if(!nodes.isArray()||nodes.isEmpty()||nodes.size()>3)throw new IllegalArgumentException();
+                    for(var part:nodes){String content=part.path("content").asText();int from=part.path("startLine").asInt(),to=part.path("endLine").asInt();
+                        if(content.isBlank()||from<1||to<from||!content.equals(sanitizer.text(content,limits.getMaxSnippetChars())))throw new IllegalArgumentException();
+                        chars+=content.length();contexts.add(new SecuritySlice.CodeContext(id+"-"+contexts.size(),source.path(),from,to,part.path("functionName").asText(),false,content));
+                    }
+                    if(chars>limits.getMaxSnippetChars()||total+chars>limits.getMaxContextChars())throw new IllegalArgumentException();
+                    var linked=analysis.validatedFindings()==null?List.<SecuritySlice.ExistingFinding>of():analysis.validatedFindings().stream().filter(v->v.location().filePath().equals(source.path())&&contexts.stream().anyMatch(c->v.location().line()>=c.startLine()&&v.location().line()<=c.endLine())).limit(20).map(v->new SecuritySlice.ExistingFinding(v.findingId(),v.ruleId(),source.path(),v.location().line())).toList();
+                    slices.add(new SecuritySlice(id,"WORKER_REGISTERED_EXPRESS_HANDLER","STATIC_REGISTRATION_ENDPOINT_NOT_TRANSMITTED","UNKNOWN","AUTHORIZATION_NOT_VERIFIED",List.of(),List.copyOf(contexts),linked,List.of("NODE_FLOW_UNRESOLVED","REDACTED_LITERALS_AND_COMMENTS","SAME_FILE_DIRECT_HELPER_SYNTAX_ONLY","CROSS_FILE_AND_RUNTIME_NOT_VERIFIED")));total+=chars;
                 }catch(RuntimeException e){omitted++;}
             }
         }

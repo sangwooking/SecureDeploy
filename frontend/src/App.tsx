@@ -44,6 +44,12 @@ export default function App() {
     } catch (e) { setError(e instanceof Error ? e.message : '인증에 실패했습니다.'); }
     finally { setBusy(false); }
   };
+  useEffect(()=>{
+    const changed=(event:StorageEvent)=>{if(event.storageArea===localStorage&&(event.key===ACCESS_TOKEN_STORAGE_KEY||event.key===AUTH_USER_STORAGE_KEY||event.key===null)){
+      setSession(null);setPassword('');setName('');setEmail('');setError('다른 탭에서 로그인 상태가 변경되어 편집 화면을 닫았습니다. 다시 로그인해 주세요.');
+    }};
+    window.addEventListener('storage',changed);return()=>window.removeEventListener('storage',changed);
+  },[]);
   const logout = () => {
     localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY); localStorage.removeItem(AUTH_USER_STORAGE_KEY);
     setSession(null); setPassword(''); setName(''); setEmail(''); setError('');

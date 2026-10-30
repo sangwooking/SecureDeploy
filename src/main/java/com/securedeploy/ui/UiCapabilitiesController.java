@@ -21,8 +21,12 @@ public class UiCapabilitiesController {
     public Map<String,Object> capabilities() {
         var provider=resolver.resolve();
         boolean available=properties.getProvider()==AiProviderType.OPENAI&&provider.providerType()==AiProviderType.OPENAI&&provider.isAvailable();
-        return Map.of("schemaVersion",1,"dependencyPlans",true,"dependencyAdvice",true,"workspaceSemanticReview",true,
+        var result=new java.util.LinkedHashMap<String,Object>(Map.of("schemaVersion",1,"dependencyPlans",true,"dependencyAdvice",true,"workspaceSemanticReview",true,
                 "dependencyFiles",true,"npmGeneration",npm.enabled(),"providerAvailable",available,
-                "providerOrigin",provider.executionOrigin()==null?"UNVERIFIED_PROVIDER":provider.executionOrigin());
+                "providerOrigin",provider.executionOrigin()==null?"UNVERIFIED_PROVIDER":provider.executionOrigin()));
+        result.put("aiCost",com.securedeploy.ai.usage.AiCostPolicy.disclosure(properties.getOpenai().getModel()));
+        result.put("patchScopes",java.util.List.of("SPRING_LITERAL_PROPERTIES","DENO_DIRECT_ENV_JSON","EXPRESS_DIRECT_ENV_JSON"));
+        result.put("aiCapabilityMatrix",AiCapabilityMatrix.entries());
+        return result;
     }
 }

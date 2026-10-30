@@ -25,6 +25,7 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
   const disabled = id == null || statusActions.updatingId === id;
   const needsReview = needsVerification(finding, v);
   const guidance = findingGuidance(finding, v);
+  const impact=v.ruleId==='DEBUG_ENABLED'?'디버그 로그와 개발 진단 정보가 줄어들 수 있습니다. 운영에 필요한 관측 수단을 확인하세요.':v.ruleId==='STACKTRACE_EXPOSURE'?'오류 응답 형식과 장애 진단 방식이 달라질 수 있습니다. 내부 로그와 클라이언트 처리를 확인하세요.':v.ruleId==='INSECURE_COOKIE'?'HTTPS 연결과 브라우저의 쿠키 전달·로그인 유지 동작을 확인하세요.':v.ruleId==='HARDCODED_SECRET'?'환경변수 주입과 기존 키 교체가 필요할 수 있습니다. 배포 설정과 관련 연동을 확인하세요.':'정상 입력과 거부해야 할 입력을 함께 확인하고 기존 기능·출력 형식이 유지되는지 테스트하세요.';
   return <article className="vulnerability-item action-finding">
     <EvidenceSupportLayout evidence={<>
     <div className="vulnerability-header">
@@ -67,9 +68,9 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
       <p>신뢰도는 규칙이 인식한 패턴·구문에 대한 확신입니다. HIGH라도 외부 입력 연결이나 실제 공격 성공을 입증하지 않습니다. 심각도는 영향 수준이며 오탐 가능성과 별개입니다. 보호 처리와 실행 조건을 함께 확인하세요.</p>
       {v.evidence && <div className="evidence-block"><span>Evidence (API 제공 값)</span><code>{v.evidence}</code></div>}
     </details>
-    </>} support={<><p className="source-label">근거 기반 안내 · AI 생성과 구분</p><h4>왜 위험할 수 있나요?</h4><p>{guidance.risk}</p>    <p className="finding-next-step"><strong>{needsReview ? '먼저 확인할 내용' : '수정할 내용'}</strong><br />{needsReview ? guidance.steps[0] : guidance.action}</p>
+    </>} support={<><p className="source-label">근거 기반 안내 · AI 생성과 구분</p><h4>확인된 사실</h4><p>{v.filePath}의 {v.line}행에 저장된 규칙 근거가 있습니다. 원본 근거와 위치는 왼쪽 기술 정보에서 확인할 수 있습니다.</p><h4>아직 확인하지 못한 것</h4><p>실제 외부 입력·운영 설정·사용자 권한과 정상 기능은 해당 근거만으로 확정하지 않습니다.</p><h4>왜 위험할 수 있나요?</h4><p>{guidance.risk}</p>    <p className="finding-next-step"><strong>{needsReview ? '먼저 확인할 내용' : '수정할 내용'}</strong><br />{needsReview ? guidance.steps[0] : guidance.action}</p>
     {onEditFile && <button className="secondary-button" type="button" onClick={()=>onEditFile(v.filePath)}>이 파일 수정하기</button>}
-    <p className="fix-availability">{onEditFile?'수동 수정 · 자동/AI 수정 가능 여부는 작업 공간에서 현재 소스를 확인한 뒤 안내합니다.':'이 화면에서는 코드 수정이 지원되지 않습니다.'}</p>
+    <p>기능 영향: {impact}</p><p className="fix-availability">{onEditFile?'수동 수정 · 자동/AI 수정 가능 여부는 작업 공간에서 현재 소스를 확인한 뒤 안내합니다.':'이 화면에서는 코드 수정이 지원되지 않습니다.'}</p>
     <FindingRemediation finding={finding} snapshot={remediation} vulnerability={v} />
 <p>수정 적용 후 관련 기능과 분석 범위를 다시 확인하세요. 안전성을 입증하지 못한 부분은 검토 필요로 유지합니다.</p></>} />
   </article>;

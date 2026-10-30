@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class WorkspacePatchService {
+    private record Generation(WorkspacePatch.Output output,AiUsageRecord usage){}
     private final EditingWorkspaceService workspaces;
     private final AiProviderResolver resolver;
     private final AiProperties properties;
@@ -35,7 +36,7 @@ public class WorkspacePatchService {
     public WorkspacePatch.Provider provider() {
         var selected=resolver.resolve();
         boolean available=properties.getProvider()==AiProviderType.OPENAI&&selected.providerType()==AiProviderType.OPENAI&&selected.isAvailable();
-        return new WorkspacePatch.Provider("OPENAI",properties.getOpenai().getModel(),available);
+        return new WorkspacePatch.Provider("OPENAI",properties.getOpenai().getModel(),available,selected.executionOrigin()==null?"UNVERIFIED_PROVIDER":selected.executionOrigin());
     }
     public WorkspacePatch.View prepare(String workspace,WorkspacePatch.Prepare request) {
         return workspaces.preparePatch(workspace,request,provider());
@@ -50,24 +51,27 @@ public class WorkspacePatchService {
             view=workspaces.beginPatch(workspace,proposal,consent,provider());
             calls.addLast(Instant.now(clock));
         }
-        Future<WorkspacePatch.Output> future=null;
+        Future<Generation> future=null;
         try {
             var prompt=prompt(view);
             var selected=resolver.resolve();
             future=executor.submit(()->{
                 selected.consumeLastTokenUsage();
-                try { return selected.generateWorkspacePatch(prompt); }
+                WorkspacePatch.Output output;AiUsageRecord measured;
+                try { output=selected.generateWorkspacePatch(prompt); }
                 finally {
                     // Missing usage after a request is not evidence that a remote call was free.
                     var tokens=selected.consumeLastTokenUsage().orElse(new AiTokenUsage(0,0,0,true));
-                    usage.track(com.securedeploy.ai.dto.AiFeatureType.WORKSPACE_PATCH,selected.providerType(),null,null,tokens);
+                    measured=usage.track(com.securedeploy.ai.dto.AiFeatureType.WORKSPACE_PATCH,selected.providerType(),null,null,tokens);
                 }
+                return new Generation(output,measured);
             });
             jobs.put(proposal,future);
             // A cancellation before job registration must not leave a fresh request running unnoticed.
             if(!"GENERATING".equals(workspaces.patch(workspace,proposal).state()))future.cancel(true);
             int seconds=Math.max(1,Math.min(45,properties.getOpenai().getTimeoutSeconds()+2));
-            return workspaces.finishPatch(workspace,proposal,future.get(seconds,TimeUnit.SECONDS),null);
+            var generated=future.get(seconds,TimeUnit.SECONDS);workspaces.recordPatchUsage(workspace,proposal,generated.usage());
+            return workspaces.finishPatch(workspace,proposal,generated.output(),null);
         }catch(InterruptedException interrupted){Thread.currentThread().interrupt();return workspaces.finishPatch(workspace,proposal,null,"FAILED");}
         catch(Exception failed){return workspaces.finishPatch(workspace,proposal,null,failed instanceof ExecutionException&&failed.getCause() instanceof IllegalArgumentException?"INVALID":"FAILED");}
         finally {if(future!=null&&!future.isDone())future.cancel(true);jobs.remove(proposal);}
@@ -93,8 +97,8 @@ public class WorkspacePatchService {
         String payload=mapper.writeValueAsString(data);
         if(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8).length>8192)throw SourceArchive.limit();
         String instructions=view.flowFindingId()!=null
-                ? "Propose a minimal Deno Response.json object replacement for the confirmed server environment exposure. "
-                  +"Remove only properties whose values directly call Deno.env.get. Preserve the exact text and order of every other property. "
+                ? "Propose a minimal Deno Response.json or Express response.json object replacement for the confirmed server environment exposure. "
+                  +"Remove only properties whose values directly call Deno.env.get or directly read process.env.KEY. Preserve the exact text and order of every other property. "
                   +"Keep at least one existing normal property; do not insert placeholders, new values, new properties or comments. "
                   +"Never change handlers, authentication, response status or server-internal logic. Removing an API response field can break clients: explain this impact in Korean in explanation and limitations. "
                 : "Propose one minimal literal .properties value change for the identified security finding. "

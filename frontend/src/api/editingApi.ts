@@ -28,8 +28,8 @@ export async function exportEditingWorkspace(workspace: EditingWorkspace, format
   if (!response.ok) { const error = await response.json().catch(() => null); throw new Error(error?.message ?? '수정본을 다운로드하지 못했습니다.'); }
   return response.blob();
 }
-export interface PatchProvider { name: string; model: string; available: boolean }
-export interface AiPatch { id: string; state: string; fileId: string; findingId: number; ruleId: string; reviewId: number;
+export interface PatchProvider { origin?:string; name: string; model: string; available: boolean }
+export interface AiPatch { usage?:{model?:string;promptTokens:number;completionTokens:number;cachedInputTokens:number;usageKnown:boolean;estimatedCostUsd:number|null;costStatus:string;billable:boolean}|null; id: string; state: string; fileId: string; findingId: number; ruleId: string; reviewId: number;
   sourceRevision: string; revision: number; originalHash: string; currentHash: string; startLine: number;
   before: string; after: string | null; diff: string | null; provider: PatchProvider; explanation: string;
   verificationSteps: string[]; limitations: string[]; flowFindingId?: string | null; method?: 'AI_ASSISTED' | 'DETERMINISTIC_FIX' }

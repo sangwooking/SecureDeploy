@@ -1,3 +1,4 @@
+import {workspaceStorageKey} from './workspaceStorage';
 import { workspaceRecoveryProblem, validResumedWorkspace } from './workspaceRecovery';
 import { ApiRequestError, requestProblem } from '../api/requestProblem';
 import { useUiCapabilities } from './useUiCapabilities';
@@ -28,7 +29,8 @@ function FileTree({ files, selected, disabled, onSelect }: { files: EditingFile[
 
 export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdviceId, embedded=false }: { result: SecurityReviewResponse; onBack: () => void; initialPath?: string; initialAdviceId?: string;embedded?:boolean }) {
   const cap=useUiCapabilities();
-  const key = `securedeploy.editing.${result.reviewId}`;
+  const key = workspaceStorageKey(result.reviewId);
+  const legacyKey=`securedeploy.editing.${result.reviewId}`;
   const [workspace, setWorkspace] = useState<EditingWorkspace | null>(null);
   const [selected, setSelected] = useState<EditingFile | null>(null);
   const [content, setContent] = useState<EditingContent | null>(null);
@@ -37,6 +39,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [diffs, setDiffs] = useState<EditingDiff[] | null>(null), [approved, setApproved] = useState(false);
   const [expired, setExpired] = useState(false);
+  const [remainingMinutes,setRemainingMinutes]=useState<number|null>(null);
   const [resumeId,setResumeId]=useState('');
   const [resumeAttempt,setResumeAttempt]=useState(0);
   const [recovery,setRecovery]=useState<ReturnType<typeof workspaceRecoveryProblem>|null>(null);
@@ -49,20 +52,20 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   useEffect(() => {
     mounted.current = true;
     let current=true;
-    const stored = sessionStorage.getItem(key);
+    const stored = sessionStorage.getItem(key)??sessionStorage.getItem(legacyKey);
     setResumeId(stored??''); setRecovery(null);
     if (stored) {
       setBusy(true);
       loadEditingWorkspace(stored).then(value => {
         if (!validResumedWorkspace(value,stored,result.reviewId)) throw new Error('WORKSPACE_REVIEW_MISMATCH');
-        if(current){setWorkspace(value);setExpired(Date.parse(value.expiresAt)<=Date.now());}
+        if(current){sessionStorage.setItem(key,value.id);setWorkspace(value);setExpired(Date.parse(value.expiresAt)<=Date.now());}
       }).catch(e => { if(current)setRecovery(workspaceRecoveryProblem(e)); })
         .finally(() => { if(current)setBusy(false); });
     }
     return () => { current=false;mounted.current = false; };
   }, [key,resumeAttempt]);
   useEffect(() => {
-    const check = () => { if (workspace && Date.parse(workspace.expiresAt) <= Date.now()) { setExpired(true); setDiffs(null); setApproved(false); } };
+    const check = () => { if(workspace)setRemainingMinutes(Math.max(0,Math.ceil((Date.parse(workspace.expiresAt)-Date.now())/60000))); if (workspace && Date.parse(workspace.expiresAt) <= Date.now()) { setExpired(true); setDiffs(null); setApproved(false); } };
     check(); const timer = setInterval(check, 1000); return () => clearInterval(timer);
   }, [workspace]);
   useEffect(() => {
@@ -140,7 +143,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
     {recovery && <div role="alert" className="workspace-recovery"><p><strong>{recovery.message}</strong></p><p>이 안내만으로 만료나 데이터 손실을 확정할 수 없습니다. 이전 작업 식별자는 재시도를 위해 유지합니다.</p><button type="button" disabled={busy} onClick={()=>setResumeAttempt(n=>n+1)}>이전 작업 다시 확인</button></div>}
     {error && <p className="error-message" role="alert">{error}</p>}
     {!workspace ? <div className="source-editor-acquire">
-      <p>원본은 30분 동안 임시 보관되며 서버 재시작 시 사라집니다. 편집 내용은 자동 재검사되거나 GitHub에 반영되지 않습니다.</p>
+      <p>원본은 30분 동안 임시 보관되며 서버 재시작 시 사라집니다. 편집 내용은 자동 재검사되거나 GitHub에 반영되지 않습니다. 저장도 임시 서버 보관입니다. 다른 탭에서 계정을 변경하기 전에 승인한 Patch/ZIP을 내보내 주세요.</p>
       {result.sourceType === 'ZIP' ? <><p role="note">과거 ZIP과 일치하는지 검증할 기록이 없습니다. 과거 경고 위치를 확정 연결하지 않으며 다운로드 후 새로 분석해야 합니다.</p>
         <label>원본 ZIP <input type="file" accept=".zip,application/zip" disabled={busy} onChange={e => setZip(e.target.files?.[0] ?? null)} /></label></>
         : <p>현재 읽기 권한을 확인하고 분석 당시 commit만 가져옵니다. 해당 commit을 확보하지 못하면 작업을 중단합니다.</p>}
@@ -148,8 +151,10 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
       <button className="primary-button" type="button" disabled={busy || (!!resumeId && recovery?.allowSourceAttempt!==true) || !result.reviewId || !result.sourceType || result.sourceType === 'WORKSPACE' || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 시도 후 새 작업 시작'}</button>
     </div> : <>
       <div className="source-editor-status"><p><strong>수정본 버전 {workspace.revision}</strong> · 만료 {new Date(workspace.expiresAt).toLocaleTimeString('ko-KR')} · 변경 {workspace.changedFileIds.length}개</p>
+        <p role="note">임시 작업 공간입니다. 저장한 파일과 AI 제안도 30분 또는 서버 재시작 시 사라집니다. 보관하려면 변경 검토·승인 후 Patch/ZIP을 내보내 주세요.</p>
         <details><summary>원본·해시 정보</summary><p className="source-revision">원본: {workspace.sourceRevision}</p></details>
         {workspace.identityStatus === 'UNVERIFIED_REUPLOAD' && <p role="note">이전 검사 원본과 같은 파일인지 확인하지 못했어요. 과거 문제 위치를 연결하지 않으며, 수정 후 새 검사가 필요해요.</p>}
+        {remainingMinutes!==null&&remainingMinutes>0&&remainingMinutes<=5&&<p role="alert">작업 공간 이용 시간이 {remainingMinutes}분 이내로 남았어요. 미저장 변경을 저장한 뒤 변경 검토·승인을 거쳐 Patch/ZIP을 내보내 주세요. 자동 다운로드하지 않습니다.</p>}
         {expired && <div role="alert"><p>이전 수정 작업을 이어갈 수 없어요. 작업 공간의 이용 시간이 지났습니다.</p><p>새 작업은 이전 변경을 복원하지 않습니다. 아래 편집 내용이 남아 있다면 먼저 복사해 보관해 주세요.</p>{result.sourceType==='GITHUB'&&result.sourceMetadata?.commitSha&&<><p>분석 당시 원본을 실제로 확보한 경우에만 새 작업을 시작합니다.</p><button type="button" className="primary-button" disabled={busy} onClick={()=>void start()}>원본 확보 가능 여부 확인</button></>}{content&&<label>브라우저에 남은 편집 내용<textarea aria-label="만료된 작업의 편집 내용" className="source-code" readOnly value={text}/></label>}</div>}
         <details><summary>작업 공간 관리</summary><button type="button" className="secondary-button" disabled={busy} onClick={clear}>작업 공간 삭제</button></details>
       </div>
@@ -169,7 +174,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
           </nav>
           <div className="source-edit-pane">
             {selected ? <><h3>{selected.path}</h3><p>{selected.size.toLocaleString()} bytes · {selected.editable ? `${content?.newline ?? 'UTF-8'}${content?.bom ? ' · BOM 보존' : ''}` : '읽기 전용: 바이너리·크기·인코딩 제한'}</p>
-              {selected.editable && content && <><label className="source-code-label" htmlFor="source-code"><span className="editor-file-path">{selected.path}</span><span role="status">{dirty ? '저장하지 않은 변경' : selected.changed ? '저장됨 · 재검사로 확인 필요' : '원본과 동일'}</span><span className="visually-hidden">파일 내용</span></label>
+              {selected.editable && content && <><label className="source-code-label" htmlFor="source-code"><span className="editor-file-path">{selected.path}</span><span role="status">{dirty ? '저장하지 않은 변경' : selected.changed ? '임시 서버 저장 · 재검사로 확인 필요' : '원본과 동일'}</span><span className="visually-hidden">파일 내용</span></label>
                 <textarea id="source-code" className="source-code" value={text} spellCheck={false} autoCapitalize="off" autoComplete="off" autoCorrect="off" disabled={busy} onChange={e => { setText(e.target.value); setApproved(false); setDiffs(null); }} />
                 <div className="source-editor-actions"><button type="button" className="primary-button" disabled={busy || !dirty} onClick={() => save(false)}>변경 저장</button>
                   <button type="button" className="secondary-button" disabled={busy || (!selected.changed && !dirty)} onClick={() => save(true)}>원본으로 되돌리기</button></div></>}
@@ -177,7 +182,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
           </div>
           <aside className="source-evidence-pane" aria-label="선택 파일의 수정 근거">
             {selected ? <>
-              {selected.editable && content && ((selected.path.endsWith('.properties')&&findings.some(f=>['DEBUG_ENABLED','STACKTRACE_EXPOSURE','INSECURE_COOKIE'].includes(f.ruleId)))||(selected.path.endsWith('.ts')&&flowFindings.some(f=>f.ruleId==='TS_SENSITIVE_DATA_EXPOSURE'&&f.location.kind==='HTTP_RESPONSE'))) && <AiPatchPanel key={selected.id} workspace={workspace} file={selected} content={content} findings={findings} flowFindings={flowFindings} dirty={dirty} disabled={busy}
+              {selected.editable && content && ((selected.path.endsWith('.properties')&&findings.some(f=>['DEBUG_ENABLED','STACKTRACE_EXPOSURE','INSECURE_COOKIE'].includes(f.ruleId)))||(/\.[cm]?[jt]s$/.test(selected.path)&&flowFindings.some(f=>f.ruleId==='TS_SENSITIVE_DATA_EXPOSURE'&&(f.location.kind==='HTTP_RESPONSE'||f.location.kind==='EXPRESS_HTTP_RESPONSE'&&cap.value?.patchScopes?.includes('EXPRESS_DIRECT_ENV_JSON'))))) && <AiPatchPanel key={selected.id} workspace={workspace} file={selected} content={content} findings={findings} flowFindings={flowFindings} dirty={dirty} disabled={busy}
                 onApplied={async next => { setWorkspace(next);setDiffs(null);setApproved(false);setSelected(next.files.find(f => f.id === selected.id) ?? null);
                   const value=await loadEditingFile(next.id,selected.id);setContent(value);setText(value.text.replace(/\r\n/g,'\n')); }} />}
               {(findings.length > 0 || flowFindings.length > 0) && <aside aria-label="기준 분석 근거"><h3>기준 commit의 경고 위치</h3>

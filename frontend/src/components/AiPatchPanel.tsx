@@ -1,3 +1,6 @@
+import {AiRequestDisclosure} from './AiRequestDisclosure';
+import {useUiCapabilities} from './useUiCapabilities';
+import {providerOriginLabel} from './EvidenceSupportLayout';
 import { requestProblem } from '../api/requestProblem';
 import { useEffect, useRef, useState } from 'react';
 import { applyAiPatch, generateAiPatch, listAiPatches, patchProvider, prepareAiPatch, rejectAiPatch, fixOption, prepareDeterministicPatch } from '../api/editingApi';
@@ -13,6 +16,7 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
   flowFindings?: NonNullable<ServerAnalysisSnapshot['validatedFindings']>;
   onApplied: (value: EditingWorkspace) => Promise<void>;
 }) {
+  const cap=useUiCapabilities();
   const [provider, setProvider] = useState<PatchProvider | null>(null);
   const [finding, setFinding] = useState('');
   const [option,setOption]=useState<FixOption|null>(null);
@@ -39,7 +43,7 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
     return () => { current = false; };
   }, [workspace.id, workspace.revision, file.id]);
   const candidates = findings.filter(v => v.vulnerabilityId != null && ['DEBUG_ENABLED','STACKTRACE_EXPOSURE','INSECURE_COOKIE'].includes(v.ruleId));
-  const flows=flowFindings.filter(f=>f.ruleId==='TS_SENSITIVE_DATA_EXPOSURE'&&f.location.kind==='HTTP_RESPONSE');
+  const flows=flowFindings.filter(f=>f.ruleId==='TS_SENSITIVE_DATA_EXPOSURE'&&(f.location.kind==='HTTP_RESPONSE'||f.location.kind==='EXPRESS_HTTP_RESPONSE'&&cap.value?.patchScopes?.includes('EXPRESS_DIRECT_ENV_JSON')));
   const selected = proposals.find(p => p.id === selectedId) ?? proposals[proposals.length - 1];
   const deterministic=selected?.method==='DETERMINISTIC_FIX';
   const update = (value: AiPatch) => { if (active.current) { setProposals(old => [...old.filter(p => p.id !== value.id), value]); setSelectedId(value.id); } };
@@ -69,12 +73,12 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
     const next = await applyAiPatch(workspace.id,selected);
     update({ ...selected, state: 'ACCEPTED' }); setAccepted(false); await onApplied(next);
   });
-  const eligible = workspace.identityStatus === 'EXACT_GIT_COMMIT' && (file.path.endsWith('.properties')||file.path.endsWith('.ts'));
+  const eligible = workspace.identityStatus === 'EXACT_GIT_COMMIT' && (file.path.endsWith('.properties')||/\.[cm]?[jt]s$/.test(file.path));
   return <section className="source-ai-patch" aria-label="보안 수정안">
     <h3>보안 수정안</h3>
     <p>제안 생성은 파일을 바꾸지 않습니다. 검토 후 적용해도 실제 보안 문제 해결 여부는 재검사해야 합니다.</p>
-    {!!flows.length&&<p>Deno TypeScript 객체 응답의 환경값 필드 제거만 제한적으로 지원합니다. 서버가 코드 범위를 확인하지 못하면 전송하지 않고 수동 검토를 안내합니다.</p>}
-    {!eligible ? <p>원본 commit과 일치하는 단순 .properties 설정 또는 제한된 Deno 객체 응답만 지원합니다. ZIP 원본 미검증·다른 코드 유형은 수동 검토가 필요합니다.</p>
+    {!!flows.length&&<p>Deno 직접 Response.json과 Express 기본 ESM import app의 inline JSON 응답에서 환경값 필드 제거만 제한적으로 지원합니다. Router·별칭·동적 객체는 수동 검토가 필요합니다. 서버가 코드 범위를 확인하지 못하면 전송하지 않고 수동 검토를 안내합니다.</p>}
+    {!eligible ? <p>원본 commit과 일치하는 단순 .properties 설정 또는 제한된 Deno·Express 객체 응답만 지원합니다. ZIP 원본 미검증·다른 코드 유형은 수동 검토가 필요합니다.</p>
       : <>{provider?.available?<p>AI 선택 시 Provider: {provider.name} · 모델: {provider.model} · 외부 전송 및 비용 발생 가능</p>:<p>AI 수정 Provider가 준비되지 않았습니다. 지원되는 자동 수정안과 수동 편집은 사용할 수 있습니다.</p>}
         {candidates.length === 0 && flows.length === 0 ? <p>이 파일에 자동 수정 범위로 연결할 수 있는 Finding이 없습니다. 권한·RLS·SCA·동적 흐름은 추가 검토 대상입니다.</p>
           : <><label htmlFor="patch-finding">수정할 분석 항목</label><select id="patch-finding" value={finding} disabled={disabled || !!pending} onChange={e => setFinding(e.target.value)}>
@@ -90,13 +94,15 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
       {proposals.map((p,i) => <option key={p.id} value={p.id}>{i+1}. {p.method==='DETERMINISTIC_FIX'?'자동':'AI'} · {p.ruleId} · {states[p.state] ?? p.state}</option>)}</select></label>}
     {selected && <div className="source-ai-proposal">
       <h4>{states[selected.state] ?? '알 수 없는 제안 상태'}</h4>
-      <p className={`proposal-method ${deterministic?'method-deterministic':'method-ai'}`}>{deterministic?'자동 수정안 · 정적 근거 기반 · 외부 AI 전송·비용 없음':'AI 수정 제안 · 외부 Provider 사용'}</p>
+      <p className={`proposal-method ${deterministic?'method-deterministic':'method-ai'}`}>{deterministic?'자동 수정안 · 정적 근거 기반 · 외부 AI 전송·비용 없음':providerOriginLabel(selected.provider.origin,selected.provider.name)}</p>
       <p>{file.path} · 현재 {selected.startLine}행 · 기준 revision {selected.revision} · {selected.ruleId}</p>
       {selected.flowFindingId&&<p>{deterministic?'수정':'전송'} 범위: {selected.startLine}~{selected.startLine+selected.before.split('\n').length-1}행의 객체 응답 부분입니다. 파일 전체가 아닙니다.</p>}
       <p>{selected.explanation}</p>
+      {selected.usage&&<p role="status">{selected.usage.billable?'API 응답 사용량':'과금 없는 테스트 사용량'} · 모델 {selected.usage.model??'미확인'} · 입력 {selected.usage.promptTokens} / 캐시 {selected.usage.cachedInputTokens} / 출력 {selected.usage.completionTokens}토큰 · {selected.usage.estimatedCostUsd==null?'비용 미확인':`추정 US$${Number(selected.usage.estimatedCostUsd).toFixed(6)}`} · {selected.usage.usageKnown?'usage 수신':'usage 미확인'}</p>}
+      {!deterministic&&!selected.usage&&['FAILED','INVALID','GENERATING'].includes(selected.state)&&<p>실제 사용량과 비용을 아직 확인하지 못했습니다. 무료 처리됐다는 의미는 아닙니다.</p>}
       {!deterministic&&selected.state === 'APPROVAL_REQUIRED' && <>
         <p>전송 대상: 아래{selected.flowFindingId?' 객체 응답 코드':' 설정 한 줄'}와 Finding 규칙·파일 ID·행·내용 해시. 다른 파일과 주변 코드는 전송하지 않습니다.</p>
-        <pre className="source-ai-code">{selected.before}</pre>
+        <AiRequestDisclosure task="선택한 근거의 코드 수정안 생성" scope="아래 원본 코드 범위·규칙·파일 ID·행·해시를 전송합니다. 실제 비밀값과 파일 전체는 전송하지 않습니다."/><pre className="source-ai-code">{selected.before}</pre>
         <p>{selected.provider.name} / {selected.provider.model} · 저장소 밖 Provider로 전송합니다. 민감정보가 보이면 동의하지 마세요.</p>
         <label className="source-export-approval"><input type="checkbox" checked={consented} disabled={!!pending || dirty} onChange={e => setConsented(e.target.checked)} />이 코드 범위의 외부 전송과 유료 호출 가능성에 동의합니다.</label>
         <button type="button" className="primary-button" disabled={disabled || !!pending || dirty || !consented} onClick={generate}>동의한 코드로 AI 수정안 생성</button>

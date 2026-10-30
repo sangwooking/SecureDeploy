@@ -58,6 +58,8 @@ public class RealOpenAiProvider implements AiProvider {
         body.put("instructions",prompt.instructions());body.put("input",List.of(Map.of("role","user","content",prompt.untrustedData())));
         body.put("max_output_tokens",maxOutputTokens);
         body.put("text",Map.of("format",Map.of("type","json_schema","name",schemaName,"strict",true,"schema",prompt.schema())));
+        try {if(objectMapper.writeValueAsBytes(body).length>30720||maxOutputTokens>4000)throw new IllegalArgumentException("AI request budget exceeded");}
+        catch(com.fasterxml.jackson.core.JsonProcessingException invalid){throw new IllegalArgumentException("AI request encoding failed");}
         var response=restClient().post().uri("/responses").contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION,"Bearer "+aiProperties.getOpenai().getApiKey()).body(body)
                 .exchange((request,result)->{
@@ -342,7 +344,9 @@ public class RealOpenAiProvider implements AiProvider {
         int inputTokens = usage.path("input_tokens").asInt(0);
         int outputTokens = usage.path("output_tokens").asInt(0);
         int totalTokens = usage.path("total_tokens").asInt(inputTokens + outputTokens);
-        lastTokenUsage.set(new AiTokenUsage(inputTokens, outputTokens, totalTokens, true));
+        int cached=usage.path("input_tokens_details").path("cached_tokens").asInt(0);
+        boolean known=inputTokens>=0&&outputTokens>=0&&totalTokens>=0&&cached>=0&&cached<=inputTokens&&usage.has("input_tokens")&&usage.has("output_tokens");
+        lastTokenUsage.set(new AiTokenUsage(inputTokens, outputTokens, totalTokens, true,cached,response.path("model").isTextual()?response.path("model").asText():null,known));
     }
 
     private JsonNode parseModelJson(String outputText) {

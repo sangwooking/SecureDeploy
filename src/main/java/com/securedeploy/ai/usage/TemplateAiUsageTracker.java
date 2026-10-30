@@ -26,9 +26,10 @@ public class TemplateAiUsageTracker implements AiUsageTracker {
                     tokenUsage.promptTokens(),
                     tokenUsage.completionTokens(),
                     tokenUsage.totalTokens(),
-                    BigDecimal.ZERO,
+                    AiCostPolicy.cost(tokenUsage),
                     tokenUsage.billable(),
-                    LocalDateTime.now()
+                    LocalDateTime.now(), tokenUsage.model(), tokenUsage.cachedInputTokens(), tokenUsage.usageKnown(),
+                    !tokenUsage.billable()?"NON_BILLABLE":AiCostPolicy.cost(tokenUsage)==null?"UNKNOWN":"ESTIMATED_FROM_API_USAGE"
             );
         }
 
