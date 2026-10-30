@@ -24,7 +24,7 @@ try{for(const [width,email] of [[1440,'editing-browser'],[1024,'scan-1440'],[768
  const card=page.locator('.action-finding').first(),pad=await card.evaluate(e=>parseFloat(getComputedStyle(e).paddingLeft));assert.ok(pad>=16);
  await page.keyboard.press('Tab');await card.locator('summary').first().focus();assert.ok(await card.locator('summary').first().evaluate(e=>getComputedStyle(e).outlineStyle!=='none'));
  await page.screenshot({path:`/private/tmp/sd-ui-after-finding-${width}.png`});await page.getByRole('button',{name:'이 파일 수정하기',exact:true}).first().click();
- await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).click();await page.locator('#source-code').waitFor();
+ await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).click();await page.locator('#source-code').waitFor();
  assert.equal(await page.locator('#source-code').inputValue(),'debug=true\nserver.error.include-stacktrace=always\n');
  assert.ok(await page.locator('#source-code').evaluate(e=>e.getBoundingClientRect().width)>=(width>=1024?500:width>=768?500:220));
  await page.screenshot({path:`/private/tmp/sd-ui-after-editor-${width}.png`});

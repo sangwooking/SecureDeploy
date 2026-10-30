@@ -4,7 +4,7 @@ const React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
 
 const componentExports = require('./load-component.cjs')('DependencySecuritySection');
-const render = (sca) => renderToStaticMarkup(React.createElement(componentExports.DependencySecuritySection, { sca }));
+const render = (sca) => renderToStaticMarkup(React.createElement(componentExports.DependencySecuritySection, { sca, initialSelection:0 }));
 const renderNotice = (sca) => renderToStaticMarkup(React.createElement(componentExports.ScaAssessmentNotice, { sca }));
 
 function fixture(overrides = {}) {

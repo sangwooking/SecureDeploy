@@ -36,7 +36,7 @@ sys.stdout.buffer.write(b.getvalue())`]);
    await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);
    await page.getByRole('button',{name:'수정 작업 공간 열기',exact:true}).click();
    if(kind==='ZIP')await page.locator('input[type=file]').setInputFiles({name:'source-fixture.zip',mimeType:'application/zip',buffer:zip});
-   await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).click();
+   await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).click();
    await page.getByRole('button',{name:'example.ts',exact:true}).click();
    const editor=page.getByLabel('파일 내용',{exact:true});await editor.waitFor();assert.equal(await editor.inputValue(),original);
    if(kind==='ZIP')assert.ok(await page.getByText('원본 일치 미검증 · 기존 Finding 위치 연결 안 함 · 수정 후 새 분석 필요').isVisible());
@@ -66,7 +66,7 @@ print('MATCH')`,zipPath],{encoding:'utf8'});assert.equal(check.trim(),'MATCH');
    assert.deepEqual(errors,[]);assert.deepEqual(unexpected,[]);
    await page.screenshot({path:`/private/tmp/securedeploy-editing-${kind}-${width}.png`,fullPage:true});
    page.on('dialog',d=>d.accept());await page.getByRole('button',{name:'작업 공간 삭제',exact:true}).click();
-   await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).waitFor();await page.close();
+   await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).waitFor();await page.close();
   }
   console.log(JSON.stringify({passed:true,zip:'ACTUAL_H2_API',github:'MOCK_SOURCE_ACTUAL_EDITING_API',widths:[1440,390,320],zipBytesVerified:true,patchApplyCheck:true,sourceExecution:false}));
  }finally{await browser.close();await http.dispose();if(temp)fs.rmSync(temp,{recursive:true,force:true});}

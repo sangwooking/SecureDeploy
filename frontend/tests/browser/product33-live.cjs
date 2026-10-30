@@ -129,7 +129,7 @@ function expiredToken(user) {
       await page.getByRole('button', { name: '수정 작업 공간 열기', exact: true }).click();
       await page.getByLabel('원본 ZIP', { exact: true }).setInputFiles({ name: 'readiness-static-only.zip', mimeType: 'application/zip', buffer: archive });
       const acquiring = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes(`/zip/${before.reviewId}`));
-      await page.getByRole('button', { name: '원본 확보 후 작업 공간 시작' }).click();
+      await page.getByRole('button', { name: '원본 확보 시도 후 새 작업 시작' }).click();
       const w = await (await acquiring).json(), base = '/api/editing-workspaces/' + w.id;
       temporaryWorkspaces.push({ base, token });
       assert.equal(w.identityStatus, 'UNVERIFIED_REUPLOAD');
@@ -216,7 +216,7 @@ function expiredToken(user) {
         await page.evaluate(() => { document.documentElement.style.zoom = ''; });
       }
       page.once('dialog', d => d.accept()); await page.getByRole('button', { name: '작업 공간 삭제', exact: true }).click();
-      await page.getByRole('button', { name: '원본 확보 후 작업 공간 시작' }).waitFor();
+      await page.getByRole('button', { name: '원본 확보 시도 후 새 작업 시작' }).waitFor();
       await call('GET', base, token, undefined, 404);
       assert.equal((await (await call('GET', '/api/reviews/' + after.reviewId, token)).json()).reviewId, after.reviewId);
       await page.goto(`${origin}/#/projects/${after.projectId}/history`);

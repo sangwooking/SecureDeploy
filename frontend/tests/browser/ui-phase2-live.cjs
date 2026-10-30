@@ -23,7 +23,7 @@ try{for(const width of [1440,1024,768,390,320]){
  const uploaded=page.waitForResponse(r=>r.url().endsWith('/api/reviews/upload')&&r.request().method()==='POST');await page.getByRole('button',{name:'분석 시작',exact:true}).click();const response=await uploaded;assert.equal(response.status(),200);const result=await response.json();
  await page.getByRole('navigation',{name:'분석 결과 메뉴'}).waitFor();await check('summary');
  await resultView(page,'수정 권장');await check('findings');
- await page.getByRole('button',{name:'이 파일 수정하기',exact:true}).first().click();await page.getByLabel('원본 ZIP',{exact:true}).setInputFiles({name:'phase2-static.zip',mimeType:'application/zip',buffer:zip});await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).click();
+ await page.getByRole('button',{name:'이 파일 수정하기',exact:true}).first().click();await page.getByLabel('원본 ZIP',{exact:true}).setInputFiles({name:'phase2-static.zip',mimeType:'application/zip',buffer:zip});await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).click();
  await page.getByLabel('프로젝트 파일',{exact:true}).waitFor({state:'attached'});await pane(page,'파일');
  await page.getByRole('searchbox',{name:'파일 찾기'}).fill('not-present');await page.getByText('일치하는 파일이 없습니다.',{exact:true}).waitFor();
  await page.getByRole('searchbox',{name:'파일 찾기'}).fill('application');await page.getByRole('button',{name:'application.properties',exact:true}).click();await page.locator('#source-code').waitFor();
@@ -40,6 +40,6 @@ try{for(const width of [1440,1024,768,390,320]){
   const a=lum(css.color),b=lum(css.backgroundColor);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);
  });assert.ok(contrast>=4.5,'selected comparison text contrast');
  await check('comparison');assert.deepEqual(outbound,[]);
- page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'작업 공간 삭제',exact:true}).click();await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).waitFor();await page.close();report.push({width,uploadReview:result.reviewId,unverifiedZipComparisonBlocked:true,overflow:false,download:true});
+ page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'작업 공간 삭제',exact:true}).click();await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).waitFor();await page.close();report.push({width,uploadReview:result.reviewId,unverifiedZipComparisonBlocked:true,overflow:false,download:true});
 }console.log(JSON.stringify({passed:true,actualH2:true,providerCalls:0,report}));}
 finally{await browser.close();await http.dispose();}})().catch(e=>{console.error(e.stack);process.exitCode=1;});

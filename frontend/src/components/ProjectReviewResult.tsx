@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { downloadAiReviewReport, downloadReviewReport, updateVulnerabilityStatus } from '../api/securityReviewApi';
 import type { SecurityReviewResponse, Vulnerability, VulnerabilityStatus } from '../types/securityReview';
+import type { ResultSelection } from './workspaceRoute';
 import { ReviewResultWorkspace } from './ReviewResultWorkspace';
 import type { ResultView } from './reviewPresentation';
 import { SourceEditingWorkspace } from './SourceEditingWorkspace';
 
-export function ProjectReviewResult({ result, view, onView, onRescan, editing: editingProp, onEditingChange }: {
-  result: SecurityReviewResponse; view: ResultView; onView: (view: ResultView) => void; onRescan: () => void; editing?:boolean; onEditingChange?:(value:boolean)=>void;
+export function ProjectReviewResult({ result, view, onView, onRescan, editing: editingProp, onEditingChange, selection }: {
+  result: SecurityReviewResponse; view: ResultView; onView: (view: ResultView, selection?: ResultSelection) => void; selection?:ResultSelection; onRescan: () => void; editing?:boolean; onEditingChange?:(value:boolean)=>void;
 }) {
   const [current, setCurrent] = useState(result);
   const [comments, setComments] = useState<Record<number, string>>({});
@@ -46,7 +47,7 @@ export function ProjectReviewResult({ result, view, onView, onRescan, editing: e
   if (editing) return <SourceEditingWorkspace embedded key={current.reviewId} result={current} initialPath={editingPath} initialAdviceId={dependencyAdviceId} onBack={() => setEditing(false)} />;
   return <>
     {error && <p role="alert" className="error-message">{error}</p>}
-    <ReviewResultWorkspace result={current} view={view} onViewChange={onView} progress={null}
+    <ReviewResultWorkspace selection={selection} result={current} view={view} onViewChange={onView} progress={null}
       onEditDependency={current.sourceType==='WORKSPACE'?undefined:id=>{setDependencyAdviceId(id);setEditingPath(undefined);setEditing(true);}}
       onEditFile={current.sourceType==='WORKSPACE'?undefined:path=>{setDependencyAdviceId(undefined);setEditingPath(path);setEditing(true);}}
       rescanActions={<button className="secondary-button" type="button" onClick={onRescan}>다시 검사하기</button>}

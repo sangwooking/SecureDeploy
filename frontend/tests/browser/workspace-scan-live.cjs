@@ -16,7 +16,7 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173',api='http://127.0
    await page.addInitScript(user=>{localStorage.setItem('securedeploy.accessToken',user.accessToken);localStorage.setItem('securedeploy.authUser',JSON.stringify(user.user));},auth);
    await page.route('**/*',route=>{const url=new URL(route.request().url());if(url.pathname.startsWith('/api/'))return route.continue({url:api+url.pathname+url.search});if(url.origin===new URL(origin).origin)return route.continue();outbound.push(url.origin);return route.abort();});
    await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);
-   await page.getByRole('button',{name:'수정 작업 공간 열기',exact:true}).click();await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).click();
+   await page.getByRole('button',{name:'수정 작업 공간 열기',exact:true}).click();await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).click();
    await page.getByRole('button',{name:'application.properties',exact:true}).click();
    await pane(page,'수정 근거 · AI');const ai=page.getByLabel('보안 수정안',{exact:true}),scan=page.getByLabel('수정본 보안 재검사',{exact:true});
    await ai.getByLabel('수정할 분석 항목').selectOption({label:'DEBUG_ENABLED · 원본 1행'});
@@ -39,7 +39,7 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173',api='http://127.0
    const url=await scan.getByRole('link',{name:'저장된 수정본 결과와 History 열기'}).getAttribute('href'),newId=new URLSearchParams(url.split('?')[1]).get('review');
    const saved=await(await http.get(`/api/reviews/${newId}`,{headers})).json();assert.equal(saved.sourceType,'WORKSPACE');assert.equal(saved.workspaceScan.revision,3);assert.equal(saved.workspaceScan.sourceRevision,'a'.repeat(40));
    assert.ok(saved.comparison.counts.RESOLVED>0);assert.ok(saved.comparison.counts.NEW>0);assert.ok(saved.comparison.counts.REMAINING>0);
-   page.on('dialog',d=>d.accept());await page.getByRole('button',{name:'작업 공간 삭제',exact:true}).click();await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).waitFor();
+   page.on('dialog',d=>d.accept());await page.getByRole('button',{name:'작업 공간 삭제',exact:true}).click();await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).waitFor();
    assert.deepEqual(await(await http.get(`/api/reviews/${newId}`,{headers})).json(),saved);assert.deepEqual(await(await http.get(`/api/reviews/${review.reviewId}`,{headers})).json(),original);
    await page.goto(origin+'/'+url);await page.getByText(/작업 공간 수정본 검사 · revision 3/).waitFor();
    await page.goto(`${origin}/#/projects/${review.projectId}/history`);await page.getByRole('heading',{name:/^분석 이력 \(/}).waitFor();

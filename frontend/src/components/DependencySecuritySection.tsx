@@ -13,12 +13,12 @@ export function ScaAssessmentNotice({ sca }: { sca?: ScaResult | null; riskAsses
   return <p className="review-caution">라이브러리 보안 확인이 완료되지 않았습니다. 미조회·미해결 항목의 안전 여부는 확인되지 않았습니다.</p>;
 }
 
-export function DependencySecuritySection({ sca, riskAssessment, remediation, reviewId, onEditDependency, onEditFile }: {
+export function DependencySecuritySection({ sca, riskAssessment, remediation, reviewId, onEditDependency, onEditFile, initialSelection=-1, onSelectionChange }: {
   sca?: ScaResult | null; riskAssessment?: RiskAssessment | null; remediation?: RemediationSnapshot | null;
-  reviewId?: number | null; onEditDependency?:(id:string)=>void;onEditFile?:(path:string)=>void;
+  initialSelection?:number; onSelectionChange?:(index:number)=>void; reviewId?: number | null; onEditDependency?:(id:string)=>void;onEditFile?:(path:string)=>void;
 }) {
-  const [selection,setSelection]=useState(0);
-  useEffect(()=>setSelection(0),[reviewId]);
+  const [selection,setSelection]=useState(initialSelection);
+  useEffect(()=>setSelection(initialSelection),[reviewId,initialSelection]);
   if (!sca) return <section className="sca-section" aria-label="사용 중인 라이브러리 문제">
     <h2>{securityTerms.libraries}</h2><p>이 이력에는 외부 라이브러리 검사 결과가 없습니다. 다시 검사해 주세요.</p>
   </section>;
@@ -48,8 +48,8 @@ export function DependencySecuritySection({ sca, riskAssessment, remediation, re
       : '표시할 라이브러리 문제가 없습니다. 미조회 항목과 분석 상태를 확인해 주세요.'}</p>}
     <details><summary>상위 패키지와 수정 작업 묶음 확인</summary><DependencyActionGroups sca={sca} /></details>
     {canonical.length>0&&<div className="dependency-selector"><label htmlFor={`dependency-selection-${reviewId??'unsaved'}`}>확인할 외부 라이브러리 공지 <AdvisoryItemCount count={canonical.length}/></label>
-      <select id={`dependency-selection-${reviewId??'unsaved'}`} value={Math.min(selection,canonical.length-1)} onChange={e=>setSelection(Number(e.target.value))}>{canonical.map((d,i)=><option key={`${d.ecosystem}:${d.packageName}:${d.installedVersion}:${d.osvId}:${i}`} value={i}>{d.packageName} {d.installedVersion} · {d.osvId}</option>)}</select></div>}
-    {canonical.length>0?(()=>{const dep=canonical[Math.min(selection,canonical.length-1)];return <EvidenceSupportLayout evidence={<DependencyFindingCard embedded components={sca.components} dependency={dep} remediation={remediation} intelligence={riskAssessment?.threatIntelligence} finding={riskAssessment?.dependencyFindings.find(f=>f.ecosystem===dep.ecosystem&&f.packageName===dep.packageName&&f.version===dep.installedVersion&&f.advisoryId===dep.osvId)}/>}
+      <select id={`dependency-selection-${reviewId??'unsaved'}`} value={selection>=0&&selection<canonical.length?selection:-1} onChange={e=>{setSelection(Number(e.target.value));onSelectionChange?.(Number(e.target.value));}}><option value={-1}>확인할 공지를 선택해 주세요</option>{canonical.map((d,i)=><option key={`${d.ecosystem}:${d.packageName}:${d.installedVersion}:${d.osvId}:${i}`} value={i}>{d.packageName} {d.installedVersion} · {d.osvId}</option>)}</select></div>}
+    {canonical.length>0&&(selection<0||selection>=canonical.length)?<p role="status">공지 항목을 선택하면 분석 근거와 수정 안내를 확인할 수 있어요.</p>:canonical.length>0?(()=>{const dep=canonical[Math.min(selection,canonical.length-1)];return <EvidenceSupportLayout evidence={<DependencyFindingCard embedded components={sca.components} dependency={dep} remediation={remediation} intelligence={riskAssessment?.threatIntelligence} finding={riskAssessment?.dependencyFindings.find(f=>f.ecosystem===dep.ecosystem&&f.packageName===dep.packageName&&f.version===dep.installedVersion&&f.advisoryId===dep.osvId)}/>}
       support={<DependencyUpdatePlans reviewId={reviewId} selectedDependency={dep} onEditDependency={onEditDependency} onEditFile={onEditFile}/>}/>;})():<DependencyUpdatePlans reviewId={reviewId} onEditDependency={onEditDependency} onEditFile={onEditFile}/>}
     {unresolved.length > 0 && <details><summary>버전 확인이 필요한 라이브러리 ({unresolved.length}개 위치)</summary>
       <div className="vulnerability-list">{unresolved.map((component, index) => {

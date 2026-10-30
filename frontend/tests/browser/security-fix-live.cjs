@@ -36,7 +36,7 @@ const facts=r=>({reviewId:r.reviewId,score:r.securityScore,risk:r.riskAssessment
    if(kind==='flow')assert.equal(before.serverAnalysis.validatedFindings[0].ruleId,'TS_SENSITIVE_DATA_EXPOSURE');
    await page.getByRole('button',{name:'이 파일 수정하기',exact:true}).first().click();
    const created=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().includes(`/github/${base.reviewId}`));
-   await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).click();workspace=await(await created).json();
+   await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).click();workspace=await(await created).json();
    await page.locator('#source-code').waitFor();
    const file=workspace.files.find(f=>f.path===(kind==='rule'?'application.properties':'supabase/functions/inspect/index.ts'));assert.ok(file);
    assert.equal(await page.locator('#source-code').inputValue(),kind==='rule'?originalProperties:"Deno.serve(async request => {\n  return Response.json(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));\n});\n");
@@ -122,7 +122,7 @@ const facts=r=>({reviewId:r.reviewId,score:r.securityScore,risk:r.riskAssessment
    }
    await page.screenshot({path:`/private/tmp/securedeploy-fix-${kind}-diff-${width}.png`,fullPage:true});
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);assert.deepEqual(outbound,[]);
-   page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'작업 공간 삭제',exact:true}).click();await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).waitFor();
+   page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'작업 공간 삭제',exact:true}).click();await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).waitFor();
    assert.deepEqual(await get(`/api/reviews/${base.reviewId}`),before);assert.deepEqual(await get(`/api/reviews/${saved.reviewId}`),saved);
    await page.goto(`${origin}/#/projects/${base.projectId}/history`);await page.getByText(`분석 #${saved.reviewId}`,{exact:false}).waitFor();
    report.push({width,kind,observations,zipAllFileHashesMatch:true,patchDownloaded:true,originalUnchanged:true,historyPersists:true});

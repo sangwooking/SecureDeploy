@@ -1,3 +1,4 @@
+import { workspaceRecoveryProblem, validResumedWorkspace } from './workspaceRecovery';
 import { ApiRequestError, requestProblem } from '../api/requestProblem';
 import { useUiCapabilities } from './useUiCapabilities';
 import { WorkspaceDiffReview } from './WorkspaceOutcome';
@@ -36,6 +37,9 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [diffs, setDiffs] = useState<EditingDiff[] | null>(null), [approved, setApproved] = useState(false);
   const [expired, setExpired] = useState(false);
+  const [resumeId,setResumeId]=useState('');
+  const [resumeAttempt,setResumeAttempt]=useState(0);
+  const [recovery,setRecovery]=useState<ReturnType<typeof workspaceRecoveryProblem>|null>(null);
   const [stage, setStage] = useState<'edit'|'diff'|'scan'>('edit');
   const [pane, setPane] = useState<'files'|'code'|'evidence'>('files');
   const [evidenceOpen, setEvidenceOpen] = useState(false);
@@ -44,17 +48,21 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const dirty = content !== null && text !== content.text.replace(/\r\n/g, '\n');
   useEffect(() => {
     mounted.current = true;
+    let current=true;
     const stored = sessionStorage.getItem(key);
+    setResumeId(stored??''); setRecovery(null);
     if (stored) {
       setBusy(true);
-      loadEditingWorkspace(stored).then(value => { if (mounted.current) setWorkspace(value); })
-        .catch(() => { sessionStorage.removeItem(key); if (mounted.current) setError('이전 작업 공간이 만료되었거나 접근할 수 없습니다. 원본을 다시 확보해 주세요.'); })
-        .finally(() => { if (mounted.current) setBusy(false); });
+      loadEditingWorkspace(stored).then(value => {
+        if (!validResumedWorkspace(value,stored,result.reviewId)) throw new Error('WORKSPACE_REVIEW_MISMATCH');
+        if(current){setWorkspace(value);setExpired(Date.parse(value.expiresAt)<=Date.now());}
+      }).catch(e => { if(current)setRecovery(workspaceRecoveryProblem(e)); })
+        .finally(() => { if(current)setBusy(false); });
     }
-    return () => { mounted.current = false; };
-  }, [key]);
+    return () => { current=false;mounted.current = false; };
+  }, [key,resumeAttempt]);
   useEffect(() => {
-    const check = () => { if (workspace && Date.parse(workspace.expiresAt) <= Date.now()) { setExpired(true); setText(''); setContent(null); setDiffs(null); setApproved(false); } };
+    const check = () => { if (workspace && Date.parse(workspace.expiresAt) <= Date.now()) { setExpired(true); setDiffs(null); setApproved(false); } };
     check(); const timer = setInterval(check, 1000); return () => clearInterval(timer);
   }, [workspace]);
   useEffect(() => {
@@ -73,31 +81,32 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   };
   const start = () => run(async () => {
     if (!result.reviewId) return;
+    if(dirty&&!window.confirm('새 작업은 이전 편집을 복원하지 않습니다. 현재 편집 내용을 복사했으며 새 작업을 시작할까요?'))return;
     const value = await createEditingWorkspace(result.reviewId, result.sourceType === 'ZIP' ? zip ?? undefined : undefined);
-    if (mounted.current) { setWorkspace(value); setExpired(false); setFileQuery(''); sessionStorage.setItem(key, value.id); }
+    if (mounted.current) { setWorkspace(value); setRecovery(null); setResumeId(value.id); setExpired(false); setSelected(null); setContent(null); setText(''); setDiffs(null); setApproved(false); setFileQuery(''); sessionStorage.setItem(key, value.id); }
   });
   const select = (file: EditingFile) => void run(async () => {
     if (dirty && !window.confirm('저장하지 않은 편집을 버리고 다른 파일을 열까요?')) return;
     setDiffs(null); setApproved(false); setSelected(file); setContent(null); setText('');
     setPane('code');
-    if (workspace && file.editable) {
+    if (workspace && !expired && file.editable) {
       const value = await loadEditingFile(workspace.id, file.id);
       if (value.revision !== workspace.revision) throw new Error('다른 탭에서 변경되었습니다. 작업 공간을 새로고침해 주세요.');
       setContent(value); setText(value.text.replace(/\r\n/g, '\n'));
     }
   });
   useEffect(()=>{
-    if(workspace&&!selected&&initialPath&&!busy){const file=workspace.files.find(f=>f.path===initialPath);if(file)select(file);}
+    if(workspace&&!expired&&!selected&&initialPath&&!busy){const file=workspace.files.find(f=>f.path===initialPath);if(file)select(file);}
   },[workspace?.id,initialPath,busy,selected?.id]);
   const save = (revert: boolean) => void run(async () => {
-    if (!workspace || !selected) return;
+    if (!workspace || !selected || expired) return;
     if (revert && !window.confirm('이 파일의 변경을 모두 취소하고 불변 원본으로 되돌릴까요?')) return;
     const next = await saveEditingFile(workspace, selected, text, revert);
     setWorkspace(next); setDiffs(null); setApproved(false); setSelected(next.files.find(f => f.id === selected.id) ?? null);
     const value = await loadEditingFile(next.id, selected.id); setContent(value); setText(value.text.replace(/\r\n/g, '\n'));
   });
   const reviewDiff = () => void run(async () => {
-    if (!workspace || dirty) return;
+    if (!workspace || dirty || expired) return;
     const values: EditingDiff[] = [];
     for (const id of workspace.changedFileIds) {
       const value = await loadEditingDiff(workspace.id, id);
@@ -107,7 +116,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
     setDiffs(values); setApproved(false);
   });
   const download = (format: 'zip' | 'patch') => void run(async () => {
-    if (!workspace || !approved || diffs === null || dirty) return;
+    if (!workspace || !approved || diffs === null || dirty || expired) return;
     const blob = await exportEditingWorkspace(workspace, format);
     const url = URL.createObjectURL(blob), link = document.createElement('a');
     link.href = url; link.download = `securedeploy-edited-r${workspace.revision}.${format}`;
@@ -117,7 +126,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const clear = () => void run(async () => {
     if (workspace && !window.confirm('원본과 편집 내용을 삭제하고 작업 공간을 닫을까요? 복구할 수 없습니다.')) return;
     if (workspace && !expired) await deleteEditingWorkspace(workspace.id);
-    sessionStorage.removeItem(key); setWorkspace(null); setContent(null); setSelected(null); setText(''); setDiffs(null); setApproved(false); setExpired(false); setFileQuery('');
+    sessionStorage.removeItem(key); setResumeId(''); setRecovery(null); setWorkspace(null); setContent(null); setSelected(null); setText(''); setDiffs(null); setApproved(false); setExpired(false); setFileQuery('');
   });
   const visibleFiles=workspace?.files.filter(f=>f.path.toLowerCase().includes(fileQuery.trim().toLowerCase()))??[];
   const findings = selected && workspace?.identityStatus === 'EXACT_GIT_COMMIT'
@@ -128,6 +137,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   return <section className={`source-editor stage-${stage} pane-${pane} ${evidenceOpen?'evidence-open':''}`} aria-label="수정 작업 공간">
     <header className="source-editor-header"><div><h2>수정 작업 공간</h2><p>{result.projectName} · 검사 #{result.reviewId}</p></div>
       {!embedded&&<button type="button" className="secondary-button" aria-label="분석 결과로 돌아가기" disabled={busy} onClick={() => { if (!dirty || window.confirm('저장하지 않은 편집을 버리고 결과로 돌아갈까요?')) onBack(); }}>결과로 돌아가기</button>}</header>
+    {recovery && <div role="alert" className="workspace-recovery"><p><strong>{recovery.message}</strong></p><p>이 안내만으로 만료나 데이터 손실을 확정할 수 없습니다. 이전 작업 식별자는 재시도를 위해 유지합니다.</p><button type="button" disabled={busy} onClick={()=>setResumeAttempt(n=>n+1)}>이전 작업 다시 확인</button></div>}
     {error && <p className="error-message" role="alert">{error}</p>}
     {!workspace ? <div className="source-editor-acquire">
       <p>원본은 30분 동안 임시 보관되며 서버 재시작 시 사라집니다. 편집 내용은 자동 재검사되거나 GitHub에 반영되지 않습니다.</p>
@@ -135,12 +145,12 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
         <label>원본 ZIP <input type="file" accept=".zip,application/zip" disabled={busy} onChange={e => setZip(e.target.files?.[0] ?? null)} /></label></>
         : <p>현재 읽기 권한을 확인하고 분석 당시 commit만 가져옵니다. 해당 commit을 확보하지 못하면 작업을 중단합니다.</p>}
       {result.sourceType === 'WORKSPACE' && <p role="note">수정본 Review에는 전체 소스를 보관하지 않습니다. 기존 작업 공간을 이용하거나 다운로드한 ZIP으로 새 분석을 시작해 주세요.</p>}
-      <button className="primary-button" type="button" disabled={busy || !result.reviewId || !result.sourceType || result.sourceType === 'WORKSPACE' || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 후 작업 공간 시작'}</button>
+      <button className="primary-button" type="button" disabled={busy || (!!resumeId && recovery?.allowSourceAttempt!==true) || !result.reviewId || !result.sourceType || result.sourceType === 'WORKSPACE' || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 시도 후 새 작업 시작'}</button>
     </div> : <>
       <div className="source-editor-status"><p><strong>수정본 버전 {workspace.revision}</strong> · 만료 {new Date(workspace.expiresAt).toLocaleTimeString('ko-KR')} · 변경 {workspace.changedFileIds.length}개</p>
         <details><summary>원본·해시 정보</summary><p className="source-revision">원본: {workspace.sourceRevision}</p></details>
         {workspace.identityStatus === 'UNVERIFIED_REUPLOAD' && <p role="note">이전 검사 원본과 같은 파일인지 확인하지 못했어요. 과거 문제 위치를 연결하지 않으며, 수정 후 새 검사가 필요해요.</p>}
-        {expired && <p role="alert">작업 공간이 만료되었습니다. 원본을 다시 확보해 주세요.</p>}
+        {expired && <div role="alert"><p>이전 수정 작업을 이어갈 수 없어요. 작업 공간의 이용 시간이 지났습니다.</p><p>새 작업은 이전 변경을 복원하지 않습니다. 아래 편집 내용이 남아 있다면 먼저 복사해 보관해 주세요.</p>{result.sourceType==='GITHUB'&&result.sourceMetadata?.commitSha&&<><p>분석 당시 원본을 실제로 확보한 경우에만 새 작업을 시작합니다.</p><button type="button" className="primary-button" disabled={busy} onClick={()=>void start()}>원본 확보 가능 여부 확인</button></>}{content&&<label>브라우저에 남은 편집 내용<textarea aria-label="만료된 작업의 편집 내용" className="source-code" readOnly value={text}/></label>}</div>}
         <details><summary>작업 공간 관리</summary><button type="button" className="secondary-button" disabled={busy} onClick={clear}>작업 공간 삭제</button></details>
       </div>
       <nav className="editing-stages" aria-label="수정 단계">{([['edit','코드 수정'],['diff','변경 검토·승인'],['scan','재검사']] as const).map(([id,label],index)=><button key={id} type="button" aria-current={stage===id?'step':undefined} onClick={()=>setStage(id)}><span className="stage-number" aria-hidden="true">{index+1}</span>{label}</button>)}</nav>

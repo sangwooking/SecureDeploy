@@ -26,7 +26,7 @@ try{for(const width of widths)for(const kind of ['fixed','selected']){
   await page.goto(`${origin}/#/projects/${base.projectId}/findings?review=${base.reviewId}&view=SUMMARY`);await resultView(page,'배포 전 직접 확인할 부분');
   await page.getByLabel('서버 코드 흐름 검사',{exact:true}).getByRole('button',{name:'이 파일 수정하기',exact:true}).first().click();
   const acquire=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith(`/github/${base.reviewId}`));
-  await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).click();workspace=await(await acquire).json();await page.locator('#source-code').waitFor();
+  await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).click();workspace=await(await acquire).json();await page.locator('#source-code').waitFor();
   const original=await page.locator('#source-code').inputValue(),file=workspace.files.find(f=>f.path===flow.location.filePath),ai=page.getByLabel('보안 수정안',{exact:true});
   await pane(page,'수정 근거 · AI');
   const generate=async()=>{
@@ -78,7 +78,7 @@ try{for(const width of widths)for(const kind of ['fixed','selected']){
    }
   }
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);assert.deepEqual(outbound,[]);if(deterministic)assert.deepEqual(providerRequests,[]);
-  assert.deepEqual(await get(`/api/reviews/${base.reviewId}`),before);page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'작업 공간 삭제',exact:true}).click();await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).waitFor();assert.deepEqual(await get(`/api/reviews/${review.reviewId}`),review);
+  assert.deepEqual(await get(`/api/reviews/${base.reviewId}`),before);page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'작업 공간 삭제',exact:true}).click();await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).waitFor();assert.deepEqual(await get(`/api/reviews/${review.reviewId}`),review);
   report.push({width,kind,before:base.reviewId,after:review.reviewId,score:review.securityScore,risk:review.riskAssessment.prioritizedDeploymentAssessment,coverage:review.coverage.status,flows:'1->0',resolved:0,comparison:'NOT_COMPARED',allFileHashesAndPatchMatch:true});
  }catch(e){await page.screenshot({path:`/private/tmp/securedeploy-deno-failure-${kind}-${width}.png`,fullPage:true});throw e;}
  finally{if(workspace&&headers)await http.delete(`/api/editing-workspaces/${workspace.id}`,{headers});await page.close();}

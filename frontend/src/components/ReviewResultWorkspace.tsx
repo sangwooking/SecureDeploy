@@ -1,3 +1,4 @@
+import { projectLink, type ResultSelection } from './workspaceRoute';
 import { DependencyUpdatePlans } from './DependencyUpdatePlans';
 import { RelatedSemanticReview } from './RelatedSemanticReview';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
@@ -26,7 +27,8 @@ const severityOrder: Record<Severity, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 
 interface Props {
   result: SecurityReviewResponse;
   view: ResultView;
-  onViewChange: (view: ResultView) => void;
+  onViewChange: (view: ResultView,selection?:ResultSelection) => void;
+  selection?:ResultSelection;
   statusActions: FindingStatusActions;
   reportActions: ReactNode;
   progress: ReactNode;
@@ -35,15 +37,18 @@ interface Props {
   onEditFile?: (path: string) => void;
 }
 
-export function ReviewResultWorkspace({ result, view, onViewChange, statusActions, reportActions, progress, rescanActions, onEditFile, onEditDependency }: Props) {
- const [kind,setKind]=useState<'ALL'|'CODE'|'AI'|'ANALYSIS'>('ALL');
- const [query,setQuery]=useState(''),[selectedId,setSelectedId]=useState(''),[page,setPage]=useState(0);
+export function ReviewResultWorkspace({ result, view, onViewChange, statusActions, reportActions, progress, rescanActions, onEditFile, onEditDependency, selection }: Props) {
+ const [kind,setKind]=useState<'ALL'|'CODE'|'AI'|'ANALYSIS'>(selection?.kind??'ALL');
+ const [query,setQuery]=useState(''),[selectedId,setSelectedId]=useState(selection?.findingId??''),[page,setPage]=useState(0);
  const detail=useRef<HTMLDivElement>(null),rows=useRef<HTMLUListElement>(null);
  const findings=allRiskFindings(result),assessment=result.riskAssessment;
  const priority=['BLOCKING','REVIEW_REQUIRED','SHOULD_FIX'].includes(view)?view:'ALL';
  const shown=findings.filter(f=>(kind==='ALL'||f.source===kind)&&(priority==='ALL'||f.priority===priority)&&`${findingTitle(result,f)} ${f.sourceFiles.join(' ')} ${f.advisoryId??''}`.toLowerCase().includes(query.toLowerCase()));
  const selected=shown.find(f=>f.findingId===selectedId);
- useEffect(()=>{setSelectedId('');setPage(0);},[view,kind,query,result.reviewId]);
+ useEffect(()=>{setSelectedId(selection?.findingId??'');setKind(selection?.kind??'ALL');},[view,result.reviewId,selection?.findingId,selection?.kind]);
+ useEffect(()=>{setPage(0);},[view,kind,query,result.reviewId]);
+ useEffect(()=>{const index=shown.findIndex(f=>f.findingId===selectedId);if(index>=0)setPage(Math.floor(index/20));},[selectedId,kind,query,view,result.reviewId]);
+ const choose=(id:string)=>{setSelectedId(id);onViewChange(view,{kind,findingId:id||undefined});};
  useEffect(()=>{if(selectedId){detail.current?.focus({preventScroll:true});detail.current?.scrollIntoView({block:'start'});}},[selectedId]);
  const navigate=(next:ResultView)=>{setKind('ALL');setSelectedId('');onViewChange(next);};
  return <section className="result-area result-workspace" aria-label="프로젝트 분석 결과">
@@ -56,9 +61,9 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
   <InspectionBoundaryNotice coverage={result.coverage} compact/>
   <nav className="result-navigation result-list-filters" aria-label="분석 결과 메뉴">
    <button type="button" aria-pressed={['SUMMARY','BLOCKING','REVIEW_REQUIRED','SHOULD_FIX'].includes(view)&&kind==='ALL'} onClick={()=>navigate('SUMMARY')}>문제 목록</button>
-   <button type="button" aria-pressed={view==='SUMMARY'&&kind==='CODE'} onClick={()=>{onViewChange('SUMMARY');setKind('CODE');}}>코드</button>
+   <button type="button" aria-pressed={view==='SUMMARY'&&kind==='CODE'} onClick={()=>{onViewChange('SUMMARY',{kind:'CODE'});setKind('CODE');setSelectedId('');}}>코드</button>
    <button type="button" aria-pressed={view==='LIBRARIES'} onClick={()=>navigate('LIBRARIES')}>외부 라이브러리</button>
-   <button type="button" aria-pressed={view==='SUMMARY'&&kind==='AI'} onClick={()=>{onViewChange('SUMMARY');setKind('AI');}}>추가 검토</button>
+   <button type="button" aria-pressed={view==='SUMMARY'&&kind==='AI'} onClick={()=>{onViewChange('SUMMARY',{kind:'AI'});setKind('AI');setSelectedId('');}}>추가 검토</button>
   </nav>
   <div id="result-content" className="result-content">
    {view==='SUMMARY'&&<details className="summary-scope"><summary>검사 요약과 검증 범위</summary><h2 className="visually-hidden">프로젝트 보안 요약</h2><ReviewSummaryPanel result={result} actions={<div className="decision-counts" aria-label="확인할 문제"><span>반드시 처리</span><strong>{reviewCounts(result).blocking??'미평가'}</strong><span>배포 전 직접 확인</span><strong>{reviewCounts(result).review??'미평가'}</strong><p>AI 추가 후보 {reviewCounts(result).candidates}건은 별도 확인</p></div>}><FirstSteps result={result} navigate={navigate} flowCount={(result.serverAnalysis?.validatedFindings?.length??0)+(result.serverAnalysis?.pythonAnalysis?.validatedFindings?.length??0)+(result.serverAnalysis?.javaAnalysis?.findings.length??0)} configCount={(result.serverAnalysis?.deploymentAnalysis?.findings.length??0)+(result.serverAnalysis?.supabaseAnalysis?.findings.length??0)}/></ReviewSummaryPanel><p>{semanticStatusText(result.semanticReview,result.scanMode)}</p><AnalysisCoverageSection coverage={result.coverage} sca={result.sca} semantic={result.semanticReview}/><ServerAnalysisSection snapshot={result.serverAnalysis} compact/></details>}
@@ -75,14 +80,15 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
         <details><summary>사용 중인 라이브러리 문제 · 보안 공지와 악용 정보</summary><DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} onEditDependency={onEditDependency} /></details>
         <details><summary>AI 추가 검토 기록</summary><SemanticReviewSection snapshot={result.semanticReview} /></details>
         <ServerAnalysisSection snapshot={result.serverAnalysis} onEditFile={onEditFile} />
-        <RemediationNotice snapshot={result.remediation} /></>:view==='GUIDANCE'?<><Guidance result={result} findings={findings}/>{progress}</>:view==='LIBRARIES'?<DependencySecuritySection sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} onEditDependency={onEditDependency} onEditFile={onEditFile}/>:kind==='AI'?<>
+        <RemediationNotice snapshot={result.remediation} /></>:view==='GUIDANCE'?<><Guidance result={result} findings={findings}/>{progress}</>:view==='LIBRARIES'?<DependencySecuritySection initialSelection={selection?.advisory??-1} onSelectionChange={advisory=>onViewChange('LIBRARIES',advisory<0?undefined:{advisory})} sca={result.sca} riskAssessment={assessment} remediation={result.remediation} reviewId={result.reviewId} onEditDependency={onEditDependency} onEditFile={onEditFile}/>:kind==='AI'?<>
     <p>AI 후보와 미완료 분석 근거는 확정 Finding·위험 점수와 별도로 확인하세요.</p><SemanticReviewSection snapshot={result.semanticReview}/><RelatedSemanticReview result={result}/><details><summary>코드 흐름·설정 및 분석 범위 근거</summary><ServerAnalysisSection snapshot={result.serverAnalysis} onEditFile={onEditFile}/><AnalysisCoverageSection coverage={result.coverage} sca={result.sca} semantic={result.semanticReview}/></details>
    </>:<>
-    <div className="problem-list-toolbar" hidden={!!selected}><label>문제 검색<input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="문제·파일·패키지·공지"/></label><label>검토 우선순위<select value={priority} onChange={e=>onViewChange(e.target.value==='ALL'?'SUMMARY':e.target.value as ResultView)}><option value="ALL">전체</option><option value="BLOCKING">반드시 처리</option><option value="REVIEW_REQUIRED">추가 검토 필요</option><option value="SHOULD_FIX">수정 권장</option></select></label></div>
-    {assessment?<><p hidden={!!selected}>{shown.length}개 저장된 평가 항목 · 공지 항목과 분석 확인 필요 항목을 포함하며 고유 취약점 수가 아닙니다.</p><ul className="problem-list" aria-label="발견된 문제 목록" hidden={!!selected} ref={rows}>{shown.slice(page*20,page*20+20).map(f=><li key={f.findingId}><button type="button" className="problem-row" data-finding-index={findings.indexOf(f)} aria-pressed={selectedId===f.findingId} onClick={()=>setSelectedId(f.findingId)}><span className="problem-row-title">{findingTitle(result,f)}</span><span>{priorityLabels[f.priority]} · {f.source==='DEPENDENCY'?'외부 라이브러리':f.source==='CODE'?'코드':'분석 확인 필요'}</span><small>{f.advisoryId&&<code>{f.advisoryId} · </code>}{f.sourceFiles.join(', ')||'파일 위치 미기록'}{vulnerabilityForFinding(result,f)&&` · 원본 ${vulnerabilityForFinding(result,f)!.line}행`}</small></button></li>)}</ul>
+    <div className="problem-list-toolbar" hidden={!!selected}><label>문제 검색<input type="search" value={query} onChange={e=>{setQuery(e.target.value);setPage(0);}} placeholder="문제·파일·패키지·공지"/></label><label>검토 우선순위<select value={priority} onChange={e=>onViewChange(e.target.value==='ALL'?'SUMMARY':e.target.value as ResultView)}><option value="ALL">전체</option><option value="BLOCKING">반드시 처리</option><option value="REVIEW_REQUIRED">추가 검토 필요</option><option value="SHOULD_FIX">수정 권장</option></select></label></div>
+    {assessment?<><p hidden={!!selected}>{shown.length}개 저장된 평가 항목 · 공지 항목과 분석 확인 필요 항목을 포함하며 고유 취약점 수가 아닙니다.</p><ul className="problem-list" aria-label="발견된 문제 목록" hidden={!!selected} ref={rows}>{shown.slice(page*20,page*20+20).map(f=><li key={f.findingId}><a href={projectLink(result.projectId??0,'findings',result.reviewId??undefined,view,{kind,findingId:f.findingId})} className="problem-row" data-finding-index={findings.indexOf(f)} aria-current={selectedId===f.findingId?'true':undefined} onClick={event=>{if(!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey){event.preventDefault();choose(f.findingId);}}}><span className="problem-row-title">{findingTitle(result,f)}</span><span>{priorityLabels[f.priority]} · {f.source==='DEPENDENCY'?'외부 라이브러리':f.source==='CODE'?'코드':'분석 확인 필요'}</span><small>{f.advisoryId&&<code>{f.advisoryId} · </code>}{f.sourceFiles.join(', ')||'파일 위치 미기록'}{vulnerabilityForFinding(result,f)&&` · 원본 ${vulnerabilityForFinding(result,f)!.line}행`}</small></a></li>)}</ul>
+     {selectedId&&!selected&&<p role="status">선택한 항목이 이 검사 또는 현재 필터에 없습니다. 목록에서 확인할 문제를 선택해 주세요.</p>}
      {!shown.length&&<p>현재 필터에 표시할 저장된 항목이 없어요. 전체 안전성을 의미하지 않습니다.</p>}
      {!selected&&shown.length>20&&<nav aria-label="문제 목록 페이지"><button disabled={page===0} onClick={()=>setPage(page-1)}>이전</button><span>{page+1} / {Math.ceil(shown.length/20)}</span><button disabled={(page+1)*20>=shown.length} onClick={()=>setPage(page+1)}>다음</button></nav>}
-     {selected&&<div className="selected-problem" tabIndex={-1} ref={detail}><button type="button" className="secondary-button" onClick={()=>{const index=findings.findIndex(f=>f.findingId===selectedId);setSelectedId('');requestAnimationFrame(()=>{const button=[...(rows.current?.querySelectorAll<HTMLButtonElement>('button')??[])].find(b=>b.dataset.findingIndex===String(index));button?.focus();button?.scrollIntoView({block:'center'});});}}>문제 목록으로 돌아가기</button><h3>선택한 문제 상세</h3><FindingCollection result={result} findings={[selected]} statusActions={statusActions} onEditFile={onEditFile} onEditDependency={onEditDependency} detailOnly/></div>}
+     {selected&&<div className="selected-problem" tabIndex={-1} ref={detail}><button type="button" className="secondary-button" onClick={()=>{const index=findings.findIndex(f=>f.findingId===selectedId);choose('');requestAnimationFrame(()=>{const button=[...(rows.current?.querySelectorAll<HTMLAnchorElement>('a')??[])].find(b=>b.dataset.findingIndex===String(index));button?.focus();button?.scrollIntoView({block:'center'});});}}>문제 목록으로 돌아가기</button><h3>선택한 문제 상세</h3><FindingCollection result={result} findings={[selected]} statusActions={statusActions} onEditFile={onEditFile} onEditDependency={onEditDependency} detailOnly/></div>}
     </>:<><p>이전 이력에는 위험 평가가 없습니다. 기존 코드 근거와 라이브러리 결과를 확인하세요.</p><LegacyCodeList result={result} statusActions={statusActions}/></>}
    </>}
   </div>

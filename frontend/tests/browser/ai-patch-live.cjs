@@ -21,7 +21,7 @@ const origin=process.env.FRONTEND_URL||'http://localhost:5173',api='http://127.0
     const response=await route.fetch({url:api+url.pathname+url.search,headers:{...route.request().headers(),origin:'http://localhost:5173'}});return route.fulfill({response});
    }if(url.origin===new URL(origin).origin)return route.continue();outbound.push(url.origin);return route.abort();});
    await page.goto(`${origin}/#/projects/${review.projectId}/findings?review=${review.reviewId}&view=SUMMARY`);
-   await page.getByRole('button',{name:'수정 작업 공간 열기',exact:true}).click();await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).click();
+   await page.getByRole('button',{name:'수정 작업 공간 열기',exact:true}).click();await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).click();
    await page.getByRole('button',{name:'application.properties',exact:true}).click();await pane(page,'수정 근거 · AI');const panel=page.getByLabel('보안 수정안',{exact:true});
    await panel.getByLabel('수정할 분석 항목').selectOption({label:'DEBUG_ENABLED · 원본 1행'});
    await panel.getByRole('button',{name:'AI 수정안 전송 범위 확인'}).click();await panel.getByText('코드 전송 동의 대기',{exact:true}).waitFor();
@@ -49,7 +49,7 @@ with zipfile.ZipFile(sys.argv[1]) as z:
 print('MATCH')`,zip],{encoding:'utf8'});assert.equal(result.trim(),'MATCH');
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);assert.deepEqual(outbound,[]);
    await page.screenshot({path:`/private/tmp/securedeploy-ai-patch-${width}.png`,fullPage:true});
-   page.on('dialog',d=>d.accept());await page.getByRole('button',{name:'작업 공간 삭제',exact:true}).click();await page.getByRole('button',{name:'원본 확보 후 작업 공간 시작'}).waitFor();await page.close();
+   page.on('dialog',d=>d.accept());await page.getByRole('button',{name:'작업 공간 삭제',exact:true}).click();await page.getByRole('button',{name:'원본 확보 시도 후 새 작업 시작'}).waitFor();await page.close();
   }
   assert.deepEqual(await (await http.get(`/api/reviews/${review.reviewId}`,{headers})).json(),savedBefore);
   console.log(JSON.stringify({passed:true,widths:[1440,390,320],api:'ACTUAL_H2_JWT_WORKSPACE',model:'MOCK_ONLY',source:'MOCK_GITHUB',approvalAndRejection:true,zipMatchesAcceptedOnly:true,reviewUnchanged:true,paidCalls:0}));

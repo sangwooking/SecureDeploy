@@ -8,7 +8,7 @@ test('ZIP acquisition is explicit and legacy source identity is never assumed',(
   const result={...require('./result-fixture.cjs')(),sourceType:'ZIP',reviewId:4,projectName:'<script>fixture</script>'};
   const html=renderToStaticMarkup(React.createElement(SourceEditingWorkspace,{result,onBack(){}}));
   assert.ok(html.includes('과거 ZIP과 일치하는지 검증할 기록이 없습니다'));
-  assert.ok(html.includes('원본 확보 후 작업 공간 시작'));assert.ok(html.includes('disabled'));
+  assert.ok(html.includes('원본 확보 시도 후 새 작업 시작'));assert.ok(html.includes('disabled'));
   assert.ok(!html.includes('<script>'));assert.ok(html.includes('&lt;script&gt;'));
 });
 test('GitHub acquisition is exact-revision and source is never rendered or executed',()=>{

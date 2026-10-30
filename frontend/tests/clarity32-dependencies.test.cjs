@@ -27,7 +27,7 @@ test('SCA separates package-version impact, raw advisory items and canonical dis
   const props = { sca: data, riskAssessment: { schemaVersion: 2,
     dependencyFindings: [{ dependency: data.dependencyVulnerabilities[0] }], reviewRequirements: [] } };
   const before = JSON.stringify(props);
-  const html = render(DependencySecuritySection, props);
+  const html = render(DependencySecuritySection, {...props,initialSelection:0});
   assert.match(html, /발견한 패키지·버전 조합<\/dt><dd>3<\/dd>/);
   assert.match(html, /조회 완료 패키지·버전 조합<\/dt><dd>3<\/dd>/);
   assert.match(html, /보안 공지가 있는 패키지·버전 조합<\/dt><dd>1<\/dd>/);
@@ -36,7 +36,7 @@ test('SCA separates package-version impact, raw advisory items and canonical dis
   assert.ok(html.includes('수정 작업 수와 다릅니다'));
   assert.equal((html.match(/<article /g) || []).length, 1);
   assert.equal(JSON.stringify(props), before);
-  const legacy = render(DependencySecuritySection, { sca: data });
+  const legacy = render(DependencySecuritySection, { initialSelection:0, sca: data });
   assert.match(legacy, /표시된 보안 공지·패키지·버전 항목<\/dt><dd>2<\/dd>/);
 });
 
@@ -44,13 +44,13 @@ test('zero advisories do not erase incomplete, disabled, absent or legacy SCA st
   for (const status of ['PARTIAL', 'UNAVAILABLE', 'DISABLED', 'NO_MANIFEST']) {
     const data = sca(); data.status = status; data.dependencyVulnerabilities = [];
     data.summary = { ...data.summary, vulnerableDependencies: 0, dependencyVulnerabilities: 0 };
-    const html = render(DependencySecuritySection, { sca: data });
+    const html = render(DependencySecuritySection, { initialSelection:0, sca: data });
     assert.ok(html.includes('안전 여부는 확인되지 않았습니다'));
     assert.ok(!html.includes('알려진 취약점이 반환되지 않았습니다'));
   }
-  assert.ok(render(DependencySecuritySection, { sca: null }).includes('검사 결과가 없습니다'));
+  assert.ok(render(DependencySecuritySection, { initialSelection:0, sca: null }).includes('검사 결과가 없습니다'));
   const data = sca(); data.dependencyVulnerabilities = [];
-  const html = render(DependencySecuritySection, { sca: data });
+  const html = render(DependencySecuritySection, { initialSelection:0, sca: data });
   assert.ok(html.includes('프로젝트 전체의 안전을 보장하지 않습니다'));
 });
 

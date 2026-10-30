@@ -108,7 +108,7 @@ test('ambiguous legacy joins do not attach another finding remediation to a loca
 test('technical screen retains reference score and original snapshots without changing assessment', () => {
   const result = fixture();
   const html = render(result, 'TECHNICAL');
-  for (const text of ['100 / 100', '기존 정책 판단은 배포 허가가 아닙니다', 'BLOCKED', 'HARDCODED_SECRET', 'CVE-2099-0001']) assert.ok(html.includes(text));
+  for (const text of ['100 / 100', '기존 정책 판단은 배포 허가가 아닙니다', 'BLOCKED', 'HARDCODED_SECRET', '확인할 공지를 선택해 주세요']) assert.ok(html.includes(text));
 });
 
 test('repeated storage locations retain findings but are not presented as independent fixes', () => {

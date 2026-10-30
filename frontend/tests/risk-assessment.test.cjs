@@ -54,7 +54,7 @@ test('dependency priority joins by package version and advisory, not sorted arra
     { ecosystem: 'NPM', packageName: 'fixture', version: '2.0.0', advisoryId: 'TEST-1', priority: 'BLOCKING', priorityReason: 'wrong version' },
     { ecosystem: 'NPM', packageName: 'fixture', version: '1.0.0', advisoryId: 'TEST-1', priority: 'SHOULD_FIX', priorityReason: 'correct match' },
   ] };
-  const html = renderToStaticMarkup(React.createElement(DependencySecuritySection, { sca, riskAssessment }));
+  const html = renderToStaticMarkup(React.createElement(DependencySecuritySection, { initialSelection:0, sca, riskAssessment }));
   assert.ok(html.includes('SHOULD_FIX'));
   assert.ok(html.includes('correct match'));
   assert.ok(!html.includes('wrong version'));
@@ -71,7 +71,7 @@ test('canonical dependency cards replace duplicate raw advisories and preserve c
     priority: 'SHOULD_FIX', priorityReason: 'canonical advisory',
   }], dependencyCorrelations: [{ vulnerabilityId: 123, ruleId: 'VULNERABLE_NPM_DEPENDENCY', filePath: 'package.json', line: 2,
     observation: { packageName: 'fixture', version: '1.0.0', advisoryId: null }, reason: '보조 근거로 연결했습니다.' }] };
-  const html = renderToStaticMarkup(React.createElement(DependencySecuritySection, { sca, riskAssessment }));
+  const html = renderToStaticMarkup(React.createElement(DependencySecuritySection, { initialSelection:0, sca, riskAssessment }));
   assert.equal((html.match(/<article /g) || []).length, 1);
   assert.ok(html.includes('OSV-1, GHSA-test-1111-2222'));
   const assessmentHtml = render(riskAssessment);

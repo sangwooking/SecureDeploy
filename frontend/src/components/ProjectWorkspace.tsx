@@ -21,6 +21,8 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [revision, setRevision] = useState(0);
+  const lastResults=useRef<{projectId:number;href:string}|null>(null);
+  if(route.tab==='findings')lastResults.current={projectId:route.projectId,href:projectLink(route.projectId,'findings',route.reviewId,route.view,route.selection)};
   const active = useRef(true);
   useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   useEffect(() => {
@@ -78,16 +80,16 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
       <div className="project-heading-meta"><strong className={`policy-label policy-${project.latestReview?.riskSummary?.deploymentAssessment.toLowerCase() ?? 'unknown'}`}>{reviewStatus(project.latestReview)}</strong><p>최근 분석: {dateLabel(project.latestReview?.createdAt)}</p></div>
     </header>
     <details className="project-more"><summary>프로젝트 정보·관리</summary><a href={projectLink(project.projectId,'settings')}>프로젝트 설정·삭제</a>{project.repositoryUrl&&<p>{project.repositoryUrl}</p>}</details>
-    <nav className="project-navigation" aria-label="프로젝트 메뉴">{projectTabs.map(tab => <a key={tab.id} href={projectLink(project.projectId, tab.id,tab.id==='edit'?editingReviewId:undefined)} aria-current={route.tab === tab.id ? 'page' : undefined}>{tab.label}</a>)}</nav>
+    <nav className="project-navigation" aria-label="프로젝트 메뉴">{projectTabs.map(tab => <a key={tab.id} href={tab.id==='findings'&&lastResults.current?.projectId===project.projectId?lastResults.current.href:projectLink(project.projectId, tab.id,tab.id==='edit'?editingReviewId:undefined)} aria-current={route.tab === tab.id ? 'page' : undefined}>{tab.label}</a>)}</nav>
     {notice && <p role="status" className="feedback-message feedback-success">{notice}</p>}
     {error && <p role="alert" className="error-message">{error}</p>}
     {busy && <p role="status">요청을 처리하고 있습니다. 잠시 기다려 주세요.</p>}
     {(route.tab === 'findings'||route.tab === 'edit') && <section className="workspace-section">
       {review ? <>
         {!latestSelected && <p className="review-caution">과거 분석 #{review.reviewId}의 저장된 결과입니다. 현재 상태가 아닙니다. <a href={projectLink(project.projectId, 'findings')}>최신 분석 보기</a></p>}
-        <ProjectReviewResult key={`${review.reviewId}:${revision}`} result={review} view={route.view}
+        <ProjectReviewResult key={`${review.reviewId}:${revision}`} result={review} view={route.view} selection={route.selection}
           editing={route.tab==='edit'} onEditingChange={value=>{window.location.hash=projectLink(project.projectId,value?'edit':'findings',route.reviewId);}}
-          onView={view => { window.location.hash = projectLink(project.projectId, view==='PROGRESS'?'history':'findings', route.reviewId??review.reviewId??undefined, view); }}
+          onView={(view,selection) => { window.location.hash = projectLink(project.projectId, view==='PROGRESS'?'history':'findings', route.reviewId??review.reviewId??undefined, view,selection); }}
           onRescan={() => { window.location.hash = projectLink(project.projectId, 'rescan'); }} />
       </> : <><p>저장된 검사 결과가 없어 수정할 원본을 아직 확인할 수 없어요.</p><a className="primary-button" href={projectLink(project.projectId,'rescan')}>프로젝트 검사하기</a></>}
     </section>}
