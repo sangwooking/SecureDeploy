@@ -85,9 +85,9 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
             <option value="">항목 선택</option>{candidates.map(v => <option value={v.vulnerabilityId!} key={v.vulnerabilityId}>{v.ruleId} · 원본 {v.line}행</option>)}
             {flows.map(f=><option key={f.findingId} value={`flow:${f.findingId}`}>환경값 응답 검토 · 원본 {f.location.line}행</option>)}</select>
             {finding&&!option&&<p role="status">수정 가능한 범위를 확인하고 있습니다.</p>}
-            {option&&<p>{option.method==='DETERMINISTIC_FIX'?'자동 수정 가능':option.method==='AI_ASSISTED'?'AI 제안 지원':option.method==='MANUAL_REVIEW'?'수동 검토 필요':'수정 기능 미지원'} · {option.reason}</p>}
+            {option&&<p>{option.method==='DETERMINISTIC_FIX'?'검증된 자동 수정 · AI 호출 없음':option.method==='AI_ASSISTED'?'AI 제안 지원':option.method==='MANUAL_REVIEW'?'수동 검토 필요':'수정 기능 미지원'} · {option.reason}</p>}
             {option?.method==='DETERMINISTIC_FIX'&&<button type="button" className="primary-button" disabled={disabled||!!pending||dirty||!content.currentHash} onClick={automatic}>자동 수정안 만들기</button>}
-            {provider?.available&&(option?.method==='DETERMINISTIC_FIX'||option?.method==='AI_ASSISTED')&&<button type="button" className="secondary-button" disabled={disabled || !!pending || dirty || !finding || !content.currentHash} onClick={prepare}>AI 수정안 전송 범위 확인</button>}</>}
+            {provider?.available&&option?.method==='AI_ASSISTED'&&<button type="button" className="secondary-button" disabled={disabled || !!pending || dirty || !finding || !content.currentHash} onClick={prepare}>AI 수정안 전송 범위 확인</button>}</>}
       </>}
     {error && <p role="alert" className="error-message">{error}</p>}
     {proposals.length > 1 && <label>수정 제안 이력<select value={selected?.id ?? ''} disabled={!!pending} onChange={e => { setSelectedId(e.target.value);setConsented(false);setAccepted(false);setCompatibilityAccepted(false); }}>

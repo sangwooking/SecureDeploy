@@ -12,7 +12,9 @@ public final class WorkspacePatch {
         public Provider(String name,String model,boolean available){this(name,model,available,"UNVERIFIED_PROVIDER");}
     }
     static final Provider DETERMINISTIC = new Provider("DETERMINISTIC", "AST_FIELD_REMOVAL_V1", true);
-    public record FixOption(String method, String reason) { }
+    public record FixOption(String method,String reason,String supportLevel) {
+        public FixOption(String method,String reason){this(method,reason,switch(method){case "DETERMINISTIC_FIX"->"VERIFIED_AUTO_FIX";case "AI_ASSISTED"->"AI_ASSISTED_FIX";case "MANUAL_REVIEW"->"GUIDED_REMEDIATION";default->"UNSUPPORTED";});}
+    }
     public record Prepare(String fileId, long findingId, long revision, String originalHash, String currentHash,String flowFindingId) {
         public Prepare(String fileId,long findingId,long revision,String originalHash,String currentHash){this(fileId,findingId,revision,originalHash,currentHash,null);}
     }

@@ -36,7 +36,7 @@ export interface AiPatch { contextHash?:string|null; usage?:{model?:string;promp
   sourceRevision: string; revision: number; originalHash: string; currentHash: string; startLine: number;
   context?: {code:string;startLine:number;endLine:number;endpoint:string;sources:{line:number;column:number}[];sink:{line:number;column:number};removedFields:string[];preservedFields:string[];bindings?:{sourceId:string;findingId:string;field:string;source:{line:number;column:number};sink:{line:number;column:number};startOffset:number;endOffset:number;expressionHash:string}[]}|null; before: string; after: string | null; diff: string | null; provider: PatchProvider; explanation: string;
   verificationSteps: string[]; limitations: string[]; flowFindingId?: string | null; plan?:{version:string;objectId:string;revision:number;originalHash:string;requiredFields:{fieldId:string;field:string;sourceId:string}[]}|null; method?: 'AI_ASSISTED' | 'DETERMINISTIC_FIX' | 'AI_PLAN_SERVER_AST' }
-export interface FixOption { method: 'DETERMINISTIC_FIX' | 'AI_ASSISTED' | 'MANUAL_REVIEW' | 'UNSUPPORTED'; reason: string }
+export interface FixOption { supportLevel?: 'VERIFIED_AUTO_FIX' | 'AI_ASSISTED_FIX' | 'GUIDED_REMEDIATION' | 'REVIEW_ONLY' | 'UNSUPPORTED'; method: 'DETERMINISTIC_FIX' | 'AI_ASSISTED' | 'MANUAL_REVIEW' | 'UNSUPPORTED'; reason: string }
 export const fixOption = (w: EditingWorkspace, file: EditingFile, content: EditingContent, findingId: number, flowFindingId?: string) => call<FixOption>(`/${encodeURIComponent(w.id)}/fix-options`, {
   method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ fileId: file.id, findingId, flowFindingId, revision: w.revision, originalHash: file.originalHash, currentHash: content.currentHash }),
 });
