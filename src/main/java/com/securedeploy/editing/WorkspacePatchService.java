@@ -95,7 +95,7 @@ public class WorkspacePatchService {
         data.put("expectedHash",SourceArchive.hash(view.before().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
         data.put("ruleId",view.ruleId());data.put("untrustedCode",view.before());
         if(view.context()!=null){data.put("context",view.context());data.put("sourceFileHash",view.originalHash());
-            data.put("contextHash",SourceArchive.hash(mapper.writeValueAsBytes(view.context())));}
+            data.put("contextHash",view.contextHash());}
         String payload=mapper.writeValueAsString(data);
         if(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8).length>8192)throw SourceArchive.limit();
         String instructions=view.flowFindingId()!=null

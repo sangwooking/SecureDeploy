@@ -31,7 +31,7 @@ export async function exportEditingWorkspace(workspace: EditingWorkspace, format
   return response.blob();
 }
 export interface PatchProvider { origin?:string; name: string; model: string; available: boolean }
-export interface AiPatch { usage?:{model?:string;promptTokens:number;completionTokens:number;cachedInputTokens:number;usageKnown:boolean;estimatedCostUsd:number|null;costStatus:string;billable:boolean}|null; id: string; state: string; fileId: string; findingId: number; ruleId: string; reviewId: number;
+export interface AiPatch { contextHash?:string|null; usage?:{model?:string;promptTokens:number;completionTokens:number;cachedInputTokens:number;usageKnown:boolean;estimatedCostUsd:number|null;costStatus:string;billable:boolean}|null; id: string; state: string; fileId: string; findingId: number; ruleId: string; reviewId: number;
   sourceRevision: string; revision: number; originalHash: string; currentHash: string; startLine: number;
   context?: {code:string;startLine:number;endLine:number;endpoint:string;sources:{line:number;column:number}[];sink:{line:number;column:number};removedFields:string[];preservedFields:string[]}|null; before: string; after: string | null; diff: string | null; provider: PatchProvider; explanation: string;
   verificationSteps: string[]; limitations: string[]; flowFindingId?: string | null; method?: 'AI_ASSISTED' | 'DETERMINISTIC_FIX' }
@@ -48,7 +48,7 @@ export const prepareAiPatch = (w: EditingWorkspace, file: EditingFile, content: 
   method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ fileId: file.id, findingId, flowFindingId, revision: w.revision, originalHash: file.originalHash, currentHash: content.currentHash }),
 });
 export const generateAiPatch = (id: string, p: AiPatch) => call<AiPatch>(`/${encodeURIComponent(id)}/patches/${encodeURIComponent(p.id)}/generate`, {
-  method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ revision: p.revision, currentHash: p.currentHash, consented: true }),
+  method: 'POST', headers: jsonHeaders(), body: JSON.stringify({ revision: p.revision, currentHash: p.currentHash, consented: true, contextHash: p.contextHash }),
 });
 export const rejectAiPatch = (id: string, proposal: string) => call<AiPatch>(`/${encodeURIComponent(id)}/patches/${encodeURIComponent(proposal)}/reject`, { method: 'POST' });
 export const applyAiPatch = (id: string, p: AiPatch) => call<EditingWorkspace>(`/${encodeURIComponent(id)}/patches/${encodeURIComponent(p.id)}/apply`, {

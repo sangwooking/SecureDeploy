@@ -17,7 +17,9 @@ public class ResponsePatchValidator {
     record Contract(String source,ServerAnalysisSnapshot.Location sink,List<ServerAnalysisSnapshot.Location> sources) { }
     record Position(int line,int column) { }
     public record Context(String code,int startLine,int endLine,String endpoint,List<Position> sources,Position sink,
-                          List<String> removedFields,List<String> preservedFields) { }
+                          List<String> removedFields,List<String> preservedFields) {
+        public String fingerprint(){try{return SourceArchive.hash(new ObjectMapper().writeValueAsBytes(this));}catch(java.io.IOException error){throw new IllegalArgumentException();}}
+    }
     record Target(String before,int offset,int line,List<String> removed,String suggestedReplacement,Context context) { }
     Target check(Contract contract,String replacement) {
         if(!properties.isEnabled()||!CAPACITY.tryAcquire())throw new IllegalArgumentException();
