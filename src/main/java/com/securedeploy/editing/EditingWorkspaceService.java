@@ -169,7 +169,7 @@ public class EditingWorkspaceService {
         if (size > SourceArchive.MAX_BYTES) throw SourceArchive.limit();
         if (file.edit != null) Arrays.fill(file.edit, (byte) 0);
         file.edit = bytes; state.revision++;
-        file.changeOrigin = bytes == null ? "UNCHANGED" : state.patches.values().stream()
+        file.changeOrigin = bytes == null ? "UNCHANGED" : state.patches.values().stream().anyMatch(p -> p.fileId.equals(file.id)&&"ACCEPTED".equals(p.state)&&p.method().equals("AI_ASSISTED")&&"MOCK".equals(p.provider.origin()))?"MANUAL_AFTER_MOCK_AI":state.patches.values().stream()
                 .anyMatch(p -> p.fileId.equals(file.id) && "ACCEPTED".equals(p.state)&&p.method().equals("AI_ASSISTED")) ? "MANUAL_AFTER_AI"
                 : state.patches.values().stream().anyMatch(p -> p.fileId.equals(file.id)&&"ACCEPTED".equals(p.state)) ? "MANUAL_AFTER_DETERMINISTIC" : "MANUAL";
         return describe(state);
@@ -316,7 +316,7 @@ public class EditingWorkspaceService {
         if(!current.regionMatches(session.offset,session.before,0,session.before.length()))throw fail(HttpStatus.CONFLICT,"예상한 변경 위치가 다릅니다.");
         String updated=current.substring(0,session.offset)+session.after+current.substring(session.offset+session.before.length());
         var next=save(id,file.id,new Change(state.revision,file.hash,updated),false);
-        session.state="ACCEPTED";file.changeOrigin=session.method().equals("DETERMINISTIC_FIX")?"DETERMINISTIC_APPROVED":"AI_APPROVED";return next;
+        session.state="ACCEPTED";file.changeOrigin=session.method().equals("DETERMINISTIC_FIX")?"DETERMINISTIC_APPROVED":"MOCK".equals(session.provider.origin())?"MOCK_AI_APPROVED":"AI_APPROVED";return next;
     }
     private WorkspacePatch.Session patchOwned(State state,String id) {
         var session=state.patches.get(id);if(session==null)throw fail(HttpStatus.NOT_FOUND,"수정 제안에 접근할 수 없습니다.");

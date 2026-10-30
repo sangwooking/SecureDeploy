@@ -1,7 +1,7 @@
 // Full product integration with isolated H2/API/Worker/npm. Model outputs are MOCK, never live-model evidence.
 const {chromium,request}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
-const {stage}=require('./editor-navigation.cjs');const root=process.env.SECUREDEPLOY_AI02_INPUT,api='http://127.0.0.1:58044',origin='http://127.0.0.1:5190';if(!root)throw Error('ISOLATED_INPUT_REQUIRED');
+const {stage}=require('./editor-navigation.cjs');const root=process.env.SECUREDEPLOY_AI02_INPUT,api='http://127.0.0.1:58044',origin=process.env.SECUREDEPLOY_TEST_UI_URL||'http://127.0.0.1:5190';if(!root)throw Error('ISOLATED_INPUT_REQUIRED');
 const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
 (async()=>{const browser=await chromium.launch(),http=await request.newContext({baseURL:api}),results={semantic:[],files:[]};
 try{

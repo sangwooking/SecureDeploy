@@ -54,6 +54,13 @@ class WorkspacePatchTest {
         patches=new WorkspacePatchService(workspaces,new AiProviderResolver(properties,List.of(provider,template)),properties,users,mapper,usage,clock);
         workspace=workspaces.create(4,null);file=workspace.files().get(0);
     }
+    @Test void mockOriginSurvivesApprovalAndSubsequentManualEditing() throws Exception {
+        when(provider.executionOrigin()).thenReturn("MOCK");var p=prepare();var generated=patches.generate(workspace.id(),p.id(),new WorkspacePatch.Consent(1,p.currentHash(),true));assertEquals("PROPOSED",generated.state());
+        workspaces.applyPatch(workspace.id(),p.id(),new WorkspacePatch.Decision(1,p.currentHash(),true));
+        try(var captured=workspaces.captureScan(workspace.id(),2)){assertEquals("MOCK_AI_APPROVED",captured.provenance().files().get(0).changeOrigin());}
+        workspaces.save(workspace.id(),file.id(),new EditingWorkspaceService.Change(2,file.originalHash(),input.replace("debug=true","debug=false")+"# manual\n"),false);
+        try(var captured=workspaces.captureScan(workspace.id(),3)){assertEquals("MANUAL_AFTER_MOCK_AI",captured.provenance().files().get(0).changeOrigin());}
+    }
     @AfterEach void cleanup(){patches.shutdown();workspaces.shutdown();}
     WorkspacePatch.Output valid(WorkspacePatch.Prompt prompt)throws Exception{
         var data=mapper.readTree(prompt.untrustedData());
