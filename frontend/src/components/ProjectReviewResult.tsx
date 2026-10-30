@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { downloadAiReviewReport, downloadReviewReport, updateVulnerabilityStatus } from '../api/securityReviewApi';
 import type { SecurityReviewResponse, Vulnerability, VulnerabilityStatus } from '../types/securityReview';
 import type { ResultSelection } from './workspaceRoute';
+import {useUiCapabilities} from './useUiCapabilities';
 import { ReviewResultWorkspace } from './ReviewResultWorkspace';
 import type { ResultView } from './reviewPresentation';
 import { SourceEditingWorkspace } from './SourceEditingWorkspace';
@@ -9,6 +10,7 @@ import { SourceEditingWorkspace } from './SourceEditingWorkspace';
 export function ProjectReviewResult({ result, view, onView, onRescan, editing: editingProp, onEditingChange, selection }: {
   result: SecurityReviewResponse; view: ResultView; onView: (view: ResultView, selection?: ResultSelection) => void; selection?:ResultSelection; onRescan: () => void; editing?:boolean; onEditingChange?:(value:boolean)=>void;
 }) {
+  const capabilities=useUiCapabilities();
   const [current, setCurrent] = useState(result);
   const [comments, setComments] = useState<Record<number, string>>({});
   const [updating, setUpdating] = useState<number | null>(null);
@@ -54,7 +56,7 @@ export function ProjectReviewResult({ result, view, onView, onRescan, editing: e
       statusActions={{ updatingId: updating, comments, onComment: (id, comment) => setComments(previous => ({ ...previous, [id]: comment })), onStatus: (v, status) => void update(v, status) }}
       reportActions={<>
         <button type="button" className="secondary-button" disabled={!!report} onClick={() => void download(false)}>{report === 'basic' ? 'PDF 생성 중...' : '기본 리포트 다운로드'}</button>
-        <button type="button" className="secondary-button" disabled={!!report} onClick={() => void download(true)}>{report === 'ai' ? 'AI PDF 생성 중...' : 'AI 리뷰 PDF 생성·다운로드'}</button>
+        {capabilities.value?.legacyAiReport===true&&capabilities.value.providerAvailable&&<button type="button" className="secondary-button" disabled={!!report} onClick={() => void download(true)}>{report === 'ai' ? 'AI PDF 생성 중...' : 'AI 리뷰 PDF 생성·다운로드'}</button>}
       </>} />
   </>;
 }
