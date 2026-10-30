@@ -49,7 +49,7 @@ class WorkspacePatchTest {
         var clock=new Clock(){public ZoneId getZone(){return ZoneOffset.UTC;}public Clock withZone(ZoneId zone){return this;}public Instant instant(){return now.get();}};
         workspaces=new EditingWorkspaceService(reviews,users,sources,clock);
         properties.setProvider(AiProviderType.OPENAI);properties.getOpenai().setModel("mock-fixture-no-external");
-        when(provider.providerType()).thenReturn(AiProviderType.OPENAI);when(provider.isAvailable()).thenReturn(true);when(provider.consumeLastTokenUsage()).thenReturn(Optional.empty());
+        when(provider.providerType()).thenReturn(AiProviderType.OPENAI);when(provider.isAvailable()).thenReturn(true);when(provider.executionOrigin()).thenReturn("MOCK");when(provider.consumeLastTokenUsage()).thenReturn(Optional.empty());
         when(provider.generateWorkspacePatch(any())).thenAnswer(i->valid(i.getArgument(0)));
         patches=new WorkspacePatchService(workspaces,new AiProviderResolver(properties,List.of(provider,template)),properties,users,mapper,usage,clock);
         workspace=workspaces.create(4,null);file=workspace.files().get(0);

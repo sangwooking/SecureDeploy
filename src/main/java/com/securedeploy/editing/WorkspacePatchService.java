@@ -26,6 +26,9 @@ public class WorkspacePatchService {
     private final Map<String,Future<?>> jobs=new ConcurrentHashMap<>();
     private final Map<Long,Deque<Instant>> quotas=new HashMap<>();
     private final Clock clock;
+    private PatchCallPolicy callPolicy=new PatchCallPolicy(false);
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureCallPolicy(PatchCallPolicy policy){this.callPolicy=policy;}
     @org.springframework.beans.factory.annotation.Autowired
     public WorkspacePatchService(EditingWorkspaceService workspaces,AiProviderResolver resolver,AiProperties properties,CurrentUserService users,ObjectMapper mapper,AiUsageTracker usage) {
         this(workspaces,resolver,properties,users,mapper,usage,Clock.systemUTC());
@@ -35,7 +38,7 @@ public class WorkspacePatchService {
     }
     public WorkspacePatch.Provider provider() {
         var selected=resolver.resolve();
-        boolean available=properties.getProvider()==AiProviderType.OPENAI&&selected.providerType()==AiProviderType.OPENAI&&selected.isAvailable();
+        boolean available=properties.getProvider()==AiProviderType.OPENAI&&selected.providerType()==AiProviderType.OPENAI&&selected.isAvailable()&&callPolicy.available(selected.executionOrigin());
         return new WorkspacePatch.Provider("OPENAI",properties.getOpenai().getModel(),available,selected.executionOrigin()==null?"UNVERIFIED_PROVIDER":selected.executionOrigin());
     }
     public WorkspacePatch.View prepare(String workspace,WorkspacePatch.Prepare request) {
@@ -52,10 +55,11 @@ public class WorkspacePatchService {
             view=workspaces.beginPatch(workspace,proposal,consent,provider());
             calls.addLast(Instant.now(clock));
         }
-        Future<Generation> future=null;
+        Future<Generation> future=null;PatchCallPolicy.Permit permit=null;
         try {
             var prompt=prompt(view);
             var selected=resolver.resolve();
+            permit=callPolicy.reserve(users.currentUserId(),workspaces.projectId(workspace),SourceArchive.hash(((view.contextHash()!=null?view.contextHash():view.currentHash())+"|"+proposal).getBytes(java.nio.charset.StandardCharsets.UTF_8)),provider().model(),provider().origin(),prompt);
             future=executor.submit(()->{
                 selected.consumeLastTokenUsage();
                 WorkspacePatch.Output output=null;WorkspacePatchPlan.Output plan=null;AiUsageRecord measured;
@@ -75,7 +79,7 @@ public class WorkspacePatchService {
             return view.plan()!=null?workspaces.finishPlan(workspace,proposal,generated.plan(),null):workspaces.finishPatch(workspace,proposal,generated.output(),null);
         }catch(InterruptedException interrupted){Thread.currentThread().interrupt();return workspaces.finishPatch(workspace,proposal,null,"FAILED");}
         catch(Exception failed){return workspaces.finishPatch(workspace,proposal,null,failed instanceof ExecutionException&&failed.getCause() instanceof IllegalArgumentException?"INVALID":"FAILED");}
-        finally {if(future!=null&&!future.isDone())future.cancel(true);jobs.remove(proposal);}
+        finally {if(future!=null&&!future.isDone())future.cancel(true);jobs.remove(proposal);if(permit!=null)permit.close();}
     }
     public WorkspacePatch.View reject(String workspace,String proposal) {
         var view=workspaces.rejectPatch(workspace,proposal);

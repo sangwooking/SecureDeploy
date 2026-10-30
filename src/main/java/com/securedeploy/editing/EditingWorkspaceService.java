@@ -183,6 +183,7 @@ public class EditingWorkspaceService {
         }
         return new Discovery(creating.contains(user)?"CREATING":"NONE",null);
     }
+    synchronized long projectId(String id){return owned(id).project;}
     public synchronized Workspace get(String id) { return describe(owned(id)); }
     public synchronized Content content(String id, String fileId) {
         var state = owned(id); var file = file(state, fileId);
