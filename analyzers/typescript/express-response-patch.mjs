@@ -38,5 +38,18 @@ export function expressResponsePatch(input,{object,literal}){
  if(!removed.length||!retained.length||removed.length!==sources.length)fail();
  const offset=target.getStart(f),line=pos(target).line,suggestedReplacement='{'+retained.join(', ')+'}';
  if(replacement!==undefined){const next=object(replacement);if(next.length!==retained.length||next.some((p,i)=>p.getText()!==retained[i]))fail();const updated=source.slice(0,offset)+replacement+source.slice(target.end);if(ts.createSourceFile('after.ts',updated,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS).parseDiagnostics.length)fail();}
- return {before,offset,line,removed,suggestedReplacement};
+ // Context is optional and narrower than the deterministic patch contract. Never include unrelated statements/comments.
+ let context=null;
+ const statement=appBinding[0].parent?.parent;
+ if(ts.isBlock(handler.body)&&handler.body.statements.length===1&&handler.body.statements[0]===call.parent
+    &&ts.isExpressionStatement(registration.parent)&&ts.isSourceFile(registration.parent.parent)
+    &&ts.isVariableStatement(statement)&&statement.declarationList.declarations.length===1){
+  const printer=ts.createPrinter({removeComments:true});
+  const code=[imports[0].parent,statement,registration.parent].map(n=>printer.printNode(ts.EmitHint.Unspecified,n,f)).join('\n');
+  if(Buffer.byteLength(code)<=6000)context={code,startLine:pos(registration).line,endLine:f.getLineAndCharacterOfPosition(registration.end).line+1,
+    endpoint:registration.expression.name.text.toUpperCase()+' '+registration.arguments[0].text,
+    sources:sources.map(s=>({line:s.line,column:s.column})),sink:{line:sink.line,column:sink.column},removedFields:removed,
+    preservedFields:target.properties.filter(p=>!removed.includes(p.name.text)).map(p=>p.name.text)};
+ }
+ return {before,offset,line,removed,suggestedReplacement,context};
 }

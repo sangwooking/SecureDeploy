@@ -15,7 +15,10 @@ public class ResponsePatchValidator {
     private final ObjectMapper mapper=new ObjectMapper();
     public ResponsePatchValidator(TypeScriptAnalysisProperties properties){this.properties=properties;}
     record Contract(String source,ServerAnalysisSnapshot.Location sink,List<ServerAnalysisSnapshot.Location> sources) { }
-    record Target(String before,int offset,int line,List<String> removed,String suggestedReplacement) { }
+    record Position(int line,int column) { }
+    public record Context(String code,int startLine,int endLine,String endpoint,List<Position> sources,Position sink,
+                          List<String> removedFields,List<String> preservedFields) { }
+    record Target(String before,int offset,int line,List<String> removed,String suggestedReplacement,Context context) { }
     Target check(Contract contract,String replacement) {
         if(!properties.isEnabled()||!CAPACITY.tryAcquire())throw new IllegalArgumentException();
         Process process=null;var io=Executors.newFixedThreadPool(2,r->{var t=new Thread(r,"response-patch-parser");t.setDaemon(true);return t;});

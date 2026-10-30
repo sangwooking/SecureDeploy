@@ -5,7 +5,7 @@ import { useUiCapabilities } from './useUiCapabilities';
 import { WorkspaceDiffReview } from './WorkspaceOutcome';
 import { WorkspaceAutomationPanels } from './WorkspaceAutomationPanels';
 import { useEffect, useRef, useState } from 'react';
-import { createEditingWorkspace, deleteEditingWorkspace, exportEditingWorkspace, loadEditingDiff, loadEditingFile, loadEditingWorkspace, saveEditingFile } from '../api/editingApi';
+import { discoverEditingWorkspace, createEditingWorkspace, deleteEditingWorkspace, exportEditingWorkspace, loadEditingDiff, loadEditingFile, loadEditingWorkspace, saveEditingFile } from '../api/editingApi';
 import type { EditingContent, EditingDiff, EditingFile, EditingWorkspace } from '../api/editingApi';
 import type { SecurityReviewResponse } from '../types/securityReview';
 import { AiPatchPanel } from './AiPatchPanel';
@@ -41,6 +41,8 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const [expired, setExpired] = useState(false);
   const [remainingMinutes,setRemainingMinutes]=useState<number|null>(null);
   const [resumeId,setResumeId]=useState('');
+  const [discovery,setDiscovery]=useState<import('../api/editingApi').WorkspaceDiscovery|null>(null);
+  const [revisionConflict,setRevisionConflict]=useState(false);
   const [resumeAttempt,setResumeAttempt]=useState(0);
   const [recovery,setRecovery]=useState<ReturnType<typeof workspaceRecoveryProblem>|null>(null);
   const [stage, setStage] = useState<'edit'|'diff'|'scan'>('edit');
@@ -61,6 +63,8 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
         if(current){sessionStorage.setItem(key,value.id);setWorkspace(value);setExpired(Date.parse(value.expiresAt)<=Date.now());}
       }).catch(e => { if(current)setRecovery(workspaceRecoveryProblem(e)); })
         .finally(() => { if(current)setBusy(false); });
+    } else if(result.reviewId) {
+      setBusy(true);discoverEditingWorkspace(result.reviewId).then(value=>{if(current)setDiscovery(value);}).catch(()=>{if(current)setDiscovery(null);}).finally(()=>{if(current)setBusy(false);});
     }
     return () => { current=false;mounted.current = false; };
   }, [key,resumeAttempt]);
@@ -79,14 +83,35 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const run = async (action: () => Promise<void>) => {
     if (busy) return;
     setBusy(true); setError('');
-    try { await action(); } catch (e) { if (mounted.current) setError(e instanceof ApiRequestError?requestProblem(e,'수정 작업').message:e instanceof TypeError?'서버에 연결하지 못했어요. 네트워크를 확인해 주세요.':e instanceof Error?e.message:'요청을 완료하지 못했습니다.'); }
+    try { await action(); } catch (e) { if(e instanceof ApiRequestError&&e.code==='WORKSPACE_REVISION_CONFLICT')setRevisionConflict(true);
+      if(result.reviewId&&e instanceof ApiRequestError&&e.code==='WORKSPACE_ALREADY_OPEN')discoverEditingWorkspace(result.reviewId).then(setDiscovery).catch(()=>{});
+      if (mounted.current) setError(e instanceof ApiRequestError?requestProblem(e,'수정 작업').message:e instanceof TypeError?'서버에 연결하지 못했어요. 네트워크를 확인해 주세요.':e instanceof Error?e.message:'요청을 완료하지 못했습니다.'); }
     finally { if (mounted.current) setBusy(false); }
   };
+  const resumeDiscovered=()=>void run(async()=>{
+    const known=discovery?.workspace;if(!known)return;
+    const value=await loadEditingWorkspace(known.id);
+    if(!validResumedWorkspace(value,known.id,result.reviewId))throw new Error('WORKSPACE_REVIEW_MISMATCH');
+    if(dirty)return;
+    sessionStorage.setItem(key,value.id);setResumeId(value.id);setWorkspace(value);setDiscovery(null);setRecovery(null);setExpired(Date.parse(value.expiresAt)<=Date.now());
+  });
+  const exportDraft=()=>{
+    if(!content||!selected)return;
+    const blob=new Blob([text],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download=`securedeploy-unsaved-${selected.path.split('/').pop()}.txt`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+  const refreshSaved=()=>void run(async()=>{
+    if(!workspace||dirty&&!window.confirm('현재 편집을 내보냈나요? 최신 저장본을 불러오면 이 탭의 미저장 편집을 버립니다.'))return;
+    const next=await loadEditingWorkspace(workspace.id);
+    const value=selected?await loadEditingFile(next.id,selected.id):null;
+    if(value&&value.revision!==next.revision)throw new Error('다른 탭이 다시 저장했어요. 현재 편집은 유지됩니다. 다시 확인해 주세요.');
+    setWorkspace(next);setContent(value);setText(value?.text.replace(/\r\n/g,'\n')??'');setDiffs(null);setApproved(false);setRevisionConflict(false);
+  });
   const start = () => run(async () => {
     if (!result.reviewId) return;
     if(dirty&&!window.confirm('새 작업은 이전 편집을 복원하지 않습니다. 현재 편집 내용을 복사했으며 새 작업을 시작할까요?'))return;
     const value = await createEditingWorkspace(result.reviewId, result.sourceType === 'ZIP' ? zip ?? undefined : undefined);
-    if (mounted.current) { setWorkspace(value); setRecovery(null); setResumeId(value.id); setExpired(false); setSelected(null); setContent(null); setText(''); setDiffs(null); setApproved(false); setFileQuery(''); sessionStorage.setItem(key, value.id); }
+    if (mounted.current) { setWorkspace(value); setDiscovery(null); setRevisionConflict(false); setRecovery(null); setResumeId(value.id); setExpired(false); setSelected(null); setContent(null); setText(''); setDiffs(null); setApproved(false); setFileQuery(''); sessionStorage.setItem(key, value.id); }
   });
   const select = (file: EditingFile) => void run(async () => {
     if (dirty && !window.confirm('저장하지 않은 편집을 버리고 다른 파일을 열까요?')) return;
@@ -142,13 +167,18 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
       {!embedded&&<button type="button" className="secondary-button" aria-label="분석 결과로 돌아가기" disabled={busy} onClick={() => { if (!dirty || window.confirm('저장하지 않은 편집을 버리고 결과로 돌아갈까요?')) onBack(); }}>결과로 돌아가기</button>}</header>
     {recovery && <div role="alert" className="workspace-recovery"><p><strong>{recovery.message}</strong></p><p>이 안내만으로 만료나 데이터 손실을 확정할 수 없습니다. 이전 작업 식별자는 재시도를 위해 유지합니다.</p><button type="button" disabled={busy} onClick={()=>setResumeAttempt(n=>n+1)}>이전 작업 다시 확인</button></div>}
     {error && <p className="error-message" role="alert">{error}</p>}
+    {content&&(dirty||expired)&&<div role="note"><p>이 탭에 남은 현재 편집을 텍스트로 내보낼 수 있습니다. 미저장 편집은 다른 탭·서버에 보관되지 않습니다. 새로고침·계정 변경 전에 내보내 주세요.</p><button type="button" onClick={exportDraft}>현재 편집 텍스트 내보내기</button></div>}
+    {revisionConflict&&<div role="alert"><p>이 탭의 편집은 유지했습니다. 다른 탭의 변경을 덮어쓰지 않았습니다.</p><button type="button" disabled={busy} onClick={refreshSaved}>편집 내보내기 후 최신 저장본 확인</button></div>}
     {!workspace ? <div className="source-editor-acquire">
+      {discovery?.state==='AVAILABLE'&&<div role="status"><p>진행 중인 수정 작업이 있어요.</p><p>서버에 저장된 내용만 이어집니다. 다른 탭의 미저장 편집은 가져오지 않습니다. 이용 시간은 연장되지 않습니다.</p><button type="button" className="primary-button" disabled={busy} onClick={resumeDiscovered}>기존 작업 이어서 하기</button></div>}
+      {discovery?.state==='OTHER_REVIEW'&&<p role="status">다른 검사에서 진행 중인 수정 작업이 있어요. 해당 작업을 내보내고 명시적으로 닫은 뒤 새 작업을 시작해 주세요.</p>}
+      {discovery?.state==='CREATING'&&<p role="status">다른 탭에서 원본을 확보하고 있어요. 잠시 후 이 화면을 다시 확인해 주세요.</p>}
       <p>원본은 30분 동안 임시 보관되며 서버 재시작 시 사라집니다. 편집 내용은 자동 재검사되거나 GitHub에 반영되지 않습니다. 저장도 임시 서버 보관입니다. 다른 탭에서 계정을 변경하기 전에 승인한 Patch/ZIP을 내보내 주세요.</p>
       {result.sourceType === 'ZIP' ? <><p role="note">과거 ZIP과 일치하는지 검증할 기록이 없습니다. 과거 경고 위치를 확정 연결하지 않으며 다운로드 후 새로 분석해야 합니다.</p>
         <label>원본 ZIP <input type="file" accept=".zip,application/zip" disabled={busy} onChange={e => setZip(e.target.files?.[0] ?? null)} /></label></>
         : <p>현재 읽기 권한을 확인하고 분석 당시 commit만 가져옵니다. 해당 commit을 확보하지 못하면 작업을 중단합니다.</p>}
       {result.sourceType === 'WORKSPACE' && <p role="note">수정본 Review에는 전체 소스를 보관하지 않습니다. 기존 작업 공간을 이용하거나 다운로드한 ZIP으로 새 분석을 시작해 주세요.</p>}
-      <button className="primary-button" type="button" disabled={busy || (!!resumeId && recovery?.allowSourceAttempt!==true) || !result.reviewId || !result.sourceType || result.sourceType === 'WORKSPACE' || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 시도 후 새 작업 시작'}</button>
+      <button className="primary-button" type="button" disabled={busy || (!!discovery&&discovery.state!=='NONE') || (!!resumeId && recovery?.allowSourceAttempt!==true) || !result.reviewId || !result.sourceType || result.sourceType === 'WORKSPACE' || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 시도 후 새 작업 시작'}</button>
     </div> : <>
       <div className="source-editor-status"><p><strong>수정본 버전 {workspace.revision}</strong> · 만료 {new Date(workspace.expiresAt).toLocaleTimeString('ko-KR')} · 변경 {workspace.changedFileIds.length}개</p>
         <p role="note">임시 작업 공간입니다. 저장한 파일과 AI 제안도 30분 또는 서버 재시작 시 사라집니다. 보관하려면 변경 검토·승인 후 Patch/ZIP을 내보내 주세요.</p>

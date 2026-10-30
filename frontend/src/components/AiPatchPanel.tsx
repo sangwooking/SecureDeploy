@@ -96,13 +96,14 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
       <h4>{states[selected.state] ?? '알 수 없는 제안 상태'}</h4>
       <p className={`proposal-method ${deterministic?'method-deterministic':'method-ai'}`}>{deterministic?'자동 수정안 · 정적 근거 기반 · 외부 AI 전송·비용 없음':providerOriginLabel(selected.provider.origin,selected.provider.name)}</p>
       <p>{file.path} · 현재 {selected.startLine}행 · 기준 revision {selected.revision} · {selected.ruleId}</p>
-      {selected.flowFindingId&&<p>{deterministic?'수정':'전송'} 범위: {selected.startLine}~{selected.startLine+selected.before.split('\n').length-1}행의 객체 응답 부분입니다. 파일 전체가 아닙니다.</p>}
+      {selected.flowFindingId&&!selected.context&&<p>{deterministic?'수정':'전송'} 범위: {selected.startLine}~{selected.startLine+selected.before.split('\n').length-1}행의 객체 응답 부분입니다. 파일 전체가 아닙니다.</p>}
       <p>{selected.explanation}</p>
       {selected.usage&&<p role="status">{selected.usage.billable?'API 응답 사용량':'과금 없는 테스트 사용량'} · 모델 {selected.usage.model??'미확인'} · 입력 {selected.usage.promptTokens} / 캐시 {selected.usage.cachedInputTokens} / 출력 {selected.usage.completionTokens}토큰 · {selected.usage.estimatedCostUsd==null?'비용 미확인':`추정 US$${Number(selected.usage.estimatedCostUsd).toFixed(6)}`} · {selected.usage.usageKnown?'usage 수신':'usage 미확인'}</p>}
       {!deterministic&&!selected.usage&&['FAILED','INVALID','GENERATING'].includes(selected.state)&&<p>실제 사용량과 비용을 아직 확인하지 못했습니다. 무료 처리됐다는 의미는 아닙니다.</p>}
       {!deterministic&&selected.state === 'APPROVAL_REQUIRED' && <>
-        <p>전송 대상: 아래{selected.flowFindingId?' 객체 응답 코드':' 설정 한 줄'}와 Finding 규칙·파일 ID·행·내용 해시. 다른 파일과 주변 코드는 전송하지 않습니다.</p>
-        <AiRequestDisclosure task="선택한 근거의 코드 수정안 생성" scope="아래 원본 코드 범위·규칙·파일 ID·행·해시를 전송합니다. 실제 비밀값과 파일 전체는 전송하지 않습니다."/><pre className="source-ai-code">{selected.before}</pre>
+        <p>전송 대상: 아래{selected.flowFindingId?' 객체 응답 코드':' 설정 한 줄'}{selected.context?' 및 아래의 AST 확인 HTTP 등록·완결된 inline Handler 문맥':''}와 Finding 규칙·파일 ID·행·내용 해시. 무관한 파일은 전송하지 않습니다.</p>
+        <AiRequestDisclosure task="선택한 근거의 코드 수정안 생성" scope={selected.context?'아래 수정 대상과 HTTP 등록·Handler 문맥·Source/Sink 위치·보존/제거 필드·파일/문맥 해시를 전송합니다. 주석은 제외되며 비밀값 의심 시 전송을 거부합니다.':'아래 원본 코드 범위·규칙·파일 ID·행·해시를 전송합니다. 실제 비밀값과 파일 전체는 전송하지 않습니다.'}/><pre className="source-ai-code">{selected.before}</pre>
+        {selected.context&&<div aria-label="AI 전송 문맥 미리보기"><p>{selected.context.endpoint} · 원본 {selected.context.startLine}~{selected.context.endLine}행의 등록·Handler. import와 app 정의 포함, 주석 제외.</p><pre className="source-ai-code">{selected.context.code}</pre><p>제거 대상: {selected.context.removedFields.join(', ')} · 보존 대상: {selected.context.preservedFields.join(', ')}</p><p>Source/Sink 위치: {JSON.stringify({sources:selected.context.sources,sink:selected.context.sink})}</p><p>원본 파일 SHA-256: {selected.originalHash}</p></div>}
         <p>{selected.provider.name} / {selected.provider.model} · 저장소 밖 Provider로 전송합니다. 민감정보가 보이면 동의하지 마세요.</p>
         <label className="source-export-approval"><input type="checkbox" checked={consented} disabled={!!pending || dirty} onChange={e => setConsented(e.target.checked)} />이 코드 범위의 외부 전송과 유료 호출 가능성에 동의합니다.</label>
         <button type="button" className="primary-button" disabled={disabled || !!pending || dirty || !consented} onClick={generate}>동의한 코드로 AI 수정안 생성</button>

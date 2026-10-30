@@ -14,6 +14,12 @@ public class EditingWorkspaceController {
     public ResponseEntity<?> zip(@PathVariable long reviewId, @RequestPart MultipartFile file) throws IOException { return json(service.create(reviewId, file)); }
     @PostMapping("/github/{reviewId}")
     public ResponseEntity<?> github(@PathVariable long reviewId) throws IOException { return json(service.create(reviewId, null)); }
+    @GetMapping("/review/{reviewId}/active")
+    public ResponseEntity<?> active(@PathVariable long reviewId) { return json(service.discover(reviewId)); }
+    @ExceptionHandler(EditingConflictException.class)
+    public ResponseEntity<?> conflict(EditingConflictException error) {
+        return ResponseEntity.status(409).cacheControl(CacheControl.noStore()).body(java.util.Map.of("code",error.code,"message",error.getMessage()));
+    }
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable String id) { return json(service.get(id)); }
     @GetMapping("/{id}/files/{fileId}")

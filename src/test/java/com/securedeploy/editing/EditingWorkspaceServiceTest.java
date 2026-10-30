@@ -117,4 +117,21 @@ class EditingWorkspaceServiceTest {
         when(reviews.findAccessibleReviewWithVulnerabilities(anyLong(),anyString())).thenThrow(new RuntimeException("review unavailable"));
         assertDoesNotThrow(()->service.delete(other.id()));
     }
+    @Test void discoveryOnlyReturnsOwnedMatchingReviewAndDoesNotRenewExpiry() throws Exception {
+        var w=open("original");assertEquals(w,service.discover(w.reviewId()).workspace());assertEquals("AVAILABLE",service.discover(w.reviewId()).state());
+        assertEquals("OTHER_REVIEW",service.discover(9876).state());assertNull(service.discover(9876).workspace());
+        user.set(2);assertEquals("NONE",service.discover(w.reviewId()).state());user.set(1);now.set(w.expiresAt());assertEquals("NONE",service.discover(w.reviewId()).state());
+    }
+    @Test void resumedTabCannotOverwriteOtherTabOrExportStaleRevision() throws Exception {
+        var a=open("original");var b=service.discover(a.reviewId()).workspace();var f=a.files().stream().filter(v->v.editable()).findFirst().orElseThrow();
+        var next=service.save(a.id(),f.id(),new EditingWorkspaceService.Change(a.revision(),f.originalHash(),"saved in A"),false);
+        var conflict=assertThrows(EditingConflictException.class,()->service.save(b.id(),f.id(),new EditingWorkspaceService.Change(b.revision(),f.originalHash(),"unsaved B"),false));
+        assertEquals("WORKSPACE_REVISION_CONFLICT",conflict.code);assertEquals("saved in A",service.content(a.id(),f.id()).text());
+        assertThrows(RuntimeException.class,()->service.download(b.id(),"zip",new EditingWorkspaceService.Approval(b.revision(),List.of(f.id()),true)));
+        assertEquals(next.revision(),service.discover(a.reviewId()).workspace().revision());
+    }
+    @Test void inaccessibleReviewIsRejectedBeforeWorkspaceDiscovery() throws Exception {
+        var w=open("original");when(reviews.findAccessibleReviewWithVulnerabilities(eq(w.reviewId()),anyString())).thenThrow(new com.securedeploy.global.error.SecureDeployException(org.springframework.http.HttpStatus.NOT_FOUND,"unavailable"));
+        assertThrows(com.securedeploy.global.error.SecureDeployException.class,()->service.discover(w.reviewId()));
+    }
 }

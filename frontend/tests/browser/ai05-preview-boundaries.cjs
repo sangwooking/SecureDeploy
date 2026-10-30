@@ -1,6 +1,6 @@
 // Real HTTP preview, no mocked responses or production browser sessions.
 const {chromium,request}=require(process.env.PLAYWRIGHT_MODULE||'playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const origin='http://127.0.0.1:5191',root=process.env.SECUREDEPLOY_AI05_EVIDENCE;if(!root?.startsWith('/private/tmp/securedeploy-ai05'))throw Error('ISOLATED_OUTPUT_REQUIRED');fs.mkdirSync(root,{recursive:true});
+const origin=process.env.SECUREDEPLOY_TEST_UI_URL||'http://127.0.0.1:5191',root=process.env.SECUREDEPLOY_AI05_EVIDENCE;if(!root?.startsWith('/private/tmp/securedeploy-ai05'))throw Error('ISOLATED_OUTPUT_REQUIRED');fs.mkdirSync(root,{recursive:true});
 (async()=>{const browser=await chromium.launch(),context=await browser.newContext({viewport:{width:1440,height:1000}}),http=await request.newContext({baseURL:origin}),results={realModelCalls:0,requestInterception:'OUTBOUND_DENY_ONLY_NO_RESPONSE_OVERRIDES',standalonePreview:true};let w,headers;
 await context.route('**/*',r=>{assert.equal(new URL(r.request().url()).origin,origin);return r.continue();});
 const login=async(p,email)=>{await p.getByPlaceholder('user@test.com').fill(email);await p.getByPlaceholder('비밀번호',{exact:true}).fill('Synthetic-AI02-135!');await p.locator('.auth-submit').click();await p.getByRole('navigation',{name:'앱 메뉴'}).waitFor();};

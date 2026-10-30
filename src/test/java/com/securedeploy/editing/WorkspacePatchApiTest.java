@@ -89,4 +89,14 @@ class WorkspacePatchApiTest {
         assertEquals("STALE",getJson(path,owner).path("state").asText());postJson(path+"/generate",Map.of("revision",1,"currentHash",current,"consented",true),owner,409);verify(provider,never()).generateWorkspacePatch(any());
         mvc.perform(delete(base).header("Authorization","Bearer "+owner)).andExpect(status().isOk());mvc.perform(get(path).header("Authorization","Bearer "+owner)).andExpect(status().isNotFound());
     }
+    @Test void activeWorkspaceApiIsOwnerBoundNoStoreAndRevisionConflictsAreSpecific() throws Exception {
+        String active="/api/editing-workspaces/review/"+reviewId+"/active";
+        var found=getJson(active,owner);assertEquals("AVAILABLE",found.path("state").asText());assertEquals(workspace,found.path("workspace").path("id").asText());
+        mvc.perform(get(active).header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
+        mvc.perform(get(active).header("Authorization","Bearer "+owner)).andExpect(header().string("Cache-Control","no-store"));
+        mvc.perform(post("/api/editing-workspaces/github/"+reviewId).header("Authorization","Bearer "+owner)).andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("WORKSPACE_ALREADY_OPEN"));
+        String body=json.writeValueAsString(Map.of("revision",1,"originalHash",hash,"text","debug=true\n# tab A\n"));
+        mvc.perform(put(base+"/files/"+file).header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk());
+        mvc.perform(put(base+"/files/"+file).header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("WORKSPACE_REVISION_CONFLICT"));
+    }
 }

@@ -105,7 +105,7 @@ public class EditingWorkspaceService {
             if (closed) throw fail(HttpStatus.SERVICE_UNAVAILABLE, "작업 공간을 사용할 수 없습니다.");
             expire();
             if (creating.contains(user) || states.values().stream().anyMatch(s -> s.user == user))
-                throw fail(HttpStatus.CONFLICT, "열려 있는 수정 작업 공간을 먼저 닫아 주세요.");
+                throw new EditingConflictException("WORKSPACE_ALREADY_OPEN", "진행 중인 수정 작업이 있어요. 기존 작업을 확인하고 이어서 진행해 주세요.");
             if (states.size() + creating.size() >= 4) throw fail(HttpStatus.TOO_MANY_REQUESTS, "작업 공간이 가득 찼습니다. 잠시 후 다시 시도해 주세요.");
             creating.add(user);
         }
@@ -145,6 +145,18 @@ public class EditingWorkspaceService {
             }
         }
     }
+    public record Discovery(String state, Workspace workspace) { }
+    public synchronized Discovery discover(long reviewId) {
+        long user=users.currentUserId();
+        var review=reviews.findAccessibleReviewWithVulnerabilities(reviewId,"분석 결과에 접근할 수 없습니다.");
+        expire();
+        if(closed)throw fail(HttpStatus.SERVICE_UNAVAILABLE,"작업 공간을 사용할 수 없습니다.");
+        for(var state:states.values())if(state.user==user) {
+            if(state.review==reviewId&&state.project==review.getProject().getId())return new Discovery("AVAILABLE",describe(owned(state.id)));
+            return new Discovery("OTHER_REVIEW",null);
+        }
+        return new Discovery(creating.contains(user)?"CREATING":"NONE",null);
+    }
     public synchronized Workspace get(String id) { return describe(owned(id)); }
     public synchronized Content content(String id, String fileId) {
         var state = owned(id); var file = file(state, fileId);
@@ -157,7 +169,7 @@ public class EditingWorkspaceService {
     public synchronized Workspace save(String id, String fileId, Change change, boolean revert) {
         var state = owned(id); var file = file(state, fileId);
         if (change == null || change.revision() != state.revision || !file.hash.equals(change.originalHash()))
-            throw fail(HttpStatus.CONFLICT, "다른 탭에서 변경되었거나 원본 해시가 다릅니다. 최신 내용을 다시 불러와 주세요.");
+            throw new EditingConflictException("WORKSPACE_REVISION_CONFLICT", "다른 탭에서 저장했거나 원본 해시가 달라졌어요. 현재 편집을 먼저 내보낸 뒤 최신 내용을 확인해 주세요.");
         if (!file.editable()) throw fail(HttpStatus.UNPROCESSABLE_ENTITY, "이 파일은 읽기 전용입니다.");
         byte[] bytes = null;
         if (!revert) {
@@ -252,6 +264,11 @@ public class EditingWorkspaceService {
             if(retained+(state.patches.size()+1)*PATCH_RESERVATION>SourceArchive.MAX_BYTES)throw new IllegalArgumentException();
             var session=new WorkspacePatch.Session(request,finding.ruleId(),state.source,request.currentHash(),target.line(),target.offset(),target.before(),null,null,provider);
             session.responseContract=new ResponsePatchValidator.Contract(null,contract.sink(),contract.sources());
+            if(!WorkspacePatch.DETERMINISTIC.equals(provider)&&finding.location().kind().equals("EXPRESS_HTTP_RESPONSE")) {
+                var context=target.context();
+                if(context==null||!context.code().equals(sanitizer.text(context.code(),6000))||context.code().contains("@")||context.code().contains("<redacted>"))throw new IllegalArgumentException();
+                session.context=context;
+            }
             session.limits=List.of("응답 필드 제거는 API 계약을 바꿀 수 있습니다. 응답을 사용하는 클라이언트와 호환성을 직접 확인하고 승인하세요.",
                     "서버 환경값 조회에서 HTTP 응답으로 전달되는 필드만 대상으로 합니다. 실제 비밀값·운영 인증·배포 상태·전체 안전성은 미확인입니다.",
                     "현재 파일이 원본과 같은 경우만 지원하며 복잡한 helper·별칭·전체 환경값 응답은 수동 검토가 필요합니다. 구조 비교는 NOT_COMPARED입니다.");
@@ -331,7 +348,7 @@ public class EditingWorkspaceService {
     private WorkspacePatch.View patchView(State state,WorkspacePatch.Session p,boolean internal) {
         boolean show=internal||Set.of("PROPOSED","ACCEPTED").contains(p.state);
         return new WorkspacePatch.View(p.id,p.state,p.fileId,p.findingId,p.rule,state.review,p.source,p.revision,p.originalHash,p.currentHash,p.line,
-                p.before,show?p.after:null,show?p.diff:null,p.provider,p.explanation,p.checks,p.limits,p.flowFindingId,p.method(),p.usage);
+                p.before,show?p.after:null,show?p.diff:null,p.provider,p.explanation,p.checks,p.limits,p.flowFindingId,p.method(),p.usage,p.context);
     }
     public synchronized Download download(String id, String format, Approval approval) throws IOException {
         var state = owned(id);

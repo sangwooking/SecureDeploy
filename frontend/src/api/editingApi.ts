@@ -13,6 +13,8 @@ export async function createEditingWorkspace(reviewId: number, file?: File): Pro
   if (file) { const form = new FormData(); form.append('file', file); return call(`/zip/${reviewId}`, { method: 'POST', body: form }); }
   return call(`/github/${reviewId}`, { method: 'POST' });
 }
+export interface WorkspaceDiscovery {state:'AVAILABLE'|'NONE'|'OTHER_REVIEW'|'CREATING';workspace:EditingWorkspace|null}
+export const discoverEditingWorkspace=(reviewId:number)=>call<WorkspaceDiscovery>(`/review/${reviewId}/active`);
 export const loadEditingWorkspace = (id: string) => call<EditingWorkspace>(`/${encodeURIComponent(id)}`);
 export const loadEditingFile = (id: string, file: string) => call<EditingContent>(`/${encodeURIComponent(id)}/files/${encodeURIComponent(file)}`);
 export const loadEditingDiff = (id: string, file: string) => call<EditingDiff>(`/${encodeURIComponent(id)}/files/${encodeURIComponent(file)}/diff`);
@@ -31,7 +33,7 @@ export async function exportEditingWorkspace(workspace: EditingWorkspace, format
 export interface PatchProvider { origin?:string; name: string; model: string; available: boolean }
 export interface AiPatch { usage?:{model?:string;promptTokens:number;completionTokens:number;cachedInputTokens:number;usageKnown:boolean;estimatedCostUsd:number|null;costStatus:string;billable:boolean}|null; id: string; state: string; fileId: string; findingId: number; ruleId: string; reviewId: number;
   sourceRevision: string; revision: number; originalHash: string; currentHash: string; startLine: number;
-  before: string; after: string | null; diff: string | null; provider: PatchProvider; explanation: string;
+  context?: {code:string;startLine:number;endLine:number;endpoint:string;sources:{line:number;column:number}[];sink:{line:number;column:number};removedFields:string[];preservedFields:string[]}|null; before: string; after: string | null; diff: string | null; provider: PatchProvider; explanation: string;
   verificationSteps: string[]; limitations: string[]; flowFindingId?: string | null; method?: 'AI_ASSISTED' | 'DETERMINISTIC_FIX' }
 export interface FixOption { method: 'DETERMINISTIC_FIX' | 'AI_ASSISTED' | 'MANUAL_REVIEW' | 'UNSUPPORTED'; reason: string }
 export const fixOption = (w: EditingWorkspace, file: EditingFile, content: EditingContent, findingId: number, flowFindingId?: string) => call<FixOption>(`/${encodeURIComponent(w.id)}/fix-options`, {
