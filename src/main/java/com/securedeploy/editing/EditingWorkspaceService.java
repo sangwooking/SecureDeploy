@@ -24,7 +24,7 @@ public class EditingWorkspaceService {
     public record FileInfo(String id, String path, String originalHash, int size, boolean directory,
                            boolean editable, String readOnlyReason, boolean changed,String changeOrigin,List<ChangeAttribution> provenance) { }
     public record Workspace(String id, long reviewId, long revision, Instant createdAt, Instant expiresAt, String sourceRevision,
-                            String identityStatus, List<FileInfo> files, List<String> changedFileIds,List<ExportApproval> exports) { }
+                            String identityStatus, List<FileInfo> files, List<String> changedFileIds,List<ExportApproval> exports,String storageMode) { }
     public record ExportApproval(long revision,String format,long userId,Instant at,String provenanceHash) { }
     public record Content(String fileId, long revision, String originalHash, String currentHash, String text, String newline, boolean bom) { }
     public record Change(long revision, String originalHash, String text) { }
@@ -32,19 +32,20 @@ public class EditingWorkspaceService {
     public record Difference(long revision, String fileId, String originalHash, String patch,String changeOrigin,List<ChangeAttribution> provenance) { }
     public record Download(byte[] bytes, String filename, String type,String provenanceHash,long revision) { }
     private static final class StoredFile {
-        final String id = UUID.randomUUID().toString();
+        final String id;
         final SourceArchive.Entry original;
         final String hash;
         byte[] edit;
         String changeOrigin = "UNCHANGED";
         final List<ChangeAttribution> provenance=new ArrayList<>();
-        StoredFile(SourceArchive.Entry entry) { original = entry; hash = SourceArchive.hash(entry.bytes()); }
+        StoredFile(SourceArchive.Entry entry) { this(UUID.randomUUID().toString(),entry); }
+        StoredFile(String id,SourceArchive.Entry entry) { this.id=id; original = entry; hash = SourceArchive.hash(entry.bytes()); }
         byte[] current() { return edit == null ? original.bytes() : edit; }
         boolean editable() { return !original.directory() && SourceArchive.text(original.bytes()) != null; }
         void clear() { Arrays.fill(original.bytes(), (byte) 0); if (edit != null) Arrays.fill(edit, (byte) 0); }
     }
     private static final class State {
-        final String id = UUID.randomUUID().toString();
+        final String id;
         final long user, review;
         final long project;
         final ProjectLifecycleGuard.Lease lease;
@@ -54,12 +55,21 @@ public class EditingWorkspaceService {
         final Map<String,WorkspacePatch.Session> patches = new LinkedHashMap<>();
         final List<ExportApproval> exports=new ArrayList<>();
         long revision = 1;
+        long storeVersion;
         State(long user, long review, long project, ProjectLifecycleGuard.Lease lease, Instant now,
-                String source, String identity, List<SourceArchive.Entry> entries) {
-            this.user = user; this.review = review; this.created = now; this.expires = now.plusSeconds(1800);
+                String source, String identity, List<SourceArchive.Entry> entries,Duration retention) {
+            this.id=UUID.randomUUID().toString();
+            this.user = user; this.review = review; this.created = now; this.expires = now.plus(retention);
             this.project = project; this.lease = lease;
             this.source = source; this.identity = identity;
             this.files = entries.stream().sorted(Comparator.comparing(SourceArchive.Entry::path)).map(StoredFile::new).toList();
+        }
+        State(WorkspaceVault.Loaded loaded,ProjectLifecycleGuard.Lease lease) {
+            var s=loaded.snapshot();this.id=s.id();this.user=s.owner();this.project=s.project();this.review=s.review();
+            this.created=s.created();this.expires=s.expires();this.source=s.source();this.identity=s.identity();this.lease=lease;
+            this.revision=s.revision();this.storeVersion=loaded.version();
+            this.files=s.files().stream().map(f->{var v=new StoredFile(f.id(),new SourceArchive.Entry(f.path(),f.original(),f.directory(),f.mode()));v.edit=f.edit();v.changeOrigin=f.origin();v.provenance.addAll(f.provenance());return v;}).toList();
+            this.exports.addAll(s.exports());
         }
         void clear() { try { files.forEach(StoredFile::clear); patches.clear(); } finally { lease.close(); } }
     }
@@ -73,15 +83,24 @@ public class EditingWorkspaceService {
     private final ScheduledExecutorService expiry;
     private final ProjectLifecycleGuard lifecycle;
     private boolean closed;
+    private WorkspaceVault vault;
 
     public EditingWorkspaceService(ReviewAccessService reviews, CurrentUserService users, EditingSourceService sources,
             ResponsePatchValidator responsePatches) {
         this(reviews, users, sources, responsePatches, new ProjectLifecycleGuard());
     }
-    @org.springframework.beans.factory.annotation.Autowired
     public EditingWorkspaceService(ReviewAccessService reviews, CurrentUserService users, EditingSourceService sources,
             ResponsePatchValidator responsePatches, ProjectLifecycleGuard lifecycle) {
         this(reviews, users, sources, Clock.systemUTC(), responsePatches, lifecycle);
+    }
+    @org.springframework.beans.factory.annotation.Autowired
+    public EditingWorkspaceService(ReviewAccessService reviews,CurrentUserService users,EditingSourceService sources,
+            ResponsePatchValidator validator,ProjectLifecycleGuard lifecycle,WorkspaceVault vault) {
+        this(reviews,users,sources,Clock.systemUTC(),validator,lifecycle);this.vault=vault;
+    }
+    EditingWorkspaceService(ReviewAccessService reviews,CurrentUserService users,EditingSourceService sources,
+            Clock clock,ProjectLifecycleGuard lifecycle,WorkspaceVault vault) {
+        this(reviews,users,sources,clock,new ResponsePatchValidator(new com.securedeploy.analysis.typescript.TypeScriptAnalysisProperties()),lifecycle);this.vault=vault;
     }
     EditingWorkspaceService(ReviewAccessService reviews, CurrentUserService users, EditingSourceService sources, Clock clock) {
         this(reviews, users, sources, clock, new ProjectLifecycleGuard());
@@ -97,7 +116,7 @@ public class EditingWorkspaceService {
         this.responsePatches=responsePatches;
         this.lifecycle = lifecycle == null ? new ProjectLifecycleGuard() : lifecycle;
         expiry = Executors.newSingleThreadScheduledExecutor(r -> { var t = new Thread(r, "editing-expiry"); t.setDaemon(true); return t; });
-        expiry.scheduleWithFixedDelay(this::expire, 15, 15, TimeUnit.SECONDS);
+        expiry.scheduleWithFixedDelay(()->{try {expire();if(vault!=null&&vault.enabled())vault.cleanup(Instant.now(clock));}catch(RuntimeException ignored){/* Reads/writes still fail closed; never log encrypted parameters. */}}, 15, 15, TimeUnit.SECONDS);
     }
     public Workspace create(long reviewId, MultipartFile zip) throws IOException {
         long user = users.currentUserId();
@@ -107,6 +126,8 @@ public class EditingWorkspaceService {
         synchronized (this) {
             if (closed) throw fail(HttpStatus.SERVICE_UNAVAILABLE, "작업 공간을 사용할 수 없습니다.");
             expire();
+            if(vault!=null&&vault.enabled())vault.cleanup(Instant.now(clock));
+            restore(user);
             if (creating.contains(user) || states.values().stream().anyMatch(s -> s.user == user))
                 throw new EditingConflictException("WORKSPACE_ALREADY_OPEN", "진행 중인 수정 작업이 있어요. 기존 작업을 확인하고 이어서 진행해 주세요.");
             if (states.size() + creating.size() >= 4) throw fail(HttpStatus.TOO_MANY_REQUESTS, "작업 공간이 가득 찼습니다. 잠시 후 다시 시도해 주세요.");
@@ -132,10 +153,11 @@ public class EditingWorkspaceService {
             }
             // Recheck ownership after acquisition; deleting a Review must not create an orphan session.
             reviews.findAccessibleReviewWithVulnerabilities(reviewId, "분석 결과에 접근할 수 없습니다.");
-            var state = new State(user, reviewId, review.getProject().getId(), lease, Instant.now(clock), source, identity, entries);
+            var state = new State(user, reviewId, review.getProject().getId(), lease, Instant.now(clock).truncatedTo(java.time.temporal.ChronoUnit.MILLIS), source, identity, entries, vault==null?Duration.ofMinutes(30):vault.retention());
             synchronized (this) {
                 if (closed) throw fail(HttpStatus.SERVICE_UNAVAILABLE, "작업 공간을 사용할 수 없습니다.");
                 var result = describe(state);
+                persist(state);
                 states.put(state.id, state);
                 complete = true;
                 return result;
@@ -154,6 +176,7 @@ public class EditingWorkspaceService {
         var review=reviews.findAccessibleReviewWithVulnerabilities(reviewId,"분석 결과에 접근할 수 없습니다.");
         expire();
         if(closed)throw fail(HttpStatus.SERVICE_UNAVAILABLE,"작업 공간을 사용할 수 없습니다.");
+        restore(user);
         for(var state:states.values())if(state.user==user) {
             if(state.review==reviewId&&state.project==review.getProject().getId())return new Discovery("AVAILABLE",describe(owned(state.id)));
             return new Discovery("OTHER_REVIEW",null);
@@ -171,7 +194,7 @@ public class EditingWorkspaceService {
     }
     public synchronized Workspace save(String id,String fileId,Change change,boolean revert) {
         saveInternal(id,fileId,change,revert);var state=owned(id);var f=file(state,fileId);
-        record(state,f,"MANUAL",null,null,null,null,null,false);return describe(state);
+        record(state,f,"MANUAL",null,null,null,null,null,false);persist(state);return describe(state);
     }
     private Workspace saveInternal(String id, String fileId, Change change, boolean revert) {
         var state = owned(id); var file = file(state, fileId);
@@ -384,7 +407,7 @@ public class EditingWorkspaceService {
         String updated=current.substring(0,session.offset)+session.after+current.substring(session.offset+session.before.length());
         var next=saveInternal(id,file.id,new Change(state.revision,file.hash,updated),false);
         session.state="ACCEPTED";file.changeOrigin=session.method().equals("DETERMINISTIC_FIX")?"DETERMINISTIC_APPROVED":"MOCK".equals(session.provider.origin())?"MOCK_AI_APPROVED":"AI_APPROVED";
-        record(state,file,session.plan?"SECUREDEPLOY_AST":session.method().equals("DETERMINISTIC_FIX")?"DETERMINISTIC":"MOCK".equals(session.provider.origin())?"MOCK":"OPENAI".equals(session.provider.origin())?"OPENAI":"UNVERIFIED_AI",session.provider.origin(),session.usage==null?session.provider.model():session.usage.model(),session.id,session.plan?session.provider.origin():null,null,true);return describe(state);
+        record(state,file,session.plan?"SECUREDEPLOY_AST":session.method().equals("DETERMINISTIC_FIX")?"DETERMINISTIC":"MOCK".equals(session.provider.origin())?"MOCK":"OPENAI".equals(session.provider.origin())?"OPENAI":"UNVERIFIED_AI",session.provider.origin(),session.usage==null?session.provider.model():session.usage.model(),session.id,session.plan?session.provider.origin():null,null,true);persist(state);return describe(state);
     }
     private WorkspacePatch.Session patchOwned(State state,String id) {
         var session=state.patches.get(id);if(session==null)throw fail(HttpStatus.NOT_FOUND,"수정 제안에 접근할 수 없습니다.");
@@ -411,6 +434,7 @@ public class EditingWorkspaceService {
         if(state.exports.size()>=128)throw fail(HttpStatus.TOO_MANY_REQUESTS,"다운로드 승인 이력 한도에 도달했습니다.");
         String provenanceHash=provenanceHash(fileFacts(state));
         state.exports.add(new ExportApproval(state.revision,format,state.user,Instant.now(clock),provenanceHash));
+        persist(state);
         if ("zip".equals(format)) {
             return new Download(SourceArchive.zip(currentEntries(state, false)), "securedeploy-edited-r" + state.revision + ".zip", "application/zip",provenanceHash,state.revision);
         }
@@ -437,7 +461,7 @@ public class EditingWorkspaceService {
         ensureHistory(state,replacements.size());
         // All checks finish before either file changes; original entries are never modified.
         for(var e:replacements.entrySet()){var f=state.files.stream().filter(v->v.original.path().equals(e.getKey())).findFirst().orElseThrow();f.edit=e.getValue().clone();f.changeOrigin="PACKAGE_MANAGER_APPROVED";}
-        state.revision++;for(var path:replacements.keySet()){var f=state.files.stream().filter(v->v.original.path().equals(path)).findFirst().orElseThrow();record(state,f,"NPM",null,null,null,directionOrigin,adviceId,true);}return describe(state);
+        state.revision++;for(var path:replacements.keySet()){var f=state.files.stream().filter(v->v.original.path().equals(path)).findFirst().orElseThrow();record(state,f,"NPM",null,null,null,directionOrigin,adviceId,true);}persist(state);return describe(state);
     }
     private void verifyGenerated(State state,long revision,String inputHash,Map<String,byte[]> replacements) {
         if(state.revision!=revision||!"EXACT_GIT_COMMIT".equals(state.identity)||!replacements.keySet().equals(Set.of("package.json","package-lock.json")))throw fail(HttpStatus.CONFLICT,"원본 revision 또는 허용 파일 범위가 다릅니다.");
@@ -472,12 +496,13 @@ public class EditingWorkspaceService {
                 f.original.directory(), f.original.mode())).toList();
     }
     public synchronized void delete(String id) {
-        expire(); var state = states.get(id);
+        expire(); restore(users.currentUserId()); var state = states.get(id);
         if (state == null || state.user != users.currentUserId()) throw fail(HttpStatus.NOT_FOUND, "작업 공간이 없거나 만료되었습니다.");
+        if(vault!=null)vault.delete(id,state.user,state.storeVersion);
         states.remove(id); state.clear();
     }
     private State owned(String id) {
-        expire(); var state = states.get(id);
+        expire(); restore(users.currentUserId()); var state = states.get(id);
         if (state == null || state.user != users.currentUserId()) throw fail(HttpStatus.NOT_FOUND, "작업 공간이 없거나 만료되었습니다.");
         try { reviews.findAccessibleReviewWithVulnerabilities(state.review, "분석 결과에 접근할 수 없습니다."); }
         catch (SecureDeployException denied) {
@@ -493,7 +518,7 @@ public class EditingWorkspaceService {
         return new Workspace(state.id, state.review, state.revision, state.created, state.expires, state.source, state.identity,
                 state.files.stream().map(f -> new FileInfo(f.id, f.original.path(), f.hash, f.original.bytes().length, f.original.directory(),
                         f.editable(), f.editable() ? null : (f.original.directory() ? "DIRECTORY" : "BINARY_SIZE_OR_ENCODING"), f.edit != null,f.changeOrigin,List.copyOf(f.provenance))).toList(),
-                state.files.stream().filter(f -> f.edit != null).map(f -> f.id).toList(),List.copyOf(state.exports));
+                state.files.stream().filter(f -> f.edit != null).map(f -> f.id).toList(),List.copyOf(state.exports),vault!=null&&vault.enabled()?"ENCRYPTED_PERSISTENT":"MEMORY_TEMPORARY");
     }
     private void ensureHistory(State state,int count){if(state.files.stream().mapToInt(f->f.provenance.size()).sum()+count>1024)throw fail(HttpStatus.TOO_MANY_REQUESTS,"변경 출처 이력 한도에 도달했습니다. 현재 편집을 내보내고 새 작업을 시작하세요.");}
     private void record(State state,StoredFile file,String generator,String origin,String model,String proposal,String direction,String advice,boolean approved){file.provenance.add(new ChangeAttribution(state.revision,generator,origin,model,proposal,direction,advice,approved,state.user,Instant.now(clock),SourceArchive.hash(file.current())));}
@@ -530,6 +555,26 @@ public class EditingWorkspaceService {
         entries.stream().sorted(Comparator.comparing(SourceArchive.Entry::path)).forEach(e -> value.append(e.path()).append('\0')
                 .append(e.directory()).append('\0').append(e.mode()).append('\0').append(SourceArchive.hash(e.bytes())).append('\n'));
         return SourceArchive.hash(value.toString().getBytes(StandardCharsets.UTF_8));
+    }
+    private void persist(State s) {
+        if(vault==null||!vault.enabled())return;
+        var snapshot=new WorkspaceVault.Snapshot(1,s.id,s.user,s.project,s.review,s.revision,s.created,s.expires,s.source,s.identity,
+            s.files.stream().map(f->new WorkspaceVault.File(f.id,f.original.path(),f.original.bytes(),f.original.directory(),f.original.mode(),f.hash,f.edit,f.changeOrigin,List.copyOf(f.provenance))).toList(),List.copyOf(s.exports));
+        try {s.storeVersion=vault.put(snapshot,s.storeVersion);}
+        catch(RuntimeException failure){states.remove(s.id);s.clear();throw failure;}
+    }
+    private void restore(long user) {
+        if(vault==null||!vault.enabled())return;
+        var loaded=vault.owner(user,Instant.now(clock));
+        var cached=states.values().stream().filter(s->s.user==user).findFirst().orElse(null);
+        if(loaded.isEmpty()){if(cached!=null){states.remove(cached.id);cached.clear();}return;}
+        var value=loaded.get();var s=value.snapshot();
+        var review=reviews.findAccessibleReviewWithVulnerabilities(s.review(),"분석 결과에 접근할 수 없습니다.");
+        if(review.getProject().getId()!=s.project())throw fail(HttpStatus.NOT_FOUND,"작업 공간에 접근할 수 없습니다.");
+        if(cached!=null&&cached.id.equals(s.id())&&cached.storeVersion==value.version())return;
+        if(cached!=null){states.remove(cached.id);cached.clear();}
+        if(states.size()>=4)throw fail(HttpStatus.TOO_MANY_REQUESTS,"작업 공간이 가득 찼습니다.");
+        var next=new State(value,lifecycle.work(s.project()));states.put(next.id,next);
     }
     private synchronized void expire() {
         var iterator = states.values().iterator();

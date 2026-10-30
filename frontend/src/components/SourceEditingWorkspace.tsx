@@ -197,8 +197,10 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
       {result.sourceType === 'WORKSPACE' && <p role="note">수정본 Review에는 전체 소스를 보관하지 않습니다. 기존 작업 공간을 이용하거나 다운로드한 ZIP으로 새 분석을 시작해 주세요.</p>}
       <button className="primary-button" type="button" disabled={busy || (!!discovery&&discovery.state!=='NONE') || (!!resumeId && recovery?.allowSourceAttempt!==true) || !result.reviewId || !result.sourceType || result.sourceType === 'WORKSPACE' || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 시도 후 새 작업 시작'}</button>
     </div> : <>
-      <div className="source-editor-status"><p><strong>수정본 버전 {workspace.revision}</strong> · 만료 {new Date(workspace.expiresAt).toLocaleTimeString('ko-KR')} · 변경 {workspace.changedFileIds.length}개</p>
-        <p role="note">임시 작업 공간입니다. 저장한 파일과 AI 제안도 30분 또는 서버 재시작 시 사라집니다. 보관하려면 변경 검토·승인 후 Patch/ZIP을 내보내 주세요.</p>
+      <div className="source-editor-status"><p><strong>수정본 버전 {workspace.revision}</strong> · 만료 {new Date(workspace.expiresAt).toLocaleString('ko-KR')} · 변경 {workspace.changedFileIds.length}개</p>
+        <p role="note">{workspace.storageMode==='ENCRYPTED_PERSISTENT'
+          ? '암호화된 서버 저장 작업입니다. 저장한 파일·수정 출처·다운로드 승인 이력은 만료 전까지 서버 재시작 후 이어갈 수 있습니다. 미저장 편집과 검토 중인 제안은 복구되지 않습니다.'
+          : '임시 작업 공간입니다. 저장한 파일과 AI 제안도 30분 또는 서버 재시작 시 사라집니다. 보관하려면 변경 검토·승인 후 Patch/ZIP을 내보내 주세요.'}</p>
         <details><summary>원본·해시 정보</summary><p className="source-revision">원본: {workspace.sourceRevision}</p></details>
         {workspace.identityStatus === 'UNVERIFIED_REUPLOAD' && <p role="note">이전 검사 원본과 같은 파일인지 확인하지 못했어요. 과거 문제 위치를 연결하지 않으며, 수정 후 새 검사가 필요해요.</p>}
         {remainingMinutes!==null&&remainingMinutes>0&&remainingMinutes<=5&&<p role="alert">작업 공간 이용 시간이 {remainingMinutes}분 이내로 남았어요. 미저장 변경을 저장한 뒤 변경 검토·승인을 거쳐 Patch/ZIP을 내보내 주세요. 자동 다운로드하지 않습니다.</p>}
