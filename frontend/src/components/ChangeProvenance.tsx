@@ -1,7 +1,7 @@
 import {changeOriginLabel} from './EvidenceSupportLayout';
 import type {ChangeAttribution} from '../api/editingApi';
 export function attributionLabel(e:ChangeAttribution){
- const generated=e.generator==='OPENAI'?'수정 제안: OpenAI':e.generator==='MOCK'?'수정 제안: Mock · 실제 모델 미검증':e.generator==='DETERMINISTIC'?'수정 생성: 결정적 서버 검증':e.generator==='NPM'?`수정 파일 생성: npm · 업데이트 방향: ${e.directionOrigin==='OPENAI'?'OpenAI':e.directionOrigin==='MOCK'?'Mock · 실제 모델 미검증':'출처 확인 불가'}`:e.generator==='MANUAL'?'사용자 직접 편집':'생성 출처 확인 불가';
+ const generated=e.generator==='SECUREDEPLOY_AST'?`${e.providerOrigin==='OPENAI'?'OpenAI가 수정 방향 제안':e.providerOrigin==='MOCK'?'Mock이 수정 방향 제안 · 실제 모델 미검증':'출처 확인 불가 · 수정 방향 제안'} · SecureDeploy가 검증된 코드 변경 생성`:e.generator==='OPENAI'?'수정 제안: OpenAI':e.generator==='MOCK'?'수정 제안: Mock · 실제 모델 미검증':e.generator==='DETERMINISTIC'?'수정 생성: 결정적 서버 검증':e.generator==='NPM'?`수정 파일 생성: npm · 업데이트 방향: ${e.directionOrigin==='OPENAI'?'OpenAI':e.directionOrigin==='MOCK'?'Mock · 실제 모델 미검증':'출처 확인 불가'}`:e.generator==='MANUAL'?'사용자 직접 편집':'생성 출처 확인 불가';
  return `${generated} · ${e.approved?'사용자 승인 완료':'다운로드 승인 별도'}`;
 }
 export function ChangeProvenance({origin,events}:{origin?:string;events?:ChangeAttribution[]|null}){

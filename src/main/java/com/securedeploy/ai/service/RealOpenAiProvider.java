@@ -36,6 +36,7 @@ import org.springframework.web.client.RestClient;
 
 @Component
 public class RealOpenAiProvider implements AiProvider {
+    @Override public com.securedeploy.editing.WorkspacePatchPlan.Output generateWorkspacePatchPlan(com.securedeploy.editing.WorkspacePatch.Prompt prompt){return com.securedeploy.editing.WorkspacePatchPlan.parse(structuredOutput("workspace_patch_plan_v1",prompt));}
     @Override public String executionOrigin() { return "OPENAI"; }
     @Override
     public com.securedeploy.editing.WorkspacePatch.Output generateWorkspacePatch(com.securedeploy.editing.WorkspacePatch.Prompt prompt) {

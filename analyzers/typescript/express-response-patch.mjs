@@ -36,8 +36,8 @@ export function expressResponsePatch(input,{object,literal}){
   else{if(!literal(v))fail();retained.push(props[i].getText());}
  }
  if(!removed.length||!retained.length||removed.length!==sources.length)fail();
- const offset=target.getStart(f),line=pos(target).line,suggestedReplacement='{'+retained.join(', ')+'}';
- if(replacement!==undefined){const next=object(replacement);if(next.length!==retained.length||next.some((p,i)=>p.getText()!==retained[i]))fail();const updated=source.slice(0,offset)+replacement+source.slice(target.end);if(ts.createSourceFile('after.ts',updated,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS).parseDiagnostics.length)fail();}
+ const offset=target.getStart(f),line=pos(target).line,suggestedReplacement=input.plan===true?removeTokens(source,target,removed,f):'{'+retained.join(', ')+'}';
+ if(replacement!==undefined){if(input.plan===true&&replacement!==suggestedReplacement)fail();const next=object(replacement);if(next.length!==retained.length||next.some((p,i)=>p.getText()!==retained[i]))fail();const updated=source.slice(0,offset)+replacement+source.slice(target.end);if(ts.createSourceFile('after.ts',updated,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS).parseDiagnostics.length)fail();}
  // Context is optional and narrower than the deterministic patch contract. Never include unrelated statements/comments.
  let context=null;
  const statement=appBinding[0].parent?.parent;
@@ -52,4 +52,25 @@ export function expressResponsePatch(input,{object,literal}){
     preservedFields:target.properties.filter(p=>!removed.includes(p.name.text)).map(p=>p.name.text)};
  }
  return {before,offset,line,removed,suggestedReplacement,context,fields};
+}
+
+// Delete only verified property tokens and surplus comma tokens. Trivia outside those spans is retained.
+function removeTokens(source,target,removed,file){
+ const props=[...target.properties],kept=props.map((p,i)=>removed.includes(p.name.text)?-1:i).filter(i=>i>=0);
+ if(!kept.length)throw Error('MANUAL_REVIEW_REQUIRED');
+ const spans=props.filter(p=>removed.includes(p.name.text)).map(p=>[p.getStart(file),p.end]);
+ for(let i=0;i<props.length;i++){
+  const start=props[i].end,end=i+1<props.length?props[i+1].getStart(file):target.end-1;
+  const scanner=ts.createScanner(ts.ScriptTarget.Latest,false,ts.LanguageVariant.Standard,source.slice(start,end));let commas=[];
+  for(let t=scanner.scan();t!==ts.SyntaxKind.EndOfFileToken;t=scanner.scan()){
+   if(t===ts.SyntaxKind.CommaToken)commas.push([start+scanner.getTokenPos(),start+scanner.getTextPos()]);
+   else if(![ts.SyntaxKind.WhitespaceTrivia,ts.SyntaxKind.NewLineTrivia,ts.SyntaxKind.SingleLineCommentTrivia,ts.SyntaxKind.MultiLineCommentTrivia].includes(t))throw Error('MANUAL_REVIEW_REQUIRED');
+  }
+  if(i+1<props.length&&commas.length!==1||commas.length>1)throw Error('MANUAL_REVIEW_REQUIRED');
+  const keep=i===props.length-1||kept.slice(1).includes(i+1);
+  if(!keep)spans.push(...commas);
+ }
+ spans.sort((a,b)=>b[0]-a[0]);let text=source.slice(target.getStart(file),target.end),previous=target.end;
+ for(const [start,end]of spans){if(start<target.getStart(file)||end>previous||start>=end)throw Error('MANUAL_REVIEW_REQUIRED');text=text.slice(0,start-target.getStart(file))+text.slice(end-target.getStart(file));previous=start;}
+ return text;
 }

@@ -1,0 +1,2 @@
+# This fixture intentionally verifies exact CRLF byte preservation.
+src/test/resources/patch03/patch03-layout/gateway.js -text whitespace=cr-at-eol

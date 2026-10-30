@@ -30,7 +30,8 @@ public final class WorkspacePatch {
                        int startLine, String before, String after, String diff, Provider provider,
                        String explanation, List<String> verificationSteps, List<String> limitations,String flowFindingId,String method,com.securedeploy.ai.usage.AiUsageRecord usage, ResponsePatchValidator.Context context) {
         @com.fasterxml.jackson.annotation.JsonProperty("contextHash")
-        public String contextHash(){return context==null?null:context.fingerprint();}
+        public String contextHash(){return context==null?null:WorkspacePatchPlan.METHOD.equals(method)?WorkspacePatchPlan.fingerprint(this):context.fingerprint();}
+        @com.fasterxml.jackson.annotation.JsonProperty("plan") public WorkspacePatchPlan.Contract plan(){return WorkspacePatchPlan.contract(this);}
         public View(String id,String state,String fileId,long findingId,String ruleId,long reviewId,String sourceRevision,long revision,String originalHash,String currentHash,int startLine,String before,String after,String diff,Provider provider,String explanation,List<String> verificationSteps,List<String> limitations,String flowFindingId,String method,com.securedeploy.ai.usage.AiUsageRecord usage){this(id,state,fileId,findingId,ruleId,reviewId,sourceRevision,revision,originalHash,currentHash,startLine,before,after,diff,provider,explanation,verificationSteps,limitations,flowFindingId,method,usage,null);}
         public View(String id,String state,String fileId,long findingId,String ruleId,long reviewId,String sourceRevision,long revision,String originalHash,String currentHash,int startLine,String before,String after,String diff,Provider provider,String explanation,List<String> verificationSteps,List<String> limitations,String flowFindingId,String method){this(id,state,fileId,findingId,ruleId,reviewId,sourceRevision,revision,originalHash,currentHash,startLine,before,after,diff,provider,explanation,verificationSteps,limitations,flowFindingId,method,null);}
     }
@@ -38,6 +39,7 @@ public final class WorkspacePatch {
         final String id = UUID.randomUUID().toString();
         final String fileId, rule, source, originalHash, currentHash, before;
         String after,diff;
+        boolean plan;
         ResponsePatchValidator.Contract responseContract;
         ResponsePatchValidator.Context context;
         com.securedeploy.ai.usage.AiUsageRecord usage;
@@ -45,7 +47,7 @@ public final class WorkspacePatch {
         final long findingId, revision;
         final int line, offset;
         final Provider provider;
-        String method(){return DETERMINISTIC.equals(provider)?"DETERMINISTIC_FIX":"AI_ASSISTED";}
+        String method(){return plan?WorkspacePatchPlan.METHOD:DETERMINISTIC.equals(provider)?"DETERMINISTIC_FIX":"AI_ASSISTED";}
         String state="APPROVAL_REQUIRED", explanation="코드는 전송되지 않았습니다.";
         List<String> checks=List.of(), limits=List.of("저장소 설정의 변경 제안입니다. 운영 적용·기능 호환성·취약점 해결은 검증하지 않았습니다.");
         Session(Prepare request, String rule, String source, String currentHash, int line, int offset,

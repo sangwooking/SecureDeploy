@@ -94,4 +94,17 @@ class OpenAiPatchTransportTest {
                 new AiProviderResolver(props, List.of(new TemplateAiProvider(), provider)).resolve());
         server.verify();
     }
+    @Test void structuredPlanUsesCodeFreeStrictSchemaAndExistingUsageTransport()throws Exception{
+        var props=new AiProperties();props.getOpenai().setApiKey("synthetic-only");props.getOpenai().setModel("gpt-5.4-mini-2026-03-17");var builder=RestClient.builder().baseUrl("https://api.openai.com/v1");var server=MockRestServiceServer.bindTo(builder).build();
+        var output=new com.securedeploy.editing.WorkspacePatchPlan.Output("NEEDS_REVIEW","issued-object",List.of(),"API 계약 확인 필요",List.of("로컬 확인"),List.of("미검증"));
+        server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(request->{var data=mapper.readTree(((org.springframework.mock.http.client.MockClientHttpRequest)request).getBodyAsBytes());assertTrue(data.at("/text/format/strict").asBoolean());assertEquals("workspace_patch_plan_v1",data.at("/text/format/name").asText());assertFalse(data.at("/text/format/schema/properties").has("replacement"));assertFalse(data.path("store").asBoolean());assertFalse(data.has("tools"));assertEquals(2000,data.path("max_output_tokens").asInt());}).andRespond(withSuccess(mapper.writeValueAsString(Map.of("status","completed","output_text",mapper.writeValueAsString(output),"usage",Map.of("input_tokens",10,"output_tokens",4,"total_tokens",14))),MediaType.APPLICATION_JSON));
+        var provider=new RealOpenAiProvider(props,mapper,builder.build());assertEquals(output,provider.generateWorkspacePatchPlan(new WorkspacePatch.Prompt("trusted","untrusted",com.securedeploy.editing.WorkspacePatchPlan.schema())));assertEquals(14,provider.consumeLastTokenUsage().orElseThrow().totalTokens());server.verify();
+    }
+    @Test void planRefusalIncompleteLegacyOutputAndHttpFailureNeverBecomeCode()throws Exception{
+        for(var body:List.of(Map.of("status","incomplete","output_text","{}"),Map.of("status","completed","output",List.of(Map.of("type","message","content",List.of(Map.of("type","refusal","refusal","no"))))),Map.of("status","completed","output_text","{\"replacement\":\"arbitrary code\"}"))){
+            var props=new AiProperties();props.getOpenai().setApiKey("synthetic-only");var builder=RestClient.builder().baseUrl("https://api.openai.com/v1");var server=MockRestServiceServer.bindTo(builder).build();server.expect(anything()).andRespond(withSuccess(mapper.writeValueAsString(body),MediaType.APPLICATION_JSON));var provider=new RealOpenAiProvider(props,mapper,builder.build());assertThrows(RuntimeException.class,()->provider.generateWorkspacePatchPlan(new WorkspacePatch.Prompt("trusted","data",com.securedeploy.editing.WorkspacePatchPlan.schema())));server.verify();
+        }
+        var props=new AiProperties();props.getOpenai().setApiKey("synthetic-only");var builder=RestClient.builder().baseUrl("https://api.openai.com/v1");var server=MockRestServiceServer.bindTo(builder).build();server.expect(anything()).andRespond(withStatus(HttpStatus.TOO_MANY_REQUESTS));var provider=new RealOpenAiProvider(props,mapper,builder.build());assertThrows(RuntimeException.class,()->provider.generateWorkspacePatchPlan(new WorkspacePatch.Prompt("trusted","data",com.securedeploy.editing.WorkspacePatchPlan.schema())));server.verify();
+    }
+
 }

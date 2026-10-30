@@ -21,6 +21,7 @@ public interface AiProvider {
         throw new UnsupportedOperationException("Dependency advice unavailable");
     }
 
+    default com.securedeploy.editing.WorkspacePatchPlan.Output generateWorkspacePatchPlan(com.securedeploy.editing.WorkspacePatch.Prompt prompt){throw new UnsupportedOperationException("Structured patch plans unavailable");}
     default com.securedeploy.editing.WorkspacePatch.Output generateWorkspacePatch(com.securedeploy.editing.WorkspacePatch.Prompt prompt) {
         throw new UnsupportedOperationException("Workspace patch generation is unavailable");
     }

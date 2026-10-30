@@ -3,7 +3,7 @@ import {useUiCapabilities} from './useUiCapabilities';
 import {providerOriginLabel} from './EvidenceSupportLayout';
 import { requestProblem } from '../api/requestProblem';
 import { useEffect, useRef, useState } from 'react';
-import { applyAiPatch, generateAiPatch, listAiPatches, patchProvider, prepareAiPatch, rejectAiPatch, fixOption, prepareDeterministicPatch } from '../api/editingApi';
+import { applyAiPatch, generateAiPatch, listAiPatches, patchProvider, prepareAiPatch, rejectAiPatch, fixOption, prepareDeterministicPatch, prepareAiPatchPlan } from '../api/editingApi';
 import type { AiPatch, EditingContent, EditingFile, EditingWorkspace, PatchProvider, FixOption } from '../api/editingApi';
 import type { Vulnerability } from '../types/securityReview';
 import type { ServerAnalysisSnapshot } from '../types/serverAnalysis';
@@ -52,7 +52,7 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
     try { await fn(); } catch (e) { if (active.current) setError(e instanceof Error ? e.message : 'AI 제안을 처리하지 못했습니다. 수동 편집은 계속할 수 있습니다.'); }
     finally { if (active.current) setPending(''); }
   };
-  const prepare = () => void perform('prepare', async () => { setCompatibilityAccepted(false);update(await prepareAiPatch(workspace,file,content,finding.startsWith('flow:')?0:Number(finding),finding.startsWith('flow:')?finding.slice(5):undefined)); setConsented(false); setAccepted(false); });
+  const prepare = () => void perform('prepare', async () => { setCompatibilityAccepted(false);update(await (cap.value?.structuredPatchPlans&&flowFindings.some(f=>`flow:${f.findingId}`===finding&&f.location.kind==='EXPRESS_HTTP_RESPONSE')?prepareAiPatchPlan(workspace,file,content,finding.slice(5)):prepareAiPatch(workspace,file,content,finding.startsWith('flow:')?0:Number(finding),finding.startsWith('flow:')?finding.slice(5):undefined))); setConsented(false); setAccepted(false); });
   const automatic=()=>void perform('automatic',async()=>{if(option?.method!=='DETERMINISTIC_FIX'||!finding.startsWith('flow:'))return;
     setCompatibilityAccepted(false);setConsented(false);setAccepted(false);
     update(await prepareDeterministicPatch(workspace,file,content,finding.slice(5)));
@@ -97,11 +97,13 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
       <p className={`proposal-method ${deterministic?'method-deterministic':'method-ai'}`}>{deterministic?'자동 수정안 · 정적 근거 기반 · 외부 AI 전송·비용 없음':providerOriginLabel(selected.provider.origin,selected.provider.name)}</p>
       <p>{file.path} · 현재 {selected.startLine}행 · 기준 revision {selected.revision} · {selected.ruleId}</p>
       {selected.flowFindingId&&!selected.context&&<p>{deterministic?'수정':'전송'} 범위: {selected.startLine}~{selected.startLine+selected.before.split('\n').length-1}행의 객체 응답 부분입니다. 파일 전체가 아닙니다.</p>}
+      {selected.plan&&<p>AI가 수정 방향을 제안하고 SecureDeploy가 검증된 AST 범위의 코드 변경을 생성합니다. 모든 필수 필드를 확인한 뒤 사용자 승인을 기다립니다.</p>}
       <p>{selected.explanation}</p>
       {selected.usage&&<p role="status">{selected.usage.billable?'API 응답 사용량':'과금 없는 테스트 사용량'} · 모델 {selected.usage.model??'미확인'} · 입력 {selected.usage.promptTokens} / 캐시 {selected.usage.cachedInputTokens} / 출력 {selected.usage.completionTokens}토큰 · {selected.usage.estimatedCostUsd==null?'비용 미확인':`추정 US$${Number(selected.usage.estimatedCostUsd).toFixed(6)}`} · {selected.usage.usageKnown?'usage 수신':'usage 미확인'}</p>}
       {!deterministic&&!selected.usage&&['FAILED','INVALID','GENERATING'].includes(selected.state)&&<p>실제 사용량과 비용을 아직 확인하지 못했습니다. 무료 처리됐다는 의미는 아닙니다.</p>}
       {!deterministic&&selected.state === 'APPROVAL_REQUIRED' && <>
         <p>전송 대상: 아래{selected.flowFindingId?' 객체 응답 코드':' 설정 한 줄'}{selected.context?' 및 아래의 AST 확인 HTTP 등록·완결된 inline Handler 문맥':''}와 Finding 규칙·파일 ID·행·내용 해시. 무관한 파일은 전송하지 않습니다.</p>
+        {selected.plan&&<details><summary>구조화 수정 계획 계약</summary><p>{selected.plan.version} · 필수 위험 필드 {selected.plan.requiredFields.length}개. 코드 문자열은 모델 출력에 포함하지 않습니다.</p><pre>{JSON.stringify(selected.plan,null,2)}</pre></details>}
         <AiRequestDisclosure task="선택한 근거의 코드 수정안 생성" scope={selected.context?'아래 수정 대상과 HTTP 등록·Handler 문맥·Source/Sink 위치·보존/제거 필드·파일/문맥 해시를 전송합니다. 주석은 제외되며 비밀값 의심 시 전송을 거부합니다.':'아래 원본 코드 범위·규칙·파일 ID·행·해시를 전송합니다. 실제 비밀값과 파일 전체는 전송하지 않습니다.'}/><pre className="source-ai-code">{selected.before}</pre>
         {selected.context&&<div aria-label="AI 전송 문맥 미리보기"><p>{selected.context.endpoint} · 원본 {selected.context.startLine}~{selected.context.endLine}행의 등록·Handler. import와 app 정의 포함, 주석 제외.</p><pre className="source-ai-code">{selected.context.code}</pre><p>제거 대상: {selected.context.removedFields.join(', ')} · 보존 대상: {selected.context.preservedFields.join(', ')}</p><ul aria-label="수정 대상 필드와 Source 근거">{selected.context.bindings?.map(b=><li key={b.sourceId}>{b.field} · Source {b.source.line}행 {b.source.column}열 → 응답 {b.sink.line}행<details><summary>연결 근거</summary>{b.sourceId} · {b.findingId} · {b.expressionHash}</details></li>)}</ul><p>Source/Sink 위치: {JSON.stringify({sources:selected.context.sources,sink:selected.context.sink})}</p><p>원본 파일 SHA-256: {selected.originalHash}</p><p>동의할 문맥 SHA-256: {selected.contextHash}</p></div>}
         <p>{selected.provider.name} / {selected.provider.model} · 저장소 밖 Provider로 전송합니다. 민감정보가 보이면 동의하지 마세요.</p>

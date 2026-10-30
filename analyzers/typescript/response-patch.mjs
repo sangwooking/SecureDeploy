@@ -7,10 +7,10 @@ const fail=()=>{throw new Error('MANUAL_REVIEW_REQUIRED');};
 const literal=n=>(ts.isStringLiteral(n)&&['ok','success','error','ready','pending','done'].includes(n.text))
   ||(ts.isNumericLiteral(n)&&Number(n.text)<=100000)||[ts.SyntaxKind.TrueKeyword,ts.SyntaxKind.FalseKeyword,ts.SyntaxKind.NullKeyword].includes(n.kind);
 const dotted=(n,value)=>n?.getText()===value;
-function object(text){
+function object(text,allowComments=false){
   if(typeof text!=='string'||Buffer.byteLength(text)>4096)fail();
   const scanner=ts.createScanner(ts.ScriptTarget.Latest,false,ts.LanguageVariant.Standard,text);
-  for(let t=scanner.scan();t!==ts.SyntaxKind.EndOfFileToken;t=scanner.scan())if([ts.SyntaxKind.SingleLineCommentTrivia,ts.SyntaxKind.MultiLineCommentTrivia].includes(t))fail();
+  for(let t=scanner.scan();t!==ts.SyntaxKind.EndOfFileToken;t=scanner.scan())if(!allowComments&&[ts.SyntaxKind.SingleLineCommentTrivia,ts.SyntaxKind.MultiLineCommentTrivia].includes(t))fail();
   const f=ts.createSourceFile('response.ts','const response='+text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
   if(f.parseDiagnostics.length||f.statements.length!==1||!ts.isVariableStatement(f.statements[0])||f.statements[0].declarationList.declarations.length!==1)fail();
   const node=f.statements[0].declarationList.declarations[0].initializer;
@@ -24,7 +24,7 @@ function object(text){
   return properties;
 }
 export function responsePatch(input){
-  if(input?.sink?.kind==='EXPRESS_HTTP_RESPONSE')return expressResponsePatch(input,{object,literal});
+  if(input?.sink?.kind==='EXPRESS_HTTP_RESPONSE')return expressResponsePatch(input,{object:input.plan===true?text=>object(text,true):object,literal});
   const {source,sink,sources,replacement}=input;
   if(typeof source!=='string'||Buffer.byteLength(source)>65536||!sink||!Array.isArray(sources)||sources.length<1||sources.length>20)fail();
   const file=ts.createSourceFile('input.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);

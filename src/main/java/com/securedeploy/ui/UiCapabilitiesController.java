@@ -26,6 +26,7 @@ public class UiCapabilitiesController {
                 "providerOrigin",provider.executionOrigin()==null?"UNVERIFIED_PROVIDER":provider.executionOrigin()));
         result.put("advisoryDetails",true);
         result.put("aiCost",com.securedeploy.ai.usage.AiCostPolicy.disclosure(properties.getOpenai().getModel()));
+        result.put("structuredPatchPlans",true);
         result.put("patchScopes",java.util.List.of("SPRING_LITERAL_PROPERTIES","DENO_DIRECT_ENV_JSON","EXPRESS_DIRECT_ENV_JSON"));
         result.put("aiCapabilityMatrix",AiCapabilityMatrix.entries());
         return result;

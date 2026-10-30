@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';
 import {fetchUiCapabilities} from '../api/securityReviewApi';
 import {requestProblem} from '../api/requestProblem';
-export interface UiCapabilities {advisoryDetails?:boolean;schemaVersion:1;legacyAiReport?:boolean;aiCost?:{model:string;inputTokenUpperBound:number;outputTokenUpperBound:number;pricingStatus:string;maximumEstimatedUsd:number|null;checkedAt:string};patchScopes?:string[];dependencyPlans:boolean;dependencyAdvice:boolean;workspaceSemanticReview:boolean;dependencyFiles:boolean;npmGeneration:boolean;providerAvailable:boolean;providerOrigin:string}
+export interface UiCapabilities {structuredPatchPlans?:boolean;advisoryDetails?:boolean;schemaVersion:1;legacyAiReport?:boolean;aiCost?:{model:string;inputTokenUpperBound:number;outputTokenUpperBound:number;pricingStatus:string;maximumEstimatedUsd:number|null;checkedAt:string};patchScopes?:string[];dependencyPlans:boolean;dependencyAdvice:boolean;workspaceSemanticReview:boolean;dependencyFiles:boolean;npmGeneration:boolean;providerAvailable:boolean;providerOrigin:string}
 export function useUiCapabilities(){
  const [state,setState]=useState<{value:UiCapabilities|null;loading:boolean;problem:ReturnType<typeof requestProblem>|null}>({value:null,loading:true,problem:null});
  useEffect(()=>{let active=true;

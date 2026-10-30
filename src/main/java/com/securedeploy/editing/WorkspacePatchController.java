@@ -13,6 +13,7 @@ public class WorkspacePatchController {
     @PostMapping("/{id}/patches") public ResponseEntity<?> prepare(@PathVariable String id,@RequestBody WorkspacePatch.Prepare request){return json(patches.prepare(id,request));}
     @PostMapping("/{id}/fix-options") public ResponseEntity<?> options(@PathVariable String id,@RequestBody WorkspacePatch.Prepare request){return json(workspaces.fixOption(id,request,patches.provider()));}
     @PostMapping("/{id}/deterministic-patches") public ResponseEntity<?> deterministic(@PathVariable String id,@RequestBody WorkspacePatch.Prepare request){return json(workspaces.prepareDeterministicPatch(id,request));}
+    @PostMapping("/{id}/patch-plans") public ResponseEntity<?> preparePlan(@PathVariable String id,@RequestBody WorkspacePatch.Prepare request){return json(patches.preparePlan(id,request));}
     @GetMapping("/{id}/patches") public ResponseEntity<?> list(@PathVariable String id){return json(workspaces.patches(id));}
     @GetMapping("/{id}/patches/{proposal}") public ResponseEntity<?> get(@PathVariable String id,@PathVariable String proposal){return json(workspaces.patch(id,proposal));}
     @PostMapping("/{id}/patches/{proposal}/generate") public ResponseEntity<?> generate(@PathVariable String id,@PathVariable String proposal,@RequestBody WorkspacePatch.Consent request){return json(patches.generate(id,proposal,request));}

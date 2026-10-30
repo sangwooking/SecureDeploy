@@ -25,12 +25,14 @@ public class ResponsePatchValidator {
     record FieldTarget(String field,Position source,int startOffset,int endOffset,String expression) { }
     public record BoundField(String findingId,String sourceId,String field,Position source,Position sink,int startOffset,int endOffset,String expressionHash) { }
     record Target(String before,int offset,int line,List<String> removed,String suggestedReplacement,Context context,List<FieldTarget> fields) { }
-    Target check(Contract contract,String replacement) {
+    Target check(Contract contract,String replacement) {return check(contract,replacement,false);}
+    Target checkPlan(Contract contract,String replacement) {return check(contract,replacement,true);}
+    private Target check(Contract contract,String replacement,boolean plan) {
         if(!properties.isEnabled()||!CAPACITY.tryAcquire())throw new IllegalArgumentException();
         Process process=null;var io=Executors.newFixedThreadPool(2,r->{var t=new Thread(r,"response-patch-parser");t.setDaemon(true);return t;});
         try {
             var dir=Path.of(properties.getAnalyzerDirectory()).toRealPath();
-            var data=new LinkedHashMap<String,Object>();data.put("source",contract.source());data.put("sink",contract.sink());data.put("sources",contract.sources());
+            var data=new LinkedHashMap<String,Object>();data.put("plan",plan);data.put("source",contract.source());data.put("sink",contract.sink());data.put("sources",contract.sources());
             if(replacement!=null)data.put("replacement",replacement);
             byte[] input=mapper.writeValueAsBytes(data);if(input.length>150000)throw new IllegalArgumentException();
             var builder=new ProcessBuilder(properties.getNodeExecutable(),"--permission","--no-addons","--max-old-space-size=192",

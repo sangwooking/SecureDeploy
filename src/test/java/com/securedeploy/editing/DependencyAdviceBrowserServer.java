@@ -45,6 +45,14 @@ public final class DependencyAdviceBrowserServer {
                     var e=new com.securedeploy.ai.semantic.SemanticCandidate.Evidence(c.contextId(),c.filePath().contains("invalid")?"invented.ts":c.filePath(),c.startLine(),c.endLine(),c.functionName(),"입력 처리와 미확인 함수의 보호 조치를 직접 확인해야 합니다.");
                     return java.util.List.of(new com.securedeploy.ai.semantic.SemanticCandidate.Proposal(slice.sliceId(),com.securedeploy.ai.semantic.SemanticCandidate.CandidateType.COMMAND_INJECTION_CANDIDATE,"미완료 흐름 추가 검토",com.securedeploy.ai.dto.AiConfidence.LOW,"Mock 통제 의견입니다. 실제 보안 문제로 확정하지 않습니다.",true,java.util.List.of(e),java.util.List.of("미확인 함수의 입력 처리와 실행 경로를 확인하세요."),slice.existingFindings().stream().map(com.securedeploy.ai.semantic.SecuritySlice.ExistingFinding::findingId).toList()));
                 });
+                when(mock.generateWorkspacePatchPlan(any())).thenAnswer(i->{
+                    var prompt=(WorkspacePatch.Prompt)i.getArgument(0);var data=json.readTree(prompt.untrustedData());var plan=data.path("plan");
+                    Files.writeString(DependencyUpdateBrowserServer.root.resolve("patch03-prompt-"+plan.path("requiredFields").size()+".json"),json.writeValueAsString(prompt));
+                    Path override=DependencyUpdateBrowserServer.root.resolve("patch03-mock-plan-output.json");
+                    if(Files.isRegularFile(override)){var fault=json.readTree(override.toFile());if(fault.path("output").path("objectId").asText().equals(plan.path("objectId").asText())){Files.writeString(DependencyUpdateBrowserServer.root.resolve("patch03-negative-used.json"),fault.toString());return WorkspacePatchPlan.parse(fault.path("output"));}}
+                    var operations=new ArrayList<WorkspacePatchPlan.Operation>();for(var field:plan.path("requiredFields"))operations.add(new WorkspacePatchPlan.Operation(field.path("fieldId").asText(),WorkspacePatchPlan.OPERATION));
+                    return new WorkspacePatchPlan.Output("PATCH",plan.path("objectId").asText(),operations,"Mock 수정 방향 제안입니다. 실제 코드는 SecureDeploy가 AST 범위에서 생성하며 응답 필드 제거는 API 계약을 바꿀 수 있습니다.",List.of("정상 응답·상태 및 API 사용처를 확인하고 재검사하세요."),List.of("Mock 계획이며 실제 모델의 새 계약 준수와 전체 기능 호환성은 미검증입니다."));
+                });
                 when(mock.generateWorkspacePatch(any())).thenAnswer(i->{var d=json.readTree(((WorkspacePatch.Prompt)i.getArgument(0)).untrustedData());String code=d.path("untrustedCode").asText();
                     if(d.has("context")){
                         var ctx=d.path("context");if(!ctx.path("endpoint").asText().matches("(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS) .*" )||ctx.path("sources").isEmpty()||ctx.path("preservedFields").isEmpty()||!d.has("sourceFileHash")||!d.has("contextHash"))throw new IllegalArgumentException("FIX01_CONTEXT_REQUIRED");

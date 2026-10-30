@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class WorkspacePatchService {
-    private record Generation(WorkspacePatch.Output output,AiUsageRecord usage){}
+    private record Generation(WorkspacePatch.Output output,WorkspacePatchPlan.Output plan,AiUsageRecord usage){}
     private final EditingWorkspaceService workspaces;
     private final AiProviderResolver resolver;
     private final AiProperties properties;
@@ -41,6 +41,7 @@ public class WorkspacePatchService {
     public WorkspacePatch.View prepare(String workspace,WorkspacePatch.Prepare request) {
         return workspaces.preparePatch(workspace,request,provider());
     }
+    public WorkspacePatch.View preparePlan(String workspace,WorkspacePatch.Prepare request){return workspaces.preparePlan(workspace,request,provider());}
     public WorkspacePatch.View generate(String workspace,String proposal,WorkspacePatch.Consent consent) {
         // Authorization before quota or provider work. The one-use consent transition also prevents duplicate calls.
         workspaces.patch(workspace,proposal);
@@ -57,21 +58,21 @@ public class WorkspacePatchService {
             var selected=resolver.resolve();
             future=executor.submit(()->{
                 selected.consumeLastTokenUsage();
-                WorkspacePatch.Output output;AiUsageRecord measured;
-                try { output=selected.generateWorkspacePatch(prompt); }
+                WorkspacePatch.Output output=null;WorkspacePatchPlan.Output plan=null;AiUsageRecord measured;
+                try {if(view.plan()!=null)plan=selected.generateWorkspacePatchPlan(prompt);else output=selected.generateWorkspacePatch(prompt); }
                 finally {
                     // Missing usage after a request is not evidence that a remote call was free.
                     var tokens=selected.consumeLastTokenUsage().orElse(new AiTokenUsage(0,0,0,true));
                     measured=usage.track(com.securedeploy.ai.dto.AiFeatureType.WORKSPACE_PATCH,selected.providerType(),null,null,tokens);
                 }
-                return new Generation(output,measured);
+                return new Generation(output,plan,measured);
             });
             jobs.put(proposal,future);
             // A cancellation before job registration must not leave a fresh request running unnoticed.
             if(!"GENERATING".equals(workspaces.patch(workspace,proposal).state()))future.cancel(true);
             int seconds=Math.max(1,Math.min(45,properties.getOpenai().getTimeoutSeconds()+2));
             var generated=future.get(seconds,TimeUnit.SECONDS);workspaces.recordPatchUsage(workspace,proposal,generated.usage());
-            return workspaces.finishPatch(workspace,proposal,generated.output(),null);
+            return view.plan()!=null?workspaces.finishPlan(workspace,proposal,generated.plan(),null):workspaces.finishPatch(workspace,proposal,generated.output(),null);
         }catch(InterruptedException interrupted){Thread.currentThread().interrupt();return workspaces.finishPatch(workspace,proposal,null,"FAILED");}
         catch(Exception failed){return workspaces.finishPatch(workspace,proposal,null,failed instanceof ExecutionException&&failed.getCause() instanceof IllegalArgumentException?"INVALID":"FAILED");}
         finally {if(future!=null&&!future.isDone())future.cancel(true);jobs.remove(proposal);}
@@ -91,6 +92,7 @@ public class WorkspacePatchService {
     }
     private SecureDeployException limited(){return new SecureDeployException(HttpStatus.TOO_MANY_REQUESTS,"AI 수정 요청은 사용자당 10초 간격·시간당 6회까지 가능합니다. 자동 재시도하지 않습니다.");}
     private WorkspacePatch.Prompt prompt(WorkspacePatch.View view) throws java.io.IOException {
+        if(view.plan()!=null)return WorkspacePatchPlan.prompt(view,mapper);
         var data=new LinkedHashMap<String,Object>();data.put("fileId",view.fileId());data.put("startLine",view.startLine());
         data.put("expectedHash",SourceArchive.hash(view.before().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
         data.put("ruleId",view.ruleId());data.put("untrustedCode",view.before());
