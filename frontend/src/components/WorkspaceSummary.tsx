@@ -26,11 +26,15 @@ export function ProgressBrief({ progress }: { progress: WorkspaceProject['latest
   </p>{progress.status === 'PARTIAL' && <p>일부 범위는 비교하지 못했습니다. 확인 불가는 해결로 처리하지 않습니다.</p>}</div>;
 }
 
+export function importantProjects(projects:WorkspaceProject[]) {
+  const rank=(p:WorkspaceProject)=>p.latestReview?.riskSummary?.deploymentAssessment==='BLOCKED'?0:p.latestReview?.riskSummary?.deploymentAssessment==='REVIEW_REQUIRED'?1:p.latestReview?2:3;
+  return [...projects].sort((a,b)=>rank(a)-rank(b)||(Date.parse(b.latestReview?.createdAt??b.updatedAt)||0)-(Date.parse(a.latestReview?.createdAt??a.updatedAt)||0));
+}
 export function ProjectList({ projects, onDeleted }: { projects: WorkspaceProject[]; onDeleted?: () => void }) {
   if (!projects.length) return <div className="empty-state"><p>아직 관리 중인 프로젝트가 없습니다.</p><a href="#/new">새 프로젝트 분석</a></div>;
-  return <div className="workspace-project-list">{projects.map(project => <article className="workspace-project-row" key={project.projectId}>
+  return <div className="workspace-project-list">{importantProjects(projects).map(project => <article className="workspace-project-row" key={project.projectId}>
     <div className="project-row-identity"><h3><a href={projectLink(project.projectId)} title={project.name}>{project.name}</a></h3>
-      <span className="project-row-status">{reviewStatus(project.latestReview)}</span></div>
+      <span className="project-row-status">{reviewStatus(project.latestReview)}</span><p className="project-row-meta"><time>{dateLabel(project.latestReview?.createdAt)}</time><span>미확인 범위·라이브러리 위험은 상세 결과에서 확인</span></p><a href={projectLink(project.projectId,'findings',project.latestReview?.reviewId)}>분석 결과와 수정 확인</a></div>
     <PriorityCounts assessment={project.latestReview?.riskSummary} compact />
     <ProjectManagement project={project} onDeleted={onDeleted} />
   </article>)}</div>;
@@ -38,7 +42,7 @@ export function ProjectList({ projects, onDeleted }: { projects: WorkspaceProjec
 
 export function RecentProjects({ projects }: { projects: WorkspaceProject[] }) {
   if (!projects.length) return <ProjectList projects={projects} />;
-  return <div className="recent-projects">{projects.map(project => <article className="workspace-project-row recent-project-row" key={project.projectId}>
+  return <div className="recent-projects">{importantProjects(projects).map(project => <article className="workspace-project-row recent-project-row" key={project.projectId}>
     <div className="recent-project-identity"><h3><a href={projectLink(project.projectId)}>{project.name}</a></h3>
       <p>{dateLabel(project.latestReview?.createdAt)}</p></div>
     <span className={`policy-label policy-${project.latestReview?.riskSummary?.deploymentAssessment.toLowerCase() ?? 'unknown'}`}>{reviewStatus(project.latestReview)}</span>
@@ -57,7 +61,7 @@ export function WorkspaceSummary({ data, name }: { data: WorkspaceResponse; name
       <div><dt>분석 이력 있는 프로젝트</dt><dd>{data.analyzedProjectCount}</dd></div>
     </dl>
     {data.unassessedProjectCount > 0 && <p>미분석 또는 위험 평가가 없는 프로젝트 {data.unassessedProjectCount}개는 배포 가능으로 판단하지 않습니다.</p>}
-    <section className="dashboard-projects"><header className="section-heading"><h2>최근 프로젝트</h2><a href="#/projects">전체 프로젝트 보기</a></header><RecentProjects projects={data.projects.slice(0, 5)} /></section>
+    <section className="dashboard-projects"><header className="section-heading"><h2>최근 프로젝트</h2><a href="#/projects">전체 프로젝트 보기</a></header><RecentProjects projects={importantProjects(data.projects).slice(0, 5)} /></section>
     <p className="section-footnote">집계는 저장된 위험 정책 기준입니다. 검사하지 못한 범위와 별도 검토 후보는 각 결과에서 확인하세요.</p>
     <section className="workspace-section"><h2>최근 보안 상태 변화</h2>
       {data.projects.filter(p => p.latestProgress?.baselineReviewId != null).slice(0, 5).map(project => <article key={project.projectId}>

@@ -50,7 +50,7 @@ export function ReviewResultWorkspace({ result, view, onViewChange, statusAction
   };
   return <section ref={root} className="result-area result-workspace" aria-label="프로젝트 분석 결과">
     <header className="result-workspace-header">
-      <div><p className="eyebrow">프로젝트 보안 상태</p><h2>{result.projectName}</h2>
+      <div><p className="result-context-label">실제 프로젝트 분석 결과</p><h2>{result.projectName}</h2>
         <p>{result.reviewId ? `분석 #${result.reviewId}` : '현재 분석'} · {result.scannedFileCount}개 파일 패턴 검사
           {result.createdAt&&<> · <time dateTime={result.createdAt}>{new Date(result.createdAt).toLocaleString('ko-KR')}</time></>}</p></div>
       <details className="report-menu"><summary>리포트 다운로드</summary><div className="result-actions">{reportActions}</div></details>

@@ -1,3 +1,5 @@
+import { EvidenceSupportLayout } from './EvidenceSupportLayout';
+import type { ReactNode } from 'react';
 import type { DependencyComponent, DependencyVulnerability, RemediationSnapshot, RiskFinding, ThreatIntelligenceSnapshot } from '../types/securityReview';
 import { DependencyContextDetails, dependencyLocations } from './DependencyContextDetails';
 import { FindingRemediation } from './FindingRemediation';
@@ -5,13 +7,13 @@ import { ThreatIntelligenceDetails } from './ThreatIntelligenceDetails';
 import { priorityLabels } from './reviewPresentation';
 import { dependencyText, knownDependencyValue, unconfirmed } from './dependencyGuidance';
 
-export function DependencyFindingCard({ dependency: dep, finding, remediation, intelligence, components }: {
+export function DependencyFindingCard({ dependency: dep, finding, remediation, intelligence, components, support, embedded = false }: {
   dependency: DependencyVulnerability; finding?: RiskFinding;
   remediation?: RemediationSnapshot | null; intelligence?: ThreatIntelligenceSnapshot | null;
-  components?: DependencyComponent[];
+  components?: DependencyComponent[]; support?: ReactNode; embedded?: boolean;
 }) {
   const knownExploited = [dep.osvId, ...dep.aliases].some(id => intelligence?.cves[id.toUpperCase()]?.kev.knownExploited === true);
-  return <article className="vulnerability-item action-finding dependency-finding">
+  const evidence=<><span className="source-label">SCA 보안 공지 · 실제 영향은 추가 확인</span>
     <span className={`risk-badge risk-${finding?.priority.toLowerCase() ?? 'review_required'}`}>
       {finding ? priorityLabels[finding.priority] : '우선순위 미평가'}
     </span>
@@ -19,10 +21,11 @@ export function DependencyFindingCard({ dependency: dep, finding, remediation, i
     <p>{dep.ecosystem === 'PYPI' ? '정적 선언에서 확인한' : '사용 중인'} {dependencyText(dep.installedVersion)} 버전에 알려진 보안 문제가 보고되어 있습니다. 실제 영향은 사용 방식과 버전에 따라 달라집니다.</p>
     {dep.ecosystem === 'PYPI' && <p className="review-caution">실제 설치 여부는 미확인입니다. 이 라이브러리 조회가 Python 서버 코드의 인증·권한 및 데이터 흐름을 검증하는 것은 아니에요. 서버 코드 검사 결과는 별도로 확인해 주세요.</p>}
     {knownExploited && <p className="review-caution">분석 당시 정보에 실제 공격에서 악용된 이력이 있습니다. 이 프로젝트가 공격받았다는 뜻은 아닙니다.</p>}
+    <p className="advisory-identity"><strong>보안 공지</strong> <code>{dep.osvId}</code></p>
     <dl className="dependency-versions">
       <div><dt>라이브러리</dt><dd>{dependencyText(dep.packageName)}</dd></div>
       <div><dt>현재 버전</dt><dd>{dependencyText(dep.installedVersion)}</dd></div>
-      <div><dt>수정이 확인된 버전</dt><dd>{dep.fixedVersions.map(knownDependencyValue).filter(Boolean).join(', ') || unconfirmed}</dd></div>
+      <div><dt>공지의 수정 버전 근거</dt><dd><details><summary>기록된 수정 버전 보기</summary>{dep.fixedVersions.map(knownDependencyValue).filter(Boolean).join(', ') || unconfirmed}</details></dd></div>
       <div><dt>{dep.ecosystem === 'PYPI' ? '의존성 선언·연결 위치' : '버전을 확인한 파일'}</dt><dd className="finding-location">{dependencyText(dep.sourceFiles.join(', '))}</dd></div>
     </dl>
     <DependencyContextDetails locations={dependencyLocations(dep, components)} />
@@ -64,5 +67,6 @@ export function DependencyFindingCard({ dependency: dep, finding, remediation, i
       {dep.referenceUrls.filter(url => /^https?:\/\//i.test(url)).slice(0, 3).map(url =>
         <p key={url}><a href={url} target="_blank" rel="noopener noreferrer">{url}</a></p>)}
     </details>
-  </article>;
+  </>;
+  return embedded ? <article className="dependency-finding">{evidence}</article> : <article className="vulnerability-item action-finding dependency-finding"><EvidenceSupportLayout evidence={evidence} support={support??<><p className="source-label">근거 기반 안내 · AI 의견 미연결</p><h4>어떻게 수정하나요?</h4><p>현재 계열에 맞는 공지 수정 버전을 검토하고, 상위 의존성 제약과 호환성을 확인하세요.</p><p>패키지 관리자로 잠금 파일을 재생성한 뒤 Diff·사용자 승인·재검사를 진행하세요. 표시된 수정 버전은 AI 추천이나 전체 안전 보장이 아닙니다.</p><FindingRemediation finding={finding} snapshot={remediation} /></>} /></article>;
 }

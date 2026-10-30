@@ -1,3 +1,4 @@
+import { EvidenceSupportLayout } from './EvidenceSupportLayout';
 import type { RemediationSnapshot, RiskFinding, Vulnerability, VulnerabilityStatus } from '../types/securityReview';
 import { FindingRemediation } from './FindingRemediation';
 import { codeExplanation, priorityLabels } from './reviewPresentation';
@@ -25,6 +26,7 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
   const needsReview = needsVerification(finding, v);
   const guidance = findingGuidance(finding, v);
   return <article className="vulnerability-item action-finding">
+    <EvidenceSupportLayout evidence={<>
     <div className="vulnerability-header">
       <span className={`risk-badge risk-${finding?.priority.toLowerCase() ?? 'review_required'}`}>
         {finding ? priorityLabels[finding.priority] : '우선순위 미평가'}
@@ -35,10 +37,6 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
     <h3>{needsReview ? guidance.summary : codeExplanation(v).title}</h3>
     <p className="finding-location"><strong>확인할 파일</strong> <code>{v.filePath}</code> · {v.line}행</p>
     {needsReview && <p className="review-caution">실제 사용 방식과 주변 코드에 따라 위험이 달라질 수 있습니다. 먼저 해당 상황인지 확인하세요.</p>}
-    <p className="finding-next-step"><strong>{needsReview ? '먼저 확인할 내용' : '수정할 내용'}</strong><br />{needsReview ? guidance.steps[0] : guidance.action}</p>
-    {onEditFile && <button className="secondary-button" type="button" onClick={()=>onEditFile(v.filePath)}>이 파일 수정하기</button>}
-    <p className="fix-availability">{onEditFile?'수동 수정 · 자동/AI 수정 가능 여부는 작업 공간에서 현재 소스를 확인한 뒤 안내합니다.':'이 화면에서는 코드 수정이 지원되지 않습니다.'}</p>
-    <FindingRemediation finding={finding} snapshot={remediation} vulnerability={v} />
     <details className="action-details"><summary>진행 상태와 메모</summary>
       <div className="status-manager">
         <label><span>상태</span><select aria-label="상태" value={status} disabled={disabled}
@@ -69,5 +67,10 @@ export function CodeFindingCard({ vulnerability: v, finding, remediation, status
       <p>신뢰도는 규칙이 인식한 패턴·구문에 대한 확신입니다. HIGH라도 외부 입력 연결이나 실제 공격 성공을 입증하지 않습니다. 심각도는 영향 수준이며 오탐 가능성과 별개입니다. 보호 처리와 실행 조건을 함께 확인하세요.</p>
       {v.evidence && <div className="evidence-block"><span>Evidence (API 제공 값)</span><code>{v.evidence}</code></div>}
     </details>
+    </>} support={<><p className="source-label">근거 기반 안내 · AI 생성과 구분</p><h4>왜 위험할 수 있나요?</h4><p>{guidance.risk}</p>    <p className="finding-next-step"><strong>{needsReview ? '먼저 확인할 내용' : '수정할 내용'}</strong><br />{needsReview ? guidance.steps[0] : guidance.action}</p>
+    {onEditFile && <button className="secondary-button" type="button" onClick={()=>onEditFile(v.filePath)}>이 파일 수정하기</button>}
+    <p className="fix-availability">{onEditFile?'수동 수정 · 자동/AI 수정 가능 여부는 작업 공간에서 현재 소스를 확인한 뒤 안내합니다.':'이 화면에서는 코드 수정이 지원되지 않습니다.'}</p>
+    <FindingRemediation finding={finding} snapshot={remediation} vulnerability={v} />
+<p>수정 적용 후 관련 기능과 분석 범위를 다시 확인하세요. 안전성을 입증하지 못한 부분은 검토 필요로 유지합니다.</p></>} />
   </article>;
 }

@@ -1,3 +1,4 @@
+import { EvidenceSupportLayout } from './EvidenceSupportLayout';
 import { useState } from 'react';
 import type { AnalysisLocation, ServerAnalysisSnapshot } from '../types/serverAnalysis';
 import { DeploymentAnalysisSection } from './DeploymentAnalysisSection';
@@ -327,12 +328,11 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false, on
     <p className="review-caution">코드 구조에서 확인한 별도 검토 항목입니다. 기존 점수·위험 판정·반드시 처리 건수에 합산하지 않습니다. 항목이 없어도 전체 코드가 안전하다는 의미는 아닙니다.</p>
     {snapshot.findings.length === 0 && <p>지원 범위에서 보고된 요청 값 전달 위험 항목은 없습니다. 미검사·미지원 범위를 함께 확인하세요.</p>}
     <div className="vulnerability-list">{validated.map(finding => <article className="vulnerability-item action-finding" key={finding.findingId}>
+      <EvidenceSupportLayout evidence={<>
       <span className="risk-badge risk-review_required">코드 흐름 · 추가 확인 필요</span>
       <h4>{finding.title}</h4>
       <p className="finding-location"><strong>확인할 파일</strong> {location(finding.location)}</p>
-      <p className="finding-next-step">{finding.riskExplanation}</p>
-      {onEditFile && <button type="button" className="secondary-button" onClick={() => onEditFile(finding.location.filePath)}>이 파일 수정하기</button>}
-      <p className="fix-availability">수동 검토 필요 · 자동/AI 수정은 현재 소스와 지원 조건을 별도로 확인합니다.</p>
+
       <details className="flow-action-details"><summary>입력 경로와 수정 방법</summary>
       <h4>어떤 입력인가요?</h4>
       {finding.evidence.map((e, i) => <ol className="evidence-path" key={i} aria-label="기록된 코드 전달 경로">{e.flow.map((step,j)=><li key={j}><span>{text(step.kind)}</span><code>{location(step)}</code></li>)}</ol>)}
@@ -347,6 +347,9 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false, on
         <ul>{finding.executionLocations.map((entry, i) => <li key={i}>{text(entry.kind)} · <code className="finding-location">{location(entry)}</code></li>)}</ul>
         <p>비교 정책: {finding.comparisonPolicy}. 분석기 버전 변경이나 항목 미표시를 기존 문제의 해결로 계산하지 않습니다.</p>
       </details>
+      </>} support={<><p className="source-label">정적 근거 기반 안내 · AI 생성과 구분</p><h4>왜 위험할 수 있나요?</h4><p>{finding.riskExplanation}</p><h4>어떻게 수정하나요?</h4><p>{finding.recommendedAction}</p>      {onEditFile && <button type="button" className="secondary-button" onClick={() => onEditFile(finding.location.filePath)}>이 파일 수정하기</button>}
+      <p className="fix-availability">수동 검토 필요 · 자동/AI 수정은 현재 소스와 지원 조건을 별도로 확인합니다.</p>
+<h4>수정 후 확인</h4><ol>{finding.verificationSteps.map(step=><li key={step}>{step}</li>)}</ol><p>저장된 AI 의견이 없는 경우 생성된 것처럼 표시하지 않습니다.</p></>} />
     </article>)}</div>
     {candidates.length > 0 && <h4>추가 문맥이 필요한 후보</h4>}
     <div className="vulnerability-list">{candidates.map((finding, i) => <article className="vulnerability-item action-finding" key={i}>

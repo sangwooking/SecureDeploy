@@ -1,5 +1,7 @@
+import { WorkspaceComparisonOverview, WorkspaceDiffReview, type FileDifferenceView } from './WorkspaceOutcome';
+import { EvidenceSupportLayout } from './EvidenceSupportLayout';
 import { useEffect, useState } from 'react';
-import { loadWorkspaceScan, startWorkspaceScan } from '../api/editingApi';
+import { loadWorkspaceScan, startWorkspaceScan, loadEditingDiff } from '../api/editingApi';
 import type { EditingWorkspace, WorkspaceScan } from '../api/editingApi';
 import { fetchReviewDetail } from '../api/securityReviewApi';
 import type { SecurityReviewResponse } from '../types/securityReview';
@@ -12,6 +14,8 @@ export function WorkspaceScanPanel({ workspace, original, disabled }: {
   const key = `securedeploy.editing.scan.${workspace.id}`;
   const [scan, setScan] = useState<WorkspaceScan | null>(null);
   const [result, setResult] = useState<SecurityReviewResponse | null>(null);
+  const [comparedDiff,setComparedDiff]=useState<FileDifferenceView[]|null>(null);
+  useEffect(()=>setComparedDiff(null),[workspace.revision,scan?.id]);
   const [approved, setApproved] = useState(false), [starting, setStarting] = useState(false), [error, setError] = useState('');
   useEffect(() => { setApproved(false); }, [workspace.revision]);
   useEffect(() => {
@@ -43,7 +47,7 @@ export function WorkspaceScanPanel({ workspace, original, disabled }: {
     finally { setStarting(false); }
   };
   return <section className="workspace-scan" aria-label="수정본 보안 재검사">
-    <h3>수정본 다시 검사</h3>
+    <h3>수정본 재검사</h3>
     <p>수정 검증: REVIEW_REQUIRED · 정상 기능·API 호환성: NOT_VERIFIED. 재검사 완료나 공지 감소는 전체 안전성 또는 실제 운영 수정 완료를 의미하지 않습니다.</p>
     {workspace.identityStatus === 'UNVERIFIED_REUPLOAD' && <p role="note">원본 일치 미검증 ZIP: 별도 프로젝트의 새 기준 검사로 저장합니다. 과거 Review의 경고를 해결 처리하지 않습니다.</p>}
     <details className="scan-consent" open={!result}><summary>검사할 수정본과 외부 조회 확인</summary>
@@ -62,12 +66,15 @@ export function WorkspaceScanPanel({ workspace, original, disabled }: {
       <div className="scan-result-overview" aria-label="수정본 결과 요약">
       <h4>수정본 Review {result.reviewId} · 원본 Review {original.reviewId}</h4>
       <p>참고 점수 {original.securityScore} → {result.securityScore} · 검사 범위 {summaryStateLabel(original.coverage?.status ?? 'NOT_RECORDED')} → {summaryStateLabel(result.coverage?.status ?? 'NOT_RECORDED')}</p>
-      <p>구조 검토 후보: 코드 흐름 {original.resultSummary?.flowCandidates ?? '미기록'} → {result.resultSummary?.flowCandidates ?? '미기록'}, 설정·정책 {original.resultSummary?.declarationCandidates ?? '미기록'} → {result.resultSummary?.declarationCandidates ?? '미기록'} · NOT_COMPARED</p>
-      <p>후보 수의 변화는 관찰 결과이며, 실제 취약점 해결 판정이 아닙니다.</p>
+      <details><summary>코드 흐름·설정 후보의 비교 한계</summary><p>구조 검토 후보: 코드 흐름 {original.resultSummary?.flowCandidates ?? '미기록'} → {result.resultSummary?.flowCandidates ?? '미기록'}, 설정·정책 {original.resultSummary?.declarationCandidates ?? '미기록'} → {result.resultSummary?.declarationCandidates ?? '미기록'} · NOT_COMPARED</p>
+      <p>후보 수의 변화는 관찰 결과이며, 실제 취약점 해결 판정이 아닙니다.</p></details>
       </div>
       {result.projectId && <a href={`#/projects/${result.projectId}/findings?review=${result.reviewId}`}>저장된 수정본 결과와 History 열기</a>}
       <details className="saved-review-summary"><summary>수정본의 전체 분석 안내</summary><ReviewSummaryPanel result={result} /></details>
-      <ReviewProgressPanel result={result} />
+      {scan?.revision===workspace.revision&&<button type="button" className="secondary-button" disabled={disabled||starting} onClick={async()=>{setError('');setStarting(true);try{const values=await Promise.all(workspace.files.filter(f=>f.changed).map(async f=>{const d=await loadEditingDiff(workspace.id,f.id);if(d.revision!==scan.revision)throw Error('수정본 버전이 달라졌습니다.');return {path:f.path,patch:d.patch,origin:result.workspaceScan?.files.find(v=>v.path===f.path)?.changeOrigin};}));setComparedDiff(values);}catch{setError('검사한 버전의 Diff를 확인하지 못했습니다. 최신 수정본을 확인하세요.');}finally{setStarting(false);}}}>검사한 변경 Diff 함께 보기</button>}
+      {comparedDiff&&scan?.revision===workspace.revision?<div className="workspace-outcome"><EvidenceSupportLayout evidenceTitle="수정 적용" supportTitle="수정 후 무엇이 달라졌나요?" evidence={<WorkspaceDiffReview files={comparedDiff}/>} support={<WorkspaceComparisonOverview original={original} modified={result}/>}/></div>:<WorkspaceComparisonOverview original={original} modified={result}/>}
+
+      <ReviewProgressPanel result={result} compact />
     </>}
   </section>;
 }

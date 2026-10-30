@@ -1,3 +1,4 @@
+import { WorkspaceDiffReview } from './WorkspaceOutcome';
 import { WorkspaceAutomationPanels } from './WorkspaceAutomationPanels';
 import { useEffect, useRef, useState } from 'react';
 import { createEditingWorkspace, deleteEditingWorkspace, exportEditingWorkspace, loadEditingDiff, loadEditingFile, loadEditingWorkspace, saveEditingFile } from '../api/editingApi';
@@ -5,7 +6,6 @@ import type { EditingContent, EditingDiff, EditingFile, EditingWorkspace } from 
 import type { SecurityReviewResponse } from '../types/securityReview';
 import { AiPatchPanel } from './AiPatchPanel';
 import { WorkspaceScanPanel } from './WorkspaceScanPanel';
-import { PatchDiff } from './PatchDiff';
 
 interface TreeNode { name: string; children: Map<string, TreeNode>; file?: EditingFile }
 function FileTree({ files, selected, disabled, onSelect }: { files: EditingFile[]; selected?: string; disabled: boolean; onSelect: (file: EditingFile) => void }) {
@@ -176,12 +176,13 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
         </div>
         <div className="source-editor-next"><button type="button" className="primary-button" disabled={busy || dirty} onClick={()=>setStage('diff')}>변경 사항 검토</button>{dirty&&<p>저장하지 않은 변경이 있습니다.</p>}</div>
         </div>
-        <div className="source-export" hidden={stage!=='diff'}><h3>변경 검토 및 다운로드</h3>
+        <div className="source-export" hidden={stage!=='diff'}><h3>수정 내용 확인</h3><p>변경 파일의 출처와 Diff를 확인한 뒤 다운로드를 승인하세요. 원본은 보존됩니다.</p>
           {workspace.changedFileIds.length === 0 && <p>변경 없음</p>}
           <ul>{workspace.files.filter(f => f.changed).map(f => <li key={f.id}>{f.path}</li>)}</ul>
           <button type="button" className="secondary-button" disabled={busy || dirty || workspace.changedFileIds.length === 0} onClick={reviewDiff}>전체 변경 Diff 확인</button>
           {dirty && <p>현재 편집 내용을 저장한 후 전체 변경을 확인해 주세요.</p>}
-          {diffs && diffs.map(diff => <div className="source-diff" key={diff.fileId}><h4>{workspace.files.find(f => f.id === diff.fileId)?.path}</h4><PatchDiff patch={diff.patch || '변경 없음'} /></div>)}
+          {diffs&&<WorkspaceDiffReview heading={false} files={diffs.map(diff=>({path:workspace.files.find(f=>f.id===diff.fileId)?.path??'파일 위치 미확인',patch:diff.patch}))}/>}
+
           {diffs && <label className="source-export-approval"><input type="checkbox" checked={approved} disabled={busy} onChange={e => setApproved(e.target.checked)} />수정본 버전 {workspace.revision}의 변경 {workspace.changedFileIds.length}개를 검토했으며 다운로드를 승인합니다.</label>}
           <div className="source-editor-actions"><button type="button" className="secondary-button" disabled={busy || !approved || !diffs || dirty} onClick={() => download('zip')}>수정본 ZIP 다운로드</button>
             <button type="button" className="secondary-button" disabled={busy || !approved || !diffs || dirty} onClick={() => download('patch')}>Patch 다운로드</button></div>

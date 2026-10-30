@@ -37,7 +37,7 @@ test('missing reviews or assessment never become READY or zero assessed risk', (
 });
 test('project list preserves linked names, saved counts and discreet management without history clutter',()=>{
   const saved=JSON.stringify(project),html=render(ProjectList,{projects:[project]});
-  assert.equal((html.match(/<a /g)||[]).length,2);
+  assert.equal((html.match(/<a /g)||[]).length,3);
   assert.ok(html.includes('project-menu-trigger'));
   assert.ok(html.includes('project-row-status'));
   assert.ok(html.includes('href="#/projects/7/overview"'));

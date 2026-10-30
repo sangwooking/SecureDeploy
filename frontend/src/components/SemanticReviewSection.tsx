@@ -1,3 +1,4 @@
+import { EvidenceSupportLayout } from './EvidenceSupportLayout';
 import type { SemanticSnapshot, SemanticCandidate } from '../types/securityReview';
 import { semanticStatusText } from './reviewPresentation';
 import { semanticGuidance } from './findingGuidance';
@@ -61,9 +62,11 @@ export function SemanticReviewSection({ snapshot }: { snapshot?: SemanticSnapsho
 
 function Candidate({ candidate }: { candidate: SemanticCandidate }) {
   const guide = semanticGuidance(candidate.candidateType);
-  return <article className="semantic-candidate">
+  return <article className="semantic-candidate"><EvidenceSupportLayout evidenceTitle="확인된 참조 위치" supportTitle="AI 추가 검토 의견" evidence={<>
     <div className="section-heading"><h3>{candidateLabels[candidate.candidateType] ?? '추가 보안 검토가 필요한 코드입니다.'}</h3><span className="risk-badge risk-review_required">배포 전 직접 확인할 부분</span></div>
     <p>이것이 반드시 취약점이라는 뜻은 아닙니다. 다른 코드 계층의 보호 조치도 함께 확인하세요.</p>
+    <ul className="semantic-evidence-locations">{candidate.evidence.map((e,i)=><li key={i}><code>{e.filePath}:{e.startLine}-{e.endLine}</code><p>{e.functionName}</p><p>{e.evidenceDescription}</p></li>)}</ul><p className="source-label">{candidate.findingType} · {candidate.reviewStatus}</p>
+    </>} support={<><p className="source-label">{candidate.provider==='mock'?'Mock 통제 의견 · 실제 모델 미검증':'AI 의견 · 직접 검토 필요'}</p><p>{candidate.reason}</p>
     <h4>왜 확인해야 하나요?</h4><p>{guide.summary}</p><p>{guide.risk}</p>
     <h4>직접 이렇게 확인해 보세요</h4>
     <p>본인이 관리하고 테스트 권한이 있는 환경에서만, 개인정보 없는 테스트 데이터로 확인하세요.</p>
@@ -83,5 +86,5 @@ function Candidate({ candidate }: { candidate: SemanticCandidate }) {
     <p>{candidate.provider} · {candidate.model ?? '모델 정보 없음'} · {candidate.promptVersion}</p>
     {candidate.relatedExistingFindingIds.length > 0 && <p>연결된 기존 Finding: {candidate.relatedExistingFindingIds.join(', ')}</p>}
     </details>
-  </article>;
+  </>} /></article>;
 }

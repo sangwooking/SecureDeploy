@@ -1,0 +1,3 @@
+.evidence-host { max-width: 1440px; margin: 0 auto; border: 0; border-radius: 0; }
+.evidence-host .masthead { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.evidence-host .masthead p { color: #526562; font-size: 13px; }

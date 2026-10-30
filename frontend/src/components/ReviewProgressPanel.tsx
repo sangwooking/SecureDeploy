@@ -1,3 +1,4 @@
+import { changeOriginLabel } from './EvidenceSupportLayout';
 import { useState } from 'react';
 import type { SecurityReviewResponse } from '../types/securityReview';
 import type { ProgressChange, ProgressFinding } from '../types/reviewProgress';
@@ -13,7 +14,7 @@ const labels: Record<ProgressChange, string> = {
 function title(finding: ProgressFinding) {
   return finding.code ? codeExplanation(finding.code).title : `${finding.risk.packageName ?? '라이브러리'} 업데이트 검토`;
 }
-export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewResponse, 'comparison' | 'remediation'> }) {
+export function ReviewProgressPanel({ result, compact = false }: { compact?:boolean; result: Pick<SecurityReviewResponse, 'comparison' | 'remediation'> }) {
   const [filter, setFilter] = useState<ProgressChange>('RESOLVED');
   const snapshot = result.comparison;
   if (!snapshot) return <section><h2>보안 상태 변화</h2><p>이 분석에는 저장된 비교 결과가 없습니다. 같은 프로젝트에서 다시 검사하면 이후 변화가 기록됩니다.</p></section>;
@@ -21,10 +22,10 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
   return <section className="security-progress" aria-label="보안 상태 변화">
     <h2>보안 상태 변화</h2>
     <p className="comparison-policy">저장된 정책 판단: {before ? deploymentLabels[before.deploymentAssessment] : '평가 정보 없음'} → {after ? deploymentLabels[after.deploymentAssessment] : '평가 정보 없음'}</p>
-    <div className="comparison-score" aria-label="규칙 기반 참고 점수 변화"><span>규칙 기반 참고 점수</span><strong>{before?.referenceSecurityScore ?? '정보 없음'} → {after?.referenceSecurityScore ?? '정보 없음'}</strong><small>구조 후보·미검사 영역을 포함한 전체 안전 점수가 아닙니다.</small></div>
+    <details><summary>규칙 기반 참고 점수 · 전체 안전 점수와 구분</summary><div className="comparison-score" aria-label="규칙 기반 참고 점수 변화"><span>규칙 기반 참고 점수</span><strong>{before?.referenceSecurityScore ?? '정보 없음'} → {after?.referenceSecurityScore ?? '정보 없음'}</strong><small>구조 후보·미검사 영역을 포함한 전체 안전 점수가 아닙니다.</small></div></details>
     <nav className="progress-filters" aria-label="변화 분류">{(Object.keys(labels) as ProgressChange[]).map(change =>
       <button type="button" key={change} aria-pressed={filter === change} onClick={() => setFilter(change)}>
-        {labels[change]} <strong>{snapshot.counts[change]}</strong></button>)}</nav>
+        {labels[change]} {!compact&&<strong>{snapshot.counts[change]}</strong>}</button>)}</nav>
     <p className="review-caution">확인한 범위에서만 비교했어요. 코드 검토 후보를 비교하지 못했거나 검사 버전이 다르면 해결된 것으로 처리하지 않아요.</p>
     <p>{inspectionLabel(snapshot.status)} · 변화 건수는 비교한 보안 문제 기준이며, 영향받는 패키지 수나 수정 작업 수가 아닙니다.</p>
     <details className="comparison-status"><summary>비교 상태의 기술 정보</summary><p>{snapshot.status} · {securityTerms.notCompared} (NOT_COMPARED)는 RESOLVED가 아닙니다.</p></details>
@@ -41,7 +42,7 @@ export function ReviewProgressPanel({ result }: { result: Pick<SecurityReviewRes
       <details><summary>수정본 파일·해시 근거</summary><p className="source-revision">원본: {snapshot.workspaceScan.sourceRevision}<br />입력: {snapshot.workspaceScan.inputHash}</p>
         <p className="source-revision">분석기: {snapshot.workspaceScan.analyzerVersion}</p>
         {snapshot.workspaceScan.analysisRoot && <p>분석 위치는 ZIP의 {snapshot.workspaceScan.analysisRoot}/ 폴더 기준입니다. 아래 변경 파일·해시는 전체 원본 경로 기준입니다.</p>}
-        <ul>{snapshot.workspaceScan.files.filter(f => f.changed).map(f => <li key={f.fileId}>{f.path} · {f.changeOrigin === 'DETERMINISTIC_APPROVED' ? '승인된 자동 수정' : f.changeOrigin === 'MANUAL_AFTER_DETERMINISTIC' ? '자동 수정 적용 후 수동 변경' : f.changeOrigin === 'AI_APPROVED' ? '승인된 AI 수정' : f.changeOrigin === 'MANUAL_AFTER_AI' ? 'AI 적용 후 수동 변경' : '수동 수정'}<br />
+        <ul>{snapshot.workspaceScan.files.filter(f => f.changed).map(f => <li key={f.fileId}>{f.path} · {changeOriginLabel(f.changeOrigin)}<br />
           <span className="source-revision">{f.originalHash} → {f.currentHash}</span></li>)}</ul></details></div>}
     {!snapshot.workspaceScan&&<GitHubCommitComparison before={snapshot.sourceBefore} after={snapshot.sourceAfter} />}
     <div className="progress-assessments">
