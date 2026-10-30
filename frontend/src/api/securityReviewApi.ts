@@ -1,3 +1,4 @@
+import { ApiRequestError } from './requestProblem';
 import type { DependencyUpdatePlans } from '../types/dependencyUpdatePlan';
 import type {
   AuthResponse,
@@ -230,14 +231,14 @@ export async function parseJsonResponse<T>(response: Response, fallbackMessage: 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
     const interrupted = errorBody?.coverage ? ' 분석이 중단되어 완료된 결과로 저장되지 않았습니다. 미검사 부분은 안전으로 판단하지 않습니다.' : '';
-    throw new Error((errorBody?.message ?? fallbackMessage) + interrupted);
+    throw new ApiRequestError((errorBody?.message ?? fallbackMessage) + interrupted, response.status, typeof errorBody?.code==='string' && /^[A-Z0-9_]{1,80}$/.test(errorBody.code)?errorBody.code:undefined);
   }
 
   return response.json();
 }
 
 export async function fetchDependencyUpdatePlans(reviewId: number): Promise<DependencyUpdatePlans> {
-  const response = await fetch(`${API_BASE_URL}/api/reviews/${reviewId}/dependencies/update-plans`, { headers: authHeaders() });
+  const response = await fetch(`${API_BASE_URL}/api/reviews/${reviewId}/dependencies/update-plans`, { headers: authHeaders(), signal:AbortSignal.timeout(10000) });
   return parseJsonResponse<DependencyUpdatePlans>(response, '업데이트 근거를 불러오지 못했습니다.');
 }
 
@@ -257,3 +258,5 @@ export async function getDependencyAdvice(reviewId:number,id:string):Promise<imp
  const response=await fetch(`${API_BASE_URL}/api/reviews/${reviewId}/dependencies/ai-proposals/${encodeURIComponent(id)}`,{headers:authHeaders()});
  return parseJsonResponse(response,'AI 요청 상태 확인 실패');
 }
+
+export async function fetchUiCapabilities(){const response=await fetch(`${API_BASE_URL}/api/ui-capabilities`,{headers:authHeaders(),cache:'no-store',signal:AbortSignal.timeout(10000)});return parseJsonResponse<import('../components/useUiCapabilities').UiCapabilities>(response,'지원 기능 확인 실패');}

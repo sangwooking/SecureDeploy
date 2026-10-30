@@ -14,10 +14,11 @@ const labels: Record<ProgressChange, string> = {
 function title(finding: ProgressFinding) {
   return finding.code ? codeExplanation(finding.code).title : `${finding.risk.packageName ?? '라이브러리'} 업데이트 검토`;
 }
-export function ReviewProgressPanel({ result, compact = false }: { compact?:boolean; result: Pick<SecurityReviewResponse, 'comparison' | 'remediation'> }) {
-  const [filter, setFilter] = useState<ProgressChange>('RESOLVED');
+export function hasComparableReview(snapshot?:SecurityReviewResponse['comparison']){return !!snapshot&&snapshot.baselineReviewId!=null&&['COMPLETE','PARTIAL'].includes(snapshot.status);}
+export function ReviewProgressPanel({ result, compact = false }: { compact?:boolean; result: Pick<SecurityReviewResponse, 'comparison' | 'remediation'> & Partial<Pick<SecurityReviewResponse,'projectId'|'reviewId'>> }) {
+  const [filter, setFilter] = useState<ProgressChange>(()=>(['RESOLVED','REMAINING','NEW','CHANGED','UNAVAILABLE'] as ProgressChange[]).find(k=>(result.comparison?.counts[k]??0)>0)??'RESOLVED');
   const snapshot = result.comparison;
-  if (!snapshot) return <section><h2>보안 상태 변화</h2><p>이 분석에는 저장된 비교 결과가 없습니다. 같은 프로젝트에서 다시 검사하면 이후 변화가 기록됩니다.</p></section>;
+  if (!snapshot || !hasComparableReview(snapshot)) return <section className="comparison-empty" aria-label="비교 불가"><h2>{snapshot?.status==='UNAVAILABLE'?'이전 검사와 비교할 수 없어요.':'비교할 이전 검사가 없어요.'}</h2><p>현재 검사 결과는 저장됐지만, 비교 가능한 원본 검사가 없어 변경 사항을 판단할 수 없습니다.</p>{result.projectId&&result.reviewId&&<a href={`#/projects/${result.projectId}/findings?review=${result.reviewId}`}>현재 검사 결과 보기</a>}<details><summary>비교 상태의 기술 정보</summary><p>{snapshot?.status??'NOT_RECORDED'} · 비교 불가 · NOT_COMPARED</p><p>NOT_COMPARED는 RESOLVED가 아닙니다.</p>{snapshot&&<><p>{snapshot.message}</p>{snapshot.notices.map((n,i)=><p key={i}>{n}</p>)}</>}</details></section>;
   const before = snapshot.assessmentBefore, after = snapshot.assessmentAfter;
   return <section className="security-progress" aria-label="보안 상태 변화">
     <h2>보안 상태 변화</h2>

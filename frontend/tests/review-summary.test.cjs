@@ -7,8 +7,9 @@ const {ReviewResultWorkspace}=load('ReviewResultWorkspace');
 const {ReviewSummaryPanel}=load('ReviewSummaryPanel');
 for(const scenario of require('./summary-fixture.cjs')())test(`summary: ${scenario.id}`,()=>{
   const before=JSON.stringify(scenario.result);
-  const html=renderToStaticMarkup(React.createElement(ReviewResultWorkspace,{result:scenario.result,view:scenario.view,
+  let html=renderToStaticMarkup(React.createElement(ReviewResultWorkspace,{result:scenario.result,view:scenario.view,
     onViewChange(){},statusActions:{updatingId:null,comments:{},onComment(){},onStatus(){}},reportActions:null,progress:null}));
+  if(scenario.view==='REVIEW_REQUIRED'){html+=renderToStaticMarkup(React.createElement(load('ReviewResultWorkspace').FindingCollection,{result:scenario.result,findings:load('reviewPresentation').allRiskFindings(scenario.result),statusActions:{updatingId:null,comments:{},onComment(){},onStatus(){}}}));html+=renderToStaticMarkup(React.createElement(load('ServerAnalysisSection').ServerAnalysisSection,{snapshot:scenario.result.serverAnalysis}));}
   for(const text of scenario.expected)assert.ok(html.includes(text),text);
   assert.ok(!html.includes('<img src=x'));
   assert.ok(!html.includes('지금 배포해도 될까요?'));

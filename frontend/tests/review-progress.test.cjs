@@ -31,9 +31,9 @@ test('saved deployment assessments precede reference score and resolved entries 
   assert.equal(JSON.stringify(result), previous);
 });
 test('legacy and no-baseline are not shown as improvement or universally safe', () => {
-  assert.ok(render({ ...fixture(), comparison: null }).includes('저장된 비교 결과가 없습니다'));
+  assert.ok(render({ ...fixture(), comparison: null }).includes('비교할 이전 검사가 없어요'));
   const result = fixture(); result.comparison.assessmentBefore = null; result.comparison.status = 'NO_BASELINE';
-  assert.ok(render(result).includes('평가 정보 없음'));
+  assert.ok(render(result).includes('비교할 이전 검사가 없어요'));
   assert.ok(!render(result).includes('보안 상태가 개선되었습니다'));
 });
 test('AI disappearance is separate from deterministic resolution', () => {

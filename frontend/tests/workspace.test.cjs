@@ -40,7 +40,7 @@ test('project list preserves linked names, saved counts and discreet management 
   assert.equal((html.match(/<a /g)||[]).length,3);
   assert.ok(html.includes('project-menu-trigger'));
   assert.ok(html.includes('project-row-status'));
-  assert.ok(html.includes('href="#/projects/7/overview"'));
+  assert.ok(html.includes('href="#/projects/7/findings"'));
   assert.ok(html.includes('&lt;script&gt;private&lt;/script&gt;'));
   for(const [label,key] of [['반드시 처리','BLOCKING'],['배포 전 확인','REVIEW_REQUIRED'],['수정 권장','SHOULD_FIX']])
     assert.ok(html.includes(`<dt>${label}</dt><dd>${riskSummary.prioritySummary[key]}</dd>`));

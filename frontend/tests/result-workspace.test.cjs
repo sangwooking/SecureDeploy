@@ -3,8 +3,8 @@ const assert = require('node:assert/strict');
 const React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
 const load = require('./load-component.cjs');
-const { ReviewResultWorkspace } = load('ReviewResultWorkspace');
-const { reviewCounts, vulnerabilityForFinding, semanticStatusText, deploymentLabels } = load('reviewPresentation');
+const { ReviewResultWorkspace, FindingCollection } = load('ReviewResultWorkspace');
+const { findingTitle, reviewCounts, vulnerabilityForFinding, semanticStatusText, deploymentLabels } = load('reviewPresentation');
 const { CodeFindingCard } = load('CodeFindingCard');
 const { DependencyFindingCard } = load('DependencyFindingCard');
 const fixture = require('./result-fixture.cjs');
@@ -13,6 +13,7 @@ const render = (result, view = 'SUMMARY') => renderToStaticMarkup(React.createEl
   result, view, onViewChange() {}, statusActions: actions, reportActions: null, progress: null,
 }));
 
+const renderDetail=(result,priority)=>renderToStaticMarkup(React.createElement(FindingCollection,{result,findings:require('./load-component.cjs')('reviewPresentation').allRiskFindings(result).filter(f=>f.priority===priority),statusActions:actions}));
 test('summary qualifies the visible legacy score and prioritizes deployment assessment over it', () => {
   const result = fixture(), before = JSON.stringify(result);
   const html = render(result);
@@ -27,16 +28,15 @@ test('summary qualifies the visible legacy score and prioritizes deployment asse
 test('server priorities, not severity or AI confidence, determine the displayed groups', () => {
   const result = fixture();
   const mandatory = render(result, 'BLOCKING');
-  assert.ok(mandatory.includes('API Key가 코드에 포함'));
+  assert.ok(mandatory.includes(findingTitle(result,result.riskAssessment.codeFindings[0])));
   assert.ok(!mandatory.includes('AI_SECURITY_CANDIDATE'));
   assert.ok(!mandatory.includes('fixture-library'));
   const check = render(result, 'REVIEW_REQUIRED');
-  assert.ok(check.includes('반드시 취약점이라는 뜻은 아닙니다'));
-  assert.ok(check.includes('확정 취약점이 아닙니다'));
-  assert.ok(check.includes('설치 버전을 확인하지 못했습니다'));
+  assert.ok(check.includes('추가 검토 필요'));assert.ok(check.includes('발견된 문제 목록'));
+  const semantic=renderToStaticMarkup(React.createElement(load('SemanticReviewSection').SemanticReviewSection,{snapshot:result.semanticReview}));assert.ok(semantic.includes('확정 취약점이 아닙니다'));
   const recommended = render(result, 'SHOULD_FIX');
   assert.ok(recommended.includes('fixture-library'));
-  assert.ok(recommended.includes('참고 사항 (1건)'));
+  assert.ok(render(result).includes('참고 사항'));
   assert.equal(result.riskAssessment.prioritizedDeploymentAssessment, 'BLOCKED');
 });
 
@@ -57,7 +57,7 @@ test('legacy results do not invent a readiness, priority, metadata, or zero coun
   assert.ok(html.includes('미평가'));
   assert.ok(html.includes('새 요약 기록이 없는 이력'));
   assert.ok(!html.includes('현재 분석 범위에서는 배포 가능'));
-  assert.ok(render(result, 'REVIEW_REQUIRED').includes('우선순위가 저장되지 않은 코드 문제'));
+  assert.ok(render(result, 'REVIEW_REQUIRED').includes('이전 이력에는 위험 평가가 없습니다'));
   const v = { ...result.vulnerabilities[0], confidence: undefined, falsePositiveRisk: undefined, analysisNote: null };
   const card = renderToStaticMarkup(React.createElement(CodeFindingCard, { vulnerability: v, statusActions: actions }));
   assert.ok(card.includes('정보 없음'));
@@ -66,7 +66,7 @@ test('legacy results do not invent a readiness, priority, metadata, or zero coun
 
 test('code evidence stays masked and escaped inside closed technical details', () => {
   const result = fixture();
-  const html = render(result, 'BLOCKING');
+  const html = renderDetail(result, 'BLOCKING');
   assert.match(html, /<details class="technical-details"><summary>기술 정보 보기/);
   assert.ok(html.includes('secret = &lt;redacted&gt;'));
   assert.ok(html.includes('Confidence'));
@@ -93,7 +93,7 @@ test('enhanced but disabled, unavailable, failed, and zero candidate states rema
   assert.ok(semanticStatusText({ ...snapshot, semanticReviewStatus: 'FAILED' }).includes('완료한 상태가 아닙니다'));
   const result = fixture();
   result.semanticReview = { ...snapshot, candidates: [] };
-  const html = render(result, 'REVIEW_REQUIRED');
+  const html=renderToStaticMarkup(React.createElement(load('SemanticReviewSection').SemanticReviewSection,{snapshot:result.semanticReview}));
   assert.ok(html.includes('후보 0건은 안전을 의미하지 않습니다'));
   assert.equal(reviewCounts(result).blocking, 1);
 });
@@ -118,7 +118,7 @@ test('repeated storage locations retain findings but are not presented as indepe
   result.riskAssessment.codeFindings = result.vulnerabilities.map(v => ({ ...result.riskAssessment.codeFindings[0],
     findingId: `code:${v.vulnerabilityId}`, vulnerabilityId: v.vulnerabilityId, ruleId: v.ruleId, priority: 'SHOULD_FIX' }));
   const before = JSON.stringify(result);
-  const html = render(result, 'SHOULD_FIX');
+  const html = renderDetail(result, 'SHOULD_FIX');
   for (const text of ['서로 독립적인 수정 작업이라는 뜻은 아닙니다', '별칭을 통한 저장 위치', 'src/session.ts', '>10행<', '>20행<']) assert.ok(html.includes(text), text);
   assert.equal(JSON.stringify(result), before);
 });

@@ -6,10 +6,10 @@ const load=require('./load-component.cjs');
 const {DependencyUpdatePlans}=load('DependencyUpdatePlans');
 test('SCA review plan never claims a generated or applicable AI patch before verification',()=>{
  const html=renderToStaticMarkup(React.createElement(DependencyUpdatePlans,{reviewId:1}));
- assert.ok(html.includes('근거 기반 업데이트 계획 보기'));
+ assert.ok(html.includes('업데이트 계획 지원 확인 중'));assert.ok(!html.includes('AI 전송 범위 확인'));
  assert.ok(html.includes('AI 코드 생성이나 적용 완료를 의미하지 않습니다'));
  assert.ok(!html.includes('AI 생성 완료'));
- const old=renderToStaticMarkup(React.createElement(DependencyUpdatePlans,{}));assert.ok(old.includes('저장된 분석 이력'));
+ const old=renderToStaticMarkup(React.createElement(DependencyUpdatePlans,{}));assert.ok(old.includes('저장된 검사'));
 });
 test('semantic scope explicitly limits unsupported coverage without changing existing candidate status',()=>{
  const {SemanticReviewSection}=load('SemanticReviewSection');

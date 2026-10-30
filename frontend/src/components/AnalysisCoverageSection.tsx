@@ -8,9 +8,10 @@ const statuses: Record<string, string> = {
   DISABLED: '비활성', NO_MANIFEST: '지원 manifest 없음', NOT_APPLICABLE: '조회 대상 없음',
   UNKNOWN: '확인하지 못함', ROOT_DECLARED: '기본 최종 stage에 root 선언', NON_ROOT_DECLARED: '기본 최종 stage에 non-root 선언',
 };
-export function InspectionBoundaryNotice({ coverage }: { coverage?: CoverageLedger | null }) {
+export function InspectionBoundaryNotice({ coverage, compact=false }: { coverage?: CoverageLedger | null;compact?:boolean }) {
   const scope = coverage?.inspectionScope;
   const gaps = scope?.areas.filter(a => !['ROOT_DECLARED', 'NON_ROOT_DECLARED'].includes(a.status)) ?? [];
+  if(compact)return <div className="scope-brief" aria-label="배포 판단의 검사 범위 한계"><p>{!scope?'주요 영역별 검사 근거가 없어요.':gaps.length?`추가 확인: ${gaps.slice(0,3).map(a=>`${a.label} · ${statuses[a.status]??a.status}`).join(', ')}${gaps.length>3?' 외 '+(gaps.length-3)+'개 영역':''}.`:scope.incompleteAnalyzers.length?'일부 분석기는 완료하지 못했어요.':'기록된 정적 분석 범위만 확인했어요.'} 전체 프로젝트 안전성은 미검증입니다.</p><details><summary>검사 범위 자세히 보기</summary><InspectionBoundaryNotice coverage={coverage}/></details></div>;
   return <div className="decision-disclaimer" aria-label="배포 판단의 검사 범위 한계">
     <strong>지원 범위의 판단이며, 전체 프로젝트 검사 완료를 뜻하지 않습니다.</strong>
     {!scope ? <p>이 이력에는 주요 영역별 검사 근거가 없습니다. 아래 파일별 범위 기록을 확인하세요. 과거 범위를 추측하지 않습니다.</p>

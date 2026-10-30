@@ -294,3 +294,24 @@ body,.app-shell { background: var(--canvas); }
 .workspace-content .advice-reason { font-size: 16px; line-height: 1.65; }
 .advisory-item-count { display: inline-flex; align-items: center; gap: 10px; white-space: nowrap; }
 .advisory-item-count strong { font-size: 18px; font-weight: 700; }
+/* UX-01: list -> one evidence detail -> existing editing workflow. */
+.project-navigation { display:flex; gap:6px; flex-wrap:wrap; }
+.project-navigation a { flex:1; text-align:center; min-width:80px; }
+.project-more { margin:12px 0; }
+.project-more p,.problem-row small { overflow-wrap:anywhere; }
+.result-state-line { padding:12px 0; border-bottom:1px solid var(--line); }
+.result-list-filters { display:flex; flex-wrap:wrap; gap:6px; }
+.problem-list-toolbar { display:flex; gap:16px; flex-wrap:wrap; margin:18px 0; align-items:end; }
+.problem-list-toolbar label { display:flex; flex-direction:column; gap:6px; flex:1; min-width:0; }
+.problem-list { list-style:none; padding:0; margin:0; border-top:1px solid var(--line); }
+.problem-list li { border-bottom:1px solid var(--line); }
+.workspace-content .problem-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(150px,.45fr); gap:8px 20px; text-align:left; width:100%; border:0; border-radius:0; padding:16px 12px; background:transparent; }
+.problem-row small { grid-column:1 / -1; color:var(--muted); font-size:13px; }
+.problem-row-title { font-weight:650; overflow-wrap:anywhere; }
+.problem-row[aria-pressed="true"] { background:var(--accent-soft); box-shadow:inset 3px 0 var(--accent); }
+.selected-problem { margin-top:28px; scroll-margin-top:24px; }
+.comparison-empty { padding:24px 0; }
+.comparison-empty h2 { font-size:21px; }
+@media(max-width:767px){.workspace-content .problem-row{grid-template-columns:minmax(0,1fr);} .problem-list-toolbar{flex-direction:column;align-items:stretch;}}
+.project-workspace:has(.source-editor) > .project-navigation { display:flex; margin-bottom:20px; }
+.project-more > a { display:inline-block; margin:10px 0; }

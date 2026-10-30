@@ -77,6 +77,9 @@ test('all comparison statuses expose saved scope and keep unknown and NOT_COMPAR
     if (status === 'NO_BASELINE') result.comparison.assessmentBefore = null;
     const before = JSON.stringify(result);
     const html = render(ReviewProgressPanel, { result });
+    if(['NO_BASELINE','UNAVAILABLE'].includes(status)){
+      assert.ok(html.includes(status==='UNAVAILABLE'?'이전 검사와 비교할 수 없어요':'비교할 이전 검사가 없어요'));assert.ok(html.includes(status));assert.ok(html.includes('NOT_COMPARED'));assert.ok(!html.includes('progress-filters'));assert.ok(!html.includes('comparison-score'));assert.ok(html.includes('&lt;script&gt;scope'));assert.equal(JSON.stringify(result),before);continue;
+    }
     const context = html.indexOf('<details class="comparison-context"');
     assert.ok(html.slice(0, context).includes(require('./load-component.cjs')('uiLanguage').inspectionLabel(status)));
     assert.ok(html.slice(0, context).includes(`<p>${status} ·`));

@@ -1,3 +1,4 @@
+import { requestProblem } from '../api/requestProblem';
 import { useEffect, useRef, useState } from 'react';
 import { applyAiPatch, generateAiPatch, listAiPatches, patchProvider, prepareAiPatch, rejectAiPatch, fixOption, prepareDeterministicPatch } from '../api/editingApi';
 import type { AiPatch, EditingContent, EditingFile, EditingWorkspace, PatchProvider, FixOption } from '../api/editingApi';
@@ -27,10 +28,10 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
   useEffect(()=>{let current=true;setOption(null);
     if(preparationLimitReached){setOption({method:'MANUAL_REVIEW',reason:'작업 공간의 제안 준비 한도에 도달했습니다. 기존 제안을 검토하거나 수동 편집해 주세요.'});return;}
     if(finding&&!dirty&&!disabled&&content.revision===workspace.revision&&content.fileId===file.id)fixOption(workspace,file,content,finding.startsWith('flow:')?0:Number(finding),finding.startsWith('flow:')?finding.slice(5):undefined)
-      .then(v=>{if(current)setOption(v);}).catch(()=>{if(current)setOption({method:'MANUAL_REVIEW',reason:'수정 범위를 확인하지 못했습니다. 최신 파일을 확인하거나 수동 편집해 주세요.'});});
+      .then(v=>{if(current)setOption(v);}).catch(e=>{if(current)setOption({method:'MANUAL_REVIEW',reason:requestProblem(e,'수정 범위').message});});
     return()=>{current=false;};
   },[finding,workspace.id,workspace.revision,file.id,content.currentHash,content.revision,content.fileId,dirty,disabled,preparationLimitReached]);
-  useEffect(() => { active.current = true; patchProvider().then(v => { if (active.current) setProvider(v); }).catch(() => { if (active.current) setError('AI Provider 상태를 확인하지 못했습니다. 수동 편집은 계속할 수 있습니다.'); }); return () => { active.current = false; }; }, []);
+  useEffect(() => { active.current = true; patchProvider().then(v => { if (active.current) setProvider(v); }).catch(e => { if (active.current) setError(requestProblem(e,'코드 수정 Provider').message); }); return () => { active.current = false; }; }, []);
   useEffect(() => { let current = true;
     listAiPatches(workspace.id).then(v => { if (current && active.current) setProposals(v.filter(p => p.fileId === file.id)); })
       .catch(() => { if (current && active.current) setError('제안을 불러오지 못했습니다. 만료 여부를 확인해 주세요.'); });

@@ -5,7 +5,7 @@ import { loadWorkspaceScan, startWorkspaceScan, loadEditingDiff } from '../api/e
 import type { EditingWorkspace, WorkspaceScan } from '../api/editingApi';
 import { fetchReviewDetail } from '../api/securityReviewApi';
 import type { SecurityReviewResponse } from '../types/securityReview';
-import { ReviewProgressPanel } from './ReviewProgressPanel';
+import { ReviewProgressPanel, hasComparableReview } from './ReviewProgressPanel';
 import { ReviewSummaryPanel, summaryStateLabel } from './ReviewSummaryPanel';
 
 export function WorkspaceScanPanel({ workspace, original, disabled }: {
@@ -62,7 +62,7 @@ export function WorkspaceScanPanel({ workspace, original, disabled }: {
       {scan.revision !== workspace.revision && <p role="status">현재 수정본 버전 {workspace.revision}은 이 검사에 포함되지 않았습니다. 최신 수정본은 아직 재검사되지 않았습니다.</p>}
       <details><summary>검사 입력 근거</summary><p className="source-revision">입력 해시: {scan.inputHash}</p><p>원본 Review {original.reviewId} · 검사 시점 {new Date(scan.capturedAt).toLocaleString()}</p></details>
     </div>}
-    {result && <>
+    {result && <>{!hasComparableReview(result.comparison)?<ReviewProgressPanel result={result}/>:<>
       <div className="scan-result-overview" aria-label="수정본 결과 요약">
       <h4>수정본 Review {result.reviewId} · 원본 Review {original.reviewId}</h4>
       <p>참고 점수 {original.securityScore} → {result.securityScore} · 검사 범위 {summaryStateLabel(original.coverage?.status ?? 'NOT_RECORDED')} → {summaryStateLabel(result.coverage?.status ?? 'NOT_RECORDED')}</p>
@@ -75,6 +75,6 @@ export function WorkspaceScanPanel({ workspace, original, disabled }: {
       {comparedDiff&&scan?.revision===workspace.revision?<div className="workspace-outcome"><EvidenceSupportLayout evidenceTitle="수정 적용" supportTitle="수정 후 무엇이 달라졌나요?" evidence={<WorkspaceDiffReview files={comparedDiff}/>} support={<WorkspaceComparisonOverview original={original} modified={result}/>}/></div>:<WorkspaceComparisonOverview original={original} modified={result}/>}
 
       <ReviewProgressPanel result={result} compact />
-    </>}
+    </>}</>}
   </section>;
 }

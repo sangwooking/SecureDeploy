@@ -3,13 +3,12 @@ import { deleteReview, fetchProjectDetail, fetchProjectReviews, fetchReviewDetai
 import type { ProjectDetail } from '../types/workspace';
 import type { ReviewHistoryResponse, ScanMode, SecurityReviewResponse } from '../types/securityReview';
 import type { UploadPolicy } from '../types/uploadPolicy';
-import { PriorityCounts, ProgressBrief, dateLabel, reviewStatus } from './WorkspaceSummary';
-import { allRiskFindings, findingTitle, priorityLabels } from './reviewPresentation';
+import { PriorityCounts, dateLabel, reviewStatus } from './WorkspaceSummary';
 import { projectLink, projectTabs, type WorkspaceRoute } from './workspaceRoute';
 import { ProjectReviewResult } from './ProjectReviewResult';
 import { RescanForm } from './RescanForm';
 import { GitHubSourceInfo } from './GitHubSourceInfo';
-import { ReviewSummaryPanel } from './ReviewSummaryPanel';
+import { ReviewProgressPanel } from './ReviewProgressPanel';
 import { ProjectManagement } from './ProjectManagement';
 
 export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDeleted }: {
@@ -60,7 +59,7 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
         : await reviewGithubRepository(data.project.repositoryUrl ?? '', mode, route.projectId);
       if (!active.current) return;
       setNotice('재검사를 완료했습니다. 이전 분석과 현재 분석의 변화를 확인하세요.');
-      window.location.hash = projectLink(route.projectId, 'findings', result.reviewId ?? undefined, 'PROGRESS');
+      window.location.hash = projectLink(route.projectId, 'history', result.reviewId ?? undefined, 'PROGRESS');
       setRevision(value => value + 1);
     } catch (e) { if (active.current) setError(e instanceof Error ? e.message : '재검사에 실패했습니다. 이전 결과는 유지됩니다.'); }
     finally { if (active.current) setBusy(false); }
@@ -70,50 +69,39 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
     <button className="secondary-button" onClick={() => setRevision(value => value + 1)}>다시 불러오기</button></section>;
   const { project, history, review } = data;
   const latestSelected = review?.reviewId === project.latestReview?.reviewId;
-  const order = { BLOCKING: 0, REVIEW_REQUIRED: 1, SHOULD_FIX: 2, INFORMATIONAL: 3 };
-  const first = review ? allRiskFindings(review).sort((a, b) => order[a.priority] - order[b.priority]).slice(0, 3) : [];
+  const editingReviewId=review?.sourceType==='WORKSPACE'&&review.workspaceScan?.baselineVerified&&history.some(h=>h.reviewId===review.workspaceScan?.originalReviewId)?review.workspaceScan.originalReviewId:route.reviewId;
   return <section className="project-workspace">
     <p className="result-breadcrumb"><a href="#/projects">내 프로젝트</a> / {project.name}</p>
     <header className="workspace-section project-heading"><p className="eyebrow">프로젝트</p><h2>{project.name}</h2>
-      <p>{project.sourceType === 'GITHUB' ? 'GitHub' : 'ZIP'}{project.repositoryUrl && ` · ${project.repositoryUrl}`}</p>
+
       {project.githubRepositoryId != null && <p>{project.privateRepository ? '비공개' : '공개'} 저장소 · GitHub App 읽기 전용 · 최근 분석 시점 기준</p>}
       <div className="project-heading-meta"><strong className={`policy-label policy-${project.latestReview?.riskSummary?.deploymentAssessment.toLowerCase() ?? 'unknown'}`}>{reviewStatus(project.latestReview)}</strong><p>최근 분석: {dateLabel(project.latestReview?.createdAt)}</p></div>
-      {project.sourceType === 'GITHUB' && project.latestReview && <GitHubSourceInfo source={project.latestReview.sourceMetadata} compact />}
     </header>
-    <nav className="project-navigation" aria-label="프로젝트 메뉴">{projectTabs.map(tab => <a key={tab.id} href={projectLink(project.projectId, tab.id)} aria-current={route.tab === tab.id ? 'page' : undefined}>{tab.label}</a>)}</nav>
+    <details className="project-more"><summary>프로젝트 정보·관리</summary><a href={projectLink(project.projectId,'settings')}>프로젝트 설정·삭제</a>{project.repositoryUrl&&<p>{project.repositoryUrl}</p>}</details>
+    <nav className="project-navigation" aria-label="프로젝트 메뉴">{projectTabs.map(tab => <a key={tab.id} href={projectLink(project.projectId, tab.id,tab.id==='edit'?editingReviewId:undefined)} aria-current={route.tab === tab.id ? 'page' : undefined}>{tab.label}</a>)}</nav>
     {notice && <p role="status" className="feedback-message feedback-success">{notice}</p>}
     {error && <p role="alert" className="error-message">{error}</p>}
     {busy && <p role="status">요청을 처리하고 있습니다. 잠시 기다려 주세요.</p>}
-    {route.tab === 'overview' && <section className="workspace-section">
-      <h2 className="visually-hidden">현재 보안 상태</h2>
-      {review ? <ReviewSummaryPanel result={review} actions={<PriorityCounts assessment={project.latestReview?.riskSummary} />} /> : <PriorityCounts assessment={project.latestReview?.riskSummary} />}
-      {project.sourceType === 'GITHUB' && project.latestReview && <details className="summary-detail"><summary>원본 버전과 수집 근거</summary><GitHubSourceInfo source={project.latestReview.sourceMetadata} /></details>}
-      <h3>최근 변화</h3><ProgressBrief progress={latestSelected && review?.comparison ? review.comparison : null} />
-      <h3>가장 먼저 처리할 문제</h3>
-      {first.length && review ? <ol className="next-actions">{first.map(f => <li key={f.findingId}><a href={projectLink(project.projectId, 'findings', undefined, f.priority === 'INFORMATIONAL' ? 'SHOULD_FIX' : f.priority)}>{priorityLabels[f.priority]} · {findingTitle(review, f)}</a></li>)}</ol>
-        : <p>{review ? '저장된 위험 평가 항목이 없습니다. 분석 완성도를 확인하세요.' : '아직 분석 결과가 없습니다.'}</p>}
-      {project.latestReview?.riskSummary && <p>AI 추가 후보 {project.latestReview.riskSummary.semanticCandidateCount}건은 배포 판단과 별도로 직접 확인하세요.</p>}
-      <div className="result-actions"><a href={projectLink(project.projectId, 'findings')}>발견된 문제 보기</a><a href={projectLink(project.projectId, 'rescan')}>{project.sourceType === 'GITHUB' ? 'GitHub 다시 검사' : '다시 검사하기'}</a></div>
-    </section>}
-    {route.tab === 'findings' && <section className="workspace-section">
+    {(route.tab === 'findings'||route.tab === 'edit') && <section className="workspace-section">
       {review ? <>
         {!latestSelected && <p className="review-caution">과거 분석 #{review.reviewId}의 저장된 결과입니다. 현재 상태가 아닙니다. <a href={projectLink(project.projectId, 'findings')}>최신 분석 보기</a></p>}
         <ProjectReviewResult key={`${review.reviewId}:${revision}`} result={review} view={route.view}
-          onView={view => { window.location.hash = projectLink(project.projectId, 'findings', route.reviewId, view); }}
+          editing={route.tab==='edit'} onEditingChange={value=>{window.location.hash=projectLink(project.projectId,value?'edit':'findings',route.reviewId);}}
+          onView={view => { window.location.hash = projectLink(project.projectId, view==='PROGRESS'?'history':'findings', route.reviewId??review.reviewId??undefined, view); }}
           onRescan={() => { window.location.hash = projectLink(project.projectId, 'rescan'); }} />
-      </> : <p>분석 결과가 없습니다. 재검사에서 프로젝트를 분석해 주세요.</p>}
+      </> : <><p>저장된 검사 결과가 없어 수정할 원본을 아직 확인할 수 없어요.</p><a className="primary-button" href={projectLink(project.projectId,'rescan')}>프로젝트 검사하기</a></>}
     </section>}
-    {route.tab === 'history' && <section className="workspace-section history-panel"><h2>분석 이력 ({history.length})</h2>
+    {route.tab === 'history' && <section className="workspace-section history-panel"><h2>검사 기록 ({history.length})</h2>
       {!history.length && <p>저장된 분석 결과가 없습니다.</p>}
-      <div className="history-list">{history.map(item => <article className="workspace-history-row" key={item.reviewId}>
+      {route.view==='PROGRESS'&&route.reviewId&&review?<><a href={projectLink(project.projectId,'history')}>검사 기록 목록으로 돌아가기</a><h3>검사 #{review.reviewId}의 변화</h3><p>{dateLabel(review.createdAt)}</p><ReviewProgressPanel result={review}/></>:<div className="history-list">{history.map(item => <article className="workspace-history-row" key={item.reviewId}>
         <h3>분석 #{item.reviewId} · {dateLabel(item.createdAt)}</h3><p>{item.sourceType === 'WORKSPACE' ? '작업 공간 수정본' : item.sourceType} · {reviewStatus(item)}</p>
-        {item.sourceType === 'GITHUB' && <GitHubSourceInfo source={item.sourceMetadata} compact />}
+        <div className="result-actions"><a className="history-item" href={projectLink(project.projectId, 'findings', item.reviewId, 'SUMMARY')}>결과 보기</a>
+          {item.comparisonAvailable ? <a href={projectLink(project.projectId, 'history', item.reviewId, 'PROGRESS')}>변화 보기</a> : <span>이전 분석과 비교 근거 없음</span>}
+</div><details className="history-item-details"><summary>검사 근거·관리</summary>        {item.sourceType === 'GITHUB' && <GitHubSourceInfo source={item.sourceMetadata} compact />}
         <PriorityCounts assessment={item.riskSummary} />
         <p>위험 평가 항목 {item.findingCount ?? '미평가'}건 · AI 추가 후보 {item.riskSummary?.semanticCandidateCount ?? '미평가'}건 (별도)</p>
-        <div className="result-actions"><a className="history-item" href={projectLink(project.projectId, 'findings', item.reviewId, 'SUMMARY')}>결과 보기</a>
-          {item.comparisonAvailable ? <a href={projectLink(project.projectId, 'findings', item.reviewId, 'PROGRESS')}>변화 보기</a> : <span>이전 분석과 비교 근거 없음</span>}
-          <button className="delete-button" disabled={busy} onClick={() => void removeReview(item)}>분석 삭제</button></div>
-      </article>)}</div>
+          <button className="delete-button" disabled={busy} onClick={() => void removeReview(item)}>분석 삭제</button></details>
+      </article>)}</div>}
     </section>}
     {route.tab === 'rescan' && <section className="workspace-section"><h2>재검사</h2>
       <p>{project.sourceType === 'ZIP' ? '수정한 프로젝트 ZIP을 다시 업로드해 주세요. 가장 최근 분석 결과와 자동으로 비교합니다.' : '등록된 GitHub 저장소를 다시 가져와 분석합니다.'}</p>

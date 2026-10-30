@@ -17,3 +17,5 @@ export function changeOriginLabel(origin?:string) {
 export function AdvisoryItemCount({count}:{count:number}) {
  return <span className="inline-count advisory-item-count"><span>공지 항목</span><strong>{count}</strong></span>;
 }
+
+export function providerSetupLabel(origin?:string,name?:string){return origin==='OPENAI'?'OpenAI Provider 설정 · 실제 모델 응답은 생성 후 확인':origin==='MOCK'?'Mock 테스트 Provider · 실제 모델 미검증':providerOriginLabel(origin,name);}

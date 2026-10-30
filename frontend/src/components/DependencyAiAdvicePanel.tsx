@@ -1,7 +1,8 @@
+import { ApiRequestError, requestProblem } from '../api/requestProblem';
 import { useEffect, useRef, useState } from 'react';
 import { dependencyAdviceProvider, prepareDependencyAdvice, generateDependencyAdvice, getDependencyAdvice } from '../api/securityReviewApi';
 import type { DependencyAdviceView, DependencyAdviceProvider, DependencyUpdatePlans } from '../types/dependencyUpdatePlan';
-import { providerOriginLabel } from './EvidenceSupportLayout';
+import { providerOriginLabel, providerSetupLabel } from './EvidenceSupportLayout';
 
 export function DependencyAiAdvicePanel({reviewId,evidence,onEditDependency,selectedIndex}:{reviewId:number;evidence:DependencyUpdatePlans;onEditDependency?:(id:string)=>void;selectedIndex?:number}) {
  const [provider,setProvider]=useState<DependencyAdviceProvider|null>(null),[choice,setChoice]=useState(''),[requestId,setRequestId]=useState('');
@@ -13,14 +14,14 @@ export function DependencyAiAdvicePanel({reviewId,evidence,onEditDependency,sele
  const perform=async(action:()=>Promise<DependencyAdviceView>)=>{
   if(busy)return;const current=generation.current;setBusy(true);setError('');setConsent(false);
   try{const next=await action();if(current===generation.current){if(next.reviewId!==reviewId||next.evidenceHash!==evidence.evidenceHash||(selectedIndex!=null&&next.planIndex!==selectedIndex))throw Error('근거 불일치');setView(next);setRequestId(next.id);}}
-  catch{if(current===generation.current)setError('AI 요청을 완료하거나 응답을 확인하지 못했습니다. 자동 재시도하지 않습니다. 기존 요청 상태를 먼저 확인하세요.');}finally{if(current===generation.current)setBusy(false);}
+  catch(e){if(current===generation.current)setError(e instanceof ApiRequestError?requestProblem(e,'AI 제안').message:'응답의 분석 근거를 확인하지 못했어요. 기존 요청 상태를 확인해 주세요. 자동 재시도하지 않습니다.');}finally{if(current===generation.current)setBusy(false);}
  };
  const eligible=evidence.plans.map((p,index)=>({p,index})).filter(({p,index})=>(selectedIndex==null||index===selectedIndex)&&p.ecosystem==='NPM'&&p.packageManagerEvidence==='NPM_LOCK_OBSERVED_VERSION_UNVERIFIED'&&p.sameMajorCandidates.length&&p.locations.some(l=>l.confirmed));
  const states:Record<string,string>={APPROVAL_REQUIRED:'전송 동의 대기',GENERATING:'응답 생성 중',GENERATED:'응답 검증 통과 · 수정 미적용',NEEDS_REVIEW:'AI도 추가 검토 필요',INVALID:'허용 범위를 벗어난 응답 거부',FAILED:'생성 실패'};
  return <section aria-label="AI 의존성 수정 방향" className="dependency-ai-advice">
   <h3>AI 수정 제안</h3>
   <p className="advice-boundary">분석 결과와 별도의 AI 의견입니다. 제안만으로 파일·위험 평가·안전 판정은 바뀌지 않습니다.</p>
-  <p className="provider-origin">{provider?providerOriginLabel(provider.origin,provider.name):'Provider 상태 확인 중'}{provider?.model&&<span> · {provider.model}</span>}</p>
+  <p className="provider-origin">{provider?providerSetupLabel(provider.origin,provider.name):'Provider 상태 확인 중'}{provider?.model&&<span> · {provider.model}</span>}</p>
   {!provider?.available&&<p role="note">AI Provider가 비활성화되어 있거나 준비되지 않았습니다. 기존 근거 기반 한국어 안내를 사용할 수 있습니다.</p>}
   <div className="advice-request-controls"><label>AI 수정 방향을 요청할 공지<select value={choice} disabled={busy||!provider?.available} onChange={e=>{setChoice(e.target.value);setView(null);setConsent(false);}}><option value="">항목 선택</option>{eligible.map(({p,index})=><option key={index} value={index}>{p.packageName}@{p.lockedVersion} · {p.advisoryId}</option>)}</select></label>
    <button type="button" className="secondary-button" disabled={busy||!provider?.available||choice===''||!eligible.some(e=>String(e.index)===choice)} onClick={()=>void perform(()=>prepareDependencyAdvice(reviewId,evidence.evidenceHash,Number(choice)))}>AI 전송 범위 확인</button></div>
