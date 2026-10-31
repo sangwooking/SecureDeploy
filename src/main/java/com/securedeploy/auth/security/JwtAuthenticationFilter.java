@@ -35,6 +35,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authorization != null && authorization.startsWith("Bearer ")) {
             try {
                 authenticate(authorization.substring(7));
+            } catch (org.springframework.dao.DataAccessException | org.springframework.transaction.TransactionException unavailable) {
+                SecurityContextHolder.clearContext();
+                response.setStatus(HttpStatus.SERVICE_UNAVAILABLE.value());
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"status\":503,\"code\":\"AUTH_STORE_UNAVAILABLE\",\"message\":\"인증 저장소에 일시적으로 연결할 수 없습니다. 미저장 편집을 보관하고 연결 복구 후 저장 상태를 확인해 주세요.\"}");return;
             } catch (SecureDeployException exception) {
                 writeUnauthorized(response, exception.getMessage());
                 return;
