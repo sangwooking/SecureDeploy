@@ -8,7 +8,7 @@ from dataclasses import replace
 
 class AuthorizationEvidence:
     KNOWN = {"IsAuthenticated", "IsAdminUser", "AllowAny", "IsAuthenticatedOrReadOnly", "DjangoModelPermissions", "DjangoObjectPermissions"}
-    DENIED = {"django.core.exceptions.PermissionDenied", "rest_framework.exceptions.PermissionDenied", "rest_framework.exceptions.NotAuthenticated"}
+    DENIED = {"django.core.exceptions.PermissionDenied", "rest_framework.exceptions.PermissionDenied", "rest_framework.exceptions.NotAuthenticated", "django.http.Http404", "django.http.response.Http404"}
 
     def __init__(self, analyzer, value_type):
         self.a, self.V = analyzer, value_type
@@ -259,12 +259,14 @@ class AuthorizationEvidence:
             defenses.extend(env["@authorization-guard"].defenses)
         if scoped:
             defenses.append(self.a.loc(node, "USER_FOREIGN_KEY_QUERY_SCOPE"))
-        identifiers = [loc for value in keywords.values() for loc in value.trace]
+        identifiers = [loc for value in keywords.values() for loc in (*value.trace, *[d for d in value.defenses if d["kind"]=="NUMERIC_ROUTE_CONVERTER"])]
+        if prior and prior.symbol in self.refs:
+            identifiers = self.refs[prior.symbol]["identifiers"] + identifiers
         ref = "resource:" + str(len(self.refs))
         model_node=self.a.classes[model][1]
         custom_model=any(isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name in {"__getattribute__","__getattr__"} or isinstance(n,(ast.Assign,ast.AnnAssign)) and any(isinstance(t,ast.Name) and t.id=="objects" for t in (n.targets if isinstance(n,ast.Assign) else [n.target])) for n in model_node.body)
         self.refs[ref] = dict(model=model, fields=fields, location=self.a.loc(node, "RESOURCE_LOOKUP"), identifiers=identifiers[:40],
-                              unresolved=any(v.unknown and v.trace for v in keywords.values()) or self.a.partial or custom_model)
+                              unresolved=any(v.unknown and v.trace for v in keywords.values()) or self.a.partial or custom_model or bool(prior and prior.symbol in self.refs and self.refs[prior.symbol]["unresolved"]))
         self.access(node, ref, "QUERYSET_DECLARATION" if name in {"filter", "exclude", "all"} else "RESOURCE_LOOKUP", defenses)
         return self.V(tag="auth-queryset" if name in {"filter", "exclude", "all"} else "auth-resource", symbol=ref, unknown=True, defenses=tuple(defenses))
 
@@ -273,6 +275,17 @@ class AuthorizationEvidence:
             return None
         if base and base.tag == "auth-queryset" and base.symbol in self.refs and name in {"get", "filter", "exclude", "all", "first"}:
             return self.query(node, self.refs[base.symbol]["model"], name, keywords, base, env)
+        if function.symbol in {"django.shortcuts.get_object_or_404", "django.shortcuts.get_list_or_404"} and not function.unknown and args:
+            target=args[0]
+            model=self.refs[target.symbol]["model"] if target.tag=="auth-queryset" and target.symbol in self.refs else target.symbol
+            if self.a.is_model(model):
+                if len(args)!=1:
+                    self.add("limitations", "POSITIONAL_QUERY_POLICY_UNKNOWN")
+                    return self.V(unknown=True)
+                return self.query(node,model,"get" if function.symbol.endswith("get_object_or_404") else "filter",keywords,target if target.tag=="auth-queryset" else None,env)
+        if base and base.tag == "auth-queryset" and base.symbol in self.refs and name in {"update", "delete"}:
+            self.access(node,base.symbol,"BULK_WRITE" if name=="update" else "BULK_DELETE",list(base.defenses))
+            return self.V(unknown=True)
         if base and base.tag == "auth-resource" and base.symbol in self.refs and name in {"save", "delete"}:
             self.access(node, base.symbol, "WRITE" if name == "save" else "DELETE", list(base.defenses))
             return self.V(unknown=True)
@@ -384,9 +397,9 @@ class AuthorizationEvidence:
         if operation == "OBJECT_PERMISSION_CALL":
             conclusion = "OBJECT_CHECK_CALLED_POLICY_UNKNOWN"
         constrained = bool(kinds & {"USER_FOREIGN_KEY_QUERY_SCOPE", "OWNER_REJECTION_GUARD", "ROLE_REJECTION_GUARD"}) or self.active["authenticationStatus"] == "DECLARED_STAFF_REQUIRED"
-        if operation in {"WRITE", "DELETE"} and resource["fields"] and resource["identifiers"] and not unresolved and not constrained:
+        if operation in {"WRITE", "DELETE", "BULK_WRITE", "BULK_DELETE"} and resource["fields"] and resource["identifiers"] and not unresolved and not constrained:
             conclusion = "REQUEST_KEYED_WRITE_OWNER_POLICY_REVIEW_REQUIRED"
-        if inverse and operation in {"WRITE", "DELETE"} and resource["identifiers"] and not unresolved and not constrained:
+        if inverse and operation in {"WRITE", "DELETE", "BULK_WRITE", "BULK_DELETE"} and resource["identifiers"] and not unresolved and not constrained:
             conclusion = "INVERTED_OWNER_REJECTION_CANDIDATE"
         if unresolved:
             conclusion = "ACCESS_FLOW_UNRESOLVED"

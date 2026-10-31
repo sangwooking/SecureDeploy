@@ -190,7 +190,7 @@ export function nodeServer(api) {
         note(state.mod,'UPLOAD_MIDDLEWARE_AND_STORAGE_NOT_VERIFIED');
         return value('input',[loc(node,state.mod,'UPLOAD_FILE_UNVERIFIED',state.fn)],{unknown:true});
       }
-      if(['query','body','params'].includes(key))return value('input',[loc(node,state.mod,'EXPRESS_'+key.toUpperCase(),state.fn)],{inputShape:key==='params'?'STRING_MAP':undefined,
+      if(['query','body','params','headers'].includes(key))return value('input',[loc(node,state.mod,'EXPRESS_'+key.toUpperCase(),state.fn)],{inputShape:key==='params'?'STRING_MAP':undefined,
         fieldOrigin:fields.root(base,key,node,state),fieldValidationUncertain:base.fieldValidationUncertain});
       if(['user','session'].includes(key)){
         if(key==='session')state.webSessionRead=true;

@@ -1,6 +1,7 @@
 import ts from 'typescript';
 import {pipelineAudit} from './pipeline-audit.mjs';
 import path from 'node:path';
+import {joinHtml} from './html-context.mjs';
 import {htmlResponses} from './html-response.mjs';
 import {staticEnvKey} from './static-env-key.mjs';
 import { destinationOf, joinDestinations, concatenatedDestination, constructedUrl, unresolvedDestination } from './destination.mjs';
@@ -23,7 +24,7 @@ import {externalNext} from './external-next.mjs';
 import {asyncBoundaries} from './async-boundary.mjs';
 import {asyncExceptions} from './async-exception.mjs';
 
-export const VERSION = 'ts-server-v53';
+export const VERSION = 'ts-server-v54';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -40,7 +41,7 @@ function addition(left, right) {
   }
   const combined = union(left, right);
   const { constant: ignored, ...withoutConstant } = combined;
-  return { ...withoutConstant, htmlString:typeof left.constant==='string'||typeof right.constant==='string'||left.htmlString===true||right.htmlString===true, responseLocations:undefined, environmentResponses:undefined,
+  return { ...withoutConstant, ...joinHtml(left,right), htmlString:typeof left.constant==='string'||typeof right.constant==='string'||left.htmlString===true||right.htmlString===true, responseLocations:undefined, environmentResponses:undefined,
     fixedShellCommandPrefix:hasConstant(left)&&typeof left.constant==='string'&&/^[A-Za-z][A-Za-z0-9_./-]* +$/.test(left.constant)&&right.shellRestricted,
     ...concatenatedDestination(left, right) };
 }
@@ -260,7 +261,7 @@ export function analyze(input, overrides = {}) {
         recommendation:'표시된 응답 생성·반환 위치에서 서버 비밀값을 담는 필드를 제거하고 status 등 정상 응답 필드는 유지하세요. 비밀값은 서버의 필요한 작업에서만 사용하고 NEXT_PUBLIC_·VITE_ 변수로 옮기지 마세요. 공개 Supabase anon·publishable 키나 프로젝트 URL 자체를 숨기는 것은 해결책이 아닙니다. 실제 사용 중인 비밀키가 이미 노출됐다면 코드 수정과 별도로 폐기·교체 및 접근 기록을 검토하세요. 자동 교체·배포를 수행한 것은 아닙니다. 로컬의 같은 요청에서 가짜 canary 값이 응답·로그에 없는지, 정상 응답이 유지되는지 확인한 뒤 재검사하세요.'}, state.mod);
     }
   }
-  const html=htmlResponses({loc,append,result,note});
+  const html=htmlResponses({loc,append,result,note,modules});
   function observeExpressResponse(v,node,state,unresolved=false) {
     if(state.context.setup)return;
     const body=responseBody(v),location=loc(node,state.mod,state.context.entry?.kind==='NEXT_PAGES_HANDLER'?'NEXT_PAGES_HTTP_RESPONSE':'EXPRESS_HTTP_RESPONSE',state.fn);
@@ -780,6 +781,7 @@ export function analyze(input, overrides = {}) {
       const fileMember=receiverInput?.fileNative&&ts.isPropertyAccessExpression(callee)?filesSupport.property(receiverInput,callee.name.text,callee,state):callable;
       const fileCall=filesSupport.call(node,fileMember,args,state);
       if(fileCall)return fileCall.value;
+      const encoding=html.transform(receiverInput,args,ts.isPropertyAccessExpression(callee)?callee.name.text:'');if(encoding)return encoding;
       const regexResult=regexSupport.call(node,callee,receiverInput,args,state);
       if(regexResult)return regexResult;
       const globalObject = name => ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) && callee.expression.text === name
@@ -1360,6 +1362,7 @@ export function analyze(input, overrides = {}) {
     const combined=union(...returns);
     const withResponses={...combined,environmentResponses:returns.flatMap(v=>v.environmentResponses??[]).slice(0,20)};
     const completed=fn.classConstructor?{...withResponses,constructorConditional:!!state.uncertain}:withResponses;
+    if(completed.trace?.length&&!completed.unknown)completed.htmlFlow=[...(completed.htmlFlow??[]),loc(fn.node,mod,'HTML_FUNCTION_RETURN',fn)].slice(-6);
     return state.nodeMode&&returns.length>1&&returns.length<=4?{...completed,nodeAlternatives:returns}:completed;
   }
   // Reserve bounded declaration passes before flow tracing consumes the remainder.
