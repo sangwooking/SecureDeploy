@@ -15,7 +15,14 @@ public class ComparisonContextConverter implements AttributeConverter<Comparison
     }
     @Override public ComparisonContext convertToEntityAttribute(String value) {
         if (value == null) return null;
-        try { return MAPPER.readValue(value, ComparisonContext.class); }
-        catch (Exception invalid) { throw new IllegalStateException("Cannot decode comparison snapshot"); }
+        try {
+            var context=MAPPER.readValue(value,ComparisonContext.class);
+            if(context.schemaVersion()!=1)throw new IllegalArgumentException();
+            return context;
+        }
+        catch (Exception invalid) {
+            // Keep original stored JSON untouched. Unknown security evidence never becomes COMPLETE/SAFE.
+            return new ComparisonContext(0,null,"UNSUPPORTED_SNAPSHOT_REVIEW_REQUIRED",false,java.util.List.of(),null);
+        }
     }
 }

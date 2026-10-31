@@ -15,7 +15,16 @@ public class ReviewProgressSnapshotConverter implements AttributeConverter<Revie
     }
     @Override public ReviewProgressSnapshot convertToEntityAttribute(String value) {
         if (value == null) return null;
-        try { return MAPPER.readValue(value, ReviewProgressSnapshot.class); }
-        catch (Exception invalid) { throw new IllegalStateException("Cannot decode comparison snapshot"); }
+        try {
+            var snapshot=MAPPER.readValue(value,ReviewProgressSnapshot.class);
+            if(snapshot.comparisonSchemaVersion()!=1)throw new IllegalArgumentException();
+            return snapshot;
+        }
+        catch (Exception invalid) {
+            return new ReviewProgressSnapshot(0,null,null,null,null,null,java.time.Instant.EPOCH,
+                ReviewProgressSnapshot.Status.UNAVAILABLE,"지원하지 않는 비교 근거입니다. 원본 위험 결과를 확인해 주세요.",
+                null,null,java.util.Map.of(),java.util.List.of(),java.util.List.of(),
+                java.util.List.of("UNSUPPORTED_SNAPSHOT_REVIEW_REQUIRED; original stored evidence retained"),null,null,null);
+        }
     }
 }
