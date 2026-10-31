@@ -30,15 +30,30 @@ public class WorkspaceVault {
     private final Duration retention;
     private final SecureRandom random=new SecureRandom();
 
+    public WorkspaceVault(JdbcTemplate jdbc,ObjectMapper mapper,boolean enabled,String encoded,String keyId,long retentionSeconds){this(jdbc,mapper,enabled,encoded,keyId,retentionSeconds,"");}
+    @org.springframework.beans.factory.annotation.Autowired
     public WorkspaceVault(JdbcTemplate jdbc,ObjectMapper mapper,
             @Value("${securedeploy.editing.persistence.enabled:false}") boolean enabled,
             @Value("${securedeploy.editing.persistence.key:}") String encoded,
             @Value("${securedeploy.editing.persistence.key-id:}") String keyId,
-            @Value("${securedeploy.editing.persistence.retention-seconds:86400}") long retentionSeconds) {
+            @Value("${securedeploy.editing.persistence.retention-seconds:86400}") long retentionSeconds,
+            @Value("${securedeploy.editing.persistence.key-file:}") String keyFile) {
         this.jdbc=jdbc;this.mapper=mapper;this.enabled=enabled;this.keyId=keyId;
         this.retention=Duration.ofSeconds(retentionSeconds);
         if(!enabled){key=null;return;}
         try {
+            if(!keyFile.isBlank()){
+                if(!encoded.isBlank())throw new IllegalArgumentException();
+                var file=java.nio.file.Path.of(keyFile);
+                var options=new java.nio.file.LinkOption[]{java.nio.file.LinkOption.NOFOLLOW_LINKS};
+                if(!file.isAbsolute()||!java.nio.file.Files.isRegularFile(file,options)||java.nio.file.Files.isSymbolicLink(file)||java.nio.file.Files.size(file)>128)throw new IllegalArgumentException();
+                var permissions=java.nio.file.Files.getPosixFilePermissions(file,options);
+                if(!permissions.equals(java.nio.file.attribute.PosixFilePermissions.fromString("rw-------"))
+                    ||!java.nio.file.Files.getPosixFilePermissions(file.getParent()).equals(java.nio.file.attribute.PosixFilePermissions.fromString("rwx------"))
+                    ||!java.nio.file.Files.getOwner(file,options).getName().equals(System.getProperty("user.name"))
+                    ||((Number)java.nio.file.Files.getAttribute(file,"unix:nlink",options)).intValue()!=1)throw new IllegalArgumentException();
+                encoded=java.nio.file.Files.readString(file,StandardCharsets.US_ASCII).trim();
+            }
             key=Base64.getDecoder().decode(encoded);
             if(key.length!=32||!keyId.matches("[A-Za-z0-9_-]{1,64}")||retentionSeconds<1800||retentionSeconds>30*86400)throw new IllegalArgumentException();
             // Fail startup rather than silently creating schema or falling back to plaintext.

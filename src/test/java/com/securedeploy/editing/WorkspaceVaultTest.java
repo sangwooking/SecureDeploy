@@ -89,4 +89,17 @@ class WorkspaceVaultTest {
         assertThrows(RuntimeException.class,()->s.save(w.id(),f.id(),new EditingWorkspaceService.Change(1,f.originalHash(),"x".repeat(SourceArchive.EDIT_BYTES+1)),false));
         assertEquals(1,s.get(w.id()).revision());
     }
+    @Test void protectedSeparateKeyFileRejectsPublicSymlinkAndConflictingSources()throws Exception {
+        var dir=java.nio.file.Files.createTempDirectory("releasegate-key-");var file=dir.resolve("key");
+        try {
+            java.nio.file.Files.setPosixFilePermissions(dir,java.nio.file.attribute.PosixFilePermissions.fromString("rwx------"));
+            java.nio.file.Files.writeString(file,key);java.nio.file.Files.setPosixFilePermissions(file,java.nio.file.attribute.PosixFilePermissions.fromString("rw-------"));
+            assertDoesNotThrow(()->new WorkspaceVault(jdbc,mapper,true,"","test-key-v1",86400,file.toString()));
+            assertThrows(IllegalStateException.class,()->new WorkspaceVault(jdbc,mapper,true,key,"test-key-v1",86400,file.toString()));
+            java.nio.file.Files.setPosixFilePermissions(file,java.nio.file.attribute.PosixFilePermissions.fromString("rw-r--r--"));
+            assertThrows(IllegalStateException.class,()->new WorkspaceVault(jdbc,mapper,true,"","test-key-v1",86400,file.toString()));
+            java.nio.file.Files.delete(file);java.nio.file.Files.createSymbolicLink(file,dir.resolve("missing"));
+            assertThrows(IllegalStateException.class,()->new WorkspaceVault(jdbc,mapper,true,"","test-key-v1",86400,file.toString()));
+        }finally{java.nio.file.Files.deleteIfExists(file);java.nio.file.Files.deleteIfExists(dir);}
+    }
 }
