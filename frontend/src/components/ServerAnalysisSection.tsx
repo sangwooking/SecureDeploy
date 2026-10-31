@@ -10,6 +10,9 @@ import { JavaSqlAnalysisSection } from './JavaSqlAnalysisSection';
 import { SupabaseAnalysisSection } from './SupabaseAnalysisSection';
 
 const entryStageLabels: Record<string,string>={
+  MIDDLEWARE_FORWARD_ONLY:'순서대로 next() 전달만 확인 · 인증·인가 보호 근거는 아님',
+  HTML_RESPONSE_INPUT_CANDIDATE:'요청 입력 → HTML 응답 연결 · 출력 인코딩·실행 문맥 검토 필요',
+  HTML_RESPONSE_CONTEXT_UNKNOWN:'HTML·템플릿 응답의 입력 연결 · 출력 문맥 미확인',
   RATE_LIMIT_DECLARATION:'요청 제한 선언 · 적용·실제 차단 증명 아님',
   RATE_LIMIT_NOT_APPLICABLE:'이 요청 경로에 해당 제한이 선행하지 않음',
   RATE_LIMIT_APPLICATION_UNKNOWN:'요청 제한의 적용·합성·설정 변경 관계 미확인',
@@ -100,6 +103,7 @@ const labels: Record<string, string> = {
   TS_SELECTION_HINTS_NOT_ENTRY_PROOF:'선택 우선순위는 힌트이며 요청·보안 흐름의 증명이 아님',
   TS_COMBINED_SOURCE_SQL_BUDGET_PARTIAL:'JS/TS·정책 SQL 공통 예산으로 일부 파일 미검사',
   SOURCE_FILE_SIZE_LIMIT:'개별 파일 문자 수 상한',SOURCE_FILE_COUNT_LIMIT:'JS/TS·SQL 공통 파일 수 상한',SOURCE_TOTAL_CHAR_LIMIT:'JS/TS·SQL 공통 문자 수 상한',
+  NEXT_PAGES_HANDLER:'Next.js Pages API 요청 처리 함수',NEXT_PAGES_QUERY:'Pages API query 요청값',NEXT_PAGES_BODY:'Pages API 요청 본문',NEXT_PAGES_HEADERS:'Pages API 요청 헤더',NEXT_PAGES_REGISTRATION:'Pages API default Handler 연결',HTTP_HTML_RESPONSE:'HTML 응답 출력 위치',
   NEXT_ROUTE_HANDLER:'Next.js 요청 처리 함수 선언',NEXT_SERVER_FUNCTION:'Next.js 서버 함수 선언 · 호출 여부 미확인',
   SERVER_FUNCTION_ARGUMENT:'외부에서 전달할 수 있는 서버 함수 인자',SERVER_FUNCTION_RETURN:'서버 함수 반환 위치',
   NEXT_SERVER_FUNCTION_INVOCATION_NOT_VERIFIED:'서버 함수의 실제 호출·배포 여부는 미확인',
@@ -319,7 +323,8 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false, on
       입력 선택은 구문 파싱이나 보안 흐름 검증 완료가 아닙니다. 미선택 파일은 안전으로 처리하지 않습니다.
     </p>}
     {!python&&snapshot.files.some(f=>f.limitations.some(l=>l.startsWith('NEXT_')))&&<p className="review-caution">
-      Next.js 요청 함수 {snapshot.authorizationContexts.filter(c=>c.entry.kind==='NEXT_ROUTE_HANDLER').length}곳 ·
+      Next.js App Router 요청 함수 {snapshot.authorizationContexts.filter(c=>c.entry.kind==='NEXT_ROUTE_HANDLER').length}곳 ·
+      Pages API 요청 함수 {snapshot.authorizationContexts.filter(c=>c.entry.kind==='NEXT_PAGES_HANDLER').length}곳 ·
       서버 함수 선언 {snapshot.authorizationContexts.filter(c=>c.entry.kind==='NEXT_SERVER_FUNCTION').length}곳.
       서버 함수 선언은 실제 호출·인증·데이터 접근권한의 증명이 아닙니다. 서버 내부에서 사용하는 설정과 반환값으로 전달되는 설정을 구분하며, 실제 클라이언트 번들은 검사하지 않았습니다.
     </p>}
@@ -377,7 +382,7 @@ function LanguageAnalysisSection({ snapshot, compact = false, python = false, on
         <FlowEvidence finding={finding} />
       </details>
     </article>)}</div>
-    {!python&&snapshot.nodeUses!=null&&<details className="coverage-details"><summary>Express 코드 실행·데이터 접근 근거 ({snapshot.nodeUses.length})</summary>
+    {!python&&snapshot.nodeUses!=null&&<details className="coverage-details"><summary>서버 진입점·코드 실행·HTML 응답 근거 ({snapshot.nodeUses.length})</summary>
       <p>정적으로 연결된 요청·함수 호출만 확인합니다. 데이터 조회 근거는 소유권 검증의 증명이 아니며, 미확인 호출은 안전이나 취약점 확정으로 처리하지 않습니다.</p>
       <ul className="coverage-file-list">{snapshot.nodeUses.map((use,i)=><li key={i}>
         <code className="finding-location">{location(use.location)}</code>

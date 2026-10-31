@@ -1,6 +1,8 @@
 import type { AnalysisLocation, AuthorizationDetails } from '../types/serverAnalysis';
 
 const labels: Record<string,string> = {
+  OWNER_POLICY_REVIEW_REQUIRED:'요청 식별자로 변경·삭제 · 객체 소유권 정책의 추가 확인 필요',
+  REQUEST_KEYED_WRITE_OWNER_POLICY_REVIEW_REQUIRED:'요청 ID로 조회한 소유자 필드가 있는 객체의 변경 · 외부 권한 정책 확인 필요',
   UNKNOWN:'확인하지 못함', DECLARED_LOGIN_REQUIRED:'로그인 요구 선언 확인', DECLARED_STAFF_REQUIRED:'직원·관리자 역할 요구 선언 확인',
   DECLARED_PUBLIC:'공개 접근 선언 확인', NOT_ESTABLISHED:'객체별 접근 권한을 판단하지 못함',
   PROTECTION_EVIDENCE_NOT_FULL_ASSURANCE:'조회 범위 또는 차단 근거 있음 · 전체 권한 보증은 아님', RISK_LOGIC_CANDIDATE:'비교·차단 방향의 추가 검토 후보',

@@ -48,7 +48,7 @@ test('Next declarations, invocation uncertainty and client bundle scope are sepa
   data.files[0].limitations.push('NEXT_SERVER_FUNCTION_INVOCATION_NOT_VERIFIED','NEXT_PAGES_API_NOT_SUPPORTED');
   data.authorizationContexts[0].entry.kind='NEXT_SERVER_FUNCTION';
   const html=render(data);
-  for(const phrase of ['Next.js 요청 함수 0곳','서버 함수 선언 1곳','실제 호출·인증·데이터 접근권한의 증명이 아닙니다',
+  for(const phrase of ['Next.js App Router 요청 함수 0곳','서버 함수 선언 1곳','실제 호출·인증·데이터 접근권한의 증명이 아닙니다',
     '실제 클라이언트 번들은 검사하지 않았습니다','Pages Router API 요청 흐름은 이번 분석 범위 밖'])assert.ok(html.includes(phrase),phrase);
 });
 test('entry stages distinguish static registration and declared Passport callbacks from security proof',()=>{
@@ -133,7 +133,7 @@ test('Express evidence keeps unknown database receivers and resource authorizati
   data.findings[0].source.kind='EXPRESS_BODY';data.findings[0].message='코드 실행 검토';
   data.nodeUses=[{ruleId:'JS_MONGO_WHERE_INPUT_FLOW',kind:'RECEIVER_NOT_VERIFIED',operation:'find',location:data.findings[0].sink,trace:[],limitations:['MONGODB_RECEIVER_OR_OBJECT_FLOW_UNRESOLVED']}];
   const html=render(data);
-  for(const text of ['입력값을 코드로 실행하는지','요청 본문','Express 코드 실행·데이터 접근 근거 (1)','객체 출처 또는 값 전달을 확인하지 못함','소유권 검증의 증명이 아니며'])assert.ok(html.includes(text),text);
+  for(const text of ['입력값을 코드로 실행하는지','요청 본문','서버 진입점·코드 실행·HTML 응답 근거 (1)','객체 출처 또는 값 전달을 확인하지 못함','소유권 검증의 증명이 아니며'])assert.ok(html.includes(text),text);
   assert.ok(!html.includes('요청 값이 데이터베이스 쿼리에 들어갑니다'));
 });
 test('constructor effect proof and cursor creation are not execution or whole-function safety',()=>{
@@ -141,4 +141,13 @@ test('constructor effect proof and cursor creation are not execution or whole-fu
   data.nodeUses=['CONSTRUCTOR_SUMMARY_MUST','CONSTRUCTOR_SUMMARY_UNKNOWN','CURSOR_CREATED_EXECUTION_NOT_OBSERVED'].map(kind=>({ruleId:'JS_CONSTRUCTOR_EFFECT',kind,operation:'STATIC_ONLY',location:data.findings[0].sink,trace:[],limitations:[]}));
   const html=render(data);
   for(const phrase of ['제한된 생성자의 필드 전달·읽기 효과 확인','생성자 효과를 확인하지 못함','커서 구성 단계 · 이 근거만으로 실행은 미확인'])assert.ok(html.includes(phrase),phrase);
+});
+test('v53 Pages and HTML observations preserve evidence without adding a confirmed Finding or automatic patch',()=>{
+ const data=fixture();data.analyzerVersion='ts-server-v53';data.findings=[];data.validatedFindings=[];
+ const place={filePath:'pages/api/welcome.ts',line:4,column:2,functionName:'welcome',kind:'HTTP_HTML_RESPONSE'};
+ data.authorizationContexts=[{entry:{...place,kind:'NEXT_PAGES_HANDLER'},conclusion:'NOT_VERIFIED',checks:[],defenses:[],resources:[],limitations:[]}];
+ data.files[0].limitations.push('NEXT_PAGES_CONFIG_AND_MIDDLEWARE_NOT_VERIFIED');
+ data.nodeUses=[{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'HTML_RESPONSE_INPUT_CANDIDATE',operation:'send',location:place,trace:[{...place,line:3,kind:'NEXT_PAGES_QUERY'}],limitations:['REVIEW_REQUIRED_NOT_CONFIRMED_XSS']}];
+ const html=render(data);for(const text of ['Pages API 요청 함수 1곳','요청 입력 → HTML 응답 연결','Pages API query 요청값','pages/api/welcome.ts:4'])assert.ok(html.includes(text),text);
+ assert.ok(!html.includes('자동 수정안 만들기'));assert.ok(!html.includes('안전 확인 완료'));
 });

@@ -337,6 +337,14 @@ export function nodeServer(api) {
       if(method==='use') {
         rate.use(receiver,args,node,state);
         web.use(receiver,args,node,state);
+        // A literal, summarized next-only use has no response/request mutation.
+        // It is not authentication evidence and cannot protect a different path.
+        const useOffset=literal(args[0])&&typeof args[0].constant==='string'?1:0;
+        const useCallbacks=args.slice(useOffset),usePlans=useCallbacks.map(v=>controls.summarize(v));
+        if(useCallbacks.length&&usePlans.every(p=>p&&p.every(s=>s.kind==='NEXT'&&!s.response))){
+          append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'MIDDLEWARE_FORWARD_ONLY',operation:'EXPRESS_USE_NEXT_ONLY',location:loc(node,state.mod,'EXPRESS_MIDDLEWARE_REGISTRATION',state.fn),trace:[],limitations:['NO_AUTHENTICATION_OR_AUTHORIZATION_PROOF','OTHER_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED']},state.mod);
+          return {value:receiver};
+        }
         const mounted=args.at(-1);
         const pathOffset=literal(args[0])&&typeof args[0].constant==='string'?1:0;
         const prefixes=args.slice(pathOffset,-1);
@@ -414,8 +422,10 @@ export function nodeServer(api) {
       for(const [key,v]of state.vars)if(!['express-request','express-response'].includes(v.tag))state.vars.set(key,{...v,unknown:true,constant:undefined});
       return {value:unknown()};
     }
-    if(['express-response','pages-response'].includes(receiver?.tag)&&['send','json','render','redirect','status','end'].includes(method)) {
-      if(['send','json','end'].includes(method)&&args.length){
+    if(['express-response','pages-response'].includes(receiver?.tag)&&['send','json','render','redirect','status','end','write','type','set','header','setHeader'].includes(method)) {
+      if(['type','set','header','setHeader'].includes(method))return {value:api.html.header(receiver,args,method,state)};
+      if(['send','write','end','render'].includes(method)&&args.length)api.html.observe(method==='render'?union(...args):args[0],node,state,receiver.htmlResponseType,method);
+      if(['send','json','end','write'].includes(method)&&args.length){
         if(args.length===1&&!receiver.unknown&&!receiver.ref?.unknown){web.response(args[0],node,state);rate.response(node,state);}
         if(args.length!==1)note(state.mod,'EXPRESS_RESPONSE_ARGUMENT_CONTRACT_UNKNOWN');
         api.observeExpressResponse(args.length===1?args[0]:union(...args),node,state,

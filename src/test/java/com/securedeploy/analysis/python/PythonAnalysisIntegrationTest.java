@@ -41,7 +41,7 @@ class PythonAnalysisIntegrationTest {
     @Test void stringFormatSelectionPersistsAcrossCommonInputsWithoutRiskPromotion() throws Exception {
         String code=PythonServerAnalyzerTest.UNSAFE.replace("'SELECT * FROM demo WHERE id=' + value", "'SELECT {0}'.format('1', value)");
         String token=signup();var safe=upload(token,code);
-        assertThat(safe.at("/serverAnalysis/pythonAnalysis/analyzerVersion").asText()).isEqualTo("py-django-v8");
+        assertThat(safe.at("/serverAnalysis/pythonAnalysis/analyzerVersion").asText()).isEqualTo("py-django-v9");
         assertThat(safe.at("/serverAnalysis/pythonAnalysis/findings")).isEmpty();
         assertThat(safe.at("/serverAnalysis/pythonAnalysis/sqlUses/0/kind").asText()).isEqualTo("STATIC_QUERY");
         var risk=upload(token,code.replace("{0}","{1}"));

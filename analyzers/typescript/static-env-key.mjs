@@ -1,5 +1,5 @@
 // Closed string-only AST evaluation. No target functions, eval, module execution or environment reads.
-export function staticEnvKey({ts,tick,note}) {
+export function staticEnvKey({ts,tick,note,modules}) {
  return function evaluate(root,state) {
   let budget=96;const seen=new Set(),mod=state.mod;
   const charge=()=>{tick(mod);if(--budget<0)throw Error('KEY_BUDGET');};
@@ -20,7 +20,7 @@ export function staticEnvKey({ts,tick,note}) {
     seen.add(d);try{return read(d.initializer,depth+1,array);}finally{seen.delete(d);}
    }
    if(ts.isCallExpression(node)&&ts.isPropertyAccessExpression(node.expression)&&node.expression.name.text==='join'&&node.arguments.length<=1){
-    if(mod.syntaxIndex.bindings.has('Array')||mod.syntaxIndex.writes.has('Array'))throw Error('KEY_INTRINSIC');
+    if([...modules.values()].some(m=>{charge();return m.syntaxIndex?.arrayIntrinsicReferenced;})||mod.syntaxIndex.bindings.has('Array')||mod.syntaxIndex.writes.has('Array'))throw Error('KEY_INTRINSIC');
     const elements=read(node.expression.expression,depth+1,true),separator=node.arguments.length?read(node.arguments[0],depth+1):',';
     if(!Array.isArray(elements))throw Error('KEY_JOIN');return bounded(elements.join(separator));
    }

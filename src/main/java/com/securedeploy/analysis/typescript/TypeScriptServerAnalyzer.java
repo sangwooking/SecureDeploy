@@ -236,7 +236,7 @@ public class TypeScriptServerAnalyzer {
             locations.addAll(e.clientTrace());locations.addAll(e.policyLocations());locations.addAll(e.filterLocations());
             if(e.enclosingFunction()!=null)locations.add(e.enclosingFunction());
             if(e.requestEntry()!=null){
-                if(!Set.of("NEXT_ROUTE_HANDLER","NEXT_SERVER_FUNCTION").contains(e.requestEntry().kind()))throw new IllegalArgumentException("INVALID_REQUEST_CONTEXT");
+                if(!Set.of("NEXT_ROUTE_HANDLER","NEXT_PAGES_HANDLER","NEXT_SERVER_FUNCTION").contains(e.requestEntry().kind()))throw new IllegalArgumentException("INVALID_REQUEST_CONTEXT");
                 locations.add(e.requestEntry());
             }
             e.authChecks().forEach(c->{

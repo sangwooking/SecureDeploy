@@ -384,6 +384,8 @@ class AuthorizationEvidence:
         if operation == "OBJECT_PERMISSION_CALL":
             conclusion = "OBJECT_CHECK_CALLED_POLICY_UNKNOWN"
         constrained = bool(kinds & {"USER_FOREIGN_KEY_QUERY_SCOPE", "OWNER_REJECTION_GUARD", "ROLE_REJECTION_GUARD"}) or self.active["authenticationStatus"] == "DECLARED_STAFF_REQUIRED"
+        if operation in {"WRITE", "DELETE"} and resource["fields"] and resource["identifiers"] and not unresolved and not constrained:
+            conclusion = "REQUEST_KEYED_WRITE_OWNER_POLICY_REVIEW_REQUIRED"
         if inverse and operation in {"WRITE", "DELETE"} and resource["identifiers"] and not unresolved and not constrained:
             conclusion = "INVERTED_OWNER_REJECTION_CANDIDATE"
         if unresolved:
@@ -404,4 +406,4 @@ class AuthorizationEvidence:
         if not self.active:
             return
         conclusions = {r["conclusion"] for r in self.active["accesses"]}
-        self.active["objectAuthorizationStatus"] = "RISK_LOGIC_CANDIDATE" if "INVERTED_OWNER_REJECTION_CANDIDATE" in conclusions else "PROTECTION_EVIDENCE_NOT_FULL_ASSURANCE" if conclusions & {"USER_SCOPE_QUERY_EVIDENCE", "OWNER_GUARD_EVIDENCE", "ROLE_GUARD_EVIDENCE"} else "NOT_ESTABLISHED" if conclusions else "NO_RESOURCE_ACCESS_TRACED"
+        self.active["objectAuthorizationStatus"] = "RISK_LOGIC_CANDIDATE" if "INVERTED_OWNER_REJECTION_CANDIDATE" in conclusions else "PROTECTION_EVIDENCE_NOT_FULL_ASSURANCE" if conclusions & {"USER_SCOPE_QUERY_EVIDENCE", "OWNER_GUARD_EVIDENCE", "ROLE_GUARD_EVIDENCE"} else "OWNER_POLICY_REVIEW_REQUIRED" if "REQUEST_KEYED_WRITE_OWNER_POLICY_REVIEW_REQUIRED" in conclusions else "NOT_ESTABLISHED" if conclusions else "NO_RESOURCE_ACCESS_TRACED"

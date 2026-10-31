@@ -125,7 +125,7 @@ export function nextEntries({ts, modules, input, tick, note,wrapper,externalHand
           note(mod,'NEXT_AUTHENTICATION_IS_NOT_RESOURCE_AUTHORIZATION');
         }
       }
-      if(mod.ast.statements.some(s=>ts.isExportDeclaration(s)&&!s.isTypeOnly&&(!s.exportClause||!ts.isNamedExports(s.exportClause)||s.exportClause.elements.some(e=>!e.isTypeOnly&&!linkedMethods.has(e.name.text)))))note(mod,'NEXT_REEXPORT_REGISTRATION_NOT_SUPPORTED');
+      if(mod.ast.statements.some(s=>ts.isExportDeclaration(s)&&!s.isTypeOnly&&(!s.exportClause||!ts.isNamedExports(s.exportClause)||s.exportClause.elements.some(e=>!e.isTypeOnly&&!linkedMethods.has(e.name.text)&&!(pages&&e.name.text==='default'&&mod.entries.some(x=>x.kind==='NEXT_PAGES_HANDLER'))))))note(mod,'NEXT_REEXPORT_REGISTRATION_NOT_SUPPORTED');
       mod.record.entrypoints=mod.entries.length+opaque;
     } catch {note(mod,'NEXT_REGISTRATION_BUDGET_EXCEEDED');}
   }

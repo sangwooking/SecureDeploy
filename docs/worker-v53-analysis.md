@@ -42,3 +42,32 @@ code-review/owner-policy oracles, not real-project accuracy. The seven missing r
 - [Express middleware order and control](https://expressjs.com/en/guide/using-middleware/)
 - [Express 4 API](https://expressjs.com/en/4x/api/)
 - [DRF object permissions and explicit object checks](https://www.django-rest-framework.org/api-guide/permissions/#object-level-permissions)
+
+## Review evidence boundaries
+
+HTML response observations reuse JS_SERVER_ENTRY_CONTEXT; they are not a new XSS Rule.
+Known string construction passed to Express send (its default string response is HTML), explicit
+HTML Content-Type on send/write/end, and explicit HTML headers on new Response preserve request
+source and output locations. Plain-text/JSON responses and constants have no HTML input candidate.
+Unknown values/sanitizers, render templates and conditional output context remain unresolved.
+Output encoding is **not** certified: a function named escape/sanitize, or a partial replace chain,
+is not proof of encoding for attributes, scripts, URLs or a template engine. These observations do
+not add Risk/Score and do not satisfy the frozen HTTP_HTML_INPUT_FLOW Finding oracle.
+
+Python v9 retains authentication separate from object policy. Known user-FK models changed using
+request-derived identifiers without local owner/role evidence get an owner-policy review status.
+An unknown helper/custom manager/partial path stays unresolved. Scoped queries/owner rejection
+remain protection evidence, never a whole-policy safety assertion. No missing-guard IDOR Rule is
+added. The frozen owner-policy oracle remains FN; external policy/RLS is not disproved by silence.
+
+Live worker version validation requires matching candidate Backend (TS53/Python9). Saved older
+Review/Snapshot JSON is still hydrated without rewriting or re-analysis. Pages evidence is not
+coerced into the Express deterministic automatic-patch contract.
+
+## PostgreSQL regression isolation
+
+Only test endpoint allowlists were extended with exact `127.0.0.1:58450/v53_fixture`.
+Ledger concurrency/restart/uncertain settlement and restricted metadata-role behavior retain their
+original assertions. Production port 5432, arbitrary hosts and arbitrary database names remain
+excluded. Runtime preview uses separate v53_trial; the five destructive conditional tests use only
+v53_fixture. No operating schema, key or account is touched.

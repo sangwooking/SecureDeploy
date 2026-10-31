@@ -3,6 +3,7 @@ export function syntaxIndex() {
   return {declarations:new Map(),bindings:new Set(),nextInlineServerClosure:false,writes:new Set(),exportWrites:new Set(),nodes:[],typeOnly:new Set(),dependencies:[],argumentUses:new Map(),argumentReferenceIncomplete:new Set(),aliases:new Map()};
 }
 export function indexSyntax(ts,n,index) {
+  if(ts.isIdentifier(n)&&n.text==='Array')index.arrayIntrinsicReferenced=true;
   // Same facts as the Next registration walk, charged once by bounded parsing.
   if(ts.isFunctionLike(n)&&n.body&&ts.isBlock(n.body)&&!ts.isSourceFile(n.parent)&&!ts.isVariableDeclaration(n.parent)){
     for(const s of n.body.statements){

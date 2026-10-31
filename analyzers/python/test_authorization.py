@@ -31,7 +31,7 @@ class AuthorizationTests(unittest.TestCase):
     def test_login_does_not_prove_object_permission(self):
         result=run("obj=Record.objects.get(pk=request.GET['key'])\nobj.delete()")
         self.assertEqual(detail(result)['authenticationStatus'],'DECLARED_LOGIN_REQUIRED')
-        self.assertEqual(detail(result)['objectAuthorizationStatus'],'NOT_ESTABLISHED')
+        self.assertEqual(detail(result)['objectAuthorizationStatus'],'OWNER_POLICY_REVIEW_REQUIRED')
         self.assertFalse(auth_findings(result))
 
     def test_public_api_and_missing_checks_never_generate_idor(self):
@@ -47,7 +47,7 @@ class AuthorizationTests(unittest.TestCase):
         result=run("obj=Record.objects.get(holder_id=request.user.pk,pk=request.GET['key'])\nobj.save()")
         self.assertEqual(detail(result)['accesses'][-1]['conclusion'],'USER_SCOPE_QUERY_EVIDENCE')
         result=run("obj=Record.objects.get(holder=request.GET['user'])\nobj.delete()")
-        self.assertEqual(detail(result)['accesses'][-1]['conclusion'],'OBJECT_AUTHORIZATION_NOT_ESTABLISHED')
+        self.assertEqual(detail(result)['accesses'][-1]['conclusion'],'REQUEST_KEYED_WRITE_OWNER_POLICY_REVIEW_REQUIRED')
 
     def test_correct_owner_rejection_is_evidence_not_a_vulnerability(self):
         for op in ('!=','=='):
@@ -85,7 +85,7 @@ class AuthorizationTests(unittest.TestCase):
 
     def test_login_guard_is_not_object_authorization_and_role_before_lookup_is_preserved(self):
         result=run("if not request.user.is_authenticated:\n raise PermissionDenied()\nobj=Record.objects.get(pk=request.GET['key'])\nobj.delete()",'AllowAny')
-        self.assertEqual(detail(result)['accesses'][-1]['conclusion'],'OBJECT_AUTHORIZATION_NOT_ESTABLISHED')
+        self.assertEqual(detail(result)['accesses'][-1]['conclusion'],'REQUEST_KEYED_WRITE_OWNER_POLICY_REVIEW_REQUIRED')
         result=run("if not request.user.is_staff:\n raise PermissionDenied()\nobj=Record.objects.get(pk=request.GET['key'])\nobj.delete()")
         self.assertEqual(detail(result)['accesses'][-1]['conclusion'],'ROLE_GUARD_EVIDENCE')
 

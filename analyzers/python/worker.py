@@ -33,7 +33,7 @@ _service_module = importlib.util.module_from_spec(_service_spec)
 _service_spec.loader.exec_module(_service_module)
 ServiceEvidence = _service_module.ServiceEvidence
 
-VERSION = "py-django-v8"
+VERSION = "py-django-v9"
 MAX_NODES = 60000
 MAX_STEPS = 30000
 MAX_DEPTH = 5

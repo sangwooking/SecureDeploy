@@ -1,6 +1,7 @@
 import ts from 'typescript';
 import {pipelineAudit} from './pipeline-audit.mjs';
 import path from 'node:path';
+import {htmlResponses} from './html-response.mjs';
 import {staticEnvKey} from './static-env-key.mjs';
 import { destinationOf, joinDestinations, concatenatedDestination, constructedUrl, unresolvedDestination } from './destination.mjs';
 import { credentialShape, sources as exposureSources, uncertain as exposureUncertain, trails as exposureTrails } from './exposure.mjs';
@@ -39,7 +40,7 @@ function addition(left, right) {
   }
   const combined = union(left, right);
   const { constant: ignored, ...withoutConstant } = combined;
-  return { ...withoutConstant, responseLocations:undefined, environmentResponses:undefined,
+  return { ...withoutConstant, htmlString:typeof left.constant==='string'||typeof right.constant==='string'||left.htmlString===true||right.htmlString===true, responseLocations:undefined, environmentResponses:undefined,
     fixedShellCommandPrefix:hasConstant(left)&&typeof left.constant==='string'&&/^[A-Za-z][A-Za-z0-9_./-]* +$/.test(left.constant)&&right.shellRestricted,
     ...concatenatedDestination(left, right) };
 }
@@ -259,6 +260,7 @@ export function analyze(input, overrides = {}) {
         recommendation:'표시된 응답 생성·반환 위치에서 서버 비밀값을 담는 필드를 제거하고 status 등 정상 응답 필드는 유지하세요. 비밀값은 서버의 필요한 작업에서만 사용하고 NEXT_PUBLIC_·VITE_ 변수로 옮기지 마세요. 공개 Supabase anon·publishable 키나 프로젝트 URL 자체를 숨기는 것은 해결책이 아닙니다. 실제 사용 중인 비밀키가 이미 노출됐다면 코드 수정과 별도로 폐기·교체 및 접근 기록을 검토하세요. 자동 교체·배포를 수행한 것은 아닙니다. 로컬의 같은 요청에서 가짜 canary 값이 응답·로그에 없는지, 정상 응답이 유지되는지 확인한 뒤 재검사하세요.'}, state.mod);
     }
   }
+  const html=htmlResponses({loc,append,result,note});
   function observeExpressResponse(v,node,state,unresolved=false) {
     if(state.context.setup)return;
     const body=responseBody(v),location=loc(node,state.mod,state.context.entry?.kind==='NEXT_PAGES_HANDLER'?'NEXT_PAGES_HTTP_RESPONSE':'EXPRESS_HTTP_RESPONSE',state.fn);
@@ -820,6 +822,7 @@ export function analyze(input, overrides = {}) {
         &&mod.nextResponses?.has(callee.expression.text)&&!state.vars.has(callee.expression.text)&&callee.name.text==='json';
       if (global && callee.text === 'Response' && ts.isNewExpression(node) || globalObject('Response') && callee.name.text === 'json' || nextResponse) {
         const body=responseBody(args[0]), location=loc(node,mod,'HTTP_RESPONSE',fn);
+        if(ts.isNewExpression(node))html.response(args[0],args[1],node,state);
         if(ts.isNewExpression(node) && args[0]?.ref)body.unresolved=true;
         return { tag:'exposureResponse', trace:[], exposures:body.origins, exposureTrail:body.trail,
           unknown:body.unresolved || state.uncertain || state.exposureUncertain, responseLocations:[location],
@@ -1257,7 +1260,7 @@ export function analyze(input, overrides = {}) {
     }
     root.normalPaths.push(state.context.constructorBranches??[]);
   }
-  const evaluateEnvironmentKey=staticEnvKey({ts,tick,note});
+  const evaluateEnvironmentKey=staticEnvKey({ts,tick,note,modules});
   function serverEnvironmentValue(node,state) {
     const {mod,fn}=state;
     const index=mod.syntaxIndex;
@@ -1388,7 +1391,7 @@ export function analyze(input, overrides = {}) {
     if(!mod)continue;
     try {
       tick(mod);
-      const entries=mod.entries.filter(e=>['NEXT_ROUTE_HANDLER','NEXT_SERVER_FUNCTION'].includes(e.kind)&&(()=>{
+      const entries=mod.entries.filter(e=>['NEXT_ROUTE_HANDLER','NEXT_PAGES_HANDLER','NEXT_SERVER_FUNCTION'].includes(e.kind)&&(()=>{
         const p=loc(e.fn.node,mod,e.kind,e.fn);return p.line===at.line&&p.column===at.column;
       })());
       if(entries.length!==1)continue;
@@ -1403,7 +1406,7 @@ export function analyze(input, overrides = {}) {
   entryContracts({ts,modules,tick,note,loc,append,result});
   asyncSupport=asyncBoundaries({ts,modules,tick,note,unknown,constant,loc,append,result,fork,rejection:(state,node)=>exceptionSupport.rejection(state,node)});
   exceptionSupport=asyncExceptions({ts,tick,note,unknown,constant,fork,statement,mergeVars,evidence:asyncSupport.evidence});
-  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody,invalidateNodeReference,routeAudit,audit});
+  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody,invalidateNodeReference,routeAudit,audit,html});
   nodeSupport.discover();
   phase='FLOW';
   for (const mod of modules.values()) for (const entry of mod.entries) {
