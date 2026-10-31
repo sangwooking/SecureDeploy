@@ -173,7 +173,7 @@ class ZipUploadSafetyTest {
         assertEmptyUploads();
     }
 
-    @Test void unixSymlinkAttributesAreNotRestored() throws Exception {
+    @Test void unixSymlinkAttributesAreRejected() throws Exception {
         var saved = archive(Map.of("link", "../../outside"));
         byte[] bytes = Files.readAllBytes(saved.archivePath());
         var binary = java.nio.ByteBuffer.wrap(bytes).order(java.nio.ByteOrder.LITTLE_ENDIAN);
@@ -185,10 +185,8 @@ class ZipUploadSafetyTest {
             }
         }
         Files.write(saved.archivePath(), bytes);
-        var result = extract.extract(saved);
-        Path link = result.projectRoot().resolve("link");
-        assertThat(Files.isSymbolicLink(link)).isFalse();
-        assertThat(Files.readString(link)).isEqualTo("../../outside");
+        assertThatThrownBy(() -> extract.extract(saved)).isInstanceOf(SecureDeployException.class);
+        assertThat(saved.workspacePath()).doesNotExist();
     }
 
     @Test void implicitDirectoryCountIsBounded() throws Exception {
@@ -252,4 +250,20 @@ class ZipUploadSafetyTest {
     private void assertEmptyUploads() throws IOException {
         try (var paths = Files.list(Path.of(storage.getTempDir()))) { assertThat(paths.toList()).isEmpty(); }
     }
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource(value={"src/a.js|SRC/A.js","src/a.js|./src/a.js","café/a.js|café/a.js"},delimiter='|')
+    void canonicalCaseAndUnicodeCollisionsAreRejected(String first,String second)throws Exception {
+        var saved=archive(Map.of(first,"one",second,"two"));assertThatThrownBy(()->extract.extract(saved)).isInstanceOf(SecureDeployException.class);assertThat(saved.workspacePath()).doesNotExist();
+    }
+    @Test void understatedCentralCountAndExactDuplicateNamesAreRejectedBeforeMaterialization()throws Exception {
+        var saved=archive(Map.of("a.js","one","b.js","two"));byte[] bytes=Files.readAllBytes(saved.archivePath());int end=bytes.length-22;bytes[end+8]=1;bytes[end+10]=1;Files.write(saved.archivePath(),bytes);assertThatThrownBy(()->extract.extract(saved)).isInstanceOf(SecureDeployException.class);
+        var data=new ByteArrayOutputStream();try(var zip=new org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream(data)){for(int n=0;n<2;n++){zip.putArchiveEntry(new org.apache.commons.compress.archivers.zip.ZipArchiveEntry("same.js"));zip.write("one".getBytes());zip.closeArchiveEntry();}}
+        var duplicate=upload.saveZip(new MockMultipartFile("file","duplicate.zip","application/zip",data.toByteArray()));assertThatThrownBy(()->extract.extract(duplicate)).isInstanceOf(SecureDeployException.class);assertThat(duplicate.workspacePath()).doesNotExist();
+    }
+    @Test void nestedArchivesAreOpaqueBytesAndNeverRecursivelyExtracted()throws Exception {
+        var inner=new ByteArrayOutputStream();try(var zip=new ZipOutputStream(inner)){zip.putNextEntry(new ZipEntry("hidden.js"));zip.write("synthetic".getBytes());zip.closeEntry();}
+        var outer=new ByteArrayOutputStream();try(var zip=new ZipOutputStream(outer)){zip.putNextEntry(new ZipEntry("nested.zip"));zip.write(inner.toByteArray());zip.closeEntry();}
+        var saved=upload.saveZip(new MockMultipartFile("file","nested.zip","application/zip",outer.toByteArray()));var result=extract.extract(saved);assertThat(Files.readAllBytes(result.projectRoot().resolve("nested.zip"))).isEqualTo(inner.toByteArray());assertThat(result.projectRoot().resolve("hidden.js")).doesNotExist();
+    }
+
 }

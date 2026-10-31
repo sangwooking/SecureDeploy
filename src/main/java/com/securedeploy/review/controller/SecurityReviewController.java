@@ -60,6 +60,6 @@ public class SecurityReviewController {
 
     @PostMapping(value = "/github", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SecurityReviewResponse> reviewGitHubRepository(@Valid @RequestBody GithubRepositoryReviewRequest request) {
-        return ResponseEntity.ok(securityReviewFacade.reviewGitHubRepository(request.repositoryUrl(), request.scanMode()));
+        return ResponseEntity.ok(request.commitSha()==null?securityReviewFacade.reviewGitHubRepository(request.repositoryUrl(),request.scanMode()):securityReviewFacade.reviewGitHubRepository(request.repositoryUrl(), request.scanMode(),request.commitSha()));
     }
 }

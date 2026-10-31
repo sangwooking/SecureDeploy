@@ -19,6 +19,12 @@ final class SourceArchive {
 
     static List<Entry> read(InputStream input) throws IOException {
         byte[] archive = bounded(input, MAX_BYTES);
+        try {return readBytes(archive);}finally{Arrays.fill(archive,(byte)0);}
+    }
+    private static List<Entry> readBytes(byte[] archive)throws IOException {
+        try{com.securedeploy.upload.service.ZipDirectory.validate(archive,MAX_FILES);}
+        catch(com.securedeploy.upload.service.ZipDirectory.TooManyEntries tooMany){throw limit();}
+        catch(IOException invalidDirectory){throw invalid();}
         // Reject ZIP64/multi-disk and excessive central-directory counts before parser allocation.
         int end = -1;
         for (int i = archive.length - 22; i >= Math.max(0, archive.length - 65557); i--) {

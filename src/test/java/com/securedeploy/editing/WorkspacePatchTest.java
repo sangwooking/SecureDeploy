@@ -45,7 +45,7 @@ class WorkspacePatchTest {
         when(review.getSourceMetadata()).thenReturn(new GitHubSourceSnapshot("fixture","patch","https://github.com/fixture/patch","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()));
         when(review.getVulnerabilities()).thenReturn(List.of(finding));
         when(finding.getId()).thenReturn(77L);when(finding.getRuleId()).thenReturn("DEBUG_ENABLED");when(finding.getLine()).thenReturn(1);when(finding.getFilePath()).thenReturn("application.properties");
-        when(sources.github(anyLong(),any())).thenAnswer(i->List.of(new SourceArchive.Entry("application.properties",input.getBytes(StandardCharsets.UTF_8),false,0100644)));
+        when(sources.github(anyLong(),any())).thenAnswer(i->SourceFixtureEvidence.mark(review,List.of(new SourceArchive.Entry("application.properties",input.getBytes(StandardCharsets.UTF_8),false,0100644))));
         var clock=new Clock(){public ZoneId getZone(){return ZoneOffset.UTC;}public Clock withZone(ZoneId zone){return this;}public Instant instant(){return now.get();}};
         workspaces=new EditingWorkspaceService(reviews,users,sources,clock);
         properties.setProvider(AiProviderType.OPENAI);properties.getOpenai().setModel("mock-fixture-no-external");
@@ -76,7 +76,7 @@ class WorkspacePatchTest {
         var analysis=new com.securedeploy.analysis.typescript.TypeScriptServerAnalyzer(new com.securedeploy.analysis.typescript.TypeScriptAnalysisProperties())
                 .analyze(new com.securedeploy.project.model.ProjectStructure(java.nio.file.Path.of("/no-execution"),List.of(new com.securedeploy.project.model.ProjectFile(java.nio.file.Path.of(path),path,com.securedeploy.project.model.ProjectFileType.TYPESCRIPT,input.lines().toList()))));
         when(review.getServerAnalysis()).thenReturn(analysis);
-        doAnswer(i->List.of(new SourceArchive.Entry(path,input.getBytes(StandardCharsets.UTF_8),false,0100644))).when(sources).github(anyLong(),any());
+        doAnswer(i->SourceFixtureEvidence.mark(review,List.of(new SourceArchive.Entry(path,input.getBytes(StandardCharsets.UTF_8),false,0100644)))).when(sources).github(anyLong(),any());
         workspace=workspaces.create(4,null);file=workspace.files().get(0);
     }
     WorkspacePatch.Prepare denoRequest(){var content=workspaces.content(workspace.id(),file.id());return new WorkspacePatch.Prepare(file.id(),0,workspace.revision(),file.originalHash(),content.currentHash(),review.getServerAnalysis().validatedFindings().get(0).findingId());}
@@ -153,7 +153,7 @@ class WorkspacePatchTest {
     }
     @Test void generatedBatchPreflightsBothFilesAndAppliesExactlyOneRevision() throws Exception {
         workspaces.delete(workspace.id());
-        doAnswer(i->List.of(new SourceArchive.Entry("package.json","{}\n".getBytes(StandardCharsets.UTF_8),false,0100644),new SourceArchive.Entry("package-lock.json","{}\n".getBytes(StandardCharsets.UTF_8),false,0100644))).when(sources).github(anyLong(),any());
+        doAnswer(i->SourceFixtureEvidence.mark(review,List.of(new SourceArchive.Entry("package.json","{}\n".getBytes(StandardCharsets.UTF_8),false,0100644),new SourceArchive.Entry("package-lock.json","{}\n".getBytes(StandardCharsets.UTF_8),false,0100644)))).when(sources).github(anyLong(),any());
         workspace=workspaces.create(4,null);String hash;
         try(var capture=workspaces.captureScan(workspace.id(),1)){hash=capture.provenance().inputHash();}
         var invalid=Map.of("package.json","{\"changed\":true}\n".getBytes(StandardCharsets.UTF_8),"package-lock.json",new byte[]{0,-1});
@@ -221,7 +221,7 @@ class WorkspacePatchTest {
     }
     @Test void expiredDeletedAndUnverifiedZipWorkspacesCannotUseProposals()throws Exception{
         var p=prepare();now.set(now.get().plusSeconds(1800));assertThrows(RuntimeException.class,()->workspaces.patch(workspace.id(),p.id()));
-        when(review.getSourceType()).thenReturn(ReviewSourceType.ZIP);
+        when(review.getSourceType()).thenReturn(ReviewSourceType.ZIP);when(review.getComparisonContext()).thenReturn(null);
         var archive=SourceArchive.zip(List.of(new SourceArchive.Entry("application.properties","debug=true".getBytes(),false,0100644)));
         workspace=workspaces.create(4,new org.springframework.mock.web.MockMultipartFile("file","original.zip","application/zip",archive));file=workspace.files().get(0);
         assertThrows(RuntimeException.class,this::prepare);

@@ -78,8 +78,9 @@ final class PublicGitHubConnection implements HttpConnection {
         }
     }
     static void validateResponse(int status, CloneBudget budget) {
-        if (status == 401 || status == 403 || status == 404) throw budget.fail(HttpStatus.BAD_REQUEST,
-                "저장소를 찾을 수 없거나 접근할 수 없습니다. 현재는 공개 GitHub 저장소만 지원합니다.");
+        if(status==401)throw budget.fail(HttpStatus.BAD_GATEWAY,"GitHub 원본 인증에 실패했습니다. 연결 권한을 확인해 주세요.");
+        if(status==403)throw budget.fail(HttpStatus.FORBIDDEN,"GitHub 원본 접근이 거부되었습니다. 읽기 권한 또는 요청 제한을 확인해 주세요.");
+        if(status==404)throw budget.fail(HttpStatus.NOT_FOUND,"원본 저장소 또는 Commit을 찾을 수 없거나 읽기 권한이 없습니다. 공개 GitHub 저장소만 익명으로 읽을 수 있습니다.");
         if (status >= 300 && status < 400) throw budget.fail(HttpStatus.BAD_REQUEST,
                 "저장소 주소가 변경되었거나 redirect가 필요합니다. GitHub의 최종 공개 저장소 URL을 입력해 주세요.");
         if (status != 200) throw budget.fail(HttpStatus.BAD_GATEWAY,

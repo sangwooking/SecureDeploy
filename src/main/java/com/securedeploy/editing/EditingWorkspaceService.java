@@ -24,7 +24,7 @@ public class EditingWorkspaceService {
     public record FileInfo(String id, String path, String originalHash, int size, boolean directory,
                            boolean editable, String readOnlyReason, boolean changed,String changeOrigin,List<ChangeAttribution> provenance) { }
     public record Workspace(String id, long reviewId, long revision, Instant createdAt, Instant expiresAt, String sourceRevision,
-                            String identityStatus, List<FileInfo> files, List<String> changedFileIds,List<ExportApproval> exports,String storageMode) { }
+                            String identityStatus, List<FileInfo> files, List<String> changedFileIds,List<ExportApproval> exports,String storageMode,SourceVerification sourceVerification) { }
     public record ExportApproval(long revision,String format,long userId,Instant at,String provenanceHash) { }
     public record Content(String fileId, long revision, String originalHash, String currentHash, String text, String newline, boolean bom) { }
     public record Change(long revision, String originalHash, String text) { }
@@ -50,7 +50,7 @@ public class EditingWorkspaceService {
         final long project;
         final ProjectLifecycleGuard.Lease lease;
         final Instant created, expires;
-        final String source, identity;
+        final String source, identity;String archiveHash=null;
         final List<StoredFile> files;
         final Map<String,WorkspacePatch.Session> patches = new LinkedHashMap<>();
         final List<ExportApproval> exports=new ArrayList<>();
@@ -139,10 +139,18 @@ public class EditingWorkspaceService {
         try {
             lease = lifecycle.work(review.getProject().getId());
             reviews.findAccessibleReviewWithVulnerabilities(reviewId, "분석 결과에 접근할 수 없습니다.");
-            String source, identity;
+            String source, identity;String archiveHash=null;
             if (review.getSourceType() == ReviewSourceType.ZIP) {
                 if (zip == null || zip.isEmpty() || zip.getSize() > SourceArchive.MAX_BYTES) throw SourceArchive.invalid();
-                try (var input = zip.getInputStream()) { entries = SourceArchive.read(input); }
+                byte[] archive;
+                try(var input=zip.getInputStream()){archive=SourceArchive.bounded(input,SourceArchive.MAX_BYTES);}
+                try{archiveHash=SourceArchive.hash(archive);entries=SourceArchive.read(new ByteArrayInputStream(archive));}finally{Arrays.fill(archive,(byte)0);}
+                var recorded=SourceVerification.manifest(review);
+                if(recorded!=null&&recorded.rootPrefix()!=null&&!recorded.rootPrefix().isEmpty()){
+                    String prefix=recorded.rootPrefix()+"/";
+                    entries=entries.stream().filter(e->!e.path().equals(recorded.rootPrefix())).map(e->new SourceArchive.Entry(e.path().startsWith(prefix)?e.path().substring(prefix.length()):e.path(),e.bytes(),e.directory(),e.mode())).toList();
+                    SourceArchive.validate(entries);
+                }
                 source = manifest(entries); identity = "UNVERIFIED_REUPLOAD";
             } else {
                 if (zip != null) throw SourceArchive.invalid();
@@ -151,6 +159,9 @@ public class EditingWorkspaceService {
                 entries = sources.github(user, review.getSourceMetadata());
                 source = review.getSourceMetadata().commitSha(); identity = "EXACT_GIT_COMMIT";
             }
+            var verification=SourceVerification.verify(review,entries,archiveHash);
+            if("MISMATCH".equals(verification.status()))throw new SourceVerificationException(verification);
+            if(review.getSourceType()==ReviewSourceType.ZIP){if("VERIFIED".equals(verification.status()))identity="VERIFIED_ZIP_MANIFEST";else if("PARTIAL".equals(verification.status()))identity="PARTIAL_ZIP_MANIFEST";}
             // Recheck ownership after acquisition; deleting a Review must not create an orphan session.
             reviews.findAccessibleReviewWithVulnerabilities(reviewId, "분석 결과에 접근할 수 없습니다.");
             var state = new State(user, reviewId, review.getProject().getId(), lease, Instant.now(clock).truncatedTo(java.time.temporal.ChronoUnit.MILLIS), source, identity, entries, vault==null?Duration.ofMinutes(30):vault.retention());
@@ -170,6 +181,15 @@ public class EditingWorkspaceService {
             }
         }
     }
+    public SourceVerification sourceVerification(long reviewId){return SourceVerification.recorded(reviews.findAccessibleReviewWithVulnerabilities(reviewId,"분석 결과에 접근할 수 없습니다.")).withRetention(retentionPolicy());}
+    private SourceVerification.Retention retentionPolicy(){return new SourceVerification.Retention(vault!=null&&vault.enabled()?"ENCRYPTED_PERSISTENT":"MEMORY_TEMPORARY",(vault==null?Duration.ofMinutes(30):vault.retention()).toSeconds(),SourceArchive.MAX_BYTES,SourceArchive.MAX_FILES);}
+    public void requireSourceConsent(long reviewId,boolean acknowledged){sourceVerification(reviewId);if(!acknowledged)throw fail(HttpStatus.BAD_REQUEST,"원본 소스의 보관 방식·기간·용량 제한을 확인하고 명시적으로 동의해 주세요.");}
+    private SourceVerification verification(State state){
+        var review=reviews.findAccessibleReviewWithVulnerabilities(state.review,"분석 결과에 접근할 수 없습니다.");
+        var m=SourceVerification.manifest(review);
+        return SourceVerification.verify(review,state.files.stream().map(f->f.original).toList(),Set.of("VERIFIED_ZIP_MANIFEST","PARTIAL_ZIP_MANIFEST").contains(state.identity)&&m!=null?m.archiveSha256():null).withRetention(retentionPolicy());
+    }
+    private boolean verified(State state){return "VERIFIED".equals(verification(state).status());}
     public record Discovery(String state, Workspace workspace) { }
     public synchronized Discovery discover(long reviewId) {
         long user=users.currentUserId();
@@ -232,7 +252,7 @@ public class EditingWorkspaceService {
     public synchronized WorkspacePatch.FixOption fixOption(String id,WorkspacePatch.Prepare request,WorkspacePatch.Provider provider) {
         var state=owned(id);var file=file(state,request.fileId());
         if(!automationEnabled)return new WorkspacePatch.FixOption("MANUAL_REVIEW","호환 운영 모드에서는 수동 편집·Diff·승인·재검사를 사용할 수 있습니다.");
-        if(!"EXACT_GIT_COMMIT".equals(state.identity))return new WorkspacePatch.FixOption("MANUAL_REVIEW","원본 일치가 검증되지 않아 수동 편집 후 새 분석이 필요합니다.");
+        if(!verified(state))return new WorkspacePatch.FixOption("MANUAL_REVIEW","원본 일치가 검증되지 않아 수동 편집 후 새 분석이 필요합니다.");
         if(!(file.original.path().endsWith(".properties")||file.original.path().matches(".*\\.[cm]?[jt]s")))
             return new WorkspacePatch.FixOption("UNSUPPORTED","이 파일 유형의 수정안 생성은 지원하지 않습니다.");
         try {
@@ -253,7 +273,7 @@ public class EditingWorkspaceService {
     private WorkspacePatch.View preparePatch(String id, WorkspacePatch.Prepare request, WorkspacePatch.Provider provider,boolean retain,boolean plan) {
         var state=owned(id);
         if(!automationEnabled)throw fail(HttpStatus.SERVICE_UNAVAILABLE,"호환 운영 모드에서는 자동·AI 수정 대신 수동 편집을 사용해 주세요.");
-        if(!"EXACT_GIT_COMMIT".equals(state.identity))throw fail(HttpStatus.CONFLICT,"원본 일치 미검증 ZIP에는 AI 패치를 연결할 수 없습니다. 수동 편집 후 새 분석이 필요합니다.");
+        if(!verified(state))throw fail(HttpStatus.CONFLICT,"원본 바이트 일치를 검증하지 못해 자동·AI 패치를 연결할 수 없습니다. 원본을 확인하거나 새로 검사해 주세요.");
         if(retain&&!provider.available())throw fail(HttpStatus.SERVICE_UNAVAILABLE,"AI 수정 Provider가 준비되지 않았습니다. 수동 편집과 기존 가이드는 계속 사용할 수 있습니다.");
         var file=file(state,request.fileId());
         if(!file.editable()||request.revision()!=state.revision||!file.hash.equals(request.originalHash())
@@ -471,7 +491,7 @@ public class EditingWorkspaceService {
         state.revision++;for(var path:replacements.keySet()){var f=state.files.stream().filter(v->v.original.path().equals(path)).findFirst().orElseThrow();record(state,f,"NPM",null,null,null,directionOrigin,adviceId,true);}persist(state);return describe(state);
     }
     private void verifyGenerated(State state,long revision,String inputHash,Map<String,byte[]> replacements) {
-        if(state.revision!=revision||!"EXACT_GIT_COMMIT".equals(state.identity)||!replacements.keySet().equals(Set.of("package.json","package-lock.json")))throw fail(HttpStatus.CONFLICT,"원본 revision 또는 허용 파일 범위가 다릅니다.");
+        if(state.revision!=revision||!verified(state)||!replacements.keySet().equals(Set.of("package.json","package-lock.json")))throw fail(HttpStatus.CONFLICT,"원본 revision 또는 허용 파일 범위가 다릅니다.");
         var entries=currentEntries(state,true);
         try {if(!manifest(entries).equals(inputHash))throw fail(HttpStatus.CONFLICT,"작업 공간 파일 해시가 변경되었습니다.");}finally{entries.forEach(e->Arrays.fill(e.bytes(),(byte)0));}
         long bytes=state.files.stream().mapToLong(f->f.original.bytes().length+(f.edit==null?0:f.edit.length)).sum();
@@ -488,7 +508,7 @@ public class EditingWorkspaceService {
         var entries = currentEntries(state, true);
         var facts = fileFacts(state);
         var source = new WorkspaceScanSnapshot(1, id, state.user, state.review, revision, state.source, state.identity,
-                manifest(entries), Instant.now(clock), null, "EXACT_GIT_COMMIT".equals(state.identity), facts, "",List.copyOf(state.exports));
+                manifest(entries), Instant.now(clock), null, verified(state), facts, "",List.copyOf(state.exports));
         return new ScanInput(state.user, review.getProjectName(), source, entries);
     }
     synchronized <T> T whileScanLive(String id, java.util.function.Supplier<T> action) {
@@ -525,7 +545,7 @@ public class EditingWorkspaceService {
         return new Workspace(state.id, state.review, state.revision, state.created, state.expires, state.source, state.identity,
                 state.files.stream().map(f -> new FileInfo(f.id, f.original.path(), f.hash, f.original.bytes().length, f.original.directory(),
                         f.editable(), f.editable() ? null : (f.original.directory() ? "DIRECTORY" : "BINARY_SIZE_OR_ENCODING"), f.edit != null,f.changeOrigin,List.copyOf(f.provenance))).toList(),
-                state.files.stream().filter(f -> f.edit != null).map(f -> f.id).toList(),List.copyOf(state.exports),vault!=null&&vault.enabled()?"ENCRYPTED_PERSISTENT":"MEMORY_TEMPORARY");
+                state.files.stream().filter(f -> f.edit != null).map(f -> f.id).toList(),List.copyOf(state.exports),vault!=null&&vault.enabled()?"ENCRYPTED_PERSISTENT":"MEMORY_TEMPORARY",verification(state));
     }
     private void ensureHistory(State state,int count){if(state.files.stream().mapToInt(f->f.provenance.size()).sum()+count>1024)throw fail(HttpStatus.TOO_MANY_REQUESTS,"변경 출처 이력 한도에 도달했습니다. 현재 편집을 내보내고 새 작업을 시작하세요.");}
     private void record(State state,StoredFile file,String generator,String origin,String model,String proposal,String direction,String advice,boolean approved){file.provenance.add(new ChangeAttribution(state.revision,generator,origin,model,proposal,direction,advice,approved,state.user,Instant.now(clock),SourceArchive.hash(file.current())));}

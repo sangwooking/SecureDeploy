@@ -46,57 +46,57 @@ class EditingWorkspaceIntegrationTest {
     }
     JsonNode create() throws Exception {
         var archive = SourceArchive.zip(List.of(new SourceArchive.Entry("index.ts", "original\n".getBytes(StandardCharsets.UTF_8), false,0100644)));
-        return json.readTree(mvc.perform(multipart("/api/editing-workspaces/zip/"+reviewId).file(new MockMultipartFile("file","original.zip","application/zip",archive)).header("Authorization","Bearer "+owner))
+        return json.readTree(mvc.perform(multipart("/api/editing-workspaces/zip/"+reviewId).file(new MockMultipartFile("file","original.zip","application/zip",archive)).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner))
                 .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store")).andReturn().getResponse().getContentAsByteArray());
     }
     @Test void actualApiOwnerIsolationStaleSaveApprovalExportAndImmutableReview() throws Exception {
-        var before = mvc.perform(get("/api/reviews/"+reviewId).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
+        var before = mvc.perform(get("/api/reviews/"+reviewId).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
         var workspace=create(); String id=workspace.path("id").asText(), file=workspace.at("/files/0/id").asText(), hash=workspace.at("/files/0/originalHash").asText();
         String base="/api/editing-workspaces/"+id, path=base+"/files/"+file;
-        mvc.perform(get(base).header("Authorization","Bearer "+other)).andExpect(status().isNotFound());
-        mvc.perform(get(path).header("Authorization","Bearer "+other)).andExpect(status().isNotFound());
+        mvc.perform(get(base).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+other)).andExpect(status().isNotFound());
+        mvc.perform(get(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+other)).andExpect(status().isNotFound());
         var change=json.writeValueAsBytes(Map.of("revision",1,"originalHash",hash,"text","changed\n"));
-        mvc.perform(put(path).header("Authorization","Bearer "+other).contentType(MediaType.APPLICATION_JSON).content(change)).andExpect(status().isNotFound());
-        var next=json.readTree(mvc.perform(put(path).header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(change)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
-        mvc.perform(put(path).header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(change)).andExpect(status().isConflict());
+        mvc.perform(put(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+other).contentType(MediaType.APPLICATION_JSON).content(change)).andExpect(status().isNotFound());
+        var next=json.readTree(mvc.perform(put(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(change)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        mvc.perform(put(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(change)).andExpect(status().isConflict());
         var approval=json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",List.of(file),"approved",true));
-        mvc.perform(post(base+"/export/zip").header("Authorization","Bearer "+other).contentType(MediaType.APPLICATION_JSON).content(approval)).andExpect(status().isNotFound());
-        mvc.perform(post(base+"/export/zip").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(approval)).andExpect(status().isOk())
+        mvc.perform(post(base+"/export/zip").param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+other).contentType(MediaType.APPLICATION_JSON).content(approval)).andExpect(status().isNotFound());
+        mvc.perform(post(base+"/export/zip").param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(approval)).andExpect(status().isOk())
                 .andExpect(header().string("Content-Disposition","attachment; filename=\"securedeploy-edited-r2.zip\""));
         assertEquals(2,next.path("revision").asInt());
-        assertArrayEquals(before,mvc.perform(get("/api/reviews/"+reviewId).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
-        mvc.perform(delete(base).header("Authorization","Bearer "+owner)).andExpect(status().isOk());
-        mvc.perform(get(path).header("Authorization","Bearer "+owner)).andExpect(status().isNotFound());
+        assertArrayEquals(before,mvc.perform(get("/api/reviews/"+reviewId).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        mvc.perform(delete(base).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isOk());
+        mvc.perform(get(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isNotFound());
     }
     @Test void hugeJsonAndUnauthenticatedRequestsRejected() throws Exception {
         mvc.perform(get("/api/editing-workspaces/unknown")).andExpect(status().isUnauthorized());
-        mvc.perform(put("/api/editing-workspaces/a/files/b").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content("x".repeat(1024*1024+1))).andExpect(status().isPayloadTooLarge());
+        mvc.perform(put("/api/editing-workspaces/a/files/b").param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content("x".repeat(1024*1024+1))).andExpect(status().isPayloadTooLarge());
     }
     @Test void projectDeletionRefusesOpenWorkspaceWithoutMutatingItAndPreservesSecurityStatuses() throws Exception {
         long projectId = reviews.findById(reviewId).orElseThrow().getProject().getId();
         var workspace = create();
         String base = "/api/editing-workspaces/" + workspace.path("id").asText();
         String project = "/api/projects/" + projectId;
-        var before = mvc.perform(get("/api/reviews/" + reviewId).header("Authorization", "Bearer " + owner))
+        var before = mvc.perform(get("/api/reviews/" + reviewId).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+ owner))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
         try {
             mvc.perform(delete(project)).andExpect(status().isUnauthorized());
-            mvc.perform(delete(project).header("Authorization", "Bearer " + other)).andExpect(status().isForbidden());
-            mvc.perform(delete("/api/projects/" + Long.MAX_VALUE).header("Authorization", "Bearer " + owner))
+            mvc.perform(delete(project).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+ other)).andExpect(status().isForbidden());
+            mvc.perform(delete("/api/projects/" + Long.MAX_VALUE).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+ owner))
                     .andExpect(status().isNotFound());
-            mvc.perform(delete(project).header("Authorization", "Bearer " + owner)).andExpect(status().isConflict());
-            var current = json.readTree(mvc.perform(get(base).header("Authorization", "Bearer " + owner))
+            mvc.perform(delete(project).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+ owner)).andExpect(status().isConflict());
+            var current = json.readTree(mvc.perform(get(base).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+ owner))
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
             assertEquals(workspace, current);
-            assertArrayEquals(before, mvc.perform(get("/api/reviews/" + reviewId).header("Authorization", "Bearer " + owner))
+            assertArrayEquals(before, mvc.perform(get("/api/reviews/" + reviewId).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+ owner))
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
         } finally {
-            mvc.perform(delete(base).header("Authorization", "Bearer " + owner)).andExpect(status().isOk());
+            mvc.perform(delete(base).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+ owner)).andExpect(status().isOk());
         }
-        mvc.perform(delete(project).header("Authorization", "Bearer " + owner)).andExpect(status().isOk());
+        mvc.perform(delete(project).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+ owner)).andExpect(status().isOk());
         assertFalse(projects.existsById(projectId));
         assertFalse(reviews.existsById(reviewId));
-        mvc.perform(delete(project).header("Authorization", "Bearer " + owner)).andExpect(status().isNotFound());
+        mvc.perform(delete(project).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+ owner)).andExpect(status().isNotFound());
     }
     @Test void githubMockAcquisitionUsesStoredRevisionAndRevokedAccessFails() throws Exception {
         var review=reviews.findById(reviewId).orElseThrow(); var project=review.getProject();
@@ -104,10 +104,31 @@ class EditingWorkspaceIntegrationTest {
         var metadata=new GitHubSourceSnapshot("fixture","editor","https://github.com/fixture/editor","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(3L,2L,true);
         github.attachSourceMetadata(metadata); reviews.saveAndFlush(github);
         when(sources.github(anyLong(),eq(metadata))).thenReturn(List.of(new SourceArchive.Entry("index.ts","original\n".getBytes(StandardCharsets.UTF_8),false,0100644)));
-        var result=json.readTree(mvc.perform(post("/api/editing-workspaces/github/"+github.getId()).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        var result=json.readTree(mvc.perform(post("/api/editing-workspaces/github/"+github.getId()).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
         assertEquals("EXACT_GIT_COMMIT",result.path("identityStatus").asText()); assertEquals("a".repeat(40),result.path("sourceRevision").asText());
-        mvc.perform(delete("/api/editing-workspaces/"+result.path("id").asText()).header("Authorization","Bearer "+owner)).andExpect(status().isOk());
+        mvc.perform(delete("/api/editing-workspaces/"+result.path("id").asText()).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isOk());
         when(sources.github(anyLong(),eq(metadata))).thenThrow(com.securedeploy.github.app.GitHubAppException.denied());
-        mvc.perform(post("/api/editing-workspaces/github/"+github.getId()).header("Authorization","Bearer "+owner)).andExpect(status().isForbidden());
+        mvc.perform(post("/api/editing-workspaces/github/"+github.getId()).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isForbidden());
     }
+    @Test void realWrappedZipRequiresConsentAndExactOriginalThenLinksVerifiedPaths() throws Exception {
+        var entries=List.of(new SourceArchive.Entry("bundle/config/application.properties","debug=true\n".getBytes(StandardCharsets.UTF_8),false,0100644),
+            new SourceArchive.Entry("bundle/src/routes/health.js","export const health = () => ({ready:true});\n".getBytes(StandardCharsets.UTF_8),false,0100644),
+            new SourceArchive.Entry("bundle/src/services/status.js","export const status = 'ok';\n".getBytes(StandardCharsets.UTF_8),false,0100644));
+        byte[] archive=SourceArchive.zip(entries);
+        var analyzed=json.readTree(mvc.perform(multipart("/api/reviews/upload").file(new MockMultipartFile("file","structured.zip","application/zip",archive)).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        long id=analyzed.path("reviewId").asLong();String endpoint="/api/editing-workspaces/zip/"+id;
+        var source=json.readTree(mvc.perform(get("/api/editing-workspaces/review/"+id+"/source").header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        assertTrue(source.path("recorded").asBoolean());assertEquals("UNVERIFIED",source.path("status").asText());assertEquals(SourceArchive.hash(archive),source.path("archiveSha256").asText());assertEquals(1800,source.at("/retention/seconds").asLong());
+        mvc.perform(get("/api/editing-workspaces/review/"+id+"/source").header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
+        mvc.perform(multipart(endpoint).file(new MockMultipartFile("file","same.zip","application/zip",archive)).header("Authorization","Bearer "+owner)).andExpect(status().isBadRequest());
+        var changed=SourceArchive.zip(List.of(new SourceArchive.Entry("bundle/config/application.properties","debug=false\n".getBytes(StandardCharsets.UTF_8),false,0100644)));
+        mvc.perform(multipart(endpoint+"?sourceRetentionAcknowledged=true").file(new MockMultipartFile("file","different.zip","application/zip",changed)).header("Authorization","Bearer "+owner)).andExpect(status().isConflict()).andExpect(jsonPath("$.sourceVerification.status").value("MISMATCH"));
+        var w=json.readTree(mvc.perform(multipart(endpoint+"?sourceRetentionAcknowledged=true").file(new MockMultipartFile("file","same.zip","application/zip",archive)).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        assertEquals("VERIFIED",w.at("/sourceVerification/status").asText());assertEquals("VERIFIED_ZIP_MANIFEST",w.path("identityStatus").asText());
+        assertEquals("config/application.properties",w.at("/files/0/path").asText());
+        assertEquals(SourceArchive.hash("debug=true\n".getBytes(StandardCharsets.UTF_8)),w.at("/files/0/originalHash").asText());
+        mvc.perform(delete("/api/editing-workspaces/"+w.path("id").asText()).header("Authorization","Bearer "+owner)).andExpect(status().isOk());
+        assertEquals(analyzed,json.readTree(mvc.perform(get("/api/reviews/"+id).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray()));
+    }
+
 }

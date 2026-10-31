@@ -36,7 +36,7 @@ class WorkspacePatchApiTest {
         var project=new ProjectEntity("patch fixture",ReviewSourceType.GITHUB,"https://github.com/fixture/patch");project.assignUser(user);projects.saveAndFlush(project);
         var review=new ReviewEntity("patch fixture",ReviewSourceType.GITHUB,project.getRepositoryUrl(),1,1,95,"READY_WITH_WARNINGS");review.assignProject(project);
         review.attachSourceMetadata(new GitHubSourceSnapshot("fixture","patch",project.getRepositoryUrl(),"main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()).withAccess(3L,2L,true));
-        var finding=new VulnerabilityEntity("DEBUG_ENABLED",RuleCategory.CONFIGURATION,Severity.MEDIUM,"application.properties",1,"debug declaration","Review production config","debug=true");review.addVulnerability(finding);reviews.saveAndFlush(review);
+        var finding=new VulnerabilityEntity("DEBUG_ENABLED",RuleCategory.CONFIGURATION,Severity.MEDIUM,"application.properties",1,"debug declaration","Review production config","debug=true");review.addVulnerability(finding);SourceFixtureEvidence.mark(review,List.of(new SourceArchive.Entry("application.properties","debug=true\n".getBytes(StandardCharsets.UTF_8),false,0100644)));reviews.saveAndFlush(review);
         reviewId=review.getId();findingId=finding.getId();
         when(sources.github(anyLong(),any())).thenAnswer(i->List.of(new SourceArchive.Entry("application.properties","debug=true\n".getBytes(StandardCharsets.UTF_8),false,0100644)));
         properties.setProvider(AiProviderType.OPENAI);when(resolver.resolve()).thenReturn(provider);when(provider.providerType()).thenReturn(AiProviderType.OPENAI);when(provider.isAvailable()).thenReturn(true);when(provider.executionOrigin()).thenReturn("MOCK");when(provider.consumeLastTokenUsage()).thenReturn(Optional.empty());
@@ -47,30 +47,30 @@ class WorkspacePatchApiTest {
     @Test void dependencyPlanEndpointIsOwnedReadOnlyAndDoesNotClaimModelExecution() throws Exception {
         String providerPath="/api/reviews/"+reviewId+"/dependencies/ai-proposals/provider";
         mvc.perform(get(providerPath)).andExpect(status().isUnauthorized());
-        mvc.perform(get(providerPath).header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
-        mvc.perform(get(providerPath).header("Authorization","Bearer "+owner)).andExpect(status().isOk());
+        mvc.perform(get(providerPath).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
+        mvc.perform(get(providerPath).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isOk());
         String path="/api/reviews/"+reviewId+"/dependencies/update-plans";
         mvc.perform(get(path)).andExpect(status().isUnauthorized());
-        mvc.perform(get(path).header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
-        String before=mvc.perform(get("/api/reviews/"+reviewId).header("Authorization","Bearer "+owner)).andReturn().getResponse().getContentAsString();
-        mvc.perform(get(path).header("Authorization","Bearer "+owner)).andExpect(status().isOk())
+        mvc.perform(get(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
+        String before=mvc.perform(get("/api/reviews/"+reviewId).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andReturn().getResponse().getContentAsString();
+        mvc.perform(get(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control","no-store"))
                 .andExpect(jsonPath("$.modelVerification").value("NOT_RUN"))
                 .andExpect(jsonPath("$.origin").value("SAVED_SCA_EVIDENCE"));
-        assertEquals(json.readTree(before),json.readTree(mvc.perform(get("/api/reviews/"+reviewId).header("Authorization","Bearer "+owner)).andReturn().getResponse().getContentAsString()));
+        assertEquals(json.readTree(before),json.readTree(mvc.perform(get("/api/reviews/"+reviewId).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andReturn().getResponse().getContentAsString()));
     }
-    @AfterEach void cleanup()throws Exception{if(base!=null)mvc.perform(delete(base).header("Authorization","Bearer "+owner));}
+    @AfterEach void cleanup()throws Exception{if(base!=null)mvc.perform(delete(base).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner));}
     String signup(String email)throws Exception{return postJson("/api/auth/signup",Map.of("email",email,"name","patch fixture","password","Synthetic-Only-124!"),null,200).path("accessToken").asText();}
     JsonNode postJson(String path,Object body,String token,int status)throws Exception{
-        var request=post(path).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(body));if(token!=null)request.header("Authorization","Bearer "+token);
+        var request=post(path).param("sourceRetentionAcknowledged","true").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(body));if(token!=null)request.param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+token);
         return json.readTree(mvc.perform(request).andExpect(status().is(status)).andReturn().getResponse().getContentAsByteArray());
     }
-    JsonNode getJson(String path,String token)throws Exception{return json.readTree(mvc.perform(get(path).header("Authorization","Bearer "+token)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());}
+    JsonNode getJson(String path,String token)throws Exception{return json.readTree(mvc.perform(get(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+token)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());}
     JsonNode prepare()throws Exception{var content=getJson(base+"/files/"+file,owner);return postJson(base+"/patches",Map.of("fileId",file,"findingId",findingId,"revision",1,"originalHash",hash,"currentHash",content.path("currentHash").asText()),owner,200);}
     @Test void actualJwtApiConsentProposalApprovalExportIsolationAndReviewImmutability()throws Exception{
         var before=getJson("/api/reviews/"+reviewId,owner);var p=prepare();String path=base+"/patches/"+p.path("id").asText();String current=p.path("currentHash").asText();
         postJson(path+"/generate",Map.of("revision",1,"currentHash",current,"consented",false),owner,409);verify(provider,never()).generateWorkspacePatch(any());
-        mvc.perform(get(path).header("Authorization","Bearer "+other)).andExpect(status().isNotFound());
+        mvc.perform(get(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+other)).andExpect(status().isNotFound());
         postJson(path+"/generate",Map.of("revision",1,"currentHash",current,"consented",true),other,404);
         var generated=postJson(path+"/generate",Map.of("revision",1,"currentHash",current,"consented",true),owner,200);assertEquals("PROPOSED",generated.path("state").asText());
         assertEquals("debug=true\n",getJson(base+"/files/"+file,owner).path("text").asText());
@@ -78,25 +78,25 @@ class WorkspacePatchApiTest {
         postJson(path+"/apply",Map.of("revision",1,"currentHash",current,"approved",false),owner,409);
         var applied=postJson(path+"/apply",Map.of("revision",1,"currentHash",current,"approved",true),owner,200);assertEquals(2,applied.path("revision").asInt());
         postJson(path+"/apply",Map.of("revision",1,"currentHash",current,"approved",true),owner,409);
-        byte[] zip=mvc.perform(post(base+"/export/zip").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",List.of(file),"approved",true))))
+        byte[] zip=mvc.perform(post(base+"/export/zip").param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",List.of(file),"approved",true))))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
         assertEquals("debug=false\n",new String(SourceArchive.read(new java.io.ByteArrayInputStream(zip)).get(0).bytes(),StandardCharsets.UTF_8));
         assertEquals(before,getJson("/api/reviews/"+reviewId,owner));
     }
     @Test void actualApiManualSaveStalesProposalAndDeletionRevokesAccess()throws Exception{
         var p=prepare();String path=base+"/patches/"+p.path("id").asText();String current=p.path("currentHash").asText();
-        mvc.perform(put(base+"/files/"+file).header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",1,"originalHash",hash,"text","debug=true\n# manual\n")))).andExpect(status().isOk());
+        mvc.perform(put(base+"/files/"+file).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",1,"originalHash",hash,"text","debug=true\n# manual\n")))).andExpect(status().isOk());
         assertEquals("STALE",getJson(path,owner).path("state").asText());postJson(path+"/generate",Map.of("revision",1,"currentHash",current,"consented",true),owner,409);verify(provider,never()).generateWorkspacePatch(any());
-        mvc.perform(delete(base).header("Authorization","Bearer "+owner)).andExpect(status().isOk());mvc.perform(get(path).header("Authorization","Bearer "+owner)).andExpect(status().isNotFound());
+        mvc.perform(delete(base).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isOk());mvc.perform(get(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isNotFound());
     }
     @Test void activeWorkspaceApiIsOwnerBoundNoStoreAndRevisionConflictsAreSpecific() throws Exception {
         String active="/api/editing-workspaces/review/"+reviewId+"/active";
         var found=getJson(active,owner);assertEquals("AVAILABLE",found.path("state").asText());assertEquals(workspace,found.path("workspace").path("id").asText());
-        mvc.perform(get(active).header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
-        mvc.perform(get(active).header("Authorization","Bearer "+owner)).andExpect(header().string("Cache-Control","no-store"));
-        mvc.perform(post("/api/editing-workspaces/github/"+reviewId).header("Authorization","Bearer "+owner)).andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("WORKSPACE_ALREADY_OPEN"));
+        mvc.perform(get(active).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
+        mvc.perform(get(active).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(header().string("Cache-Control","no-store"));
+        mvc.perform(post("/api/editing-workspaces/github/"+reviewId).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("WORKSPACE_ALREADY_OPEN"));
         String body=json.writeValueAsString(Map.of("revision",1,"originalHash",hash,"text","debug=true\n# tab A\n"));
-        mvc.perform(put(base+"/files/"+file).header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk());
-        mvc.perform(put(base+"/files/"+file).header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("WORKSPACE_REVISION_CONFLICT"));
+        mvc.perform(put(base+"/files/"+file).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk());
+        mvc.perform(put(base+"/files/"+file).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("WORKSPACE_REVISION_CONFLICT"));
     }
 }

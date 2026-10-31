@@ -11,9 +11,13 @@ public class EditingWorkspaceController {
     private final EditingWorkspaceService service;
     public EditingWorkspaceController(EditingWorkspaceService service) { this.service = service; }
     @PostMapping(value = "/zip/{reviewId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> zip(@PathVariable long reviewId, @RequestPart MultipartFile file) throws IOException { return json(service.create(reviewId, file)); }
+    public ResponseEntity<?> zip(@PathVariable long reviewId, @RequestPart MultipartFile file,@RequestParam(defaultValue="false") boolean sourceRetentionAcknowledged) throws IOException { service.requireSourceConsent(reviewId,sourceRetentionAcknowledged);return json(service.create(reviewId, file)); }
     @PostMapping("/github/{reviewId}")
-    public ResponseEntity<?> github(@PathVariable long reviewId) throws IOException { return json(service.create(reviewId, null)); }
+    public ResponseEntity<?> github(@PathVariable long reviewId,@RequestParam(defaultValue="false") boolean sourceRetentionAcknowledged) throws IOException { service.requireSourceConsent(reviewId,sourceRetentionAcknowledged);return json(service.create(reviewId, null)); }
+    @GetMapping("/review/{reviewId}/source")
+    public ResponseEntity<?> source(@PathVariable long reviewId){return json(service.sourceVerification(reviewId));}
+    @ExceptionHandler(SourceVerificationException.class)
+    public ResponseEntity<?> sourceMismatch(SourceVerificationException error){return ResponseEntity.status(error.getStatus()).cacheControl(CacheControl.noStore()).body(java.util.Map.of("code","SOURCE_"+error.verification.status(),"message",error.getMessage(),"sourceVerification",error.verification));}
     @GetMapping("/review/{reviewId}/active")
     public ResponseEntity<?> active(@PathVariable long reviewId) { return json(service.discover(reviewId)); }
     @ExceptionHandler(EditingConflictException.class)

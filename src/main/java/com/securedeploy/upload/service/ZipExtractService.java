@@ -30,6 +30,9 @@ public class ZipExtractService {
                 throw reject("UPLOAD_SIZE", HttpStatus.PAYLOAD_TOO_LARGE, policy.uploadLimitMessage(), count);
             }
             validateSignature(archive.archivePath());
+            try { ZipMetadata.inspect(archive.archivePath(),policy.maxEntries()); }
+            catch(ZipMetadata.EntryLimit limit){throw reject("ENTRY_COUNT",HttpStatus.PAYLOAD_TOO_LARGE,"프로젝트에 파일 또는 폴더가 너무 많습니다. 최대 "+policy.maxEntries()+"개까지 허용됩니다. "+UploadPolicy.FOLDER_HINT,count);}
+            catch(IOException unsafe){throw unsafePath(count);}
             Path workspace = archive.workspacePath().toRealPath();
             // A fresh private root prevents reuse of links or files from an earlier extraction.
             Path root = Files.createDirectory(workspace.resolve("extracted")).toRealPath();
@@ -57,6 +60,8 @@ public class ZipExtractService {
     }
 
     private void extractZip(Path zipPath, Path root, ExtractionCount count) throws IOException {
+        var central=ZipMetadata.inspect(zipPath,policy.maxEntries());
+        var local=new java.util.HashSet<String>();long deadline=System.nanoTime()+30_000_000_000L;
         try (var zip = new ZipInputStream(Files.newInputStream(zipPath))) {
             byte[] buffer = new byte[8192];
             ZipEntry entry;
@@ -66,6 +71,7 @@ public class ZipExtractService {
                             "프로젝트에 파일 또는 폴더가 너무 많습니다. 최대 " + policy.maxEntries()
                                     + "개까지 허용됩니다. " + UploadPolicy.FOLDER_HINT, count);
                 }
+                if(!central.contains(entry.getName())||!local.add(entry.getName()))throw unsafePath(count);
                 Path relative = safeRelativePath(entry.getName(), count);
                 Path target = root.resolve(relative).normalize();
                 if (!target.startsWith(root) || (target.equals(root) && !entry.isDirectory())) throw unsafePath(count);
@@ -83,6 +89,7 @@ public class ZipExtractService {
                                 LinkOption.NOFOLLOW_LINKS)) {
                     int read;
                     while ((read = zip.read(buffer)) != -1) {
+                        if(System.nanoTime()>deadline)throw expandedLimit(count);
                         count.expandedBytes += read;
                         if (count.expandedBytes > policy.maxExpandedBytes()) throw expandedLimit(count);
                         output.write(buffer, 0, read);
@@ -90,6 +97,7 @@ public class ZipExtractService {
                 }
                 zip.closeEntry();
             }
+            if(!local.equals(central))throw unsafePath(count);
         }
     }
 

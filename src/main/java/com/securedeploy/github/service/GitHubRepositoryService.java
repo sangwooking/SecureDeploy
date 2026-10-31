@@ -28,13 +28,15 @@ public class GitHubRepositoryService {
     public String validateAndNormalizeUrl(String input) { return GitHubRepositoryUrl.parse(input).canonicalUrl(); }
 
     public ClonedRepository clonePublicRepository(String input) {
-        return collect(input, null);
+        return collect(input, null,null);
     }
     public ClonedRepository cloneAuthorizedRepository(String input, GitHubReadCredential credential) {
         java.util.Objects.requireNonNull(credential);
-        return collect(input, credential);
+        return collect(input, credential,null);
     }
-    private ClonedRepository collect(String input, GitHubReadCredential credential) {
+    public ClonedRepository clonePublicRepository(String input,String commitSha){if(commitSha==null||!commitSha.matches("[a-f0-9]{40}"))throw new SecureDeployException(HttpStatus.BAD_REQUEST,"정확한 Commit SHA가 필요합니다.");return collect(input,null,commitSha);}
+    public ClonedRepository cloneAuthorizedRepository(String input,GitHubReadCredential credential,String commitSha){java.util.Objects.requireNonNull(credential);if(commitSha==null||!commitSha.matches("[a-f0-9]{40}"))throw new SecureDeployException(HttpStatus.BAD_REQUEST,"정확한 Commit SHA가 필요합니다.");return collect(input,credential,commitSha);}
+    private ClonedRepository collect(String input, GitHubReadCredential credential,String commitSha) {
         GitHubRepositoryUrl url = GitHubRepositoryUrl.parse(input);
         if (!slots.tryAcquire()) throw new SecureDeployException(HttpStatus.TOO_MANY_REQUESTS, "GitHub 분석 요청이 많습니다. 잠시 후 다시 시도해 주세요.");
         Path workspace = null;
@@ -46,9 +48,10 @@ public class GitHubRepositoryService {
             Path gitDirectory = workspace.resolve("objects.git");
             Path root = Files.createDirectory(workspace.resolve("source")).toRealPath();
             GitHubSnapshotFetcher.Revision revision;
-            try { revision = credential == null ? fetcher.fetch(url, gitDirectory, budget)
+            try { revision = commitSha!=null?fetcher.fetchExact(url,gitDirectory,budget,credential,commitSha):credential == null ? fetcher.fetch(url, gitDirectory, budget)
                     : fetcher.fetchAuthenticated(url, gitDirectory, budget, credential); }
             catch (Exception failed) { budget.check(); throw failed; }
+            if(commitSha!=null&&!commitSha.equals(revision.commitSha()))throw new SecureDeployException(HttpStatus.CONFLICT,"요청한 Commit과 확보한 원본이 다릅니다. HEAD로 대체하지 않았습니다.");
             var exported = exporter.export(gitDirectory, root, revision.commitSha(), budget);
             budget.check();
             var metadata = new GitHubSourceSnapshot(url.owner(), url.repository(), url.canonicalUrl(),

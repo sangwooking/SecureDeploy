@@ -71,7 +71,7 @@ public class EditingSourceService {
         catch (Exception failed) {
             // Whitelisted stage and Java type only: no URL, SHA, remote message, source, or credentials.
             LOG.warn("Editing source acquisition stage={} errorType={}", stage, failed.getClass().getSimpleName());
-            throw new SecureDeployException(HttpStatus.BAD_GATEWAY, "기록된 commit의 전체 원본을 확보하지 못했습니다. 권한과 원본 commit 보존 여부를 확인해 주세요. 최신 commit으로 대체하지 않았습니다.");
+            throw new SourceVerificationException(HttpStatus.BAD_GATEWAY,new SourceVerification("UNAVAILABLE","기록된 commit의 전체 원본을 확보하지 못했습니다. 권한과 원본 commit 보존 여부를 확인해 주세요. 최신 commit으로 대체하지 않았습니다.","ORIGINAL_BYTES_ONLY",false,null,sha,0));
         }
     }
     private List<SourceArchive.Entry> readTree(Path git, String sha, CloneBudget budget) throws IOException {

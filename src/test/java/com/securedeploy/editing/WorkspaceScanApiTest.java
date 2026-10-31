@@ -44,35 +44,36 @@ class WorkspaceScanApiTest {
         when(provider.consumeLastTokenUsage()).thenReturn(Optional.empty());
         when(provider.generateWorkspacePatch(any())).thenAnswer(i->{var d=json.readTree(((WorkspacePatch.Prompt)i.getArgument(0)).untrustedData());return new WorkspacePatch.Output("PATCH",d.path("fileId").asText(),d.path("startLine").asInt(),d.path("expectedHash").asText(),"debug=false","설정 변경 제안",List.of("재검사"),List.of("운영 미확인"));});
     }
-    @AfterEach void cleanup()throws Exception {if(base!=null)mvc.perform(delete(base).header("Authorization","Bearer "+owner));}
+    @AfterEach void cleanup()throws Exception {if(base!=null)mvc.perform(delete(base).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner));}
     String signup()throws Exception{return postJson("/api/auth/signup",Map.of("email",UUID.randomUUID()+"@scan.invalid","name","scan fixture","password","Synthetic-Only-124!"),null,200).path("accessToken").asText();}
     JsonNode postJson(String path,Object body,String token,int status)throws Exception{
-        var req=post(path).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(body));if(token!=null)req.header("Authorization","Bearer "+token);
+        var req=post(path).param("sourceRetentionAcknowledged","true").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(body));if(token!=null)req.param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+token);
         return json.readTree(mvc.perform(req).andExpect(status().is(status)).andReturn().getResponse().getContentAsByteArray());
     }
-    JsonNode getJson(String path,String token)throws Exception{return json.readTree(mvc.perform(get(path).header("Authorization","Bearer "+token)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());}
+    JsonNode getJson(String path,String token)throws Exception{return json.readTree(mvc.perform(get(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+token)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());}
     JsonNode acquire(boolean exact)throws Exception {
         var archive=new MockMultipartFile("file","fixture.zip","application/zip",SourceArchive.zip(entries));
-        var result=json.readTree(mvc.perform(multipart("/api/reviews/upload").file(archive).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        var result=json.readTree(mvc.perform(multipart("/api/reviews/upload").file(archive).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
         originalId=result.path("reviewId").asLong();
         if(exact)new TransactionTemplate(transactions).execute(s->{var review=reviews.findByIdWithVulnerabilities(originalId).orElseThrow();
             ReflectionTestUtils.setField(review,"sourceType",ReviewSourceType.GITHUB);
             ReflectionTestUtils.setField(review,"repositoryUrl","https://github.com/fixture/scan");
-            review.attachSourceMetadata(new GitHubSourceSnapshot("fixture","scan","https://github.com/fixture/scan","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()));return null;});
+            review.attachSourceMetadata(new GitHubSourceSnapshot("fixture","scan","https://github.com/fixture/scan","main","a".repeat(40),"aaaaaaa",null,null,null,null,1,0,0,0,List.of()));var m=review.getComparisonContext().sourceManifest();review.attachComparisonContext(review.getComparisonContext().withSourceManifest(new com.securedeploy.source.SourceManifest(1,"GITHUB",null,"a".repeat(40),"",m.complete(),m.analyzedBytesConfirmed(),m.files())));return null;});
+        if(!exact)new TransactionTemplate(transactions).execute(s->{var legacy=reviews.findByIdWithVulnerabilities(originalId).orElseThrow();legacy.attachComparisonContext(legacy.getComparisonContext().withSourceManifest(null));return null;});
         JsonNode created;
         if(exact)created=postJson("/api/editing-workspaces/github/"+originalId,Map.of(),owner,200);
-        else created=json.readTree(mvc.perform(multipart("/api/editing-workspaces/zip/"+originalId).file(archive).header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+        else created=json.readTree(mvc.perform(multipart("/api/editing-workspaces/zip/"+originalId).file(archive).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
         id=created.path("id").asText();base="/api/editing-workspaces/"+id;file=created.at("/files/0/id").asText();hash=created.at("/files/0/originalHash").asText();return created;
     }
     JsonNode save(String text,long revision)throws Exception {
-        return json.readTree(mvc.perform(put(base+"/files/"+file).header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON)
+        return json.readTree(mvc.perform(put(base+"/files/"+file).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsBytes(Map.of("revision",revision,"originalHash",hash,"text",text)))).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
     }
     Map<String,Object> scanRequest(JsonNode workspace){return Map.of("revision",workspace.path("revision").asLong(),"changedFileIds",json.convertValue(workspace.path("changedFileIds"),List.class),"approved",true,"externalLookupAcknowledged",true);}
     JsonNode scan(JsonNode workspace)throws Exception {
         var job=postJson(base+"/scans",scanRequest(workspace),owner,202);String path="/api/editing-workspaces/scans/"+job.path("id").asText();
         postJson(base+"/scans",scanRequest(workspace),other,404);
-        mvc.perform(get(path).header("Authorization","Bearer "+other)).andExpect(status().isNotFound());
+        mvc.perform(get(path).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+other)).andExpect(status().isNotFound());
         for(int i=0;i<300;i++) {var state=getJson(path,owner);if(!state.path("state").asText().equals("RUNNING")){assertEquals("SUCCEEDED",state.path("state").asText(),state.toString());return getJson("/api/reviews/"+state.path("reviewId").asLong(),owner);}Thread.sleep(30);}
         throw new AssertionError("scan timeout");
     }
@@ -89,9 +90,9 @@ class WorkspaceScanApiTest {
         assertTrue(java.util.stream.StreamSupport.stream(changes.spliterator(),false).anyMatch(n->n.path("status").asText().equals("REMAINING")));
         assertTrue(java.util.stream.StreamSupport.stream(changes.spliterator(),false).anyMatch(n->n.path("status").asText().equals("NEW")));
         assertEquals(before,getJson("/api/reviews/"+originalId,owner));
-        mvc.perform(delete(base).header("Authorization","Bearer "+owner)).andExpect(status().isOk());
+        mvc.perform(delete(base).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner)).andExpect(status().isOk());
         assertEquals(result,getJson("/api/reviews/"+result.path("reviewId").asLong(),owner));
-        mvc.perform(get("/api/reviews/"+result.path("reviewId").asLong()).header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
+        mvc.perform(get("/api/reviews/"+result.path("reviewId").asLong()).param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+other)).andExpect(status().isForbidden());
         verify(provider,never()).generateWorkspacePatch(any());
     }
     @Test void approvedAiPatchIsActuallyAnalyzedAndRaisesOnlyReferenceScoreWithPartialCoverage()throws Exception {
@@ -105,7 +106,7 @@ class WorkspaceScanApiTest {
         assertTrue(result.path("securityScore").asInt()>before.path("securityScore").asInt());assertEquals("PARTIAL",result.at("/coverage/status").asText());
         assertFalse(java.util.stream.StreamSupport.stream(result.path("vulnerabilities").spliterator(),false).anyMatch(n->n.path("ruleId").asText().equals("DEBUG_ENABLED")));
         assertEquals("risk-v1.2",result.at("/riskAssessment/policyVersion").asText());
-        byte[] zip=mvc.perform(post(base+"/export/zip").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",List.of(file),"approved",true))))
+        byte[] zip=mvc.perform(post(base+"/export/zip").param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",List.of(file),"approved",true))))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
         var exported=SourceArchive.read(new java.io.ByteArrayInputStream(zip));
         assertEquals(result.at("/workspaceScan/files/0/currentHash").asText(),SourceArchive.hash(exported.get(0).bytes()));
@@ -121,7 +122,7 @@ class WorkspaceScanApiTest {
     @Test void analyzerVersionMismatchNeverResolvesOldWarnings() throws Exception {
         var created=acquire(true);
         new TransactionTemplate(transactions).execute(s->{var r=reviews.findByIdWithVulnerabilities(originalId).orElseThrow();var c=r.getComparisonContext();
-            r.attachComparisonContext(new com.securedeploy.project.progress.ComparisonContext(c.schemaVersion(),c.baselineReviewId(),"synthetic-previous-version",c.ruleAnalysisComplete(),c.analyzedFiles()));return null;});
+            r.attachComparisonContext(new com.securedeploy.project.progress.ComparisonContext(c.schemaVersion(),c.baselineReviewId(),"synthetic-previous-version",c.ruleAnalysisComplete(),c.analyzedFiles(),c.workspaceScan(),new com.securedeploy.project.progress.ComparisonEvidence(1,"SHA256_BYTES_V1",c.evidence().fileHashes(),c.evidence().complete(),java.util.stream.Stream.concat(c.evidence().engines().entrySet().stream().filter(e->!e.getKey().equals("backend")),java.util.stream.Stream.of(java.util.Map.entry("backend","synthetic-previous-version"))).collect(java.util.stream.Collectors.toMap(java.util.Map.Entry::getKey,java.util.Map.Entry::getValue)),c.evidence().anchorHashes()),c.sourceManifest()));return null;});
         var result=scan(save("debug=false\n",created.path("revision").asLong()));
         assertEquals(0,result.at("/comparison/counts/RESOLVED").asInt());assertTrue(result.at("/comparison/counts/UNAVAILABLE").asInt()>0);
         assertEquals("NOT_COMPARED",result.at("/resultSummary/structuralComparison").asText());
@@ -146,7 +147,7 @@ class WorkspaceScanApiTest {
     }
     @Test void denoResponseRemovalIsObservedWithoutResolvingStructuralFindings() throws Exception {
         String path="supabase/functions/inspect/index.ts";
-        entries=List.of(new SourceArchive.Entry(path,("Deno.serve(async request => {\n  return Response.json(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));\n});\n").getBytes(StandardCharsets.UTF_8),false,0100644));
+        entries=List.of(new SourceArchive.Entry("z-fixture.txt","controlled root marker".getBytes(StandardCharsets.UTF_8),false,0100644),new SourceArchive.Entry(path,("Deno.serve(async request => {\n  return Response.json(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));\n});\n").getBytes(StandardCharsets.UTF_8),false,0100644));
         acquire(true);var before=getJson("/api/reviews/"+originalId,owner);
         var finding=before.at("/serverAnalysis/validatedFindings/0");
         assertEquals("TS_SENSITIVE_DATA_EXPOSURE",finding.path("ruleId").asText());
@@ -159,7 +160,7 @@ class WorkspaceScanApiTest {
         assertEquals(0,result.at("/comparison/counts/RESOLVED").asInt());
         assertEquals(before.path("securityScore"),result.path("securityScore"));
         assertEquals(before.at("/riskAssessment/prioritySummary"),result.at("/riskAssessment/prioritySummary"));
-        var exported=mvc.perform(post(base+"/export/zip").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON)
+        var exported=mvc.perform(post(base+"/export/zip").param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",List.of(file),"approved",true))))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
         var bytes=SourceArchive.read(new java.io.ByteArrayInputStream(exported)).get(0).bytes();
@@ -255,8 +256,8 @@ class WorkspaceScanApiTest {
         doAnswer(call->{var d=json.readTree(((WorkspacePatch.Prompt)call.getArgument(0)).untrustedData());assertEquals(count,d.at("/context/bindings").size());return new WorkspacePatch.Output("PATCH",d.path("fileId").asText(),d.path("startLine").asInt(),d.path("expectedHash").asText(),"{accepted:true,attempts:3}","Mock 전체 필드 수정",List.of("응답 계약 확인"),List.of("실제 앱 미검증"));}).when(provider).generateWorkspacePatch(any());
         var proposed=postJson(endpoint+"/generate",Map.of("revision",1,"currentHash",hash,"consented",true,"contextHash",p.path("contextHash").asText()),owner,200);assertEquals("PROPOSED",proposed.path("state").asText());
         var w=postJson(endpoint+"/apply",Map.of("revision",1,"currentHash",hash,"approved",true,"responseContractAcknowledged",true),owner,200);var diff=getJson(base+"/files/"+file+"/diff",owner);assertEquals("MOCK",diff.at("/provenance/0/generator").asText());assertTrue(diff.at("/provenance/0/approved").asBoolean());
-        mvc.perform(get(base+"/files/"+file+"/diff").header("Authorization","Bearer "+other)).andExpect(status().isNotFound());
-        var download=mvc.perform(post(base+"/export/zip").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",w.path("changedFileIds"),"approved",true)))).andExpect(status().isOk()).andReturn().getResponse();
+        mvc.perform(get(base+"/files/"+file+"/diff").param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+other)).andExpect(status().isNotFound());
+        var download=mvc.perform(post(base+"/export/zip").param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",w.path("changedFileIds"),"approved",true)))).andExpect(status().isOk()).andReturn().getResponse();
         var after=scan(getJson(base,owner));assertTrue(after.at("/serverAnalysis/validatedFindings").isEmpty());assertEquals(before.at("/coverage/status"),after.at("/coverage/status"));assertEquals(before.path("securityScore"),after.path("securityScore"));assertEquals(download.getHeader("X-SecureDeploy-Provenance-SHA256"),after.at("/workspaceScan/provenanceHash").asText());assertEquals(1,after.at("/workspaceScan/exports").size());assertEquals("MOCK",after.at("/workspaceScan/files/0/provenance/0/generator").asText());assertEquals(before,getJson("/api/reviews/"+originalId,owner));
         save(getJson(base+"/files/"+file,owner).path("text").asText()+"\n// manual followup\n",2);var mixed=getJson(base+"/files/"+file+"/diff",owner);assertEquals(2,mixed.path("provenance").size());assertEquals("MOCK",mixed.at("/provenance/0/generator").asText());assertEquals("MANUAL",mixed.at("/provenance/1/generator").asText());assertFalse(mixed.at("/provenance/1/approved").asBoolean());
     }
@@ -316,7 +317,7 @@ class WorkspaceScanApiTest {
         var proposed=postJson(ep+"/generate",Map.of("revision",1,"currentHash",hash,"consented",true,"contextHash",p.path("contextHash").asText()),owner,200);assertEquals("PROPOSED",proposed.path("state").asText());assertEquals("{accepted:true,attempts:3}",proposed.path("after").asText());assertTrue(getJson(base+"/files/"+file+"/diff",owner).path("provenance").isEmpty());
         postJson(ep+"/apply",Map.of("revision",1,"currentHash",hash,"approved",false,"responseContractAcknowledged",true),owner,409);
         var w=postJson(ep+"/apply",Map.of("revision",1,"currentHash",hash,"approved",true,"responseContractAcknowledged",true),owner,200);var event=getJson(base+"/files/"+file+"/diff",owner).at("/provenance/0");assertEquals("SECUREDEPLOY_AST",event.path("generator").asText());assertEquals("MOCK",event.path("providerOrigin").asText());assertTrue(event.path("approved").asBoolean());
-        var download=mvc.perform(post(base+"/export/zip").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",w.path("changedFileIds"),"approved",true)))).andExpect(status().isOk()).andReturn().getResponse();
+        var download=mvc.perform(post(base+"/export/zip").param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",w.path("changedFileIds"),"approved",true)))).andExpect(status().isOk()).andReturn().getResponse();
         var after=scan(w);assertTrue(after.at("/serverAnalysis/validatedFindings").isEmpty());assertEquals(before.at("/coverage/status"),after.at("/coverage/status"));assertEquals(before.path("securityScore"),after.path("securityScore"));assertEquals(download.getHeader("X-SecureDeploy-Provenance-SHA256"),after.at("/workspaceScan/provenanceHash").asText());assertEquals("SECUREDEPLOY_AST",after.at("/workspaceScan/files/0/provenance/0/generator").asText());assertEquals(before,getJson("/api/reviews/"+originalId,owner));verify(provider,never()).generateWorkspacePatch(any());
     }
     @org.junit.jupiter.params.ParameterizedTest @org.junit.jupiter.params.provider.ValueSource(strings={"partial","duplicate","foreign-field","foreign-object","unsupported-operation","needs-review-with-ops","legacy-output"})
@@ -362,7 +363,7 @@ class WorkspaceScanApiTest {
         assertEquals(1,getJson(base,owner).path("revision").asInt());
         var edited=save("export function status(req,res){return res.json({ok:true});}",1);
         assertTrue(getJson(base+"/files/"+file+"/diff",owner).path("patch").asText().contains("credential"));
-        mvc.perform(post(base+"/export/zip").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",List.of(file),"approved",true)))).andExpect(status().isOk());
+        mvc.perform(post(base+"/export/zip").param("sourceRetentionAcknowledged","true").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",List.of(file),"approved",true)))).andExpect(status().isOk());
         var after=scan(edited);assertEquals(1,after.at("/serverAnalysis/validatedFindings").size());
         assertEquals("web.mjs",after.at("/serverAnalysis/validatedFindings/0/location/filePath").asText());
         assertEquals(before.path("securityScore"),after.path("securityScore"));assertEquals(before.path("scannedFileCount"),after.path("scannedFileCount"));

@@ -16,7 +16,9 @@ public final class GitHubAppDtos {
             String repositoryUrl, boolean privateRepository, String defaultBranch) { }
     public record RepositoryPage(List<Repository> repositories, boolean hasNextPage) { }
     public record InstallationPage(List<Installation> installations, boolean hasNextPage) { }
-    public record Analyze(@Positive long installationId, @Positive long repositoryId, ScanMode scanMode) {
+    public record Analyze(@Positive long installationId, @Positive long repositoryId, ScanMode scanMode,
+            @jakarta.validation.constraints.Pattern(regexp="[a-f0-9]{40}") String commitSha) {
+        public Analyze(long installation,long repository,ScanMode mode){this(installation,repository,mode,null);}
         public Analyze { if (scanMode == null) scanMode = ScanMode.STANDARD; }
     }
 }

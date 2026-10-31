@@ -13,13 +13,14 @@ public class PrivateGitHubSourceService {
     public PrivateGitHubSourceService(GitHubConnectionService connections, GitHubAppClient client, GitHubRepositoryService sources) {
         this.connections = connections; this.client = client; this.sources = sources;
     }
-    public ClonedRepository collect(long userId, long installation, long repository) {
+    public ClonedRepository collect(long userId,long installation,long repository){return collect(userId,installation,repository,null);}
+    public ClonedRepository collect(long userId, long installation, long repository,String commitSha) {
         var selected = connections.authorize(userId, installation, repository);
         String token = client.installationToken(installation, repository);
         ClonedRepository clone = null;
         boolean complete = false;
         try (var credential = new GitHubReadCredential(GitHubRepositoryUrl.parse(selected.repositoryUrl()), token)) {
-            clone = sources.cloneAuthorizedRepository(selected.repositoryUrl(), credential);
+            clone = commitSha==null?sources.cloneAuthorizedRepository(selected.repositoryUrl(), credential):sources.cloneAuthorizedRepository(selected.repositoryUrl(),credential,commitSha);
             var confirmed = connections.authorize(userId, installation, repository);
             if (!selected.repositoryUrl().equals(confirmed.repositoryUrl())) throw GitHubAppException.denied();
             complete = true;
