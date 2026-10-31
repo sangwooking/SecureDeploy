@@ -10,6 +10,7 @@ import { JavaSqlAnalysisSection } from './JavaSqlAnalysisSection';
 import { SupabaseAnalysisSection } from './SupabaseAnalysisSection';
 
 const entryStageLabels: Record<string,string>={
+  HTML_TEXT_INPUT_FLOW:'검증된 정적 HTML 텍스트 위험 경로 · 브라우저 공격 성공은 미검증',
   MIDDLEWARE_FORWARD_ONLY:'순서대로 next() 전달만 확인 · 인증·인가 보호 근거는 아님',
   HTML_RESPONSE_ENCODED_TEXT_EVIDENCE:'로컬 5종 엔티티 인코딩 확인 · HTML 텍스트·따옴표 속성에 한정, 전체 안전성 미검증',
   HTML_RESPONSE_INPUT_CANDIDATE:'요청 입력 → HTML 응답 연결 · 출력 인코딩·실행 문맥 검토 필요',
