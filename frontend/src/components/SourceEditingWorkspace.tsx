@@ -1,3 +1,4 @@
+import {NpmTreePlanPanel} from './NpmTreePlanPanel';
 import {originalVerified} from './sourceVerification';
 import {loadSourceVerification,type SourceVerification} from '../api/editingApi';
 import {OriginalSourceStatus} from './OriginalSourceStatus';
@@ -64,6 +65,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const [allFiles,setAllFiles]=useState(!problemContext);
   const pendingLine=useRef<number|undefined>(undefined);
   const targetPath=problemContext?.path??initialPath;
+  const isDependencyContext=!!problemContext&&!!result.riskAssessment?.dependencyFindings?.some(f=>f.findingId===problemContext.findingId);
   const mounted = useRef(true);
   const dirty = content !== null && text !== content.text.replace(/\r\n/g, '\n');
   useEffect(() => {
@@ -221,6 +223,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
       </div>
       <nav className="editing-stages" aria-label="수정 단계">{([['edit','코드 수정'],['diff','변경 검토·승인'],['scan','재검사']] as const).map(([id,label],index)=><button key={id} type="button" aria-current={stage===id?'step':undefined} onClick={()=>setStage(id)}><span className="stage-number" aria-hidden="true">{index+1}</span>{label}</button>)}</nav>
       {initialAdviceId&&!cap.loading&&(!cap.value?.dependencyFiles||!cap.value.npmGeneration)&&<p role="note">이 서버에서는 npm 수정 파일 생성이 준비되지 않았어요. 파일을 직접 수정하고 Diff를 검토할 수 있습니다.</p>}
+      {stage==='edit'&&cap.value?.npmTreePlans&&!!result.sca?.dependencyVulnerabilities?.some(d=>d.ecosystem==='NPM')&&!initialAdviceId&&<NpmTreePlanPanel workspace={workspace} result={result} findingId={problemContext?.findingId} disabled={busy||dirty||expired} onApplied={async next=>{setWorkspace(next);setDiffs(null);setApproved(false);if(selected){const value=await loadEditingFile(next.id,selected.id);setContent(value);setText(value.text.replace(/\r\n/g,'\n'));}setStage('diff');}}/>}
       {stage==='edit'&&initialAdviceId&&cap.value?.dependencyFiles&&cap.value.npmGeneration&&<WorkspaceAutomationPanels workspace={workspace} adviceId={initialAdviceId} disabled={busy||dirty||expired} onApplied={async next=>{setWorkspace(next);setDiffs(null);setApproved(false);if(selected){const value=await loadEditingFile(next.id,selected.id);setContent(value);setText(value.text.replace(/\r\n/g,'\n'));}}}/>}
       <div hidden={stage!=='scan'}>{workspace.changedFileIds.length===0&&<p>수정한 파일을 저장한 뒤 재검사할 수 있어요.</p>}<div hidden={workspace.changedFileIds.length===0}><WorkspaceScanPanel workspace={workspace} original={result} disabled={busy || dirty || expired || workspace.changedFileIds.length===0} /></div></div>
       {!expired && <>
@@ -244,7 +247,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
             </> : <p>파일을 선택해 주세요.</p>}
           </div>
           <aside className="source-evidence-pane" aria-label="선택 파일의 수정 근거">
-            {problemContext&&<div id="workspace-problem-guide"><h3>{problemContext.title}</h3>{selected&&!problemContext.locations.some(l=>l.path===selected.path)&&<p role="note">현재 연 파일은 선택한 문제의 원본 경로와 다릅니다. 이 파일 변경이 해당 문제를 해결한다는 의미가 아닙니다.</p>}{cap.loading?<p role="status">수정 지원 정보를 확인합니다.</p>:cap.problem?<p role="note">지원 정보를 확인하지 못했습니다{cap.problem.status?` (HTTP ${cap.problem.status})`:''}. AI 서버 오류로 단정하지 않으며 수동 수정은 유지합니다.</p>:!cap.value?.providerAvailable?<p role="note">현재 AI Provider가 비활성화되어 있습니다. 기본 가이드와 수동 수정을 이용하세요.</p>:cap.value.providerOrigin==='MOCK'?<p className="source-label">현재 시험 Provider는 Mock입니다. 실제 모델 호출·품질 검증과 구분합니다.</p>:null}<ProblemRepairGuide rule={problemContext.ruleId} v={problemContext.vulnerability}/>{problemContext.flow&&<><p>{problemContext.flow.recommendedAction}</p><ol>{problemContext.flow.verificationSteps.map((s,i)=><li key={i}>{s}</li>)}</ol></>}</div>}
+            {problemContext&&<div id="workspace-problem-guide"><h3>{problemContext.title}</h3>{selected&&!problemContext.locations.some(l=>l.path===selected.path)&&<p role="note">현재 연 파일은 선택한 문제의 원본 경로와 다릅니다. 이 파일 변경이 해당 문제를 해결한다는 의미가 아닙니다.</p>}{cap.loading?<p role="status">수정 지원 정보를 확인합니다.</p>:cap.problem?<p role="note">지원 정보를 확인하지 못했습니다{cap.problem.status?` (HTTP ${cap.problem.status})`:''}. AI 서버 오류로 단정하지 않으며 수동 수정은 유지합니다.</p>:!cap.value?.providerAvailable?<p role="note">{isDependencyContext&&cap.value?.npmTreePlans?'AI Provider는 비활성화되어 있지만, 의존성 트리 수정안은 AI 없이 npm과 보안 근거로 검증할 수 있습니다.':'현재 AI Provider가 비활성화되어 있습니다. 기본 가이드와 수동 수정을 이용하세요.'}</p>:cap.value.providerOrigin==='MOCK'?<p className="source-label">현재 시험 Provider는 Mock입니다. 실제 모델 호출·품질 검증과 구분합니다.</p>:null}<ProblemRepairGuide rule={isDependencyContext?'NPM_DEPENDENCY_UPDATE':problemContext.ruleId} v={problemContext.vulnerability}/>{problemContext.flow&&<><p>{problemContext.flow.recommendedAction}</p><ol>{problemContext.flow.verificationSteps.map((s,i)=><li key={i}>{s}</li>)}</ol></>}</div>}
             {workspace&&targetPath&&!workspace.files.some(f=>f.path===targetPath)&&<p role="alert">선택한 문제의 파일을 확보하지 못했습니다. 다른 파일을 대신 열지 않았습니다.</p>}
             {selected ? <>
               {selected.editable && content && ((selected.path.endsWith('.properties')&&findings.some(f=>['DEBUG_ENABLED','STACKTRACE_EXPOSURE','INSECURE_COOKIE'].includes(f.ruleId)))||(/\.[cm]?[jt]s$/.test(selected.path)&&flowFindings.some(f=>f.ruleId==='TS_SENSITIVE_DATA_EXPOSURE'&&(f.location.kind==='HTTP_RESPONSE'||f.location.kind==='EXPRESS_HTTP_RESPONSE'&&cap.value?.patchScopes?.includes('EXPRESS_DIRECT_ENV_JSON'))))) && <AiPatchPanel initialFinding={selected.path===problemContext?.path?(problemContext.flow?"flow:"+problemContext.flow.findingId:problemContext.vulnerability?.vulnerabilityId!=null?String(problemContext.vulnerability.vulnerabilityId):undefined):undefined} key={selected.id} workspace={workspace} file={selected} content={content} findings={findings} flowFindings={flowFindings} dirty={dirty} disabled={busy}

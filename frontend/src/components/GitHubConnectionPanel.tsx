@@ -60,7 +60,7 @@ export function GitHubConnectionPanel({ onSelect }: { onSelect?: (repository: Co
     catch (e) { setError(e instanceof Error ? e.message : '연결을 해제하지 못했습니다.'); }
     finally { setBusy(false); }
   };
-  return <section className="github-connection" aria-label="GitHub 계정 연결"><h3>GitHub 연결</h3>
+  return <section className="github-connection" aria-label="GitHub 계정 연결"><h3>GitHub 연결</h3><p>계정 인증과 App 설치는 별도입니다. 인증이 만료됐다면 다시 연결하고, GitHub 화면에서 읽기 전용 App 설치와 대상 저장소 선택을 직접 승인해 주세요. 비공개 토큰을 입력하거나 보내지 마세요.</p>
     {loading && <p role="status">GitHub 접근 권한을 확인하고 있습니다.</p>}
     {connection && !connection.configured && <p>GitHub App 설정이 아직 준비되지 않았습니다. 공개 URL 또는 ZIP 분석을 이용해 주세요.</p>}
     {connection?.login && <p>연결 계정: <strong>{connection.login}</strong>{connection.reconnectRequired ? ' · 재연결 필요' : ''}</p>}
