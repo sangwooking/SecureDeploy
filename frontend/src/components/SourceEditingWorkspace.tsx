@@ -175,6 +175,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const flowFindings = selected && workspace?.identityStatus === 'EXACT_GIT_COMMIT'
     ? [...(result.serverAnalysis?.validatedFindings ?? []), ...(result.serverAnalysis?.pythonAnalysis?.validatedFindings ?? [])]
       .filter(f => f.location.filePath.replace(/\\/g, '/') === selected.path) : [];
+  if(cap.value?.recoveryReadOnly)return <section aria-label="수정 작업 공간"><p role="status">읽기 전용 복구 모드에서는 수정 작업을 재개할 수 없습니다. 저장된 작업은 삭제되지 않으며 정상 모드로 복귀한 뒤 다시 열 수 있습니다.</p></section>;
   return <section className={`source-editor stage-${stage} pane-${pane} ${evidenceOpen?'evidence-open':''}`} aria-label="수정 작업 공간">
     <header className="source-editor-header"><div><h2>수정 작업 공간</h2><p>{result.projectName} · 검사 #{result.reviewId}</p></div>
       {!embedded&&<button type="button" className="secondary-button" aria-label="분석 결과로 돌아가기" disabled={busy} onClick={() => { if (!dirty || window.confirm('저장하지 않은 편집을 버리고 결과로 돌아갈까요?')) onBack(); }}>결과로 돌아가기</button>}</header>

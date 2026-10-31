@@ -1,0 +1,1 @@
+allprojects { tasks.register('releaseGateClasspath') { dependsOn testClasses; doLast { new File('/private/tmp/securedeploy-release-gate01-evidence/classpath.json').text = groovy.json.JsonOutput.toJson(sourceSets.test.runtimeClasspath.files.collect { it.absolutePath }) } } }

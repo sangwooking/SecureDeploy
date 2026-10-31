@@ -17,6 +17,10 @@ public class UiCapabilitiesController {
     public UiCapabilitiesController(AiProperties properties, AiProviderResolver resolver, NpmUpdateGenerator npm) {
         this.properties=properties;this.resolver=resolver;this.npm=npm;
     }
+    private org.springframework.core.env.Environment environment;
+    private com.securedeploy.ai.usage.DurableAiLedger ledger;
+    @org.springframework.beans.factory.annotation.Autowired
+    void releaseState(org.springframework.core.env.Environment environment,com.securedeploy.ai.usage.DurableAiLedger ledger){this.environment=environment;this.ledger=ledger;}
     @GetMapping("/api/ui-capabilities")
     public Map<String,Object> capabilities() {
         var provider=resolver.resolve();
@@ -29,6 +33,10 @@ public class UiCapabilitiesController {
         result.put("structuredPatchPlans",true);
         result.put("patchScopes",java.util.List.of("SPRING_LITERAL_PROPERTIES","DENO_DIRECT_ENV_JSON","EXPRESS_DIRECT_ENV_JSON"));
         result.put("aiCapabilityMatrix",AiCapabilityMatrix.entries());
+        boolean recovery=environment!=null&&environment.acceptsProfiles(org.springframework.core.env.Profiles.of("release-recovery"));
+        result.put("recoveryReadOnly",recovery);result.put("durableAiAdmission",ledger!=null&&ledger.enabled());
+        result.put("legacyAiReport",false); // No per-request consent contract: real legacy reports remain disabled.
+        if(recovery){for(String name:java.util.List.of("dependencyAdvice","workspaceSemanticReview","dependencyFiles","npmGeneration","providerAvailable","structuredPatchPlans"))result.put(name,false);}
         return result;
     }
 }

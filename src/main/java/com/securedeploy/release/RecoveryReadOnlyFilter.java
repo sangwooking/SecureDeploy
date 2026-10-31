@@ -15,7 +15,7 @@ public class RecoveryReadOnlyFilter extends OncePerRequestFilter {
         String path=req.getRequestURI();
         boolean login=path.equals("/api/auth/login")&&req.getMethod().equals("POST");
         boolean read=req.getMethod().equals("GET")||req.getMethod().equals("HEAD")||req.getMethod().equals("OPTIONS");
-        if(path.startsWith("/api/")&&(!read&&!login||path.startsWith("/api/editing-workspaces"))){
+        if(!read&&!login||path.startsWith("/api/editing-workspaces")||req.getServletPath().startsWith("/api/editing-workspaces")){
             res.setStatus(503);res.setContentType("application/json;charset=UTF-8");
             res.getWriter().write("{\"code\":\"RECOVERY_READ_ONLY\",\"message\":\"읽기 전용 복구 모드입니다. 저장된 결과만 조회할 수 있습니다.\"}");return;
         }
