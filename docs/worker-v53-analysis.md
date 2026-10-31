@@ -111,3 +111,7 @@ hash verification and read-only login/Review tests. Keep TEMPLATE/paid-call gate
 existing release-compatible/release-recovery procedures for a failed candidate feature; do not
 claim that an old UX-03 binary is a universally safe rollback after new snapshots are saved.
 No automatic restore over the operating DB, reanalysis of a user project or remote push is allowed.
+
+Final visual QA caught an Express-only static guide label on a new Pages eval Finding.
+New Pages evidence now selects a Pages API request description; old stored Review text is not
+rewritten. Its live integration assertion verifies the guide along with the handler/sink path.

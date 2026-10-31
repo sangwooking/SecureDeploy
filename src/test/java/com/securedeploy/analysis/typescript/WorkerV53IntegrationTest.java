@@ -11,6 +11,7 @@ class WorkerV53IntegrationTest {
   assertEquals("ts-server-v53",r.analyzerVersion());
   assertTrue(r.nodeUses().stream().anyMatch(n->n.operation().equals("NEXT_PAGES_DEFAULT_HANDLER")&&n.location().filePath().equals("pages/api/check.ts")));
   assertTrue(r.validatedFindings().stream().anyMatch(f->f.ruleId().equals("JS_EVAL_INPUT_FLOW")&&f.location().filePath().equals("handler.ts")));
+  assertTrue(r.validatedFindings().stream().filter(f->f.ruleId().equals("JS_EVAL_INPUT_FLOW")).allMatch(f->f.riskExplanation().contains("Next.js Pages API 요청")));
   assertEquals("PARTIAL",r.status());
  }
  @Test void htmlInputIsReviewEvidenceWithoutNewFindingOrRisk(){
