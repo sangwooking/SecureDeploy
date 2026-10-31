@@ -53,9 +53,11 @@ and distributed AI quotas remain deployment blockers for multi-instance operatio
 ## Rollback and backup
 
 Turn persistence OFF to return to memory behavior without modifying stored rows.
-Older binaries ignore the additive table, but cannot resume its stored Workspaces.
+The PATCH-03 baseline ignores the additive table and cannot resume its stored Workspaces. The operating UX-03 additionally rejects newer rescan provenance JSON; see epic01-deployment-readiness.md before choosing any rollback binary.
 Do not drop the table or restore a DB over production automatically. Export saved
 work before rollback; never claim the old memory sessions were recovered. Back up
 DB and keys separately with restricted access and validate an isolated restore with
 matching keys and hash checks. Production rollout remains blocked until operator
 key provisioning, backup restore and interruption handling are verified.
+
+References: Oracle Cipher AEAD/GCM requirements https://docs.oracle.com/en/java/javase/21/docs/api/java.base/javax/crypto/Cipher.html ; PostgreSQL consistent logical backup https://www.postgresql.org/docs/current/app-pgdump.html .

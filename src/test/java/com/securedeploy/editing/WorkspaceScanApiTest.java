@@ -27,18 +27,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties={"securedeploy.ai.provider=TEMPLATE","securedeploy.sca.enabled=false","securedeploy.threat-intelligence.enabled=false"})
 @AutoConfigureMockMvc
 class WorkspaceScanApiTest {
+    @Autowired WorkspacePatchService patchService;
     @Autowired MockMvc mvc; @Autowired ObjectMapper json; @Autowired ReviewRepository reviews;
     @Autowired AiProperties properties; @Autowired PlatformTransactionManager transactions;
     @MockBean EditingSourceService sources; @MockBean AiProviderResolver resolver;
     final AiProvider provider=mock(AiProvider.class);
     String owner, other, base, id, file, hash; long originalId; List<SourceArchive.Entry> entries;
     @BeforeEach void setup() throws Exception {
+        patchService.configureCallPolicy(new PatchCallPolicy(false));
         owner=signup();other=signup();
         entries=List.of(new SourceArchive.Entry("application.properties", "debug=true\nserver.error.include-stacktrace=always\n".getBytes(StandardCharsets.UTF_8),false,0100644),
                 new SourceArchive.Entry("unsupported.rs", "// synthetic unsupported code\n".getBytes(StandardCharsets.UTF_8), false,0100644));
         when(sources.github(anyLong(),any())).thenAnswer(i->entries.stream().map(e->new SourceArchive.Entry(e.path(),e.bytes().clone(),e.directory(),e.mode())).toList());
         properties.setProvider(AiProviderType.OPENAI);when(resolver.resolve()).thenReturn(provider);
-        when(provider.providerType()).thenReturn(AiProviderType.OPENAI);when(provider.isAvailable()).thenReturn(true);
+        when(provider.providerType()).thenReturn(AiProviderType.OPENAI);when(provider.isAvailable()).thenReturn(true);when(provider.executionOrigin()).thenReturn("MOCK");
         when(provider.consumeLastTokenUsage()).thenReturn(Optional.empty());
         when(provider.generateWorkspacePatch(any())).thenAnswer(i->{var d=json.readTree(((WorkspacePatch.Prompt)i.getArgument(0)).untrustedData());return new WorkspacePatch.Output("PATCH",d.path("fileId").asText(),d.path("startLine").asInt(),d.path("expectedHash").asText(),"debug=false","설정 변경 제안",List.of("재검사"),List.of("운영 미확인"));});
     }
@@ -99,7 +101,7 @@ class WorkspaceScanApiTest {
         String p=base+"/patches/"+proposal.path("id").asText();String current=proposal.path("currentHash").asText();
         postJson(p+"/generate",Map.of("revision",1,"currentHash",current,"consented",true),owner,200);
         var applied=postJson(p+"/apply",Map.of("revision",1,"currentHash",current,"approved",true),owner,200);
-        var result=scan(applied);assertEquals("AI_APPROVED",result.at("/workspaceScan/files/0/changeOrigin").asText());
+        var result=scan(applied);assertEquals("MOCK_AI_APPROVED",result.at("/workspaceScan/files/0/changeOrigin").asText());
         assertTrue(result.path("securityScore").asInt()>before.path("securityScore").asInt());assertEquals("PARTIAL",result.at("/coverage/status").asText());
         assertFalse(java.util.stream.StreamSupport.stream(result.path("vulnerabilities").spliterator(),false).anyMatch(n->n.path("ruleId").asText().equals("DEBUG_ENABLED")));
         assertEquals("risk-v1.2",result.at("/riskAssessment/policyVersion").asText());
@@ -231,7 +233,7 @@ class WorkspaceScanApiTest {
         var result=scan(applied);assertTrue(result.at("/serverAnalysis/validatedFindings").isEmpty());
         var changedFile=java.util.stream.StreamSupport.stream(result.at("/workspaceScan/files").spliterator(),false)
                 .filter(f->f.path("path").asText().equals(path)).findFirst().orElseThrow();
-        assertEquals(deterministic?"DETERMINISTIC_APPROVED":"AI_APPROVED",changedFile.path("changeOrigin").asText());
+        assertEquals(deterministic?"DETERMINISTIC_APPROVED":"MOCK_AI_APPROVED",changedFile.path("changeOrigin").asText());
         assertEquals("NOT_COMPARED",result.at("/resultSummary/structuralComparison").asText());assertEquals(0,result.at("/comparison/counts/RESOLVED").asInt());
         assertEquals(0,result.at("/comparison/counts/NEW").asInt());assertEquals(before.path("securityScore"),result.path("securityScore"));
         assertEquals(before.at("/coverage/status"),result.at("/coverage/status"));
@@ -281,7 +283,15 @@ class WorkspaceScanApiTest {
         doAnswer(call->{var d=json.readTree(((WorkspacePatch.Prompt)call.getArgument(0)).untrustedData());return new WorkspacePatch.Output("PATCH",d.path("fileId").asText(),d.path("startLine").asInt(),d.path("expectedHash").asText(),"{accepted:true}","선택된 응답만 수정",List.of("다른 응답 확인"),List.of("전체 안전 미확인"));}).when(provider).generateWorkspacePatch(any());String ep=base+"/patches/"+p.path("id").asText();assertEquals("PROPOSED",postJson(ep+"/generate",Map.of("revision",1,"currentHash",hash,"consented",true,"contextHash",p.path("contextHash").asText()),owner,200).path("state").asText());var w=postJson(ep+"/apply",Map.of("revision",1,"currentHash",hash,"approved",true,"responseContractAcknowledged",true),owner,200);var after=scan(w);assertEquals(1,after.at("/serverAnalysis/validatedFindings").size());assertEquals(before.at("/coverage/status"),after.at("/coverage/status"));assertEquals(before,getJson("/api/reviews/"+originalId,owner));
     }
 
+    @Test void realOriginWithPolicyOffCannotInvokeProviderEvenWithConfiguredModel()throws Exception {
+        prepareIndependent(1);when(provider.executionOrigin()).thenReturn("OPENAI");
+        assertFalse(getJson("/api/editing-workspaces/patch-provider",owner).path("available").asBoolean());
+        var flow=getJson("/api/reviews/"+originalId,owner).at("/serverAnalysis/validatedFindings/0");
+        postJson(base+"/patches",Map.of("fileId",file,"findingId",0,"flowFindingId",flow.path("findingId").asText(),"revision",1,"originalHash",hash,"currentHash",hash),owner,503);
+        verify(provider,never()).generateWorkspacePatch(any());verify(provider,never()).generateWorkspacePatchPlan(any());
+    }
     @Test void openAiOriginContractUsesStubOnlyAndKeepsApprovalSeparate()throws Exception {
+        patchService.configureCallPolicy(new PatchCallPolicy(true));properties.getOpenai().setModel("gpt-5.4-mini-2026-03-17");
         prepareIndependent(1);when(provider.executionOrigin()).thenReturn("OPENAI");var before=getJson("/api/reviews/"+originalId,owner);var flow=before.at("/serverAnalysis/validatedFindings/0");var p=postJson(base+"/patches",Map.of("fileId",file,"findingId",0,"flowFindingId",flow.path("findingId").asText(),"revision",1,"originalHash",hash,"currentHash",hash),owner,200);
         assertTrue(getJson(base+"/files/"+file+"/diff",owner).path("provenance").isEmpty());
         doAnswer(call->{var d=json.readTree(((WorkspacePatch.Prompt)call.getArgument(0)).untrustedData());return new WorkspacePatch.Output("PATCH",d.path("fileId").asText(),d.path("startLine").asInt(),d.path("expectedHash").asText(),"{accepted:true,attempts:3}","통제 Provider 메타데이터 시험",List.of("출처 연결 확인"),List.of("실제 모델 호출 없음"));}).when(provider).generateWorkspacePatch(any());String ep=base+"/patches/"+p.path("id").asText();assertEquals("PROPOSED",postJson(ep+"/generate",Map.of("revision",1,"currentHash",hash,"consented",true,"contextHash",p.path("contextHash").asText()),owner,200).path("state").asText());assertTrue(getJson(base+"/files/"+file+"/diff",owner).path("provenance").isEmpty());postJson(ep+"/apply",Map.of("revision",1,"currentHash",hash,"approved",true,"responseContractAcknowledged",true),owner,200);var e=getJson(base+"/files/"+file+"/diff",owner).at("/provenance/0");assertEquals("OPENAI",e.path("generator").asText());assertEquals("OPENAI",e.path("providerOrigin").asText());assertTrue(e.path("approved").asBoolean());verify(provider,times(1)).generateWorkspacePatch(any());

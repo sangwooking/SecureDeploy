@@ -190,7 +190,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
       {discovery?.state==='AVAILABLE'&&<div role="status"><p>진행 중인 수정 작업이 있어요.</p><p>서버에 저장된 내용만 이어집니다. 다른 탭의 미저장 편집은 가져오지 않습니다. 이용 시간은 연장되지 않습니다.</p><button type="button" className="primary-button" disabled={busy} onClick={resumeDiscovered}>기존 작업 이어서 하기</button></div>}
       {discovery?.state==='OTHER_REVIEW'&&<p role="status">다른 검사에서 진행 중인 수정 작업이 있어요. 해당 작업을 내보내고 명시적으로 닫은 뒤 새 작업을 시작해 주세요.</p>}
       {discovery?.state==='CREATING'&&<p role="status">다른 탭에서 원본을 확보하고 있어요. 잠시 후 이 화면을 다시 확인해 주세요.</p>}
-      <p>원본은 30분 동안 임시 보관되며 서버 재시작 시 사라집니다. 편집 내용은 자동 재검사되거나 GitHub에 반영되지 않습니다. 저장도 임시 서버 보관입니다. 다른 탭에서 계정을 변경하기 전에 승인한 Patch/ZIP을 내보내 주세요.</p>
+      <p>보관 방식과 만료 시각은 원본 확보 후 표시됩니다. 미저장 편집은 복구되지 않습니다. 편집 내용은 자동 재검사되거나 GitHub에 반영되지 않으며, 다른 탭에서 계정을 변경하기 전에 필요한 Patch/ZIP을 내보내 주세요.</p>
       {result.sourceType === 'ZIP' ? <><p role="note">과거 ZIP과 일치하는지 검증할 기록이 없습니다. 과거 경고 위치를 확정 연결하지 않으며 다운로드 후 새로 분석해야 합니다.</p>
         <label>원본 ZIP <input type="file" accept=".zip,application/zip" disabled={busy} onChange={e => setZip(e.target.files?.[0] ?? null)} /></label></>
         : <p>현재 읽기 권한을 확인하고 분석 당시 commit만 가져옵니다. 해당 commit을 확보하지 못하면 작업을 중단합니다.</p>}

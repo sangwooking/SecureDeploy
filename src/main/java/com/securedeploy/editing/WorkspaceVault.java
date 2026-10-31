@@ -72,6 +72,7 @@ public class WorkspaceVault {
     void delete(String id,long owner,long version){
         if(enabled&&jdbc.update("delete from editing_workspace_v1 where id=? and owner_id=? and store_version=?",id,owner,version)!=1)throw conflict();
     }
+    void cleanupOwner(long owner,Instant now){if(enabled)jdbc.update("delete from editing_workspace_v1 where owner_id=? and expires_at<=?",owner,java.sql.Timestamp.from(now));}
     int cleanup(Instant now){return enabled?jdbc.update("delete from editing_workspace_v1 where id in (select id from editing_workspace_v1 where expires_at<=? order by expires_at limit 100)",java.sql.Timestamp.from(now)):0;}
     private byte[] aad(String id,long owner,long project,long review,long version,Instant expiry,String kid){
         return ("securedeploy-workspace-v1|"+id+"|"+owner+"|"+project+"|"+review+"|"+version+"|"+expiry+"|"+kid).getBytes(StandardCharsets.UTF_8);

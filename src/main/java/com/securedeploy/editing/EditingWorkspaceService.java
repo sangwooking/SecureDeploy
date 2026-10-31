@@ -126,7 +126,7 @@ public class EditingWorkspaceService {
         synchronized (this) {
             if (closed) throw fail(HttpStatus.SERVICE_UNAVAILABLE, "작업 공간을 사용할 수 없습니다.");
             expire();
-            if(vault!=null&&vault.enabled())vault.cleanup(Instant.now(clock));
+            if(vault!=null&&vault.enabled())vault.cleanupOwner(user,Instant.now(clock));
             restore(user);
             if (creating.contains(user) || states.values().stream().anyMatch(s -> s.user == user))
                 throw new EditingConflictException("WORKSPACE_ALREADY_OPEN", "진행 중인 수정 작업이 있어요. 기존 작업을 확인하고 이어서 진행해 주세요.");

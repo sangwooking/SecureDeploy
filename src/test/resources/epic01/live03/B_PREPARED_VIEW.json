@@ -1,0 +1,142 @@
+{
+  "id": "456f7258-8175-4863-b0d9-3e460bf58dac",
+  "state": "APPROVAL_REQUIRED",
+  "fileId": "1eb65eb7-7c49-40c8-9a38-28f0c861b871",
+  "findingId": 0,
+  "ruleId": "TS_SENSITIVE_DATA_EXPOSURE",
+  "reviewId": 20,
+  "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "revision": 1,
+  "originalHash": "f459633edb33b5f4e98bf20625dad0fafa60bc6c8067f40487f5a295fd0fc89d",
+  "currentHash": "f459633edb33b5f4e98bf20625dad0fafa60bc6c8067f40487f5a295fd0fc89d",
+  "startLine": 3,
+  "before": "{accepted:true,private0:process.env.API_SECRET,private1:process.env.SUPABASE_SERVICE_ROLE_KEY,private2:process.env.API_SECRET,attempts:3}",
+  "after": null,
+  "diff": null,
+  "provider": {
+    "name": "OPENAI",
+    "model": "gpt-5.4-mini-2026-03-17",
+    "available": true,
+    "origin": "OPENAI"
+  },
+  "explanation": "코드는 전송되지 않았습니다.",
+  "verificationSteps": [
+    "삭제될 응답 필드의 API 사용처와 기능 영향을 확인하세요.",
+    "승인 후 STANDARD 재검사에서 후보·새 경고·Coverage를 확인하세요."
+  ],
+  "limitations": [
+    "응답 필드 제거는 API 계약을 바꿀 수 있습니다. 응답을 사용하는 클라이언트와 호환성을 직접 확인하고 승인하세요.",
+    "서버 환경값 조회에서 HTTP 응답으로 전달되는 필드만 대상으로 합니다. 실제 비밀값·운영 인증·배포 상태·전체 안전성은 미확인입니다.",
+    "현재 파일이 원본과 같은 경우만 지원하며 복잡한 helper·별칭·전체 환경값 응답은 수동 검토가 필요합니다. 구조 비교는 NOT_COMPARED입니다."
+  ],
+  "flowFindingId": "ts-flow:f4882a768fef9e8d60c80473d4d94a3438b4156cd8b8f40dd839850ab481674a",
+  "method": "AI_PLAN_SERVER_AST",
+  "usage": null,
+  "context": {
+    "code": "import framework from 'express';\nconst gateway = framework();\ngateway.post('/tickets', (incoming, outgoing) => { return outgoing.status(202).json({ accepted: true, private0: process.env.API_SECRET, private1: process.env.SUPABASE_SERVICE_ROLE_KEY, private2: process.env.API_SECRET, attempts: 3 }); });",
+    "startLine": 3,
+    "endLine": 3,
+    "endpoint": "POST /tickets",
+    "sources": [
+      {
+        "line": 3,
+        "column": 104
+      },
+      {
+        "line": 3,
+        "column": 136
+      },
+      {
+        "line": 3,
+        "column": 183
+      }
+    ],
+    "sink": {
+      "line": 3,
+      "column": 54
+    },
+    "removedFields": [
+      "private0",
+      "private1",
+      "private2"
+    ],
+    "preservedFields": [
+      "accepted",
+      "attempts"
+    ],
+    "bindings": [
+      {
+        "findingId": "ts-flow:f4882a768fef9e8d60c80473d4d94a3438b4156cd8b8f40dd839850ab481674a",
+        "sourceId": "2b9b39b143b1a061b1501a4a08788f7dfcd038ec81d8e3b2dcbad7381ac1e6fb",
+        "field": "private0",
+        "source": {
+          "line": 3,
+          "column": 104
+        },
+        "sink": {
+          "line": 3,
+          "column": 54
+        },
+        "startOffset": 154,
+        "endOffset": 185,
+        "expressionHash": "0b500c47e8f9289ea1574af4ecade66d930f86aea6dcaa86c3e1682bdff8b4db"
+      },
+      {
+        "findingId": "ts-flow:f4882a768fef9e8d60c80473d4d94a3438b4156cd8b8f40dd839850ab481674a",
+        "sourceId": "011f5ad49cf6f989ea8a11225e53f09b6a8bd1f91994edae5b3bc159cd2ce316",
+        "field": "private1",
+        "source": {
+          "line": 3,
+          "column": 136
+        },
+        "sink": {
+          "line": 3,
+          "column": 54
+        },
+        "startOffset": 186,
+        "endOffset": 232,
+        "expressionHash": "c21e5973f09ca01bedea6781162b23dbab1efe348dca9c67a308631300e47599"
+      },
+      {
+        "findingId": "ts-flow:f4882a768fef9e8d60c80473d4d94a3438b4156cd8b8f40dd839850ab481674a",
+        "sourceId": "add70e277cbbeba7404ba0cde787cf2018dc5caf99c1d1cd0c76d5535b849be6",
+        "field": "private2",
+        "source": {
+          "line": 3,
+          "column": 183
+        },
+        "sink": {
+          "line": 3,
+          "column": 54
+        },
+        "startOffset": 233,
+        "endOffset": 264,
+        "expressionHash": "0b500c47e8f9289ea1574af4ecade66d930f86aea6dcaa86c3e1682bdff8b4db"
+      }
+    ]
+  },
+  "contextHash": "12410c42d8bcac7f231c5d9fa5ebc31e9286850ac2b6548d7732bc17c658ab3d",
+  "plan": {
+    "version": "EXPRESS_REMOVE_FIELDS_V1",
+    "objectId": "f5621c892e7a415154522f3cdd889725bbbc0291e87f0e6decfec279c5439309",
+    "revision": 1,
+    "originalHash": "f459633edb33b5f4e98bf20625dad0fafa60bc6c8067f40487f5a295fd0fc89d",
+    "requiredFields": [
+      {
+        "fieldId": "c59459f35a5294220985af6fa736f51d2d19f8001d3e777ee8aaf07f92d3cc76",
+        "field": "private0",
+        "sourceId": "2b9b39b143b1a061b1501a4a08788f7dfcd038ec81d8e3b2dcbad7381ac1e6fb"
+      },
+      {
+        "fieldId": "9e010f207e36b1eee3d92c64e1c615f451e350eaef7a2f0ab6741d2624559fae",
+        "field": "private1",
+        "sourceId": "011f5ad49cf6f989ea8a11225e53f09b6a8bd1f91994edae5b3bc159cd2ce316"
+      },
+      {
+        "fieldId": "44cb45b81168cfd7a1a3bb3cd47de16c9c0e18f8ede9e79fc99b9e3901702e29",
+        "field": "private2",
+        "sourceId": "add70e277cbbeba7404ba0cde787cf2018dc5caf99c1d1cd0c76d5535b849be6"
+      }
+    ]
+  }
+}

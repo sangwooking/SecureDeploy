@@ -34,8 +34,15 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
 
     Optional<ReviewEntity> findTopByProjectIdOrderByCreatedAtDesc(Long projectId);
 
-    @Query("select distinct r from ReviewEntity r left join fetch r.vulnerabilities where r.project.id = :projectId order by r.createdAt desc, r.id desc")
-    List<ReviewEntity> findAllWithVulnerabilitiesByProjectIdOrderByCreatedAtDesc(@Param("projectId") Long projectId);
+    @Query("select r from ReviewEntity r where r.project.id = :projectId order by r.createdAt desc, r.id desc")
+    List<ReviewEntity> findProjectReviewsForCollectionLoading(@Param("projectId") Long projectId);
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    default List<ReviewEntity> findAllWithVulnerabilitiesByProjectIdOrderByCreatedAtDesc(Long projectId) {
+        var result=findProjectReviewsForCollectionLoading(projectId);
+        result.forEach(r->r.getVulnerabilities().size());
+        return result;
+    }
 
     default List<ReviewEntity> findTop2WithVulnerabilitiesByProjectId(Long projectId) {
         return findAllWithVulnerabilitiesByProjectIdOrderByCreatedAtDesc(projectId).stream()
@@ -43,8 +50,14 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
                 .toList();
     }
 
-    @Query("select distinct r from ReviewEntity r left join fetch r.vulnerabilities where r.id = :id")
-    Optional<ReviewEntity> findByIdWithVulnerabilities(@Param("id") Long id);
+    // A fetch join repeats the potentially large JSON snapshots for EVERY Finding.
+    // Load the parent once, then initialize only its bounded collection in the same transaction.
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    default Optional<ReviewEntity> findByIdWithVulnerabilities(Long id) {
+        var result=findById(id);
+        result.ifPresent(r->r.getVulnerabilities().size());
+        return result;
+    }
 
     @Query("select r from ReviewEntity r join fetch r.project p where p.user.id = :userId and not exists "
             + "(select newer.id from ReviewEntity newer where newer.project.id = p.id and "
