@@ -19,6 +19,9 @@ public class UiCapabilitiesController {
     }
     private org.springframework.core.env.Environment environment;
     private com.securedeploy.ai.usage.DurableAiLedger ledger;
+    private com.securedeploy.editing.WorkspaceNpmTreeService treePlans;
+    @org.springframework.beans.factory.annotation.Autowired(required=false)
+    void treePlans(com.securedeploy.editing.WorkspaceNpmTreeService value){this.treePlans=value;}
     @org.springframework.beans.factory.annotation.Autowired
     void releaseState(org.springframework.core.env.Environment environment,com.securedeploy.ai.usage.DurableAiLedger ledger){this.environment=environment;this.ledger=ledger;}
     @GetMapping("/api/ui-capabilities")
@@ -29,6 +32,7 @@ public class UiCapabilitiesController {
                 "dependencyFiles",true,"npmGeneration",npm.enabled(),"providerAvailable",available,
                 "providerOrigin",provider.executionOrigin()==null?"UNVERIFIED_PROVIDER":provider.executionOrigin()));
         result.put("advisoryDetails",true);
+        result.put("npmTreePlans",treePlans!=null&&treePlans.enabled());
         result.put("aiCost",com.securedeploy.ai.usage.AiCostPolicy.disclosure(properties.getOpenai().getModel()));
         result.put("structuredPatchPlans",true);
         result.put("patchScopes",java.util.List.of("SPRING_LITERAL_PROPERTIES","DENO_DIRECT_ENV_JSON","EXPRESS_DIRECT_ENV_JSON"));
