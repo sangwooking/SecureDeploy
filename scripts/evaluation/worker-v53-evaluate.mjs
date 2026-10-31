@@ -1,0 +1,5 @@
+import fs from 'node:fs';import{createHash}from'node:crypto';import{performance}from'node:perf_hooks';import{pathToFileURL}from'node:url';import{cases}from'./worker-v53-inputs.mjs';
+const{evaluatePipeline}=await import(pathToFileURL(process.argv[2]));const counts={TP:0,FP:0,TN:0,FN:0,UNKNOWN:0};
+const results=cases.map(c=>{const start=performance.now(),{analysis:r,pipeline}=evaluatePipeline(c.input),observed=r.findings.filter(f=>f.ruleId===c.rule),classification=c.truth===null?'UNKNOWN':c.truth?(observed.length?'TP':'FN'):(observed.length?'FP':'TN');counts[classification]++;return {...c,classification,observed,wallMs:performance.now()-start,pipeline,analysis:r};});
+const inputHash=createHash('sha256').update(JSON.stringify(cases)).digest('hex');
+fs.writeFileSync(process.argv[3],JSON.stringify({scope:'independent synthetic code-review oracles; UNKNOWN is not TN; no external-project accuracy estimate',inputHash,counts,partial:results.filter(c=>c.analysis.status==='PARTIAL').length,inputUnavailable:7,results},null,2));console.log(JSON.stringify({counts,inputHash}));

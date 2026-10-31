@@ -71,3 +71,43 @@ Ledger concurrency/restart/uncertain settlement and restricted metadata-role beh
 original assertions. Production port 5432, arbitrary hosts and arbitrary database names remain
 excluded. Runtime preview uses separate v53_trial; the five destructive conditional tests use only
 v53_fixture. No operating schema, key or account is touched.
+
+## Release candidate verification and remaining bounds
+
+Frozen TS33: TP12/FP0/TN5/FN4/UNKNOWN12 -> TP15/FP0/TN5/FN1/UNKNOWN12;
+PARTIAL31 unchanged. Improved cases: Pages default handler, computed secret key plus sink,
+Router with multiple callbacks. Existing matched raw Rule/Evidence objects are unchanged.
+Parsed files50 ->50, declared entrypoints21 ->23, analyzed functions22 ->24; these are observed
+synthetic denominators, not all deployed HTTP endpoints. Seven real inputs remain unavailable.
+Frozen Python5 remains TP2/TN2/FN1; enriched owner review does not turn that FN into a Finding TP.
+The separate new TS22 review oracles are not blinded and must not be combined with old TS33.
+
+Real React integration uses the candidate JAR and isolated PostgreSQL. Preserved synthetic Git
+Review120 (v52) provides exact original source; manual save, deterministic fix, user approval,
+ZIP/Patch, restart recovery, owner/revision/hash rejection and v53 rescan are exercised without
+API stubs or an AI call. Its initial captured Git source is a controlled fixture, not a real
+GitHub acquisition. Newly uploaded Pages ZIPs verify actual v53 entry/Finding/UI routing. ZIP
+Reviews without exact Git metadata stay unverified for automatic original-location linking;
+this limitation was not bypassed to manufacture an automatic-patch success. Opaque eval before
+a subsequent response also prevents a definite HTML connection; it is not silently counted safe.
+Restored hongik_bot89 tests read stored v52 evidence; explicit API error/legacy/reorder projections
+are browser-test controls, not real server failures or new official advisory fetches.
+
+Current bounded limitations: conditional/opaque middleware, scoped terminating router.use,
+dynamic mount and complex control remain partial; no auth-by-name proof. Pages arbitrary wrappers,
+custom configuration and general request.params are not certified. HTML encoding/template-engine
+execution and context-specific sanitizer proof remain unresolved. Array intrinsic overrides or
+escapes in any submitted module reject join proof; runtime changes outside selected code are not
+executed or proven absent. Django custom policy/helper/manager/RLS remain unknown.
+
+## Deployment and recovery boundary
+
+Operating FE stays HOTFIX b7189c7; operating Backend b2fd658 and TS52 are untouched.
+This candidate requires **matched Backend + external TS53/Python9 worker directories**; changing
+only an operating worker would fail the live version gate. Saved v51/v52 Reviews remain readable.
+No schema/key migration was added by v53. A future deployment needs fresh approval, consistent
+operating DB/key backup and isolated restore/decryption, job/workspace export, matched artifact
+hash verification and read-only login/Review tests. Keep TEMPLATE/paid-call gates off. Use the
+existing release-compatible/release-recovery procedures for a failed candidate feature; do not
+claim that an old UX-03 binary is a universally safe rollback after new snapshots are saved.
+No automatic restore over the operating DB, reanalysis of a user project or remote push is allowed.

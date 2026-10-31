@@ -24,7 +24,7 @@ export function htmlResponses({loc,append,result,note}) {
     if(mode==='PLAIN'||method==='json'||method==='redirect')return;
     const stringKnown=typeof v.constant==='string'||v.htmlString===true;
     const definite=method!=='render'&&(mode==='HTML'||method==='send'&&mode===undefined&&stringKnown)
-      &&!v.unknown&&!v.ref?.unknown&&!state.uncertain&&remaining>0;
+      &&!v.unknown&&!v.ref&&!state.uncertain&&remaining>0;
     const location=loc(node,state.mod,'HTTP_HTML_RESPONSE',state.fn);
     append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:definite?'HTML_RESPONSE_INPUT_CANDIDATE':'HTML_RESPONSE_CONTEXT_UNKNOWN',
       operation:method,location,trace:trace.slice(0,19),limitations:[
