@@ -11,6 +11,7 @@ import { SupabaseAnalysisSection } from './SupabaseAnalysisSection';
 
 const entryStageLabels: Record<string,string>={
   MIDDLEWARE_FORWARD_ONLY:'순서대로 next() 전달만 확인 · 인증·인가 보호 근거는 아님',
+  HTML_RESPONSE_ENCODED_TEXT_EVIDENCE:'로컬 5종 엔티티 인코딩 확인 · HTML 텍스트·따옴표 속성에 한정, 전체 안전성 미검증',
   HTML_RESPONSE_INPUT_CANDIDATE:'요청 입력 → HTML 응답 연결 · 출력 인코딩·실행 문맥 검토 필요',
   HTML_RESPONSE_CONTEXT_UNKNOWN:'HTML·템플릿 응답의 입력 연결 · 출력 문맥 미확인',
   RATE_LIMIT_DECLARATION:'요청 제한 선언 · 적용·실제 차단 증명 아님',
@@ -103,6 +104,8 @@ const labels: Record<string, string> = {
   TS_SELECTION_HINTS_NOT_ENTRY_PROOF:'선택 우선순위는 힌트이며 요청·보안 흐름의 증명이 아님',
   TS_COMBINED_SOURCE_SQL_BUDGET_PARTIAL:'JS/TS·정책 SQL 공통 예산으로 일부 파일 미검사',
   SOURCE_FILE_SIZE_LIMIT:'개별 파일 문자 수 상한',SOURCE_FILE_COUNT_LIMIT:'JS/TS·SQL 공통 파일 수 상한',SOURCE_TOTAL_CHAR_LIMIT:'JS/TS·SQL 공통 문자 수 상한',
+  EXPRESS_HANDLER:'등록된 Express Handler',EXPRESS_HANDLER_TARGET:'Express Handler 연결 대상',REVIEW_REQUIRED_NOT_CONFIRMED_XSS:'HTML 출력 검토 근거이며 확정 XSS가 아닙니다.',HTML_EXECUTION_AND_CLIENT_CONTEXT_NOT_VERIFIED:'브라우저 실행과 클라이언트 문맥은 미검증입니다.',OUTPUT_ENCODING_AND_EXTERNAL_SANITIZER_POLICY_NOT_VERIFIED:'출력 인코딩과 외부 Sanitizer 정책은 추가 검토가 필요합니다.',LOCAL_FIVE_ENTITY_ENCODING_ONLY_NOT_WHOLE_RESPONSE_ASSURANCE:'로컬 엔티티 치환 근거만 확인했으며 전체 응답 안전성의 증명은 아닙니다.',HTML_OUTPUT_CONTEXT_UNRESOLVED:'출력 위치의 HTML 실행 문맥을 확정하지 못했습니다.',
+  HTML_OUTPUT_CONTEXT_HTML_TEXT:'HTML 텍스트',HTML_OUTPUT_CONTEXT_HTML_ATTRIBUTE:'따옴표로 감싼 HTML 속성',HTML_OUTPUT_CONTEXT_JAVASCRIPT:'JavaScript 실행 문맥',HTML_OUTPUT_CONTEXT_URL_ATTRIBUTE:'URL 속성 · 스킴 검증 별도 필요',HTML_OUTPUT_CONTEXT_CSS:'CSS 문맥',HTML_OUTPUT_CONTEXT_HTML_DOCUMENT:'중첩 HTML 문서 문맥',HTML_OUTPUT_CONTEXT_UNKNOWN:'출력 문맥 미확인',VERIFIED_FIVE_ENTITY_ENCODING:'실제 5종 엔티티 치환 · 문맥 제한',HTML_FUNCTION_RETURN:'정적 함수 반환값 연결',
   NEXT_PAGES_HANDLER:'Next.js Pages API 요청 처리 함수',NEXT_PAGES_QUERY:'Pages API query 요청값',NEXT_PAGES_BODY:'Pages API 요청 본문',NEXT_PAGES_HEADERS:'Pages API 요청 헤더',NEXT_PAGES_REGISTRATION:'Pages API default Handler 연결',HTTP_HTML_RESPONSE:'HTML 응답 출력 위치',
   NEXT_ROUTE_HANDLER:'Next.js 요청 처리 함수 선언',NEXT_SERVER_FUNCTION:'Next.js 서버 함수 선언 · 호출 여부 미확인',
   SERVER_FUNCTION_ARGUMENT:'외부에서 전달할 수 있는 서버 함수 인자',SERVER_FUNCTION_RETURN:'서버 함수 반환 위치',

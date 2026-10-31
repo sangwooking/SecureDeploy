@@ -1,6 +1,7 @@
 import type { AnalysisLocation, AuthorizationDetails } from '../types/serverAnalysis';
 
 const labels: Record<string,string> = {
+  BULK_WRITE:'QuerySet 일괄 수정',BULK_DELETE:'QuerySet 일괄 삭제',
   OWNER_POLICY_REVIEW_REQUIRED:'요청 식별자로 변경·삭제 · 객체 소유권 정책의 추가 확인 필요',
   REQUEST_KEYED_WRITE_OWNER_POLICY_REVIEW_REQUIRED:'요청 ID로 조회한 소유자 필드가 있는 객체의 변경 · 외부 권한 정책 확인 필요',
   UNKNOWN:'확인하지 못함', DECLARED_LOGIN_REQUIRED:'로그인 요구 선언 확인', DECLARED_STAFF_REQUIRED:'직원·관리자 역할 요구 선언 확인',
