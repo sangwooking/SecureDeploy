@@ -27,3 +27,7 @@ ownership, SQL/NoSQL semantics and frontend/backend behavior cannot receive a wh
 application safety conclusion from these cases. The measured computed-key gap is a
 candidate for a separately bounded enhancement with pre/post identical-input evidence;
 it is not silently repaired or relabeled in this task.
+
+PHASE D+ continuation: see epic01-dplus-analysis.md for the separate v51/v52
+same-input comparison, new handler support and retained FN/UNKNOWN cases. The
+historical10-case measurements above are not rewritten as results of the new cohort.
