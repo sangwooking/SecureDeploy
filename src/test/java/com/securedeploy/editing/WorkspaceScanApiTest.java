@@ -349,4 +349,41 @@ class WorkspaceScanApiTest {
         String code=independentExpress(2).replaceFirst("\n","\r\n");entries=List.of(new SourceArchive.Entry("gateway.js",code.getBytes(StandardCharsets.UTF_8),false,0100644));acquire(true);var flow=getJson("/api/reviews/"+originalId,owner).at("/serverAnalysis/validatedFindings/0");assertFalse(flow.isMissingNode());postJson(base+"/patch-plans",Map.of("fileId",file,"findingId",0,"flowFindingId",flow.path("findingId").asText(),"revision",1,"originalHash",hash,"currentHash",hash),owner,409);assertNull(SourceArchive.text(code.getBytes(StandardCharsets.UTF_8)));assertEquals(SourceArchive.hash(code.getBytes(StandardCharsets.UTF_8)),hash);assertFalse(getJson(base,owner).at("/files/0/editable").asBoolean());assertTrue(getJson(base,owner).path("changedFileIds").isEmpty());verify(provider,never()).generateWorkspacePatchPlan(any());
     }
 
+    @Test void linkedHandlerEvidenceDoesNotExpandAutomaticPatchContractAndManualRescanPreservesOtherSink()throws Exception {
+        String action="export function status(req,res){return res.json({ok:true,credential:process.env.SERVICE_SECRET});}";
+        String boot="import express from 'express';import * as h from './actions.mjs';const app=express();app.get('/status',h.status);app.get('/other',(req,res)=>res.json({ok:true,credential:process.env.API_SECRET}));";
+        entries=List.of(new SourceArchive.Entry("actions.mjs",action.getBytes(StandardCharsets.UTF_8),false,0100644),new SourceArchive.Entry("web.mjs",boot.getBytes(StandardCharsets.UTF_8),false,0100644));
+        var w=acquire(true);var before=getJson("/api/reviews/"+originalId,owner);
+        assertEquals(2,before.at("/serverAnalysis/validatedFindings").size());
+        var target=java.util.stream.StreamSupport.stream(before.at("/serverAnalysis/validatedFindings").spliterator(),false).filter(f->f.at("/location/filePath").asText().equals("actions.mjs")).findFirst().orElseThrow();
+        var request=Map.of("fileId",file,"findingId",0,"flowFindingId",target.path("findingId").asText(),"revision",1,"originalHash",hash,"currentHash",hash);
+        var option=postJson(base+"/fix-options",request,owner,200);assertEquals("GUIDED_REMEDIATION",option.path("supportLevel").asText());
+        postJson(base+"/deterministic-patches",request,owner,422);postJson(base+"/patch-plans",request,owner,422);
+        assertEquals(1,getJson(base,owner).path("revision").asInt());
+        var edited=save("export function status(req,res){return res.json({ok:true});}",1);
+        assertTrue(getJson(base+"/files/"+file+"/diff",owner).path("patch").asText().contains("credential"));
+        mvc.perform(post(base+"/export/zip").header("Authorization","Bearer "+owner).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("revision",2,"changedFileIds",List.of(file),"approved",true)))).andExpect(status().isOk());
+        var after=scan(edited);assertEquals(1,after.at("/serverAnalysis/validatedFindings").size());
+        assertEquals("web.mjs",after.at("/serverAnalysis/validatedFindings/0/location/filePath").asText());
+        assertEquals(before.path("securityScore"),after.path("securityScore"));assertEquals(before.path("scannedFileCount"),after.path("scannedFileCount"));
+        int oldEntries=java.util.stream.StreamSupport.stream(before.at("/serverAnalysis/files").spliterator(),false).mapToInt(f->f.path("entrypoints").asInt()).sum();
+        int newEntries=java.util.stream.StreamSupport.stream(after.at("/serverAnalysis/files").spliterator(),false).mapToInt(f->f.path("entrypoints").asInt()).sum();assertEquals(oldEntries,newEntries);assertEquals(2,newEntries);
+        assertEquals(before,getJson("/api/reviews/"+originalId,owner));verify(provider,never()).generateWorkspacePatchPlan(any());
+        String evidence=System.getenv("SECUREDEPLOY_DPLUS_EVIDENCE");
+        if(evidence!=null){var root=java.nio.file.Path.of(evidence).normalize();if(!root.startsWith("/private/tmp/securedeploy-epic01-dplus"))throw new AssertionError("ISOLATED_EVIDENCE_REQUIRED");java.nio.file.Files.createDirectories(root);java.nio.file.Files.writeString(root.resolve("LINKED_HANDLER_BEFORE.json"),json.writerWithDefaultPrettyPrinter().writeValueAsString(before));java.nio.file.Files.writeString(root.resolve("LINKED_HANDLER_AFTER.json"),json.writerWithDefaultPrettyPrinter().writeValueAsString(after));}
+    }
+
+    @Test void truncatedSourceEvidenceKeepsRiskButNeverEnablesAutomaticPatch()throws Exception {
+        String fields=java.util.stream.IntStream.range(0,40).mapToObj(i->"hidden"+i+":process.env.API_SECRET").collect(java.util.stream.Collectors.joining(","));
+        String source="import express from 'express';const app=express();app.get('/state',(req,res)=>res.json({ok:true,"+fields+"}));";
+        entries=List.of(new SourceArchive.Entry("gateway.js",source.getBytes(StandardCharsets.UTF_8),false,0100644));acquire(true);
+        var before=getJson("/api/reviews/"+originalId,owner);assertEquals(1,before.at("/serverAnalysis/validatedFindings").size());
+        assertTrue(before.at("/serverAnalysis/files/0/limitations").toString().contains("EXPOSURE_SOURCE_EVIDENCE_TRUNCATED"));
+        var target=before.at("/serverAnalysis/validatedFindings/0");var request=Map.of("fileId",file,"findingId",0,"flowFindingId",target.path("findingId").asText(),"revision",1,"originalHash",hash,"currentHash",hash);
+        assertEquals("GUIDED_REMEDIATION",postJson(base+"/fix-options",request,owner,200).path("supportLevel").asText());
+        postJson(base+"/deterministic-patches",request,owner,422);postJson(base+"/patch-plans",request,owner,422);
+        assertEquals(1,getJson(base,owner).path("revision").asInt());assertEquals(before,getJson("/api/reviews/"+originalId,owner));
+        verify(provider,never()).generateWorkspacePatchPlan(any());
+    }
+
 }

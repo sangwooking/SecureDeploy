@@ -290,6 +290,7 @@ public class EditingWorkspaceService {
             for(var e:finding.evidence()) {
                 if(!e.ruleId().equals(finding.ruleId())||!"HIGH".equals(e.confidence())||!e.sink().equals(finding.location())||!e.source().filePath().equals(file.original.path())||!kinds.contains(e.source().kind()))throw new IllegalArgumentException();
                 if(finding.location().kind().equals("EXPRESS_HTTP_RESPONSE")) {
+                    if(e.limitations()!=null&&e.limitations().stream().anyMatch(l->l.equals("EXPOSURE_SOURCE_EVIDENCE_TRUNCATED")||l.equals("EXPOSURE_TRACE_DETAILS_TRUNCATED")))throw new IllegalArgumentException();
                     if(e.flow()==null||!e.flow().contains(e.source())||!e.flow().contains(finding.location())||!snapshot.findings().contains(e))throw new IllegalArgumentException();
                     for(var location:e.flow())if(kinds.contains(location.kind())) {
                         if(!location.filePath().equals(file.original.path())||snapshot.exposureUses()==null||snapshot.exposureUses().stream().noneMatch(use->use.location().equals(finding.location())&&use.status().equals("SENSITIVE_FLOW_CANDIDATE")&&use.trace().contains(location)))throw new IllegalArgumentException();

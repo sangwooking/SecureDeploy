@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import {pipelineAudit} from './pipeline-audit.mjs';
 import path from 'node:path';
 import { destinationOf, joinDestinations, concatenatedDestination, constructedUrl, unresolvedDestination } from './destination.mjs';
 import { credentialShape, sources as exposureSources, uncertain as exposureUncertain, trails as exposureTrails } from './exposure.mjs';
@@ -20,7 +21,7 @@ import {externalNext} from './external-next.mjs';
 import {asyncBoundaries} from './async-boundary.mjs';
 import {asyncExceptions} from './async-exception.mjs';
 
-export const VERSION = 'ts-server-v51';
+export const VERSION = 'ts-server-v52';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -106,6 +107,11 @@ const unwrap = node => {
 
 // Parse supplied strings only: no compiler host, tsconfig, module loading or target execution.
 const ROUTE_EVALUATION=Symbol('evaluation-only-static-routes');
+const PIPELINE_EVALUATION=Symbol('evaluation-only-pipeline');
+export function evaluatePipeline(input,overrides={}){
+  const audit=pipelineAudit();const analysis=analyze(input,{...overrides,[PIPELINE_EVALUATION]:audit});
+  return {analysis,pipeline:audit.report()};
+}
 const OBSERVATION_KEYS=['findings','sqlUses','httpUses','exposureUses','nodeUses','resourceUses','authorizationContexts'];
 export function evaluateStaticRoutes(input,overrides={}){
   const audit={rows:[],captures:new Map(),limitations:new Set(),links:0};
@@ -118,7 +124,7 @@ export function evaluateStaticRoutes(input,overrides={}){
     limitations:[...audit.limitations],budgetUsage:snapshot.supabaseAnalysis.budgetUsage};
 }
 export function analyze(input, overrides = {}) {
-  const routeAudit=overrides[ROUTE_EVALUATION];let activeCandidate;
+  const routeAudit=overrides[ROUTE_EVALUATION];const audit=overrides[PIPELINE_EVALUATION];let activeCandidate;
   const limits = { ...DEFAULTS, ...Object.fromEntries(Object.entries(overrides).filter(([k, v]) =>
     k in DEFAULTS && Number.isInteger(v) && v > 0).map(([k, v]) => [k, Math.min(v, DEFAULTS[k])])) };
   const deadline = Date.now() + limits.timeoutMs;
@@ -223,7 +229,9 @@ export function analyze(input, overrides = {}) {
     }
     if(v.ref?.properties){
       const children=[...v.ref.properties.values()].map(c=>responseBody(c,depth+1,seen,budget));
-      return {origins:[...(v.ref.exposureUnknownSources??[]),...children.flatMap(c=>c.origins)].slice(0,20),trail:children.flatMap(c=>c.trail).slice(0,10),
+      const origins=[...(v.ref.exposureUnknownSources??[]),...children.flatMap(c=>c.origins)];
+      const truncated=origins.length>20||children.some(c=>c.truncated);
+      return {origins:origins.slice(0,20),trail:children.flatMap(c=>c.trail).slice(0,10),truncated,
         unresolved:!!v.unknown||!!v.ref.unknown||v.ref.properties.has('toJSON')||v.ref.properties.has('__proto__')||children.some(c=>c.unresolved)};
     }
     return {origins: exposureSources(v), trail: exposureTrails(v), unresolved: exposureUncertain(v)};
@@ -238,7 +246,10 @@ export function analyze(input, overrides = {}) {
         ...(proof.location.kind==='EXPRESS_HTTP_RESPONSE'?['EXPRESS_RESPONSE_SERIALIZATION_AND_MIDDLEWARE_NOT_VERIFIED']:[]),
         ...(serverReturn?['NEXT_SERVER_FUNCTION_INVOCATION_NOT_VERIFIED']:[]),
         'ENVIRONMENT_CONTENTS_AND_GATEWAY_POLICY_UNKNOWN', 'BRANCH_FEASIBILITY_NOT_VERIFIED'];
-      const trace = [...proof.origins, ...proof.trail].filter((v,i,a)=>a.findIndex(w=>JSON.stringify(w)===JSON.stringify(v))===i).slice(0,19);
+      const completeTrace=[...proof.origins,...proof.trail].filter((v,i,a)=>a.findIndex(w=>JSON.stringify(w)===JSON.stringify(v))===i);
+      if(proof.truncated){limitations.push('EXPOSURE_SOURCE_EVIDENCE_TRUNCATED');note(state.mod,'EXPOSURE_SOURCE_EVIDENCE_TRUNCATED');}
+      if(completeTrace.length>19){limitations.push('EXPOSURE_TRACE_DETAILS_TRUNCATED');note(state.mod,'EXPOSURE_TRACE_DETAILS_TRUNCATED');}
+      const trace=completeTrace.slice(0,19);
       const status = proof.unresolved ? 'FLOW_UNRESOLVED' : sensitive.length?'SENSITIVE_FLOW_CANDIDATE':'SENSITIVITY_UNVERIFIED';
       append(result.exposureUses, {kind: serverReturn?'SERVER_FUNCTION_RETURN':proof.location.kind==='EXPRESS_HTTP_RESPONSE'?'HTTP_RESPONSE_SEND':'HTTP_RESPONSE_RETURN', status, location: proof.location, trace, limitations}, state.mod);
       if (!proof.unresolved && sensitive.length) append(result.findings, {ruleId:'TS_SENSITIVE_DATA_EXPOSURE', kind:'CWE-200', confidence:'HIGH',
@@ -321,7 +332,7 @@ export function analyze(input, overrides = {}) {
           const bindings = s.importClause?.namedBindings;
           if (bindings && ts.isNamedImports(bindings)) for (const e of bindings.elements)
             mod.imports.set(e.name.text, { spec, exported: e.propertyName?.text ?? e.name.text,typeOnly:!!s.importClause.isTypeOnly||!!e.isTypeOnly });
-          else if (bindings) note(mod, 'NAMESPACE_IMPORT_UNSUPPORTED');
+          else if (bindings) note(mod, 'NAMESPACE_IMPORT_REQUIRES_FRAMEWORK_RESOLUTION');
         }
         if (ts.isFunctionDeclaration(s) && s.name && s.body) {
           mod.declared.add(s.name.text);
@@ -369,7 +380,7 @@ export function analyze(input, overrides = {}) {
   }});
   const exportSupport=exportLinks({ts,tick,note,limits});
   const sourceInventory=new Set([...(input.nodeSourceInventory??[]),...result.files.map(f=>f.filePath)]);
-  function sourceModule(mod,spec) {
+  function sourceModuleInner(mod,spec) {
     if(typeof spec!=='string'||spec.length>240||/[\\\0?#%]/.test(spec))return;
     if(!spec.startsWith('.'))return sourceImports.target(mod,spec);
     const mapped=sourceImports.relativeTarget(mod,spec);if(mapped)return mapped.target;
@@ -385,6 +396,14 @@ export function analyze(input, overrides = {}) {
       }
     }
   }
+  function sourceModule(mod,spec){
+    const target=sourceModuleInner(mod,spec);
+    audit?.add('moduleLinks',{from:mod.filePath,to:target?.filePath??null,status:target?'TARGET_SELECTED':'UNRESOLVED_OR_UNSELECTED',mode:'SOURCE_IMPORT'});
+    return target;
+  }
+  function auditCall(node,state,target){audit?.add('calls',{location:loc(node,state.mod,'CALL_SITE',state.fn),
+    target:target?loc(target.node,target.mod,'FUNCTION_TARGET',target):null,status:target?'TARGET_LINKED':'CALL_TARGET_UNRESOLVED',
+    crossFile:target?target.mod.filePath!==state.mod.filePath:null});}
   function resolve(mod, name) {
     if (mod.functions.has(name)) return mod.functions.get(name);
     const imported=mod.imports.get(name);
@@ -773,6 +792,7 @@ export function analyze(input, overrides = {}) {
             if(constructed.asyncThrown){state.asyncStop=true;state.asyncRejected=true;}
             return constructed;
           }
+          auditCall(node,state,member.target);
           const passed=args.map(a=>step(a,loc(node,mod,'FUNCTION_ARGUMENT',fn),mod));
           const returned=invoke(member.target,passed,state.depth+1,state.context,state.stack,state.uncertain||!!receiverInput?.constructorConditional,state.exposureUncertain,receiverInput);
           if(returned.constructorAbrupt)state.constructorAbrupt=true;
@@ -819,6 +839,7 @@ export function analyze(input, overrides = {}) {
         const target = !state.nodeMode || !callable?.unknown&&!callable?.ref?.unknown ? callable?.target : undefined;
         if (target && ts.isCallExpression(node)) {
           const passed = args.map(a => step(a, loc(node, mod, 'FUNCTION_ARGUMENT', fn), mod));
+          auditCall(node,state,target);
           return invoke(target, passed, state.depth + 1, state.context, state.stack, state.uncertain, state.exposureUncertain);
         }
         if (global) {
@@ -923,6 +944,7 @@ export function analyze(input, overrides = {}) {
         argument.ref.unknown = true; argument.ref.trace = union(argument, incoming).trace;
         argument.ref.properties.clear();
       }
+      auditCall(node,state,null);
       note(mod, 'CALL_TARGET_UNRESOLVED');
       if(state.nodeMode)nodeSupport.invalidateFields(state);
       const selectorString=state.nodeMode&&ts.isCallExpression(node)&&(global&&ts.isIdentifier(callee)&&callee.text==='String'&&args.length===1
@@ -1261,13 +1283,14 @@ export function analyze(input, overrides = {}) {
       return unknown();
     }
     if (depth > limits.maxDepth || stack.has(fn)) {
+      audit?.add('invocations',{entry:context.entry??null,target:loc(node,mod,'FUNCTION_TARGET',fn),depth,status:'DEPTH_OR_CYCLE_BLOCKED'});
       if(fn.nodeMode){
         const effectState={mod,nodeMode:true};
         for(const arg of [...args,thisValue])if(arg?.ref)invalidateNodeReference(arg.ref,effectState,unknown());
       }
       note(mod, 'CALL_DEPTH_EXCEEDED'); return { ...union(...args), unknown: true };
     }
-    tick(mod); mod.visited.add(canonicalFunctions.get(fn) ?? fn); mod.record.functionsAnalyzed = mod.visited.size;
+    tick(mod);audit?.add('invocations',{entry:context.entry??null,target:loc(node,mod,'FUNCTION_TARGET',fn),depth,status:'BODY_ENTERED'}); mod.visited.add(canonicalFunctions.get(fn) ?? fn); mod.record.functionsAnalyzed = mod.visited.size;
     if(asyncMode)context=Object.assign(Object.create(context),{asyncExecution:true});
     const state = { mod, fn, vars: new Map(fn.closure??[]), depth, context, uncertain, exposureUncertain,
       nodeMode:!!fn.nodeMode,nodeMutations:new Set(),thisValue:fn.lexicalThis??thisValue,constructing,stack: new Set([...stack, fn]) };
@@ -1289,8 +1312,12 @@ export function analyze(input, overrides = {}) {
     node.parameters.forEach(p => names(p.name, name => state.vars.set(name, { ...unknown(), uninitialized: true })));
     node.parameters.forEach((p, i) => {
       if (p.dotDotDotToken) note(mod, 'REST_PARAMETER_UNSUPPORTED');
-      bind(p.name, p.dotDotDotToken ? { ...union(...args.slice(i)), unknown: true }
-        : defaultValue(args[i] ?? constant(undefined), p.initializer, state), state);
+      let incoming=p.dotDotDotToken ? { ...union(...args.slice(i)), unknown: true }
+        : defaultValue(args[i] ?? constant(undefined), p.initializer, state);
+      // Retain the callee file even for an otherwise invisible pass-through helper.
+      if([...incoming.trace,...exposureTrails(incoming)].some(l=>l.kind==='FUNCTION_ARGUMENT'&&l.filePath!==mod.filePath))
+        incoming=step(incoming,loc(p,mod,'FUNCTION_PARAMETER',fn),mod);
+      bind(p.name,incoming,state);
     });
     if (!node.body) return unknown();
     if (!ts.isBlock(node.body)&&!state.nodeMode) return expr(node.body, state);
@@ -1349,7 +1376,7 @@ export function analyze(input, overrides = {}) {
   denoEntries({ts,modules,resolve,claimFunction,tick,note,input});
   const wrappers=wrapperLinks({ts,unwrap,resolve,stable:exportSupport.stable,claimFunction,tick,note,limits,constant,value,loc});
   const externalHandlers=externalNext({ts,input,sourceModule,sourceImports,stable:exportSupport.stable,wrapper:wrappers.build,tick,note,limits,loc});
-  nextEntries({ts,modules,input,tick,note,wrapper:wrappers.build,externalHandlers,loc,append,result});
+  nextEntries({ts,modules,input,tick,note,wrapper:wrappers.build,externalHandlers,loc,append,result,exportSupport,sourceModule,limits});
   let requestEvidenceBytes=Buffer.byteLength(JSON.stringify(precomputedSupabase));
   for(const access of precomputedSupabase.accesses){
     const evidence=access.authorizationEvidence,at=evidence?.enclosingFunction,mod=at&&modules.get(at.filePath);
@@ -1371,7 +1398,7 @@ export function analyze(input, overrides = {}) {
   entryContracts({ts,modules,tick,note,loc,append,result});
   asyncSupport=asyncBoundaries({ts,modules,tick,note,unknown,constant,loc,append,result,fork,rejection:(state,node)=>exceptionSupport.rejection(state,node)});
   exceptionSupport=asyncExceptions({ts,tick,note,unknown,constant,fork,statement,mergeVars,evidence:asyncSupport.evidence});
-  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody,invalidateNodeReference,routeAudit});
+  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody,invalidateNodeReference,routeAudit,audit});
   nodeSupport.discover();
   phase='FLOW';
   for (const mod of modules.values()) for (const entry of mod.entries) {
@@ -1400,6 +1427,7 @@ export function analyze(input, overrides = {}) {
         ?[value('express-request'),value('express-response'),unknown()]:[value('context')], 0, context, new Set(),!!entry.uncertain);
       if (returned.responseLocations?.length) observeExposure(returned, entry.fn.node, { mod:entry.fn.mod, fn: entry.fn, uncertain: false }, 'HTTP_RESPONSE_RETURN');
       observeEnvironmentResponses(returned,{mod:entry.fn.mod,fn:entry.fn});
+      if(entry.fn.mod!==mod&&entry.fn.mod.visited.has(canonicalFunctions.get(entry.fn)??entry.fn))mod.linkedEntryBodyAnalyzed=true;
     } catch { note(mod, 'ANALYSIS_BUDGET_EXCEEDED');if(activeCandidate)activeCandidate.traceStatus='BUDGET_OR_UNSUPPORTED'; }
     for (const field of ['checks', 'defenses', 'resources']) {
       context[field] = context[field].filter((item, i, all) => all.findIndex(other => JSON.stringify(item) === JSON.stringify(other)) === i);
@@ -1419,7 +1447,8 @@ export function analyze(input, overrides = {}) {
     mod.record.tracedHttpCallSites = new Set(result.httpUses.filter(s => s.location.filePath === mod.filePath)
       .map(s => `${s.location.line}:${s.location.column}`)).size;
     if (mod.record.httpCallSites > mod.record.tracedHttpCallSites) note(mod, 'HTTP_CALLS_OUTSIDE_TRACED_FLOW');
-    if (mod.visited.size||mod.middlewareControlAnalyzed) {
+    if(mod.linkedEntryBodyAnalyzed||mod.httpRegistrationLinked)note(mod,'REGISTERED_HANDLER_BODY_IN_OTHER_FILE');
+    if (mod.visited.size||mod.middlewareControlAnalyzed||mod.linkedEntryBodyAnalyzed||mod.httpRegistrationLinked) {
       if (mod.visited.size < mod.functions.size) note(mod, 'UNREACHED_FUNCTIONS_NOT_ANALYZED');
       mod.record.flowStatus = mod.record.limitations.size ? 'PARTIAL' : 'SUPPORTED_FLOW_ANALYZED';
     } else note(mod, 'NO_SUPPORTED_SERVER_ENTRY_OR_CALL');

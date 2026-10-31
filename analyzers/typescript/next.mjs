@@ -1,7 +1,8 @@
 import path from 'node:path';
+import {staticHandlerLinks} from './static-handler-links.mjs';
 
 // Conventions are declarations, not proof of a deployed endpoint or invocation.
-export function nextEntries({ts, modules, input, tick, note,wrapper,externalHandlers,loc,append,result}) {
+export function nextEntries({ts, modules, input, tick, note,wrapper,externalHandlers,loc,append,result,exportSupport,sourceModule,limits}) {
   const directive=(statements,name)=>{
     for(const s of statements??[]) {
       if(!ts.isExpressionStatement(s)||!ts.isStringLiteral(s.expression))break;
@@ -9,6 +10,7 @@ export function nextEntries({ts, modules, input, tick, note,wrapper,externalHand
     }
     return false;
   };
+  const linked=staticHandlerLinks({ts,tick,note,limits});
   for(const mod of modules.values()) {
     const manifest=(input.nodeManifests??[]).filter(m=>m.filePath==='package.json'||mod.filePath.startsWith(path.posix.dirname(m.filePath)+'/'))
       .sort((a,b)=>b.filePath.length-a.filePath.length)[0];
@@ -80,6 +82,24 @@ export function nextEntries({ts, modules, input, tick, note,wrapper,externalHand
           else note(mod,'NEXT_WRAPPED_HANDLER_UNKNOWN');
         }
       }
+      const linkedMethods=new Set();
+      if(route&&exportSupport&&sourceModule&&mod.ast.statements.some(s=>ts.isExportDeclaration(s)&&!s.isTypeOnly)&&linked.eligible(mod,sourceModule)){
+        for(const s of mod.ast.statements){
+          if(!ts.isExportDeclaration(s)||s.isTypeOnly||!s.exportClause||!ts.isNamedExports(s.exportClause))continue;
+          for(const e of s.exportClause.elements){
+            tick(mod);const name=e.name.text;
+            if(e.isTypeOnly||!['GET','POST','PATCH','PUT','DELETE','HEAD','OPTIONS'].includes(name)||mod.exports.has(name))continue;
+            const fn=exportSupport.functionAt(mod,name,sourceModule);
+            if(fn&&linked.eligible(fn.mod,sourceModule)){
+              mod.exports.set(name,fn);registrations.set(name,e);linkedMethods.add(name);
+              note(mod,'NEXT_STATIC_NAMED_HANDLER_LINK');
+              append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'CALLBACK_BOUND',operation:'NEXT_STATIC_NAMED_HANDLER',
+                location:loc(e,mod,'NEXT_NAMED_HANDLER_REGISTRATION'),trace:[loc(fn.node,fn.mod,'NEXT_NAMED_HANDLER_TARGET',fn)],
+                limitations:['STATIC_REGISTRATION_ONLY','NOT_AUTHENTICATION_OR_AUTHORIZATION_PROOF']},mod);
+            }
+          }
+        }
+      }
       for(const [name,fn] of mod.exports) {
         if(writes.has(name)){note(mod,'NEXT_MUTABLE_EXPORT_NOT_SUPPORTED');continue;}
         if(route&&['GET','POST','PATCH','PUT','DELETE','HEAD','OPTIONS'].includes(name)) {
@@ -94,7 +114,7 @@ export function nextEntries({ts, modules, input, tick, note,wrapper,externalHand
           note(mod,'NEXT_AUTHENTICATION_IS_NOT_RESOURCE_AUTHORIZATION');
         }
       }
-      if(mod.ast.statements.some(s=>ts.isExportDeclaration(s)))note(mod,'NEXT_REEXPORT_REGISTRATION_NOT_SUPPORTED');
+      if(mod.ast.statements.some(s=>ts.isExportDeclaration(s)&&!s.isTypeOnly&&(!s.exportClause||!ts.isNamedExports(s.exportClause)||s.exportClause.elements.some(e=>!e.isTypeOnly&&!linkedMethods.has(e.name.text)))))note(mod,'NEXT_REEXPORT_REGISTRATION_NOT_SUPPORTED');
       mod.record.entrypoints=mod.entries.length+opaque;
     } catch {note(mod,'NEXT_REGISTRATION_BUDGET_EXCEEDED');}
   }

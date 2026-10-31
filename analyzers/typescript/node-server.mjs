@@ -1,4 +1,5 @@
 import path from 'node:path';
+import {staticHandlerLinks} from './static-handler-links.mjs';
 import {constructorSummaries} from './constructor-summary.mjs';
 import {sequelizeContracts} from './sequelize.mjs';
 import {moduleResolution} from './module-resolution.mjs';
@@ -20,6 +21,7 @@ export function nodeServer(api) {
   const controls=middlewareControl(api);
   const httpModules=new Map();
   const resolver=moduleResolution(api);
+  const handlerLinks=staticHandlerLinks(api);
   const exportsSupport=exportLinks(api);
   const object=tag=>value(tag,[],{ref:{properties:new Map(),trace:[],unknown:false,nodeIdentity:{}}});
   const literal=v=>v?.tag==='constant'&&!v.unknown;
@@ -61,7 +63,10 @@ export function nodeServer(api) {
   const web=webSecurity({...api,native,object});
   const rate=rateLimiting({...api,native,object});
   const candidates=api.routeAudit?staticRoutes({...api,audit:api.routeAudit,controls,functionValue}):undefined;
-  function findModule(mod,spec,mode='require') { return resolver.resolve(mod,spec,mode); }
+  function findModule(mod,spec,mode='require') {
+    const target=resolver.resolve(mod,spec,mode);
+    api.audit?.add('moduleLinks',{from:mod.filePath,to:target?.filePath??null,status:target?'TARGET_SELECTED':'UNRESOLVED_OR_UNSELECTED',mode});return target;
+  }
   function dependency(mod,spec,mode='require') {
     const limiter=rate.dependency(mod,spec);if(limiter)return limiter;
     const security=web.dependency(mod,spec);if(security)return security;
@@ -103,7 +108,13 @@ export function nodeServer(api) {
         if(s.importClause?.name)state.vars.set(s.importClause.name.text,imported.native==='express'?imported:imported.ref?.properties.get('default')??imported);
         const bindings=s.importClause?.namedBindings;
         if(bindings&&ts.isNamedImports(bindings))for(const e of bindings.elements){if(e.isTypeOnly)continue;const key=e.propertyName?.text??e.name.text;state.vars.set(e.name.text,property(imported,key,e,state)??imported.ref?.properties.get(key)??unknown());}
-        else if(bindings)note(mod,'NODE_NAMESPACE_IMPORT_UNKNOWN');
+        else if(bindings){
+          const target=findModule(mod,s.moduleSpecifier.text,'import');
+          const explicitEsm=target&&target.ast.statements.some(s=>ts.isExportDeclaration(s)||s.modifiers?.some(m=>m.kind===ts.SyntaxKind.ExportKeyword));
+          if(explicitEsm&&handlerLinks.eligible(target,(m,spec)=>findModule(m,spec,'import'))&&!imported.unknown&&!imported.ref?.unknown){
+            state.vars.set(bindings.name.text,imported);note(mod,'NODE_STATIC_NAMESPACE_HANDLER_LINK');
+          }else note(mod,'NODE_NAMESPACE_IMPORT_UNKNOWN');
+        }
       }
       for(const s of mod.ast.statements) {
         tick(mod);
@@ -518,6 +529,7 @@ export function nodeServer(api) {
           location:route.location,trace:blocked.trace,limitations:['DECLARED_EXPRESS_CONTROL_NOT_RUNTIME_PROOF','OTHER_ROUTES_AND_AUTHORIZATION_NOT_PROVEN',
             ...(blocked.truncated?['CONTROL_TRACE_BOUNDED']:[])]},mod);
       }else mod.entries.push({fn:route.target,kind:'EXPRESS_HANDLER',registration:route.location,uncertain:route.uncertain||!!route.setupContext.unresolved,middleware:route.middleware,web:route.web,rate:route.rate});
+      if(route.location.filePath!==mod.filePath){const declaring=modules.get(route.location.filePath);if(declaring)declaring.httpRegistrationLinked=true;}
       mod.record.entrypoints++;
       append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ENTRY_REGISTERED',operation:'EXPRESS_ROUTER_MOUNTED',
         location:route.location,trace:[loc(route.target.node,mod,'EXPRESS_HANDLER_TARGET',route.target),...(route.setupContext.constructorBranches??[])].slice(0,20),
