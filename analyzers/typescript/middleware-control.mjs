@@ -134,5 +134,5 @@ export function middlewareControl({ts,tick,note,loc,append,result}) {
     const plan=summarize(v);
     return !!plan&&plan.every(p=>!(p.kind==='NEXT'&&p.response));
   });
-  return {proof,passive};
+  return {proof,passive,summarize};
 }

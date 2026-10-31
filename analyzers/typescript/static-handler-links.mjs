@@ -26,7 +26,7 @@ export function staticHandlerLinks({ts,tick,note,limits}) {
         }
         continue;
       }
-      if(ts.isExportAssignment(s)){const v=unwrap(s.expression);if(v&&(ts.isArrowFunction(v)||ts.isFunctionExpression(v)))continue;}
+      if(ts.isExportAssignment(s)){const v=unwrap(s.expression);if(v&&(ts.isArrowFunction(v)||ts.isFunctionExpression(v)||ts.isIdentifier(v)))continue;}
       note(mod,'STATIC_HANDLER_INITIALIZATION_NOT_SUPPORTED');return false;
     }
     return true;

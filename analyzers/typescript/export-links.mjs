@@ -11,9 +11,13 @@ export function exportLinks({ts,tick,note,limits}) {
     for(const s of mod.ast.statements){
       tick(mod);
       const exported=s.modifiers?.some(m=>m.kind===ts.SyntaxKind.ExportKeyword);
-      if(exported&&ts.isFunctionDeclaration(s)&&s.name&&s.body){
+      if(ts.isExportAssignment(s)&&!s.isExportEquals){
+        if(ts.isIdentifier(s.expression))add('default',{local:s.expression.text,origin:'default-value'});
+        else if(mod.exports.has('default'))add('default',{direct:mod.exports.get('default'),origin:'default-value'});
+      }
+      if(exported&&ts.isFunctionDeclaration(s)&&s.body){
         const name=s.modifiers.some(m=>m.kind===ts.SyntaxKind.DefaultKeyword)?'default':s.name.text;
-        add(name,{local:s.name.text,origin:'declaration'});
+        add(name,s.name?{local:s.name.text,origin:'declaration'}:{direct:mod.exports.get('default'),origin:'default-value'});
       }
       if(exported&&ts.isVariableStatement(s))for(const d of s.declarationList.declarations)
         if(ts.isIdentifier(d.name))add(d.name.text,{local:d.name.text,origin:'declaration'});
@@ -48,6 +52,7 @@ export function exportLinks({ts,tick,note,limits}) {
     seen=new Map(seen);seen.set(mod,new Set([...(seen.get(mod)??[]),name]));
     const binding=plan(mod).entries.get(name);
     if(!binding){note(mod,'MODULE_EXPORT_BINDING_UNKNOWN');return;}
+    if(binding.direct)return binding.direct;
     if(binding.spec){
       const next=target(mod,binding.spec);if(!next){note(mod,'MODULE_EXPORT_TARGET_NOT_INSPECTED');return;}
       const fn=functionAt(next,binding.imported,target,depth+1,seen);

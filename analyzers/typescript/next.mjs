@@ -48,7 +48,18 @@ export function nextEntries({ts, modules, input, tick, note,wrapper,externalHand
       const serverOnly=mod.ast.statements.some(s=>ts.isImportDeclaration(s)&&s.moduleSpecifier.text==='server-only');
       if(client){note(mod,'NEXT_CLIENT_BOUNDARY_BUNDLE_NOT_VERIFIED');if(serverOnly||server)note(mod,'NEXT_CONFLICTING_SERVER_CLIENT_DIRECTIVES');continue;}
       if(serverOnly)note(mod,'NEXT_SERVER_ONLY_DECLARATION_NOT_RUNTIME_PROOF');
-      if(/^(?:src\/)?pages\/api\//.test(relative))note(mod,'NEXT_PAGES_API_NOT_SUPPORTED');
+      const rootPages=[...modules.keys()].some(p=>p.startsWith(root+'pages/'));
+      const pages=new RegExp('^'+(rootPages?'pages':'(?:src/)?pages')+'/api/.+\\.[jt]sx?$').test(relative);
+      if(pages){
+        note(mod,'NEXT_PAGES_CONFIG_AND_MIDDLEWARE_NOT_VERIFIED');
+        const fn=mod.exports.get('default')??(exportSupport&&sourceModule&&linked.eligible(mod,sourceModule)?exportSupport.functionAt(mod,'default',sourceModule):undefined);
+        if(fn&&linked.eligible(mod,sourceModule)&&linked.eligible(fn.mod,sourceModule)&&!fn.node.asteriskToken&&fn.node.parameters.length===2&&fn.node.parameters.every(p=>ts.isIdentifier(p.name)&&!p.dotDotDotToken&&!p.initializer)){
+          const registration=mod.ast.statements.find(s=>ts.isExportAssignment(s)||ts.isFunctionDeclaration(s)&&s.modifiers?.some(m=>m.kind===ts.SyntaxKind.DefaultKeyword)||ts.isExportDeclaration(s));
+          mod.entries.push({fn,kind:'NEXT_PAGES_HANDLER',registrationNode:registration});
+          append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ENTRY_REGISTERED',operation:'NEXT_PAGES_DEFAULT_HANDLER',location:loc(registration??fn.node,mod,'NEXT_PAGES_REGISTRATION'),trace:[loc(fn.node,fn.mod,'NEXT_PAGES_HANDLER_TARGET',fn)],limitations:['STATIC_PAGES_API_CONVENTION_NOT_DEPLOYMENT_PROOF','MIDDLEWARE_AUTHENTICATION_AND_AUTHORIZATION_NOT_VERIFIED']},mod);
+          note(mod,'NEXT_PAGES_DEFAULT_HANDLER_REGISTERED');
+        }else note(mod,'NEXT_PAGES_DEFAULT_HANDLER_UNRESOLVED');
+      }
       const rootApp=[...modules.keys()].some(p=>p.startsWith(root+'app/'));
       const route=new RegExp('^'+(rootApp?'app':'(?:src/)?app')+'/(?:[^/]+/)*route\\.[jt]s$').test(relative);
       if(/^(?:src\/)?app\//.test(relative))note(mod,'NEXT_ROUTING_CONFIG_AND_MIDDLEWARE_NOT_VERIFIED');

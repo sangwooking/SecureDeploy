@@ -51,11 +51,11 @@ test('client, arbitrary paths, unsupported versions and missing manifest do not 
   assert.equal(run(`export async function GET(req:Request){return fetch(req.url);}`,[],'app/api/route.ts','12.2.0').authorizationContexts.length,0);
   assert.equal(analyze({files:[{filePath:'app/api/route.ts',content:'export async function GET(){}'}]}).authorizationContexts.length,0);
 });
-test('inline server closure and Pages API remain explicitly unverified',()=>{
+test('inline server closure remains unverified while Pages default handler is registered',()=>{
   const r=run(`export default function Page(){async function save(data:FormData){'use server';return process.env.PRIVATE_KEY;}return null;}`,[],'app/page.tsx');
   assert.equal(leaks(r).length,0);assert.ok(r.files[0].limitations.includes('NEXT_INLINE_SERVER_CLOSURE_NOT_SUPPORTED'));
   const pages=run(`export default function handler(req,res){res.json({ok:true});}`,[],'pages/api/check.ts');
-  assert.ok(pages.files[0].limitations.includes('NEXT_PAGES_API_NOT_SUPPORTED'));
+  assert.ok(pages.files[0].limitations.includes('NEXT_PAGES_DEFAULT_HANDLER_REGISTERED'));assert.equal(pages.authorizationContexts.length,1);
 });
 test('type-only response import and shadowed process are not trusted builtins',()=>{
   assert.equal(leaks(run(`import type {NextResponse} from 'next/server';export async function GET(){return NextResponse.json(process.env.PRIVATE_KEY);}`)).length,0);

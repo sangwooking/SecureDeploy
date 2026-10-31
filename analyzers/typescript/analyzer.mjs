@@ -1,6 +1,7 @@
 import ts from 'typescript';
 import {pipelineAudit} from './pipeline-audit.mjs';
 import path from 'node:path';
+import {staticEnvKey} from './static-env-key.mjs';
 import { destinationOf, joinDestinations, concatenatedDestination, constructedUrl, unresolvedDestination } from './destination.mjs';
 import { credentialShape, sources as exposureSources, uncertain as exposureUncertain, trails as exposureTrails } from './exposure.mjs';
 import { nodeServer } from './node-server.mjs';
@@ -21,7 +22,7 @@ import {externalNext} from './external-next.mjs';
 import {asyncBoundaries} from './async-boundary.mjs';
 import {asyncExceptions} from './async-exception.mjs';
 
-export const VERSION = 'ts-server-v52';
+export const VERSION = 'ts-server-v53';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -260,7 +261,7 @@ export function analyze(input, overrides = {}) {
   }
   function observeExpressResponse(v,node,state,unresolved=false) {
     if(state.context.setup)return;
-    const body=responseBody(v),location=loc(node,state.mod,'EXPRESS_HTTP_RESPONSE',state.fn);
+    const body=responseBody(v),location=loc(node,state.mod,state.context.entry?.kind==='NEXT_PAGES_HANDLER'?'NEXT_PAGES_HTTP_RESPONSE':'EXPRESS_HTTP_RESPONSE',state.fn);
     const serializationUnverified=jsonReplacerHint&&(node.expression.name?.text==='json'||node.expression.name?.text==='send'&&!!v.ref?.properties);
     if(serializationUnverified)note(state.mod,'EXPRESS_JSON_REPLACER_CONTEXT_UNVERIFIED');
     const proof={...body,unresolved:body.unresolved||unresolved||serializationUnverified||state.uncertain||state.exposureUncertain,location};
@@ -334,10 +335,10 @@ export function analyze(input, overrides = {}) {
             mod.imports.set(e.name.text, { spec, exported: e.propertyName?.text ?? e.name.text,typeOnly:!!s.importClause.isTypeOnly||!!e.isTypeOnly });
           else if (bindings) note(mod, 'NAMESPACE_IMPORT_REQUIRES_FRAMEWORK_RESOLUTION');
         }
-        if (ts.isFunctionDeclaration(s) && s.name && s.body) {
-          mod.declared.add(s.name.text);
+        if (ts.isFunctionDeclaration(s) && s.body && (s.name||s.modifiers?.some(m=>m.kind===ts.SyntaxKind.DefaultKeyword))) {
+          if(s.name)mod.declared.add(s.name.text);
           const isDefault=s.modifiers?.some(m=>m.kind===ts.SyntaxKind.DefaultKeyword);
-          const fn=register(s.name.text,s,exported&&!isDefault);
+          const fn=register(s.name?.text??'default',s,exported&&!isDefault,!!s.name);
           if(exported&&isDefault&&fn)mod.exports.set('default',fn);
         }
         if (ts.isVariableStatement(s)) for (const d of s.declarationList.declarations) {
@@ -351,6 +352,7 @@ export function analyze(input, overrides = {}) {
       for (const s of ast.statements) {
         if (!ts.isExportAssignment(s)) continue;
         const obj = unwrap(s.expression);
+        if(!s.isExportEquals&&obj&&(ts.isArrowFunction(obj)||ts.isFunctionExpression(obj))){const fn=register('default',obj,false,false);if(fn)mod.exports.set('default',fn);}
         if (obj && ts.isObjectLiteralExpression(obj)) for (const p of obj.properties) {
           if (p.name?.getText(ast) !== 'fetch') {
             if (p.name?.getText(ast) === 'scheduled') note(mod, 'SCHEDULED_ENTRY_NOT_SUPPORTED');
@@ -420,7 +422,7 @@ export function analyze(input, overrides = {}) {
     }
     if(base.externalObject&&['__proto__','prototype','constructor'].includes(key))return {...unknown(),trace:base.trace};
     if(state.nodeMode){const supported=regexSupport.property(base,key,node,state);if(supported)return supported;}
-    if(state.nodeMode){const supported=nodeSupport.property(base,key,node,state);if(supported)return supported;}
+    if(state.nodeMode||['pages-request','pages-response'].includes(base.tag)){const supported=nodeSupport.property(base,key,node,state);if(supported)return supported;}
     if(['error-object','caught-error'].includes(base.tag) && key==='stack'){
       const unresolved=base.unknown||base.ref?.unknown;
       return value('error-detail',[],{unknown:unresolved,exposures:[...exposureSources(base),loc(node,mod,unresolved?'ERROR_DETAIL_CONTEXT_UNKNOWN':'INTERNAL_ERROR_DETAIL',fn)],exposureTrail:exposureTrails(base)});
@@ -759,7 +761,7 @@ export function analyze(input, overrides = {}) {
         computedKeyOnly: node.properties.length===1 && ts.isPropertyAssignment(node.properties[0]) && ts.isComputedPropertyName(node.properties[0].name),
         trace: union(spread, ...properties.values()).trace,...(state.nodeMode?{nodeIdentity:{}}:{}) } });
     }
-    if (ts.isArrayLiteralExpression(node)) return {...union(...node.elements.map(e => {const v=expr(e,state);return v.tag==='exposureResponse'?constant(null):v;})), responseLocations:undefined, environmentResponses:undefined};
+    if (ts.isArrayLiteralExpression(node)) {const elements=node.elements.map(e=>expr(e,state));return {...union(...elements.map(v=>v.tag==='exposureResponse'?constant(null):v)), responseLocations:undefined, environmentResponses:undefined,callbackElements:node.elements.length<=32&&!node.elements.some(e=>ts.isSpreadElement(e)||ts.isOmittedExpression(e))?elements:undefined,callbackArrayNode:node};}
     if (ts.isNewExpression(node) || ts.isCallExpression(node)) {
       const callee = unwrap(node.expression);
       const receiverInput = ts.isPropertyAccessExpression(callee) ? expr(callee.expression, state) : undefined;
@@ -1255,6 +1257,7 @@ export function analyze(input, overrides = {}) {
     }
     root.normalPaths.push(state.context.constructorBranches??[]);
   }
+  const evaluateEnvironmentKey=staticEnvKey({ts,tick,note});
   function serverEnvironmentValue(node,state) {
     const {mod,fn}=state;
     const index=mod.syntaxIndex;
@@ -1265,7 +1268,8 @@ export function analyze(input, overrides = {}) {
     if(!(mod.nextContract&&mod.nextEnvironment||nodeEnvironment)||state.vars.has('process')){
       if(state.nodeMode||mod.nextContract)note(mod,'SERVER_ENVIRONMENT_PROVENANCE_UNVERIFIED');return;
     }
-    const key=ts.isPropertyAccessExpression(node)?constant(node.name.text):expr(node.argumentExpression,state);
+    let key=ts.isPropertyAccessExpression(node)?constant(node.name.text):expr(node.argumentExpression,state);
+    if(!ts.isPropertyAccessExpression(node)&&!hasConstant(key)){const name=evaluateEnvironmentKey(node.argumentExpression,state);if(name!==undefined){key=constant(name);note(mod,'STATIC_ENVIRONMENT_KEY_RESOLVED');}}
     const publicValue=hasConstant(key)&&(mod.nextContract&&/^NEXT_PUBLIC_[A-Z0-9_]+$/.test(String(key.constant))
       ||['SUPABASE_ANON_KEY','SUPABASE_PUBLISHABLE_KEY','SUPABASE_URL'].includes(key.constant));
     const publicHint=nodeEnvironment&&hasConstant(key)&&/^(?:NEXT_PUBLIC_|VITE_)/.test(String(key.constant));
@@ -1275,7 +1279,8 @@ export function analyze(input, overrides = {}) {
   }
   function invoke(fn, args, depth, context, stack, uncertain = false, exposureUncertain = false,thisValue,constructing=false) {
     const { mod, node } = fn;
-    const asyncMode=!!fn.nodeMode&&node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword);
+    const pagesMode=context.entry?.kind==='NEXT_PAGES_HANDLER';
+    const asyncMode=(!!fn.nodeMode||pagesMode)&&node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword);
     if(node.asteriskToken&&(context.classConstructorFlow||context.asyncExecution||asyncMode)){
       note(mod,'CLASS_ASYNC_EXECUTION_UNKNOWN');context.unresolved=true;
       note(mod,'GENERATOR_EXECUTION_NOT_MODELED');
@@ -1293,7 +1298,7 @@ export function analyze(input, overrides = {}) {
     tick(mod);audit?.add('invocations',{entry:context.entry??null,target:loc(node,mod,'FUNCTION_TARGET',fn),depth,status:'BODY_ENTERED'}); mod.visited.add(canonicalFunctions.get(fn) ?? fn); mod.record.functionsAnalyzed = mod.visited.size;
     if(asyncMode)context=Object.assign(Object.create(context),{asyncExecution:true});
     const state = { mod, fn, vars: new Map(fn.closure??[]), depth, context, uncertain, exposureUncertain,
-      nodeMode:!!fn.nodeMode,nodeMutations:new Set(),thisValue:fn.lexicalThis??thisValue,constructing,stack: new Set([...stack, fn]) };
+      nodeMode:!!fn.nodeMode||pagesMode,nodeMutations:new Set(),thisValue:fn.lexicalThis??thisValue,constructing,stack: new Set([...stack, fn]) };
     if(asyncMode)asyncSupport.begin(state);
     const names = (binding, callback) => {
       if (ts.isIdentifier(binding)) callback(binding.text);
@@ -1422,6 +1427,7 @@ export function analyze(input, overrides = {}) {
       if(entry.fn.nodeMode)note(mod,'MULTI_REQUEST_GLOBAL_LIFECYCLE_NOT_VERIFIED');
       if(entry.registration){context.checks.push(entry.registration);note(mod,'EXPRESS_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED');}
       const returned = invoke(entryFn, entry.kind === 'NEXT_ROUTE_HANDLER' ? entry.singleRequestArgument?[value('request')]:[value('request'),value('nextContext',[],{paramNames:entry.paramNames})]
+        : entry.kind==='NEXT_PAGES_HANDLER'?[value('pages-request'),value('pages-response')]
         : entry.kind==='NEXT_SERVER_FUNCTION'?entry.fn.node.parameters.map(p=>value('input',[loc(p,mod,'SERVER_FUNCTION_ARGUMENT',entry.fn)]))
         : entry.kind === 'WORKER_FETCH' || entry.kind === 'DENO_HTTP_HANDLER' ? [value('request'), value('env')] : entry.kind==='EXPRESS_HANDLER'
         ?[value('express-request'),value('express-response'),unknown()]:[value('context')], 0, context, new Set(),!!entry.uncertain);

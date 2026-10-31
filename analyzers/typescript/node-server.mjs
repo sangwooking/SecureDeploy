@@ -142,7 +142,7 @@ export function nodeServer(api) {
           ||ts.isInterfaceDeclaration(s)||ts.isTypeAliasDeclaration(s)||ts.isEmptyStatement(s)
           ||ts.isImportDeclaration(s)&&s.importClause?.isTypeOnly);
         for(const [name,binding]of exportsSupport.plan(mod).entries){
-          if(binding?.origin==='declaration')continue;
+          if(['declaration','default-value'].includes(binding?.origin))continue;
           if(!binding||mixed){exports.ref.properties.set(name,unknown());note(mod,'MODULE_EXPORT_BINDING_UNKNOWN');continue;}
           let forwarded;
           if(binding.spec){
@@ -179,6 +179,12 @@ export function nodeServer(api) {
       if(!base.ref.properties.has(key))base.ref.properties.set(key,object('express-locals'));
       return base.ref.properties.get(key);
     }
+    if(base.tag==='pages-request'){
+      if(['query','body','headers'].includes(key))return value('input',[loc(node,state.mod,'NEXT_PAGES_'+key.toUpperCase(),state.fn)],{unknown:!!base.unknown});
+      if(key==='params')note(state.mod,'NEXT_PAGES_PARAMS_USE_QUERY_NOT_NATIVE_PARAMS');
+      return unknown();
+    }
+    if(base.tag==='pages-response')return native('response-'+key,state.mod);
     if(base.tag==='express-request') {
       if(['file','files'].includes(key)){
         note(state.mod,'UPLOAD_MIDDLEWARE_AND_STORAGE_NOT_VERIFIED');
@@ -311,6 +317,14 @@ export function nodeServer(api) {
       if(receiver.app&&method==='get'&&args.length===1&&literal(args[0])&&typeof args[0].constant==='string') {
         note(state.mod,'EXPRESS_SETTING_READ_NOT_ROUTE');return {value:unknown()};
       }
+      const flatten=(v,n,depth=0)=>{
+        if(depth>4)return [unknown()];
+        if(n&&ts.isArrayLiteralExpression(n)&&v?.callbackArrayNode===n&&v.callbackElements)return v.callbackElements.flatMap((e,i)=>flatten(e,n.elements[i],depth+1));
+        return [v];
+      };
+      if(['get','post','put','patch','delete','head','options','all'].includes(method)||method==='use'){
+        args=args.flatMap((v,i)=>flatten(v,node.arguments?.[i]));
+      }
       if(['get','post','put','patch','delete','head','options','all'].includes(method)&&args.length>=2) {
         if(!literal(args[0])||typeof args[0].constant!=='string'){note(state.mod,'DYNAMIC_EXPRESS_ROUTE_UNKNOWN');return {value:receiver};}
         const handler=args.at(-1);
@@ -324,10 +338,22 @@ export function nodeServer(api) {
         rate.use(receiver,args,node,state);
         web.use(receiver,args,node,state);
         const mounted=args.at(-1);
-        if(mounted?.tag==='express-router'&&args.length<=2&&(args.length===1||literal(args[0]))){
+        const pathOffset=literal(args[0])&&typeof args[0].constant==='string'?1:0;
+        const prefixes=args.slice(pathOffset,-1);
+        const staticMount=pathOffset?args[0].constant.startsWith('/')&&!/[.*+?()[\]{}]/.test(args[0].constant):true;
+        const plans=prefixes.map(v=>controls.summarize(v));
+        const knownForward=plans.every(p=>p&&p.every(s=>s.kind==='NEXT'&&!s.response));
+        const blocked=plans.every(Boolean)?controls.proof(prefixes):undefined;
+        const safeStop=blocked&&!blocked.exits.includes('NEXT_ROUTE');
+        if(mounted?.tag==='express-router'&&staticMount&&safeStop&&!receiver.controlOpaque&&!state.uncertain&&!state.context.unresolved){
+          append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ROUTE_HANDLER_NOT_REACHED',operation:'MOUNT_PREFIX_CHAIN_EXIT',location:loc(node,state.mod,'EXPRESS_ROUTER_MOUNT',state.fn),trace:blocked.trace,limitations:['STATIC_MOUNT_PREFIX_CONTROL_ONLY','AUTHENTICATION_AND_GLOBAL_POLICY_NOT_VERIFIED']},state.mod);
+          return {value:receiver};
+        }
+        if(mounted?.tag==='express-router'&&staticMount&&(args.length===1||pathOffset||prefixes.length)){
           receiver.mounts.push(mounted);
-          const parents=controlParents.get(mounted)??[];
-          parents.push({owner:receiver,opaque:!!receiver.controlOpaque,controlBefore:receiver.routes.length});controlParents.set(mounted,parents);
+          const parents=controlParents.get(mounted.ref)??[];
+          parents.push({owner:receiver,opaque:!!receiver.controlOpaque,controlBefore:receiver.routes.length,prefixes,uncertain:prefixes.length>0&&(!knownForward||state.uncertain||!!state.context.unresolved),mountLocation:loc(node,state.mod,'EXPRESS_ROUTER_MOUNT',state.fn)});
+          if(prefixes.length)note(state.mod,knownForward?'EXPRESS_MOUNT_PREFIX_FORWARD_ONLY':'EXPRESS_MOUNT_PREFIX_CONTROL_UNKNOWN');controlParents.set(mounted.ref,parents);
           // A previously mounted router may mutate the request/response before
           // later siblings. Its callbacks are not executed by this local proof.
           receiver.controlOpaque=true;
@@ -388,7 +414,7 @@ export function nodeServer(api) {
       for(const [key,v]of state.vars)if(!['express-request','express-response'].includes(v.tag))state.vars.set(key,{...v,unknown:true,constant:undefined});
       return {value:unknown()};
     }
-    if(receiver?.tag==='express-response'&&['send','json','render','redirect','status','end'].includes(method)) {
+    if(['express-response','pages-response'].includes(receiver?.tag)&&['send','json','render','redirect','status','end'].includes(method)) {
       if(['send','json','end'].includes(method)&&args.length){
         if(args.length===1&&!receiver.unknown&&!receiver.ref?.unknown){web.response(args[0],node,state);rate.response(node,state);}
         if(args.length!==1)note(state.mod,'EXPRESS_RESPONSE_ARGUMENT_CONTRACT_UNKNOWN');
@@ -501,8 +527,9 @@ export function nodeServer(api) {
       tick(mod);
       if(seen.has(owner)||seen.size>limits.maxDepth)return false;
       const visited=new Set([...seen,owner]);
-      return (controlParents.get(owner)??[]).every(p=>!p.opaque&&controlBefore(p.owner,p.controlBefore,mod)&&controlScope(p.owner,mod,visited));
+      return (controlParents.get(owner.ref)??[]).every(p=>!p.opaque&&controlBefore(p.owner,p.controlBefore,mod)&&controls.passive(p.prefixes??[])&&controlScope(p.owner,mod,visited));
     };
+    const mountUnknown=(owner,seen=new Set())=>{if(apps.some(root=>root.ref===owner.ref))return false;if(seen.has(owner.ref)||seen.size>limits.maxDepth)return true;const next=new Set([...seen,owner.ref]),parents=(controlParents.get(owner.ref)??[]).filter(p=>[...reachable].some(r=>r.ref===p.owner.ref));return !parents.length||parents.some(p=>p.uncertain||mountUnknown(p.owner,next));};
     for(const app of reachable)for(const route of app.routes) {
       const mod=route.target.mod;
       const root=route.setupContext.constructorRoot;
@@ -528,7 +555,7 @@ export function nodeServer(api) {
         append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ROUTE_HANDLER_NOT_REACHED',operation:'LOCAL_SYNCHRONOUS_CHAIN_EXIT',
           location:route.location,trace:blocked.trace,limitations:['DECLARED_EXPRESS_CONTROL_NOT_RUNTIME_PROOF','OTHER_ROUTES_AND_AUTHORIZATION_NOT_PROVEN',
             ...(blocked.truncated?['CONTROL_TRACE_BOUNDED']:[])]},mod);
-      }else mod.entries.push({fn:route.target,kind:'EXPRESS_HANDLER',registration:route.location,uncertain:route.uncertain||!!route.setupContext.unresolved,middleware:route.middleware,web:route.web,rate:route.rate});
+      }else mod.entries.push({fn:route.target,kind:'EXPRESS_HANDLER',registration:route.location,uncertain:route.uncertain||!!route.setupContext.unresolved||mountUnknown(app),middleware:route.middleware,web:route.web,rate:route.rate});
       if(route.location.filePath!==mod.filePath){const declaring=modules.get(route.location.filePath);if(declaring)declaring.httpRegistrationLinked=true;}
       mod.record.entrypoints++;
       append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ENTRY_REGISTERED',operation:'EXPRESS_ROUTER_MOUNTED',
