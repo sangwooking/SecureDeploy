@@ -40,6 +40,9 @@ public class DependencyAiAdviceService {
     public DependencyAiAdviceService(DependencyUpdatePlanService plans,CurrentUserService users,AiProviderResolver resolver,AiProperties properties,ObjectMapper mapper,AiUsageTracker usage){
         this.plans=plans;this.users=users;this.resolver=resolver;this.properties=properties;this.mapper=mapper;this.usage=usage;
     }
+    private com.securedeploy.auth.service.ReviewAccessService reviewAccess;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureReviewAccess(com.securedeploy.auth.service.ReviewAccessService access){reviewAccess=access;}
     public Provider provider(){return describe(resolver.resolve());}
     public Provider provider(long review){plans.get(review);return provider();}
     private Provider describe(AiProvider selected){
@@ -72,7 +75,13 @@ public class DependencyAiAdviceService {
         }
         DependencyAiAdvice.Output output=null;String result="FAILED";
         try{
-            selected.consumeLastTokenUsage();output=selected.generateDependencyAdvice(s.prompt);DependencyAiAdvice.validate(output,s.evidence,s.index);
+            selected.consumeLastTokenUsage();
+            if("OPENAI".equals(current.origin())){
+                if(reviewAccess==null)throw new IllegalStateException("Project ownership unavailable");
+                var owned=reviewAccess.findAccessibleReviewWithVulnerabilities(review,"분석 결과에 접근할 수 없습니다.");
+                try(var admission=AiAdmission.open(s.user,owned.getProject().getId(),s.id,"dependency_update_advice_v1",s.evidence.evidenceHash(),current.model(),s.prompt.instructions(),s.prompt.untrustedData())){output=selected.generateDependencyAdvice(s.prompt);}
+            }else output=selected.generateDependencyAdvice(s.prompt);
+            DependencyAiAdvice.validate(output,s.evidence,s.index);
             verifyEvidence(s);
             if(!current.equals(describe(selected)))throw new IllegalArgumentException();
             result=output.decision().equals("NEEDS_REVIEW")?"NEEDS_REVIEW":"GENERATED";

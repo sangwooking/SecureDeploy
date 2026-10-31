@@ -21,7 +21,7 @@ class OpenAiSemanticTransportTest {
         var props = new AiProperties(); props.getOpenai().setApiKey("fixture-not-a-real-api-key");
         var builder = RestClient.builder().baseUrl("https://api.openai.com/v1");
         var server = MockRestServiceServer.bindTo(builder).build();
-        var provider = new RealOpenAiProvider(props,mapper,builder.build());
+        var provider = MockMeteredTransport.provider(props,mapper,builder.build());
         var c = new SecuritySlice.CodeContext("context-1","UserController.java",7,9,"UserController.get(long)",false,"return service.get(id);\n");
         var slice = new SecuritySlice("slice-1","UserController.get(long)","/api/users/{id}","GET","UNKNOWN",
                 List.of("id"),List.of(c),List.of(),List.of("Partial context"));

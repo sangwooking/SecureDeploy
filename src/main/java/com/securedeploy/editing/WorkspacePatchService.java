@@ -60,10 +60,11 @@ public class WorkspacePatchService {
             var prompt=prompt(view);
             var selected=resolver.resolve();
             permit=callPolicy.reserve(users.currentUserId(),workspaces.projectId(workspace),SourceArchive.hash(((view.contextHash()!=null?view.contextHash():view.currentHash())+"|"+proposal).getBytes(java.nio.charset.StandardCharsets.UTF_8)),provider().model(),provider().origin(),prompt);
+            long usersId=users.currentUserId(),projectId=workspaces.projectId(workspace);
             future=executor.submit(()->{
                 selected.consumeLastTokenUsage();
                 WorkspacePatch.Output output=null;WorkspacePatchPlan.Output plan=null;AiUsageRecord measured;
-                try {if(view.plan()!=null)plan=selected.generateWorkspacePatchPlan(prompt);else output=selected.generateWorkspacePatch(prompt); }
+                try (var admission=AiAdmission.open(usersId,projectId,proposal,view.plan()!=null?"workspace_patch_plan_v1":"workspace_patch_v1",view.contextHash()!=null?view.contextHash():view.currentHash(),provider().model(),prompt.instructions(),prompt.untrustedData())) {if(view.plan()!=null)plan=selected.generateWorkspacePatchPlan(prompt);else output=selected.generateWorkspacePatch(prompt); }
                 finally {
                     // Missing usage after a request is not evidence that a remote call was free.
                     var tokens=selected.consumeLastTokenUsage().orElse(new AiTokenUsage(0,0,0,true));

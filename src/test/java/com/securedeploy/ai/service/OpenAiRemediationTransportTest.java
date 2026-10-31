@@ -26,7 +26,7 @@ class OpenAiRemediationTransportTest {
         var server = MockRestServiceServer.bindTo(builder).build();
         var props = new AiProperties();
         props.getOpenai().setApiKey("fake-test-key-not-real");
-        var provider = new RealOpenAiProvider(props, mapper, builder.build());
+        var provider = MockMeteredTransport.provider(props, mapper, builder.build());
         var item = (ObjectNode) mapper.valueToTree(RemediationTemplates.advice(context));
         item.put("findingId", context.findingId());
         item.put("codeExample", "");

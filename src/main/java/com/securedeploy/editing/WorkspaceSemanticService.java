@@ -48,7 +48,10 @@ public class WorkspaceSemanticService {
         synchronized(this){if(!s.state.equals("APPROVAL_REQUIRED")||consent==null||!consent.approved()||!s.hash.equals(consent.inputHash()))throw fail(HttpStatus.CONFLICT,"일회용 전송 동의가 필요합니다.");
             Instant now=Instant.now();last.entrySet().removeIf(e->e.getValue().isBefore(now.minusSeconds(3600)));if(last.size()>=1000||last.getOrDefault(s.user,Instant.EPOCH).isAfter(now.minusSeconds(60)))throw fail(HttpStatus.TOO_MANY_REQUESTS,"추가 검토 요청은 1분 간격입니다.");last.put(s.user,now);s.state="GENERATING";}
         try{var review=reviews.findReviewDetail(s.review,s.user);var prepared=semantic.prepare(review,s.collection);if(prepared.prompt()==null||!prepared.prompt().untrustedData().equals(s.payload))throw new IllegalArgumentException();
-            var result=semantic.generate(review,ScanMode.AI_ENHANCED,s.collection);
+            SemanticSnapshot result;
+            try(var admission=com.securedeploy.ai.usage.AiAdmission.open(s.user,workspaces.projectId(workspace),s.id,"semantic_review",s.hash,s.model,prepared.prompt().instructions(),prepared.prompt().untrustedData())){
+                result=semantic.generate(review,ScanMode.AI_ENHANCED,s.collection);
+            }
             try(var input=workspaces.captureScan(workspace,s.revision)){if(!input.provenance().inputHash().equals(s.hash))throw new IllegalArgumentException();}
             synchronized(this){s.result=label(result,s.origin);s.state=result.semanticReviewStatus().name();}
         }catch(RuntimeException e){synchronized(this){s.state="FAILED";s.result=null;}}

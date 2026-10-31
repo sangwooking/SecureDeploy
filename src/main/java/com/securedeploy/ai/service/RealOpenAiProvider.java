@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Objects;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -61,15 +62,7 @@ public class RealOpenAiProvider implements AiProvider {
         body.put("text",Map.of("format",Map.of("type","json_schema","name",schemaName,"strict",true,"schema",prompt.schema())));
         try {if(objectMapper.writeValueAsBytes(body).length>30720||maxOutputTokens>4000)throw new IllegalArgumentException("AI request budget exceeded");}
         catch(com.fasterxml.jackson.core.JsonProcessingException invalid){throw new IllegalArgumentException("AI request encoding failed");}
-        var response=restClient().post().uri("/responses").contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION,"Bearer "+aiProperties.getOpenai().getApiKey()).body(body)
-                .exchange((request,result)->{
-                    if(!result.getStatusCode().is2xxSuccessful())throw new IllegalStateException("Provider request failed");
-                    byte[] bytes=result.getBody().readNBytes(65537);
-                    if(bytes.length>65536)throw new IllegalArgumentException("Provider response limit");
-                    return objectMapper.reader().with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
-                            .with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readTree(bytes);
-                });
+        var response=guardedSend(body,schemaName,maxOutputTokens);
         captureUsage(response);
         if(!"completed".equals(response.path("status").asText()))throw new IllegalStateException("Incomplete patch response");
         try {
@@ -117,6 +110,9 @@ public class RealOpenAiProvider implements AiProvider {
     private final AiProperties aiProperties;
     private final ObjectMapper objectMapper;
     private final RestClient testClient;
+    private com.securedeploy.ai.usage.DurableAiLedger ledger;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureLedger(com.securedeploy.ai.usage.DurableAiLedger ledger){this.ledger=ledger;}
     private final ThreadLocal<AiTokenUsage> lastTokenUsage = new ThreadLocal<>();
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -137,7 +133,7 @@ public class RealOpenAiProvider implements AiProvider {
 
     @Override
     public boolean isAvailable() {
-        return StringUtils.hasText(aiProperties.getOpenai().getApiKey());
+        return StringUtils.hasText(aiProperties.getOpenai().getApiKey()) && (ledger!=null && ledger.enabled());
     }
 
     @Override
@@ -307,20 +303,44 @@ public class RealOpenAiProvider implements AiProvider {
     private JsonNode sendOpenAi(Map<String, Object> body) {
         if (!isAvailable()) throw new IllegalStateException("OpenAI is not configured");
 
-        JsonNode response = restClient()
-                .post()
-                .uri("/responses")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + aiProperties.getOpenai().getApiKey())
-                .body(body)
-                .retrieve()
-                .body(JsonNode.class);
+        // Legacy summary/PDF/explanation calls have no per-request consent UI and are denied by the gate.
+        return guardedSend(body,"LEGACY_UNCONSENTED",4000);
+    }
 
-        if (response == null) {
-            throw new IllegalStateException("OpenAI 응답이 비어 있습니다.");
+    private JsonNode guardedSend(Map<String,Object> body,String feature,int maxOutput){
+        lastTokenUsage.remove();String admission=null;
+        body.putIfAbsent("max_output_tokens",maxOutput);
+        try {
+            if(objectMapper.writeValueAsBytes(body).length>30720||maxOutput>4000)throw new IllegalArgumentException("AI request budget exceeded");
+        }catch(java.io.IOException bad){throw new IllegalArgumentException("AI request encoding failed");}
+        {
+            if(ledger==null)throw new IllegalStateException("Durable AI admission unavailable");
+            String instructions=Objects.toString(body.get("instructions"),"");
+            Object input=body.get("input");String data;
+            if(input instanceof List<?> list && list.size()==1 && list.get(0) instanceof Map<?,?> message && message.get("content") instanceof String text)data=text;
+            else throw new IllegalStateException("Legacy AI requests require a separate consent contract");
+            admission=ledger.reserve(com.securedeploy.ai.usage.AiAdmission.current(),feature,aiProperties.getOpenai().getModel(),
+                com.securedeploy.ai.usage.AiAdmission.hash(instructions+"\0"+data),32768,maxOutput);
+            ledger.sending(admission); // Commit before the network boundary. Uncertain outcomes never retry.
         }
-        captureUsage(response);
-        return response;
+        try {
+            var response=restClient().post().uri("/responses").contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,"Bearer "+aiProperties.getOpenai().getApiKey()).body(body)
+                .exchange((request,result)->{
+                    if(!result.getStatusCode().is2xxSuccessful())throw new IllegalStateException("Provider request failed");
+                    byte[] bytes=result.getBody().readNBytes(65537);
+                    if(bytes.length>65536)throw new IllegalArgumentException("Provider response limit");
+                    return objectMapper.reader().with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
+                            .with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readTree(bytes);
+                });
+            if(response==null)throw new IllegalStateException("Empty provider response");
+            captureUsage(response);
+            if(admission!=null)ledger.complete(admission,lastTokenUsage.get());
+            return response;
+        }catch(RuntimeException failure){
+            if(admission!=null)try{ledger.uncertain(admission);}catch(RuntimeException ignored){/* SENDING remains durable; explicit reconciliation required. */}
+            throw new IllegalStateException("AI provider or durable settlement failed; no automatic retry");
+        }
     }
 
     private RestClient restClient() {

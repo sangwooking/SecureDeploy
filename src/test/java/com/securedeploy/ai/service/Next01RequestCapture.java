@@ -21,6 +21,6 @@ public final class Next01RequestCapture {
   var builder=RestClient.builder().baseUrl("https://api.openai.com/v1");var server=MockRestServiceServer.bindTo(builder).build();
   var result=new WorkspacePatch.Output("NEEDS_REVIEW",data.path("fileId").asText(),data.path("startLine").asInt(),data.path("expectedHash").asText(),"","Local transport capture; no model",List.of(),List.of());
   server.expect(requestTo("https://api.openai.com/v1/responses")).andExpect(request->{Files.write(root.resolve(name+"-planned-request.json"),((MockClientHttpRequest)request).getBodyAsBytes());Files.writeString(root.resolve(name+"-prompt.json"),json.writeValueAsString(prompt));}).andRespond(withSuccess(json.writeValueAsString(Map.of("status","completed","output_text",json.writeValueAsString(result))),MediaType.APPLICATION_JSON));
-  new RealOpenAiProvider(props,json,builder.build()).generateWorkspacePatch(prompt);server.verify();
+  MockMeteredTransport.provider(props,json,builder.build()).generateWorkspacePatch(prompt);server.verify();
  }
 }
