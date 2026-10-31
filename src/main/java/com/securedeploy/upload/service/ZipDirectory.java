@@ -13,8 +13,8 @@ public final class ZipDirectory {
   for(int i=tail.length-22;i>=0;i--)if(le(tail,i,4)==0x06054b50L&&i+22+le(tail,i+20,2)==tail.length){end=i;break;}
   if(end<0||le(tail,end+4,2)!=0||le(tail,end+6,2)!=0||le(tail,end+8,2)!=le(tail,end+10,2)||le(tail,end+12,4)==0xffffffffL||le(tail,end+16,4)==0xffffffffL)throw new IOException("Unsupported ZIP directory");
   long expected=le(tail,end+10,2),size=le(tail,end+12,4),position=le(tail,end+16,4),limit=tailStart+end;
-  if(expected>maximum)throw new TooManyEntries();if(expected==0||position+size!=limit||position<0)throw new IOException("Invalid ZIP directory bounds");
-  int count=0;while(position<limit){if(++count>maximum)throw new TooManyEntries();if(limit-position<46)throw new IOException("Truncated ZIP directory");byte[] h=reader.read(position,46);if(le(h,0,4)!=0x02014b50L||le(h,34,2)!=0||le(h,42,4)>=le(tail,end+16,4))throw new IOException("Invalid ZIP entry directory");long next=position+46+le(h,28,2)+le(h,30,2)+le(h,32,2);if(next>limit||next<=position)throw new IOException("Invalid ZIP entry bounds");position=next;}
+  if(expected>maximum)throw new TooManyEntries();if(size>32L*1024*1024)throw new IOException("ZIP metadata budget exceeded");if(expected==0||position+size!=limit||position<0)throw new IOException("Invalid ZIP directory bounds");
+  int count=0;while(position<limit){if(++count>maximum)throw new TooManyEntries();if(limit-position<46)throw new IOException("Truncated ZIP directory");byte[] h=reader.read(position,46);if(le(h,0,4)!=0x02014b50L||le(h,34,2)!=0||le(h,42,4)>=le(tail,end+16,4))throw new IOException("Invalid ZIP entry directory");if(le(h,28,2)>2049||le(h,30,2)>8192||le(h,32,2)>4096)throw new IOException("ZIP entry metadata budget exceeded");long next=position+46+le(h,28,2)+le(h,30,2)+le(h,32,2);if(next>limit||next<=position)throw new IOException("Invalid ZIP entry bounds");position=next;}
   if(count!=expected)throw new IOException("ZIP directory count mismatch");return count;
  }
  private static long le(byte[] b,int p,int n){long out=0;for(int i=0;i<n;i++)out|=(long)(b[p+i]&255)<<(8*i);return out;}

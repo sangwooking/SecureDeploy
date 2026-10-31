@@ -18,6 +18,10 @@ public record SourceManifest(int version,String kind,String archiveSha256,String
     public static SourceManifest capture(Path root,Path archive,String commit,ComparisonEvidence evidence,CoverageLedger coverage,com.securedeploy.analysis.typescript.ServerAnalysisSnapshot server){
         var out=new ArrayList<File>();boolean complete=true,confirmed=evidence!=null&&evidence.complete();long total=0;
         try {
+            var coverageIndex=new HashMap<String,TreeSet<String>>();
+            if(coverage!=null)for(var e:coverage.entries())coverageIndex.computeIfAbsent(e.filePath(),ignored->new TreeSet<>()).add(e.status()+":"+e.reason());
+            var parserIndex=new HashMap<String,TreeSet<String>>();
+            if(server!=null)for(var a:java.util.stream.Stream.of(server,server.pythonAnalysis()).filter(Objects::nonNull).toList())for(var f:a.files())parserIndex.computeIfAbsent(f.filePath(),ignored->new TreeSet<>()).add(f.parseStatus()+":"+f.flowStatus());
             var inventory=inventory(root);complete=inventory.complete();
             for(var p:inventory.files()){String relative=root.relativize(p).toString().replace('\\','/');
                 if(relative.isEmpty()||relative.equals(".git")||relative.startsWith(".git/"))continue;
@@ -27,8 +31,8 @@ public record SourceManifest(int version,String kind,String archiveSha256,String
                 String hash=digest(p),encoding="BINARY_OR_UNVERIFIED_ENCODING";
                 if(size<=256*1024){byte[] bytes=Files.readAllBytes(p);try{String text=StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT).decode(java.nio.ByteBuffer.wrap(bytes)).toString();if(text.chars().noneMatch(c->c<32&&c!='\r'&&c!='\n'&&c!='\t'))encoding=text.startsWith("\ufeff")?"UTF8_BOM":"UTF8";}catch(CharacterCodingException ignored){}finally{Arrays.fill(bytes,(byte)0);}}
                 boolean analyzed=evidence!=null&&evidence.fileHashes().containsKey(relative);if(analyzed&&!hash.equals(evidence.fileHashes().get(relative)))confirmed=false;
-                String parse=coverage==null?"NOT_RECORDED":coverage.entries().stream().filter(e->relative.equals(e.filePath())).map(e->e.status()+":"+e.reason()).distinct().sorted().reduce((a,b)->a+";"+b).orElse("NOT_RECORDED");
-                if(server!=null){String actual=java.util.stream.Stream.of(server,server.pythonAnalysis()).filter(Objects::nonNull).flatMap(a->a.files().stream()).filter(f->relative.equals(f.filePath())).map(f->f.parseStatus()+":"+f.flowStatus()).distinct().sorted().reduce((a,b)->a+";"+b).orElse("PARSER_NOT_RECORDED");parse=actual+";"+parse;}
+                String parse=coverageIndex.containsKey(relative)?String.join(";",coverageIndex.get(relative)):"NOT_RECORDED";
+                if(server!=null)parse=(parserIndex.containsKey(relative)?String.join(";",parserIndex.get(relative)):"PARSER_NOT_RECORDED")+";"+parse;
                 out.add(new File(relative,hash,size,encoding,analyzed,parse.length()>256?parse.substring(0,256):parse));
             }
             if(evidence!=null&&!out.stream().filter(File::analyzed).map(File::path).collect(java.util.stream.Collectors.toSet()).containsAll(evidence.fileHashes().keySet()))confirmed=false;

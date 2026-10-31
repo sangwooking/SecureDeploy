@@ -266,4 +266,8 @@ class ZipUploadSafetyTest {
         var saved=upload.saveZip(new MockMultipartFile("file","nested.zip","application/zip",outer.toByteArray()));var result=extract.extract(saved);assertThat(Files.readAllBytes(result.projectRoot().resolve("nested.zip"))).isEqualTo(inner.toByteArray());assertThat(result.projectRoot().resolve("hidden.js")).doesNotExist();
     }
 
+    @Test void oversizedPathMetadataIsRejectedBeforeArchiveParserAllocation()throws Exception {
+        var saved=archive(Map.of("x".repeat(3000)+".js","synthetic"));assertThatThrownBy(()->com.securedeploy.upload.service.ZipDirectory.validate(saved.archivePath(),50000)).isInstanceOf(IOException.class);assertThatThrownBy(()->extract.extract(saved)).isInstanceOf(SecureDeployException.class);assertThat(saved.workspacePath()).doesNotExist();
+    }
+
 }
