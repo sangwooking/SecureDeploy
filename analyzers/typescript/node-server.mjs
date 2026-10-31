@@ -161,6 +161,8 @@ export function nodeServer(api) {
     }finally{loading.delete(mod);}
   }
   function property(base,key,node,state) {
+    if(base.htmlParamsRoot)return {...(fields.read(base,key,node,state)??base),htmlParamsRoot:false,htmlParamLeaf:true,htmlParamVerified:state.context.htmlParamNames?.includes(key)===true};
+    if(base.htmlParamLeaf)return {...(fields.read(base,key,node,state)??base),htmlParamVerified:false};
     const classProperty=classes.property(base,key,node,state);if(classProperty)return classProperty;
     const rateProperty=rate.property(base,key);if(rateProperty)return rateProperty;
     const fileProperty=api.filesSupport.property(base,key,node,state);if(fileProperty)return fileProperty;
@@ -191,7 +193,7 @@ export function nodeServer(api) {
         return value('input',[loc(node,state.mod,'UPLOAD_FILE_UNVERIFIED',state.fn)],{unknown:true});
       }
       if(['query','body','params','headers'].includes(key))return value('input',[loc(node,state.mod,'EXPRESS_'+key.toUpperCase(),state.fn)],{inputShape:key==='params'?'STRING_MAP':undefined,
-        fieldOrigin:fields.root(base,key,node,state),fieldValidationUncertain:base.fieldValidationUncertain});
+        htmlParamsRoot:key==='params',fieldOrigin:fields.root(base,key,node,state),fieldValidationUncertain:base.fieldValidationUncertain});
       if(['user','session'].includes(key)){
         if(key==='session')state.webSessionRead=true;
         state.context.checks.push(loc(node,state.mod,'PRINCIPAL_CONTEXT_UNVERIFIED',state.fn));return {...unknown(),principal:true};
@@ -202,6 +204,11 @@ export function nodeServer(api) {
     const field=fields.read(base,key,node,state);if(field)return field;
   }
   function write(receiver,key,v,state,node=state.fn.node) {
+    if(['express-response','pages-response'].includes(receiver?.tag)){
+      if(literal(key)&&key.constant==='statusCode'){api.html.status(receiver,[v],state);return true;}
+      state.context.htmlOpaqueCall=true;
+      return false;
+    }
     web.write(receiver,state);
     if(!state.nodeMode||!literal(key)||!receiver.ref)return false;
     if(['class','class-prototype'].includes(receiver.tag)){receiver.ref.unknown=true;note(state.mod,'CLASS_PROTOTYPE_OR_STATIC_MUTATION_UNKNOWN');return true;}
@@ -330,7 +337,7 @@ export function nodeServer(api) {
         const handler=args.at(-1);
         if(!handler.target||handler.unknown){note(state.mod,'EXPRESS_HANDLER_UNKNOWN');return {value:receiver};}
         if(routes.length>=limits.maxResults){note(state.mod,'EXPRESS_REGISTRATION_LIMIT');return {value:receiver};}
-        const route={target:handler.target,location:loc(node,state.mod,'EXPRESS_REGISTRATION',state.fn),uncertain:state.uncertain,middleware:args.length>2,setupContext:state.context,web:web.route(receiver,args,node,state,method),rate:rate.route(receiver,args,node,state,method)};
+        const route={httpMethod:method.toUpperCase(),httpPath:args[0].constant,target:handler.target,location:loc(node,state.mod,'EXPRESS_REGISTRATION',state.fn),uncertain:state.uncertain,middleware:args.length>2,setupContext:state.context,web:web.route(receiver,args,node,state,method),rate:rate.route(receiver,args,node,state,method)};
         routeControls.set(route,{owner:receiver,handler,before:receiver.routes.length,opaque:!!receiver.controlOpaque,prefix:args.slice(1,-1)});
         receiver.routes.push(route);routes.push(route);return {value:receiver};
       }
@@ -424,7 +431,8 @@ export function nodeServer(api) {
     }
     if(['express-response','pages-response'].includes(receiver?.tag)&&['send','json','render','redirect','status','end','write','type','set','header','setHeader'].includes(method)) {
       if(['type','set','header','setHeader'].includes(method))return {value:api.html.header(receiver,args,method,state)};
-      if(['send','write','end','render'].includes(method)&&args.length)api.html.observe(method==='render'?union(...args):args[0],node,state,receiver.htmlResponseType,method);
+      if(method==='status')return {value:api.html.status(receiver,args,state)};
+      api.html.output(receiver,method==='render'?[union(...args)]:args,node,state,method);
       if(['send','json','end','write'].includes(method)&&args.length){
         if(args.length===1&&!receiver.unknown&&!receiver.ref?.unknown){web.response(args[0],node,state);rate.response(node,state);}
         if(args.length!==1)note(state.mod,'EXPRESS_RESPONSE_ARGUMENT_CONTRACT_UNKNOWN');
@@ -565,7 +573,7 @@ export function nodeServer(api) {
         append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ROUTE_HANDLER_NOT_REACHED',operation:'LOCAL_SYNCHRONOUS_CHAIN_EXIT',
           location:route.location,trace:blocked.trace,limitations:['DECLARED_EXPRESS_CONTROL_NOT_RUNTIME_PROOF','OTHER_ROUTES_AND_AUTHORIZATION_NOT_PROVEN',
             ...(blocked.truncated?['CONTROL_TRACE_BOUNDED']:[])]},mod);
-      }else mod.entries.push({fn:route.target,kind:'EXPRESS_HANDLER',registration:route.location,uncertain:route.uncertain||!!route.setupContext.unresolved||mountUnknown(app),middleware:route.middleware,web:route.web,rate:route.rate});
+      }else mod.entries.push({fn:route.target,kind:'EXPRESS_HANDLER',httpMethod:route.httpMethod,httpPath:route.httpPath,registration:route.location,uncertain:route.uncertain||!!route.setupContext.unresolved||mountUnknown(app),middleware:route.middleware,web:route.web,rate:route.rate});
       if(route.location.filePath!==mod.filePath){const declaring=modules.get(route.location.filePath);if(declaring)declaring.httpRegistrationLinked=true;}
       mod.record.entrypoints++;
       append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ENTRY_REGISTERED',operation:'EXPRESS_ROUTER_MOUNTED',

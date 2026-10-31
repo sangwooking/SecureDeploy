@@ -24,7 +24,7 @@ import {externalNext} from './external-next.mjs';
 import {asyncBoundaries} from './async-boundary.mjs';
 import {asyncExceptions} from './async-exception.mjs';
 
-export const VERSION = 'ts-server-v54';
+export const VERSION = 'ts-server-v55';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -95,6 +95,7 @@ function union(...values) {
     } : undefined,
     traceTruncated: allTrace.length > 20 || values.some(v => v?.traceTruncated),
     ref: refs.length && !mixedRefs ? mergedRef : undefined,
+    htmlPending:values.flatMap(v=>v.htmlPending??[]).slice(0,4),htmlResponseUncertain:values.some(v=>v.unknown||!v.htmlPending?.length),
     effects: [...new Set(values.flatMap(v => v?.effects ?? []))],
     target: values.every(v => v?.target && v.target === values[0]?.target) ? values[0].target : undefined,
     tag: values.length && values.every(v => v?.tag === values[0]?.tag) ? values[0]?.tag : undefined };
@@ -442,6 +443,7 @@ export function analyze(input, overrides = {}) {
     }
     if (base.tag === 'outboundRequest' && key === 'url') return value('urlText', base.trace, { destination: destinationOf(base), unknown: base.unknown || base.ref?.unknown });
     if (base.ref?.properties?.has(key)) return { ...base.ref.properties.get(key), unknown: base.ref.unknown || base.ref.properties.get(key).unknown };
+    if(base.tag==='exposureResponse')return {...unknown(),exposures:exposureSources(base)};
     if (base.ref) return base.ref.unknown ? { trace: base.ref.trace, unknown: true } : constant(undefined);
     if (base.tag === 'context') {
       if (key === 'request') return value('request');
@@ -824,9 +826,9 @@ export function analyze(input, overrides = {}) {
         &&mod.nextResponses?.has(callee.expression.text)&&!state.vars.has(callee.expression.text)&&callee.name.text==='json';
       if (global && callee.text === 'Response' && ts.isNewExpression(node) || globalObject('Response') && callee.name.text === 'json' || nextResponse) {
         const body=responseBody(args[0]), location=loc(node,mod,'HTTP_RESPONSE',fn);
-        if(ts.isNewExpression(node))html.response(args[0],args[1],node,state);
+        const pending=ts.isNewExpression(node)?html.response(args[0],args[1],node,state):null;
         if(ts.isNewExpression(node) && args[0]?.ref)body.unresolved=true;
-        return { tag:'exposureResponse', trace:[], exposures:body.origins, exposureTrail:body.trail,
+        return { tag:'exposureResponse',htmlPending:pending?[pending]:[], trace:[], exposures:body.origins, exposureTrail:body.trail,
           unknown:body.unresolved || state.uncertain || state.exposureUncertain, responseLocations:[location],
           environmentResponses:[{...body, location}] };
       }
@@ -952,6 +954,7 @@ export function analyze(input, overrides = {}) {
         argument.ref.properties.clear();
       }
       auditCall(node,state,null);
+      state.context.htmlOpaqueCall=true;
       note(mod, 'CALL_TARGET_UNRESOLVED');
       if(state.nodeMode)nodeSupport.invalidateFields(state);
       const selectorString=state.nodeMode&&ts.isCallExpression(node)&&(global&&ts.isIdentifier(callee)&&callee.text==='String'&&args.length===1
@@ -1416,7 +1419,7 @@ export function analyze(input, overrides = {}) {
     if(routeAudit&&(!entry.staticCandidate||!['B','C'].includes(entry.staticCandidate.category)||entry.staticCandidate.traceStatus!=='QUEUED_CONDITIONAL'))continue;
     if(routeAudit){activeCandidate=entry.staticCandidate;activeCandidate.traceStatus='ANALYZED_CONDITIONAL';
       routeAudit.captures.set(activeCandidate,new Map(OBSERVATION_KEYS.map(k=>[k,new Set()])));}
-    const context = { entry: loc(entry.registrationNode ?? entry.fn.node, mod, entry.kind, entry.fn), checks: [], defenses: [], resources: [] };
+    const context = { htmlParamNames:[...(entry.httpPath??'').matchAll(/:([A-Za-z_][A-Za-z0-9_]*)/g)].map(m=>m[1]),htmlMethod:entry.httpMethod??entry.fn.name,htmlEndpoint:entry.httpMethod?entry.httpMethod+' '+entry.httpPath:entry.kind+' '+mod.filePath,entry: loc(entry.registrationNode ?? entry.fn.node, mod, entry.kind, entry.fn), checks: [], defenses: [], resources: [] };
     if(routeAudit)context.unresolved=true;
     try {
       if(entry.fn.wrapper)append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'CALLBACK_BOUND',
@@ -1438,6 +1441,7 @@ export function analyze(input, overrides = {}) {
         : entry.kind === 'WORKER_FETCH' || entry.kind === 'DENO_HTTP_HANDLER' ? [value('request'), value('env')] : entry.kind==='EXPRESS_HANDLER'
         ?[value('express-request'),value('express-response'),unknown()]:[value('context')], 0, context, new Set(),!!entry.uncertain);
       if (returned.responseLocations?.length) observeExposure(returned, entry.fn.node, { mod:entry.fn.mod, fn: entry.fn, uncertain: false }, 'HTTP_RESPONSE_RETURN');
+      html.returned(returned,context);
       observeEnvironmentResponses(returned,{mod:entry.fn.mod,fn:entry.fn});
       if(entry.fn.mod!==mod&&entry.fn.mod.visited.has(canonicalFunctions.get(entry.fn)??entry.fn))mod.linkedEntryBodyAnalyzed=true;
     } catch { note(mod, 'ANALYSIS_BUDGET_EXCEEDED');if(activeCandidate)activeCandidate.traceStatus='BUDGET_OR_UNSUPPORTED'; }
@@ -1445,7 +1449,7 @@ export function analyze(input, overrides = {}) {
       context[field] = context[field].filter((item, i, all) => all.findIndex(other => JSON.stringify(item) === JSON.stringify(other)) === i);
       if (context[field].length > 100) { context[field] = context[field].slice(0, 100); note(mod, 'CONTEXT_DETAILS_LIMIT_EXCEEDED'); }
     }
-    const { headersMutated: ignoredHeaderState, ...publicContext } = context;
+    const { headersMutated: ignoredHeaderState,htmlParamNames:ignoredHtmlParams,htmlMethod:ignoredHtmlMethod,htmlEndpoint:ignoredHtmlEndpoint,htmlOutputStarted:ignoredHtmlStarted,htmlOpaqueCall:ignoredHtmlOpaque,...publicContext } = context;
     append(result.authorizationContexts, { ...publicContext, conclusion: 'NOT_VERIFIED', limitations: [
       '조건 분기만으로 인증·소유권 검증을 입증하지 않습니다.',
       '전역 미들웨어·세션 검증·리소스 소유권과 실패 시 차단 경로를 직접 확인하세요.'

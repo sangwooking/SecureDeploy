@@ -3,7 +3,7 @@ function lastTag(text,name,close){let last=-1;const re=new RegExp('<'+(close?'/'
 export function htmlParts(v) {
  if(v?.htmlParts)return v.htmlParts;
  if(typeof v?.constant==='string'&&!v.unknown)return [{text:v.constant}];
- return [{input:true,trace:v?.trace??[],unknown:!!v?.unknown,encoding:v?.htmlEncoding??[]}];
+ return [{input:true,trace:v?.trace??[],unknown:!!v?.unknown,paramVerified:v?.htmlParamVerified===true,encoding:v?.htmlEncoding??[]}];
 }
 export function joinHtml(left,right) {
  const parts=[...htmlParts(left),...htmlParts(right)];

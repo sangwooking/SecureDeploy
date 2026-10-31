@@ -1,5 +1,6 @@
+import {rawHtmlTextInputs} from './html-text-proof.mjs';
 import {outputContexts,encodeReplace} from './html-context.mjs';
-// Review evidence only: output context is not a new confirmed Finding Rule.
+// Review contexts and a separate, narrower HTML_TEXT_INPUT_FLOW proof contract.
 // No target execution, template engine execution or sanitizer-name trust.
 export function htmlResponses({loc,append,result,note,modules}) {
   const mime=v=>typeof v?.constant==='string'&&!v.unknown
@@ -12,11 +13,12 @@ export function htmlResponses({loc,append,result,note,modules}) {
     else if(args.length===2&&typeof args[0]?.constant==='string'&&args[0].constant.toLowerCase()==='content-type')mode=mime(args[1]);
     else if(args.length===2&&typeof args[0]?.constant==='string')return receiver;
     // Never mutate a shared heap receiver: branch-local vars get fresh metadata.
-    const updated={...receiver,htmlResponseType:mode};
+    const declared=args.length===1?args[0]?.constant:args[1]?.constant;
+    const updated={...receiver,htmlResponseType:mode,htmlTextMime:declared==='html'||typeof declared==='string'&&/^text\/html(?:\s*;|$)/i.test(declared)};
     for(const [key,v] of state.vars)if(v===receiver||receiver.ref&&v.ref===receiver.ref)state.vars.set(key,updated);
     return updated;
   }
-  function observe(v,node,state,mode,method){
+  function observe(v,node,state,mode,method,proof=false){
     if(state.context.setup)return;
     const all=[];let remaining=128;const seen=new Set();
     const collect=(x,depth)=>{if(!x||depth>3||remaining--<=0||seen.has(x.ref??x))return;seen.add(x.ref??x);all.push(...(x.trace??[]));for(const child of x.ref?.properties?.values()??[])collect(child,depth+1);};
@@ -38,11 +40,34 @@ export function htmlResponses({loc,append,result,note,modules}) {
         ...(contexts.some(c=>c.context==='UNKNOWN')?['HTML_OUTPUT_CONTEXT_UNRESOLVED']:[]),
         ...(definite?[]:['CONTENT_TYPE_TEMPLATE_OR_VALUE_FLOW_UNRESOLVED'])]},state.mod);
     note(state.mod,definite?'HTML_RESPONSE_INPUT_REVIEW_REQUIRED':'HTML_RESPONSE_CONTEXT_UNRESOLVED');
+    if(proof&&definite&&!state.context.htmlOpaqueCall&&!state.context.unresolved&&!state.context.defenses?.length&&!state.context.checks?.some(t=>t.kind==='CONDITIONAL_CHECK')){
+      const endpoint=state.context.htmlEndpoint??state.context.entry?.kind;
+      if(typeof endpoint!=='string'||endpoint.length>200){note(state.mod,'HTML_ENDPOINT_PROOF_UNRESOLVED');return;}
+      const inputs=rawHtmlTextInputs(v).filter(p=>p.trace.some(t=>/^(?:EXPRESS_(?:QUERY|BODY|PARAMS|HEADERS)|NEXT_PAGES_(?:QUERY|BODY|HEADERS)|QUERY_PARAMETER|REQUEST_BODY|REQUEST_HEADER)$/.test(t.kind)));
+      if(inputs.length){
+        const source=inputs[0].trace.find(t=>/^(?:EXPRESS_(?:QUERY|BODY|PARAMS|HEADERS)|NEXT_PAGES_(?:QUERY|BODY|HEADERS)|QUERY_PARAMETER|REQUEST_BODY|REQUEST_HEADER)$/.test(t.kind));
+        const entry=state.context.entry,transfer=inputs[0].trace;
+        if(transfer.length>10||(v.htmlFlow??[]).length>4){note(state.mod,'HTML_TRANSFER_PROOF_LIMIT');return;}
+        const flow=[...transfer,entry,...(state.context.checks??[]).filter(t=>t.kind==='EXPRESS_REGISTRATION').slice(0,1),...(v.htmlFlow??[]).slice(0,4),{...location,kind:'HTML_RESPONSE_MIME_CONFIRMED'},{...location,kind:'HTML_OUTPUT_CONTEXT_HTML_TEXT'},{...location,kind:'RAW_REQUEST_HTML_TEXT_NO_ENCODING'},location].filter(Boolean);
+        if(flow.length<=20&&!result.findings.some(f=>f.ruleId==='HTTP_HTML_INPUT_FLOW'&&JSON.stringify(f.sink)===JSON.stringify(location))){
+          const limits=['STATIC_HTML_TEXT_FLOW_NOT_BROWSER_EXPLOIT_PROOF','MIDDLEWARE_CSP_AND_RUNTIME_NOT_VERIFIED','HTML_ATTRIBUTES_SCRIPT_URL_CSS_NOT_COVERED'];
+          const witness={ruleId:'HTTP_HTML_INPUT_FLOW',kind:'HTML_TEXT_INPUT_FLOW',operation:endpoint,location,trace:flow,limitations:limits};
+          append(result.nodeUses,witness,state.mod);if(!result.nodeUses.includes(witness)){note(state.mod,'HTML_PROOF_OUTPUT_BUDGET_EXCEEDED');return;}
+          append(result.findings,{ruleId:'HTTP_HTML_INPUT_FLOW',kind:'CWE-79',confidence:'HIGH',disposition:'REVIEW_REQUIRED',source,sink:location,flow,defenses:[],limitations:limits,
+            message:'요청값이 인코딩되지 않은 HTML 텍스트 위치에 전달되는 정적 경로입니다. 등록 근거: '+endpoint,
+            recommendation:'해당 출력이 일반 텍스트라면 문맥에 맞는 HTML 텍스트 인코딩 또는 text/plain 응답을 검토하세요. HTML이 필요하면 검증된 정제 처리를 사용하고 정상 응답 구조를 보존하세요. 무해한 마커의 DOM 해석과 재검사를 확인하세요.'},state.mod);
+        }
+      }
+    }
+
   }
   function response(v,options,node,state){
     const headers=options?.ref?.properties.get('headers');
     const entries=[...(headers?.ref?.properties??[])].filter(([k])=>k.toLowerCase()==='content-type');
-    observe(v,node,state,entries.length===1?mime(entries[0][1]):headers?'UNKNOWN':'PLAIN','Response');
+    const mode=entries.length===1?mime(entries[0][1]):headers?'UNKNOWN':'PLAIN';
+    observe(v,node,state,mode,'Response');
+    const status=options?.ref?.properties.get('status');
+    return {v,node,state,mode,valid:entries.length===1&&typeof entries[0][1]?.constant==='string'&&/^text\/html(?:\s*;|$)/i.test(entries[0][1].constant)&&(!options||options.ref&&!options.ref.unknown&&[...options.ref.properties.keys()].every(k=>['headers','status'].includes(k)))&&(!status||!status.unknown&&Number.isInteger(status.constant)&&status.constant>=200&&status.constant<=599&&![204,205,304].includes(status.constant))};
   }
   let intrinsicMutation;
   function transform(base,args,method){
@@ -50,5 +75,22 @@ export function htmlResponses({loc,append,result,note,modules}) {
     const mutated=intrinsicMutation??=([...modules.values()].some(m=>/\b(?:prototype|defineProperty|defineProperties)\b|\.replaceAll\s*=|\[\s*['"]replaceAll['"]\s*\]\s*=/.test(m.ast?.text??'')));
     return encodeReplace(base,args,method,mutated);
   }
-  return {header,observe,response,transform};
+  function status(receiver,args,state){
+    const updated={...receiver,htmlStatus:args.length===1&&!args[0]?.unknown?args[0].constant:'UNKNOWN'};
+    for(const[k,v]of state.vars)if(v===receiver)state.vars.set(k,updated);
+    return updated;
+  }
+  function output(receiver,args,node,state,method){
+    const prior=state.context.htmlOutputStarted;state.context.htmlOutputStarted=true;
+    if(args.length&&['send','write','end','render'].includes(method))observe(args[0],node,state,receiver.htmlResponseType,method,
+      !prior&&args.length===1&&!receiver.unknown&&!receiver.ref?.unknown&&(receiver.htmlResponseType===undefined||receiver.htmlTextMime===true)&&(receiver.htmlStatus===undefined||Number.isInteger(receiver.htmlStatus)&&receiver.htmlStatus>=200&&receiver.htmlStatus<=599&&![204,205,304].includes(receiver.htmlStatus))&&state.context.htmlMethod!=='HEAD');
+  }
+  function returned(v,context){
+    if(v.tag!=='exposureResponse'||v.unknown||v.htmlResponseUncertain||v.htmlPending?.length!==1||context.htmlOpaqueCall||context.unresolved)return;
+    const p=v.htmlPending[0];if(!p.valid)return;
+    if(context.entry?.kind!=='NEXT_ROUTE_HANDLER'||!['GET','POST','PUT','PATCH','DELETE','OPTIONS'].includes(context.htmlMethod))return;
+    // Review was retained at construction; only the returned native response gets a Finding.
+    observe(p.v,p.node,{...p.state,context},p.mode,'Response',true);
+  }
+  return {header,observe,response,transform,status,output,returned};
 }
