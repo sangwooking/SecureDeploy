@@ -151,7 +151,11 @@ and Python owner-policy omission as the next independent evaluation targets.
    access and, when enabled, the existing key's Workspace recovery.
 5. Confirm the approved key directory, custody and restore proof. Keep persistence
    OFF if no operating key exists; never turn it off to hide existing encrypted rows.
-6. Review additive V001/V002; only then approve operating migration. Snapshot before/
+6. Verify the operating service role's explicit schema/table privileges. Workspace
+   needs SELECT/INSERT/UPDATE/DELETE, request ledger SELECT/INSERT/UPDATE and gate
+   SELECT/UPDATE for row locking. Do not assume the superuser test role proves
+   operating least-privilege grants. A hidden table or permission error must fail
+   startup, not select fresh memory storage. Review additive V001/V002; only then approve operating migration. Snapshot before/
    after old-table hashes, validate schema/constraints and preserve originals. No
    ddl-auto update/create or automatic script startup.
 7. Stage the matched Backend JAR, external v52 worker/dependencies and rollback

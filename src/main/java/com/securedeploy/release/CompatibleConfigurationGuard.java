@@ -6,7 +6,7 @@ public class CompatibleConfigurationGuard {
  public CompatibleConfigurationGuard(AiProperties ai,Environment env,JdbcTemplate db){
   if(ai.getProvider()!=AiProviderType.TEMPLATE||env.getProperty("securedeploy.ai.ledger.enabled",Boolean.class,false)||env.getProperty("securedeploy.ai.patch-policy.external-enabled",Boolean.class,false)||env.getProperty("securedeploy.editing.automation-enabled",Boolean.class,true)||env.getProperty("securedeploy.editing.npm-generation-enabled",Boolean.class,false))throw new IllegalStateException("Compatible mode requires TEMPLATE and disabled automation/paid generation");
   if(!env.getProperty("securedeploy.editing.persistence.enabled",Boolean.class,false)){
-   boolean exists=Boolean.TRUE.equals(db.queryForObject("select exists(select 1 from information_schema.tables where table_schema='public' and table_name='editing_workspace_v1')",Boolean.class));
+   boolean exists=Boolean.TRUE.equals(db.queryForObject("select exists(select 1 from pg_catalog.pg_class c join pg_catalog.pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname='editing_workspace_v1' and c.relkind in ('r','p'))",Boolean.class));
    if(exists&&db.queryForObject("select count(*) from editing_workspace_v1",Long.class)>0)throw new IllegalStateException("Encrypted workspaces require their original key and persistence in compatible mode");
   }
  }
