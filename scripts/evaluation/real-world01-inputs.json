@@ -1,0 +1,514 @@
+{
+  "scope": "Authored and frozen before implementation; owned multi-file review oracles, not external or blinded accuracy",
+  "cases": [
+    {
+      "id": "header-map-html",
+      "truth": true,
+      "oracle": "Registered GET handler emits raw request-controlled HTML text; header literal and helper are locally known",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.set({'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-case",
+      "truth": true,
+      "oracle": "Registered GET handler emits raw request-controlled HTML text; header literal and helper are locally known",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.header({'content-type':'text/html'});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "metadata-map-preserves-explicit",
+      "truth": true,
+      "oracle": "Registered GET handler emits raw request-controlled HTML text; header literal and helper are locally known",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.type('html');res.set({'Cache-Control':'no-store'});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "metadata-map-preserves-default",
+      "truth": true,
+      "oracle": "Registered GET handler emits raw request-controlled HTML text; header literal and helper are locally known",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.set({'Cache-Control':'no-store'});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "html-map-chained",
+      "truth": true,
+      "oracle": "Registered GET handler emits raw request-controlled HTML text; header literal and helper are locally known",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.set({'Content-Type':'text/html'}).status(200);res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-json",
+      "truth": false,
+      "oracle": "Known JSON/plain body, registered fixed input, or complete five-entity encoding; only HTML_TEXT risk is labeled",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.set({'Content-Type':'application/json'});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-plain",
+      "truth": false,
+      "oracle": "Known JSON/plain body, registered fixed input, or complete five-entity encoding; only HTML_TEXT risk is labeled",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.header({'Content-Type':'text/plain'});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-fixed-input",
+      "truth": false,
+      "oracle": "Known JSON/plain body, registered fixed input, or complete five-entity encoding; only HTML_TEXT risk is labeled",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.set({'Content-Type':'text/html'});res.send(render('Fixed name'));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-encoded",
+      "truth": false,
+      "oracle": "Known JSON/plain body, registered fixed input, or complete five-entity encoding; only HTML_TEXT risk is labeled",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{function escapeHTML(v){return v.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\"','&quot;').replaceAll(\"'\",'&#x27;');}res.set({'Content-Type':'text/html'});res.send(render(escapeHTML(req.query.name)));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-spread",
+      "truth": null,
+      "oracle": "Unsupported/dynamic header or method contract, no safe or confirmed-flow claim",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.set({...req.body.headers,'Content-Type':'text/html'});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-dynamic-value",
+      "truth": null,
+      "oracle": "Unsupported/dynamic header or method contract, no safe or confirmed-flow claim",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.set({'Content-Type':req.query.mime});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-getter",
+      "truth": null,
+      "oracle": "Unsupported/dynamic header or method contract, no safe or confirmed-flow claim",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.set({get 'Content-Type'(){return 'text/html'}});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-duplicate-case",
+      "truth": null,
+      "oracle": "Unsupported/dynamic header or method contract, no safe or confirmed-flow claim",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.set({'Content-Type':'text/html','content-type':'text/plain'});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-node-setHeader-not-overload",
+      "truth": null,
+      "oracle": "Unsupported/dynamic header or method contract, no safe or confirmed-flow claim",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.setHeader({'Content-Type':'text/html'});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-prototype",
+      "truth": null,
+      "oracle": "Unsupported/dynamic header or method contract, no safe or confirmed-flow claim",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{res.set({'__proto__':req.query.proto,'Content-Type':'text/html'});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "header-map-unknown-effect",
+      "truth": null,
+      "oracle": "Unsupported/dynamic header or method contract, no safe or confirmed-flow claim",
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "server.mjs",
+            "content": "import express from 'express';import {render} from './service.mjs';const app=express();app.get('/profile',(req,res)=>{configure(res);res.set({'Content-Type':'text/html'});res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "service.mjs",
+            "content": "export function render(name){return `<article><h1>Profile</h1><p>${name}</p></article>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "next-app-helper-html",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "oracle": "Returned native HTML Response with linked request source",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "app/api/profile/route.ts",
+            "content": "import {render} from '../../../service';export function GET(req){return new Response(render(new URL(req.url).searchParams.get('name')),{headers:{'Content-Type':'text/html'}})}"
+          },
+          {
+            "filePath": "service.ts",
+            "content": "export function render(name){return `<p>${name}</p>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "next-app-json",
+      "truth": false,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "oracle": "Known JSON or fixed response; no source-controlled HTML text",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "app/api/profile/route.ts",
+            "content": "export function GET(req){return Response.json({name:new URL(req.url).searchParams.get('name')});}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "next-pages-helper",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "oracle": "Registered Pages API returns helper HTML with raw query input",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED",
+            "express": "4.21.2",
+            "next": "15.3.0"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "pages/api/profile.ts",
+            "content": "import {render} from '../../service';export default function handler(req,res){res.setHeader('Content-Type','text/html');return res.end(render(req.query.name));}"
+          },
+          {
+            "filePath": "service.ts",
+            "content": "export function render(name){return `<p>${name}</p>`;}"
+          }
+        ]
+      }
+    }
+  ]
+}
