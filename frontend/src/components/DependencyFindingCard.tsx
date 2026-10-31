@@ -9,6 +9,7 @@ import { FindingRemediation } from './FindingRemediation';
 import { ThreatIntelligenceDetails } from './ThreatIntelligenceDetails';
 import { priorityLabels } from './reviewPresentation';
 import { dependencyText, knownDependencyValue, unconfirmed } from './dependencyGuidance';
+import { DependencyRepairSummary } from './DependencyRepairSummary';
 
 export function DependencyFindingCard({ dependency: original, reviewId, finding, remediation, intelligence, components, support, embedded = false }: {
   reviewId?:number|null;dependency: DependencyVulnerability; finding?: RiskFinding;
@@ -35,6 +36,7 @@ export function DependencyFindingCard({ dependency: original, reviewId, finding,
       <div><dt>공지의 수정 버전 근거</dt><dd><strong>{fixed??'현재 계열의 수정 경계 미확인'}</strong><p>공식 공지의 수정 경계 · 적용 가능성/호환성 미확인</p><details><summary>모든 수정 버전 근거</summary>{dep.fixedVersions.map(knownDependencyValue).filter(Boolean).join(', ') || unconfirmed}</details></dd></div>
       <div><dt>{dep.ecosystem === 'PYPI' ? '의존성 선언·연결 위치' : '버전을 확인한 파일'}</dt><dd className="finding-location">{dependencyText(dep.sourceFiles.join(', '))}</dd></div>
     </dl>
+    <DependencyRepairSummary dependency={dep} components={components}/>
     {original.fixedVersions.length===0&&<AdvisoryMetadataRefresh reviewId={reviewId} finding={finding} dependency={original} onMetadata={value=>setSupplement({original,reviewId,value})}/>}
     <p>{versionBasis(dep.sourceFiles)}</p><details><summary>상위 의존성과 선언 위치</summary><DependencyContextDetails locations={dependencyLocations(dep, components)} /></details>
     <details className="action-details"><summary>업데이트 방법 보기</summary>
