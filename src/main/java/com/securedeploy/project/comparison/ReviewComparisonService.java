@@ -42,6 +42,7 @@ public class ReviewComparisonService {
         ReviewEntity previous = reviews.get(1);
 
         var snapshot = latest.getComparison();
+        if(snapshot!=null&&snapshot.basis()==null)return ReviewComparisonResponse.notComparable(projectId,"과거 비교에는 코드 해시와 실제 Worker 근거가 없습니다. 원본 기록은 분석 상세에 보존하며 해결·신규를 현재 검증으로 확정하지 않습니다.");
         if (snapshot != null && !java.util.Objects.equals(snapshot.baselineReviewId(), previous.getId())) {
             return ReviewComparisonResponse.notComparable(projectId, "기준 이력이 변경되었습니다. 분석 상세의 저장된 변화 보기를 확인하세요.");
         }

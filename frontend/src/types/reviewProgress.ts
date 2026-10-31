@@ -14,6 +14,8 @@ export interface ProgressEntry {
   currentVersions: string[]; note: string;
 }
 export interface ReviewProgressSnapshot {
+  basis?: {inputFiles?:{path:string;beforeHash:string|null;afterHash:string|null;state:string}[];sourceState:string;engineState:string;message:string;enginesBefore:Record<string,string>;enginesAfter:Record<string,string>;
+    flowChanges:{status:string;ruleId:string;beforeId:string|null;afterId:string|null;before:import('./serverAnalysis').ServerFlowFinding|null;after:import('./serverAnalysis').ServerFlowFinding|null;note:string}[];limitations:string[]} | null;
   workspaceScan?: WorkspaceScanSnapshot | null;
   sourceBefore?: GitHubSourceMetadata | null;
   sourceAfter?: GitHubSourceMetadata | null;

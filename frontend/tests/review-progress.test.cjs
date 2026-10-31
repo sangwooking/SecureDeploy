@@ -56,3 +56,15 @@ test('infrastructure copy is understandable but preserves a technical location',
     assert.ok(codeExplanation(v).location); assert.notEqual(codeExplanation(v).title, v.message);
   }
 });
+test('engine-only changes show matched original IDs without zero cards or remediation claims',()=>{
+ const result=fixture();result.comparison.counts={RESOLVED:0,NEW:0,REMAINING:0,CHANGED:0,UNAVAILABLE:0};result.comparison.findings=[];
+ result.comparison.basis={sourceState:'SAME_ANALYZED_INPUT',engineState:'CHANGED',message:'분석 엔진이 변경됐습니다.',enginesBefore:{typescript:'ts-server-v52'},enginesAfter:{typescript:'ts-server-v53'},limitations:[],flowChanges:[{status:'OBSERVED_BOTH',ruleId:'JS_EVAL_INPUT_FLOW',beforeId:'old-id',afterId:'new-id',before:null,after:null,note:'ID 변경을 해결로 처리하지 않습니다.'}]};
+ const before=JSON.stringify(result),html=render(result);for(const phrase of ['수집한 분석 입력 내용 동일','분석 엔진: 변경됨','두 검사에서 같은 코드 근거 관찰','old-id','new-id'])assert.ok(html.includes(phrase),phrase);
+ assert.ok(!html.includes('<strong>0</strong>'));assert.ok(!html.includes('보안 상태가 개선되었습니다'));assert.equal(JSON.stringify(result),before);
+});
+test('code-and-engine changes keep unknown flow comparisons outside resolved and new totals',()=>{
+ const result=fixture();result.comparison.counts={RESOLVED:0,NEW:0,REMAINING:0,CHANGED:0,UNAVAILABLE:0};result.comparison.findings=[];
+ result.comparison.basis={sourceState:'CHANGED_ANALYZED_INPUT',engineState:'CHANGED',message:'코드 수정과 엔진 변경의 영향을 분리하지 못했습니다.',enginesBefore:{},enginesAfter:{},limitations:[],flowChanges:[{status:'UNAVAILABLE',ruleId:'TS_SENSITIVE_DATA_EXPOSURE',beforeId:'old',afterId:null,before:null,after:null,note:'해결로 집계하지 않습니다.'}]};
+ const html=render(result);assert.ok(html.includes('수집한 분석 입력 내용 변경'));assert.ok(html.includes('흐름 비교 확인 불가'));assert.ok(!html.includes('<strong>0</strong>'));
+});
+test('unverified historical counts remain in technical archive and are not confirmed remediation cards',()=>{const result=fixture();delete result.comparison.basis;const html=render(result);assert.ok(html.includes('과거 비교의 코드·엔진 근거가 부족해요'));assert.ok(html.includes('archivedCounts'));assert.ok(!html.includes('progress-filters'));assert.ok(!html.includes('해결된 문제 <strong>'));});

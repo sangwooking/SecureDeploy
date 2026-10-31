@@ -15,19 +15,33 @@ const labels: Record<ProgressChange, string> = {
 function title(finding: ProgressFinding) {
   return finding.code ? codeExplanation(finding.code).title : `${finding.risk.packageName ?? '라이브러리'} 업데이트 검토`;
 }
-export function hasComparableReview(snapshot?:SecurityReviewResponse['comparison']){return !!snapshot&&snapshot.baselineReviewId!=null&&['COMPLETE','PARTIAL'].includes(snapshot.status);}
+export function hasComparableReview(snapshot?:SecurityReviewResponse['comparison']){return !!snapshot&&snapshot.baselineReviewId!=null&&!!snapshot.basis&&(['COMPLETE','PARTIAL'].includes(snapshot.status)||!!snapshot.basis?.flowChanges.length);}
 export function ReviewProgressPanel({ result, compact = false }: { compact?:boolean; result: Pick<SecurityReviewResponse, 'comparison' | 'remediation'> & Partial<Pick<SecurityReviewResponse,'projectId'|'reviewId'>> }) {
   const [filter, setFilter] = useState<ProgressChange>(()=>(['RESOLVED','REMAINING','NEW','CHANGED','UNAVAILABLE'] as ProgressChange[]).find(k=>(result.comparison?.counts[k]??0)>0)??'RESOLVED');
   const snapshot = result.comparison;
-  if (!snapshot || !hasComparableReview(snapshot)) return <section className="comparison-empty" aria-label="비교 불가"><h2>{snapshot?.status==='UNAVAILABLE'?'이전 검사와 비교할 수 없어요.':'비교할 이전 검사가 없어요.'}</h2><p>현재 검사 결과는 저장됐지만, 비교 가능한 원본 검사가 없어 변경 사항을 판단할 수 없습니다.</p>{result.projectId&&result.reviewId&&<a href={`#/projects/${result.projectId}/findings?review=${result.reviewId}`}>현재 검사 결과 보기</a>}<details><summary>비교 상태의 기술 정보</summary><p>{snapshot?.status??'NOT_RECORDED'} · 비교 불가 · NOT_COMPARED</p><p>NOT_COMPARED는 RESOLVED가 아닙니다.</p>{snapshot&&<><p>{snapshot.message}</p>{snapshot.notices.map((n,i)=><p key={i}>{n}</p>)}</>}</details></section>;
+  if (!snapshot || !hasComparableReview(snapshot)) return <section className="comparison-empty" aria-label="비교 불가"><h2>{snapshot&&snapshot.baselineReviewId!=null&&!snapshot.basis?'과거 비교의 코드·엔진 근거가 부족해요.':snapshot?.status==='UNAVAILABLE'?'이전 검사와 비교할 수 없어요.':'비교할 이전 검사가 없어요.'}</h2><p>현재 검사 결과는 저장됐지만, 비교 가능한 원본 검사가 없어 변경 사항을 판단할 수 없습니다.</p>{result.projectId&&result.reviewId&&<a href={`#/projects/${result.projectId}/findings?review=${result.reviewId}`}>현재 검사 결과 보기</a>}<details><summary>비교 상태의 기술 정보</summary><p>{snapshot?.status??'NOT_RECORDED'} · 비교 불가 · NOT_COMPARED</p><p>NOT_COMPARED는 RESOLVED가 아닙니다.</p>{snapshot&&<><p>{snapshot.message}</p>{!snapshot.basis&&<><p>원본 비교 기록은 보존하지만 과거 해결·신규 수를 현재 검증 결과로 확정하지 않습니다.</p><pre>{JSON.stringify({archivedCounts:snapshot.counts,archivedFindings:snapshot.findings},null,2)}</pre></>}{snapshot.notices.map((n,i)=><p key={i}>{n}</p>)}</>}</details></section>;
   const before = snapshot.assessmentBefore, after = snapshot.assessmentAfter;
   return <section className="security-progress" aria-label="보안 상태 변화">
     <h2>보안 상태 변화</h2>
+    {snapshot.basis&&<div className="comparison-basis" aria-label="코드와 엔진 비교 근거">
+      <p>{snapshot.basis.message}</p>
+      <p>코드: {({SAME_ANALYZED_INPUT:'수집한 분석 입력 내용 동일',CHANGED_ANALYZED_INPUT:'수집한 분석 입력 내용 변경',SAME_VERIFIED_WORKSPACE:'검증된 원본과 수정 파일 내용 동일',CHANGED_VERIFIED_WORKSPACE:'검증된 원본의 수정 파일 변경',SAME_GIT_REVISION:'같은 Git 원본 버전',INPUT_SELECTION_CHANGED:'분석 입력 파일 구성이 달라짐',UNKNOWN:'동일성 확인 불가'} as Record<string,string>)[snapshot.basis.sourceState]??'확인 불가'}</p>
+      <p>파일 해시는 수집한 분석 입력 기준이며 저장소 전체나 실제 실행 범위의 보증은 아닙니다.</p>
+      <p>분석 엔진: {snapshot.basis.engineState==='SAME'?'동일':snapshot.basis.engineState==='CHANGED'?'변경됨':'전체 동일성 확인 불가'}</p>
+      <details><summary>엔진·코드 비교의 기술 근거</summary><pre>{JSON.stringify({sourceState:snapshot.basis.sourceState,before:snapshot.basis.enginesBefore,after:snapshot.basis.enginesAfter,inputFiles:snapshot.basis.inputFiles,limitations:snapshot.basis.limitations},null,2)}</pre></details>
+      {!!snapshot.basis.flowChanges.length&&<p>흐름 비교 기록(해결·신규 집계와 별도): {Object.entries(snapshot.basis.flowChanges.reduce((counts,e)=>({...counts,[e.status]:(counts[e.status]??0)+1}),{} as Record<string,number>)).map(([status,count])=>`${({OBSERVED_BOTH:'같은 근거 관찰',ENGINE_EVIDENCE_ADDED:'새 엔진의 추가 근거',NOT_REOBSERVED_AFTER_EDIT:'수정 후 미관찰 · 확정 해결 아님',UNAVAILABLE:'비교 확인 불가'} as Record<string,string>)[status]??'비교 확인 불가'} ${count}건`).join(' · ')}</p>}
+      {!!snapshot.basis.flowChanges.length&&<details className="flow-comparison"><summary>서버 코드 흐름 근거 비교 ({snapshot.basis.flowChanges.length})</summary>
+        <p>원본 Finding ID를 보존한 별도 비교입니다. 아래 관찰은 기존 해결·신규 건수나 Risk/Score를 변경하지 않습니다.</p>
+        {snapshot.basis.flowChanges.map((e,i)=><article key={i}><h3>{({OBSERVED_BOTH:'두 검사에서 같은 코드 근거 관찰',ENGINE_EVIDENCE_ADDED:'새 엔진이 추가 연결한 분석 근거',NOT_REOBSERVED_AFTER_EDIT:'수정 후 기존 흐름 미관찰 · 확정 해결 아님',UNAVAILABLE:'흐름 비교 확인 불가'} as Record<string,string>)[e.status]??'흐름 비교 확인 불가'}</h3><p>{e.ruleId} · {(e.after??e.before)?.location.filePath}</p><p>{e.note}</p><details><summary>원본 ID·Source/Sink 근거</summary><pre>{JSON.stringify(e,null,2)}</pre></details></article>)}
+      </details>}
+    </div>}
+    {!snapshot.basis&&<p>과거에 저장된 비교입니다. 코드 해시와 실제 Worker 전체 동일성은 이 기록에서 확인하지 못했습니다.</p>}
     <p className="comparison-policy">저장된 정책 판단: {before ? deploymentLabels[before.deploymentAssessment] : '평가 정보 없음'} → {after ? deploymentLabels[after.deploymentAssessment] : '평가 정보 없음'}</p>
     <details><summary>규칙 기반 참고 점수 · 전체 안전 점수와 구분</summary><div className="comparison-score" aria-label="규칙 기반 참고 점수 변화"><span>규칙 기반 참고 점수</span><strong>{before?.referenceSecurityScore ?? '정보 없음'} → {after?.referenceSecurityScore ?? '정보 없음'}</strong><small>구조 후보·미검사 영역을 포함한 전체 안전 점수가 아닙니다.</small></div></details>
-    <nav className="progress-filters" aria-label="변화 분류">{(Object.keys(labels) as ProgressChange[]).map(change =>
+    <nav className="progress-filters" aria-label="변화 분류">{(Object.keys(labels) as ProgressChange[]).filter(change=>(snapshot.counts[change]??0)>0).map(change =>
       <button type="button" key={change} aria-pressed={filter === change} onClick={() => setFilter(change)}>
         {labels[change]} {!compact&&<strong>{snapshot.counts[change]}</strong>}</button>)}</nav>
+    {!Object.values(snapshot.counts).some(n=>n>0)&&<p>정책 항목에서 확정한 변화가 없습니다. 코드 흐름과 비교하지 못한 범위를 함께 확인하세요.</p>}
     <p className="review-caution">확인한 범위에서만 비교했어요. 코드 검토 후보를 비교하지 못했거나 검사 버전이 다르면 해결된 것으로 처리하지 않아요.</p>
     <p>{inspectionLabel(snapshot.status)} · 변화 건수는 비교한 보안 문제 기준이며, 영향받는 패키지 수나 수정 작업 수가 아닙니다.</p>
     <details className="comparison-status"><summary>비교 상태의 기술 정보</summary><p>{snapshot.status} · {securityTerms.notCompared} (NOT_COMPARED)는 RESOLVED가 아닙니다.</p></details>

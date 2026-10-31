@@ -88,7 +88,7 @@ class ProgressComparisonEngineTest {
                 "Another synthetic advisory", Severity.HIGH, null, List.of(), List.of("2.0.0"), null, null, List.of(), List.of("package.json"));
         var result = engine.compare(review(1, sca(ScaResult.Status.COMPLETE, List.of(original))),
                 review(2, sca(ScaResult.Status.COMPLETE, List.of(original, different))));
-        assertThat(result.counts()).containsEntry(Change.REMAINING, 1L).containsEntry(Change.NEW, 1L).containsEntry(Change.RESOLVED, 0L);
+        assertThat(result.counts()).containsEntry(Change.REMAINING, 1L).containsEntry(Change.UNAVAILABLE, 1L).containsEntry(Change.NEW, 0L).containsEntry(Change.RESOLVED, 0L);
     }
 
     @Test void completeLabelWithoutCompleteLookupCountsCannotResolveDependency() {
@@ -147,10 +147,15 @@ class ProgressComparisonEngineTest {
             ReflectionTestUtils.setField(vulnerabilities[i], "id", id * 100 + i);
             review.addVulnerability(vulnerabilities[i]);
         }
+        String codeInput=java.util.Arrays.stream(vulnerabilities).map(v->v.getRuleId()+":"+v.getLine()).sorted().collect(java.util.stream.Collectors.joining("|"));
+        var hashes=Map.of("application.yml",digest(codeInput),"package.json",digest(sca.components().stream().map(c->c.version()).sorted().toList().toString()));
+        var evidence=new ComparisonEvidence(1,"SHA256_BYTES_V1",hashes,true,Map.of("backend","test-v1","typescript","ts-test","python","py-test","typescriptArtifact","test-ts","pythonArtifact","test-py","typescriptConfiguration","true:8","pythonConfiguration","true:8","typescriptParser","6.0.3","pythonParser","NOT_EXECUTED"));
+        review.attachComparisonContext(new ComparisonContext(1,id==1?null:1L,"test-v1",true,List.of("application.yml","package.json"),null,evidence));
         review.attachSca(sca);
         review.attachRiskAssessment(risk.assess(review.getVulnerabilities().stream().map(VulnerabilityResultResponse::from).toList(), sca));
         return review;
     }
+    static String digest(String s){try{return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(s.getBytes(java.nio.charset.StandardCharsets.UTF_8)));}catch(Exception e){throw new RuntimeException(e);}}
     VulnerabilityEntity code(String rule, int line) {
         return new VulnerabilityEntity(rule, RuleCategory.CONFIGURATION, Severity.MEDIUM, "application.yml", line,
                 "Synthetic finding", "Synthetic recommendation", "value=<redacted>", FalsePositiveRisk.LOW, DetectionConfidence.HIGH, "Test only");

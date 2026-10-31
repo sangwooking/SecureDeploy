@@ -1,0 +1,8 @@
+package com.securedeploy.project.progress;
+import static org.assertj.core.api.Assertions.*;import org.junit.jupiter.api.Test;import org.junit.jupiter.api.io.TempDir;import java.nio.file.*;import java.util.*;import com.securedeploy.project.model.*;
+class ComparisonInputEvidenceTest {
+ @TempDir Path root;
+ @Test void digestUsesExactBytesOnlyWhenTheyMatchAnalyzedLines()throws Exception{var p=root.resolve("application.properties");Files.writeString(p,"debug=true\r\n");var project=new ProjectStructure(root,List.of(new ProjectFile(p,"application.properties",ProjectFileType.PROPERTIES,List.of("debug=true"))));var c=new ComparisonContextCollector().collect(project);assertThat(c.evidence().complete()).isTrue();assertThat(c.evidence().fileHashes().get("application.properties")).isEqualTo(java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(p))));}
+ @Test void changedDiskContentCannotMasqueradeAsAnalyzedInput()throws Exception{var p=root.resolve("application.properties");Files.writeString(p,"debug=false\n");var c=new ComparisonContextCollector().collect(new ProjectStructure(root,List.of(new ProjectFile(p,"application.properties",ProjectFileType.PROPERTIES,List.of("debug=true")))));assertThat(c.evidence().complete()).isFalse();assertThat(c.evidence().fileHashes()).isEmpty();}
+ @Test void legacyContextWithoutNewEvidenceRemainsReadable(){var c=new ComparisonContextConverter().convertToEntityAttribute("{\"schemaVersion\":1,\"baselineReviewId\":7,\"analyzerVersion\":\"legacy-v52\",\"ruleAnalysisComplete\":true,\"analyzedFiles\":[\"web.mjs\"]}");assertThat(c.schemaVersion()).isEqualTo(1);assertThat(c.baselineReviewId()).isEqualTo(7);assertThat(c.evidence()).isNull();}
+}

@@ -17,7 +17,8 @@ public record ReviewProgressSnapshot(int comparisonSchemaVersion, Long projectId
         List<AiEntry> aiChanges, List<String> notices,
         com.securedeploy.github.model.GitHubSourceSnapshot sourceBefore,
         com.securedeploy.github.model.GitHubSourceSnapshot sourceAfter,
-        com.securedeploy.editing.WorkspaceScanSnapshot workspaceScan) {
+        com.securedeploy.editing.WorkspaceScanSnapshot workspaceScan, ComparisonBasis basis) {
+    public ReviewProgressSnapshot(int comparisonSchemaVersion, Long projectId, Long baselineReviewId, Long currentReviewId, LocalDateTime baselineAnalyzedAt, LocalDateTime currentAnalyzedAt, Instant generatedAt, Status status, String message, Assessment assessmentBefore, Assessment assessmentAfter, Map<Change,Long> counts, List<Entry> findings, List<AiEntry> aiChanges, List<String> notices, com.securedeploy.github.model.GitHubSourceSnapshot sourceBefore, com.securedeploy.github.model.GitHubSourceSnapshot sourceAfter, com.securedeploy.editing.WorkspaceScanSnapshot workspaceScan) { this(comparisonSchemaVersion,projectId,baselineReviewId,currentReviewId,baselineAnalyzedAt,currentAnalyzedAt,generatedAt,status,message,assessmentBefore,assessmentAfter,counts,findings,aiChanges,notices,sourceBefore,sourceAfter,workspaceScan,null); }
     public ReviewProgressSnapshot(int comparisonSchemaVersion, Long projectId, Long baselineReviewId,
             Long currentReviewId, LocalDateTime baselineAnalyzedAt, LocalDateTime currentAnalyzedAt,
             Instant generatedAt, Status status, String message, Assessment assessmentBefore,

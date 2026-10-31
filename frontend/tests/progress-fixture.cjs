@@ -6,6 +6,7 @@ module.exports = function progressFixture() {
   const assessment = { deploymentAssessment: 'BLOCKED', prioritySummary: result.riskAssessment.prioritySummary,
     semanticCandidateCount: 1, referenceSecurityScore: 100 };
   result.comparison = {
+    basis:{sourceState:'CHANGED_ANALYZED_INPUT',engineState:'SAME',message:'통제 fixture의 입력 변경 비교',enginesBefore:{typescript:'synthetic'},enginesAfter:{typescript:'synthetic'},flowChanges:[],limitations:[]},
     comparisonSchemaVersion: 1, projectId: 7, baselineReviewId: 100, currentReviewId: 101,
     baselineAnalyzedAt: '2026-10-12T09:00:00', currentAnalyzedAt: result.createdAt, generatedAt: result.createdAt,
     status: 'PARTIAL', message: '분석 범위가 불완전하여 일부 항목은 확인할 수 없습니다.',

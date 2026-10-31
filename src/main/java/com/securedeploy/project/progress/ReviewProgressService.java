@@ -22,6 +22,7 @@ public class ReviewProgressService {
         if (context != null && current.getComparison() == null) {
             var before = context.baselineReviewId() == null ? null
                     : reviews.findByIdWithVulnerabilities(context.baselineReviewId()).orElse(null);
+            if(before!=null&&(before.getProject()==null||current.getProject()==null||!java.util.Objects.equals(before.getProject().getId(),current.getProject().getId())))before=null;
             reviews.saveComparisonOnce(current.getId(), engine.compare(before, current));
         }
         return persistence.findReviewDetail(response.reviewId());

@@ -58,6 +58,7 @@ public class ProgressComparisonEngine {
             status = !complete || entries.stream().anyMatch(e -> e.status() == Change.UNAVAILABLE)
                     ? Status.PARTIAL : Status.COMPLETE;
             if (before.getRiskAssessment() == null || after.getRiskAssessment() == null) status = Status.UNAVAILABLE;
+            if (!"SAME".equals(ComparisonBasis.engineState(before,after))) notices.add("분석 엔진 변경 또는 동일성 미확인: ID·탐지 차이를 코드 수정에 따른 해결·신규로 확정하지 않습니다.");
             if (!complete) notices.add("분석 범위 또는 외부 조회가 불완전합니다. 확인할 수 없는 항목은 해결 수에 포함하지 않습니다.");
         }
         notices.add("새 분석 완료 시 저장한 비교입니다. 과거 분석 삭제나 외부 보안 공지 변경으로 다시 계산하지 않습니다.");
@@ -73,7 +74,7 @@ public class ProgressComparisonEngine {
                 status == Status.COMPLETE ? "비교 가능한 분석 범위의 변화입니다." : "비교할 수 없는 범위가 있습니다. 배포 판단과 함께 확인하세요.",
                 assessment(before), assessment(after), counts, List.copyOf(entries), List.copyOf(ai), notices,
                 before == null ? null : before.getSourceMetadata(), after.getSourceMetadata(),
-                after.getComparisonContext() == null ? null : after.getComparisonContext().workspaceScan());
+                after.getComparisonContext() == null ? null : after.getComparisonContext().workspaceScan(), ComparisonBasis.compare(before,after));
     }
 
     public static Assessment assessment(ReviewEntity review) {
@@ -86,42 +87,42 @@ public class ProgressComparisonEngine {
     private List<Finding> findings(ReviewEntity review) {
         var risk = review.getRiskAssessment();
         if (risk == null) return List.of();
-        return Stream.concat(risk.codeFindings().stream(), risk.dependencyFindings().stream())
+        return Stream.concat((risk.codeFindings()==null?List.<RiskFinding>of():risk.codeFindings()).stream(), (risk.dependencyFindings()==null?List.<RiskFinding>of():risk.dependencyFindings()).stream())
                 .map(f -> new Finding(f, review.getVulnerabilities().stream()
                         .filter(v -> f.vulnerabilityId() != null && f.vulnerabilityId().equals(v.getId()))
                         .findFirst().map(VulnerabilityResultResponse::from).orElse(null))).toList();
     }
 
     private boolean matches(Finding a, Finding b) {
-        if (a.risk().source() != b.risk().source()) return false;
-        if (a.risk().source() == RiskFinding.Source.CODE) return identity(a).equals(identity(b));
+        if (a.risk().source() == null || a.risk().source() != b.risk().source()) return false;
+        if (a.risk().source() == RiskFinding.Source.CODE) return !paths(a).isEmpty()&&a.code()!=null&&b.code()!=null&&a.code().evidence()!=null&&!a.code().evidence().isBlank()&&b.code().evidence()!=null&&!b.code().evidence().isBlank()&&identity(a).equals(identity(b));
         return samePackage(a, b) && !Collections.disjoint(aliases(a), aliases(b))
                 && paths(a).equals(paths(b));
     }
 
     private boolean sameAnchor(Finding a, Finding b) {
-        if (a.risk().source() != b.risk().source()) return false;
+        if (a.risk().source() == null || a.risk().source() != b.risk().source()) return false;
         return a.risk().source() == RiskFinding.Source.CODE
                 ? Objects.equals(a.risk().ruleId(), b.risk().ruleId()) && paths(a).equals(paths(b))
                 : matches(a, b);
     }
 
     private boolean samePackage(Finding a, Finding b) {
-        return Objects.equals(a.risk().ecosystem(), b.risk().ecosystem())
+        return a.risk().ecosystem()!=null&&a.risk().packageName()!=null&&Objects.equals(a.risk().ecosystem(), b.risk().ecosystem())
                 && Objects.equals(a.risk().packageName(), b.risk().packageName());
     }
 
     private Set<String> aliases(Finding finding) {
         var aliases = new TreeSet<String>();
         if (finding.risk().advisoryId() != null) aliases.add(finding.risk().advisoryId().toUpperCase(Locale.ROOT));
-        if (finding.risk().dependency() != null) finding.risk().dependency().aliases()
+        if (finding.risk().dependency() != null && finding.risk().dependency().aliases()!=null) finding.risk().dependency().aliases()
                 .forEach(a -> aliases.add(a.toUpperCase(Locale.ROOT)));
         return aliases;
     }
 
     private Set<String> paths(Finding finding) {
         var paths = new TreeSet<String>();
-        finding.risk().sourceFiles().forEach(p -> paths.add(ComparisonContextCollector.normalize(p)));
+        (finding.risk().sourceFiles()==null?List.<String>of():finding.risk().sourceFiles()).forEach(p -> paths.add(ComparisonContextCollector.normalize(p)));
         return paths;
     }
 
@@ -137,6 +138,8 @@ public class ProgressComparisonEngine {
         var x = a.getComparisonContext(); var y = b.getComparisonContext();
         return x != null && y != null && x.ruleAnalysisComplete() && y.ruleAnalysisComplete()
                 && x.analyzerVersion() != null && x.analyzerVersion().equals(y.analyzerVersion())
+                && "SAME".equals(ComparisonBasis.engineState(a,b))
+                && java.util.Set.of("SAME_ANALYZED_INPUT","CHANGED_ANALYZED_INPUT").contains(ComparisonBasis.sourceState(a,b))
                 && x.schemaVersion() == y.schemaVersion() && a.getRiskAssessment() != null && b.getRiskAssessment() != null
                 && Objects.equals(a.getRiskAssessment().policyVersion(), b.getRiskAssessment().policyVersion())
                 && a.getRiskAssessment().assessmentCoverage().ruleEngine() == RiskAssessment.Completion.COMPLETE
@@ -145,8 +148,13 @@ public class ProgressComparisonEngine {
 
     private boolean covered(Finding finding, ReviewEntity source, ReviewEntity target) {
         if (!compatible(source, target) || paths(finding).isEmpty()
-                || !target.getComparisonContext().analyzedFiles().containsAll(paths(finding))) return false;
-        if (finding.risk().source() == RiskFinding.Source.DEPENDENCY) return scaComparable(source) && scaComparable(target);
+                || !target.getComparisonContext().analyzedFiles().containsAll(paths(finding))
+                || !paths(finding).stream().anyMatch(p->ComparisonBasis.changedFile(source,target,p))) return false;
+        if (finding.risk().source() == RiskFinding.Source.DEPENDENCY) return scaComparable(source) && scaComparable(target)
+                && finding.risk().dependency()!=null && finding.risk().dependency().fixedVersions()!=null && target.getScaResult().components().stream().anyMatch(c->
+                    Objects.equals(c.packageName(),finding.risk().packageName())&&Objects.equals(c.ecosystem().name(),finding.risk().ecosystem())
+                    &&paths(finding).contains(ComparisonContextCollector.normalize(c.sourceFile()))&&!Objects.equals(c.version(),finding.risk().version())
+                    &&finding.risk().dependency().fixedVersions().contains(c.version()));
         if (finding.code() == null || finding.code().evidence() == null || finding.code().evidence().isBlank()) return false;
         // Legacy catalog candidates also need dependency coverage, not merely a successful code scan.
         return finding.code().category() != com.securedeploy.rule.model.RuleCategory.DEPENDENCY

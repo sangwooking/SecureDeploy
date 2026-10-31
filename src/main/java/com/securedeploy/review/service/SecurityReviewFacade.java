@@ -312,7 +312,7 @@ public class SecurityReviewFacade {
         coverage = javaResult.snapshot().attachCoverage(coverage);
         coverage = coverage.withInspectionScope(com.securedeploy.project.coverage.InspectionScope.collect(coverage, projectStructure.analysisFiles()));
         return new AnalysisOutcome(response.withSca(sca).withServerAnalysis(serverAnalysis).withCoverage(coverage), snippetGroup, intelligence, slices,
-                comparisonCollector.collect(projectStructure));
+                comparisonCollector.collect(projectStructure, serverAnalysis));
     }
 
     public AnalysisOutcome analyzeWorkspace(String name, Path root) {

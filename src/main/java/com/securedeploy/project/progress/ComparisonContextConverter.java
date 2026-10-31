@@ -18,6 +18,11 @@ public class ComparisonContextConverter implements AttributeConverter<Comparison
         try {
             var context=MAPPER.readValue(value,ComparisonContext.class);
             if(context.schemaVersion()!=1||context.workspaceScan()!=null&&context.workspaceScan().schemaVersion()!=1)throw new IllegalArgumentException();
+            var e=context.evidence();
+            if(e!=null&&(e.version()!=1||!"SHA256_BYTES_V1".equals(e.hashAlgorithm())||e.fileHashes().size()>10000||e.anchorHashes().size()>2000||e.engines().size()>16
+                ||e.fileHashes().entrySet().stream().anyMatch(x->x.getKey().length()>600||x.getKey().startsWith("/")||java.util.Arrays.asList(x.getKey().split("/")).contains("..")||!x.getValue().matches("[a-f0-9]{64}"))
+                ||e.anchorHashes().entrySet().stream().anyMatch(x->x.getKey().length()>700||!x.getValue().matches("[a-f0-9]{64}"))
+                ||e.engines().entrySet().stream().anyMatch(x->x.getKey().length()>64||x.getValue().length()>256)))throw new IllegalArgumentException();
             return context;
         }
         catch (Exception invalid) {
