@@ -21,8 +21,8 @@ export function DependencyFindingCard({ dependency: original, reviewId, finding,
   const fixed=currentSeriesFix(dep);
   const knownExploited = [dep.osvId, ...dep.aliases].some(id => intelligence?.cves[id.toUpperCase()]?.kev.knownExploited === true);
   const evidence=<><span className="source-label">SCA 보안 공지 · 실제 영향은 추가 확인</span>
-    <span className={`risk-badge risk-${finding?.priority.toLowerCase() ?? 'review_required'}`}>
-      {finding ? priorityLabels[finding.priority] : '우선순위 미평가'}
+    <span className={`risk-badge risk-${finding?.priority?.toLowerCase() ?? 'review_required'}`}>
+      {finding ? priorityLabels[finding.priority]??'우선순위 미기록' : '우선순위 미평가'}
     </span>
     <h3>{dependencyText(dep.packageName)} 업데이트 검토</h3>
     <p>{dep.ecosystem === 'PYPI' ? '정적 선언에서 확인한' : '사용 중인'} {dependencyText(dep.installedVersion)} 버전에 알려진 보안 문제가 보고되어 있습니다. 실제 영향은 사용 방식과 버전에 따라 달라집니다.</p>

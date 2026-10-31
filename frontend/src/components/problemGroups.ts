@@ -27,7 +27,7 @@ export function itemTitle(result:SecurityReviewResponse,item:ProblemItem){const 
 export function itemLocation(result:SecurityReviewResponse,item:ProblemItem){const v=itemVulnerability(result,item);return 'flow'in item?{path:item.flow.location.filePath,line:item.flow.location.line}:v?{path:v.filePath,line:v.line}:{path:item.sourceFiles[0]??'',line:undefined};}
 export function dependencyGroupKey(d:{ecosystem:string;packageName:string;installedVersion:string;sourceFiles:string[];fixedVersions:string[]}){
  // Different versions, manifests or fixed-version evidence never imply one safe update action.
- return JSON.stringify([d.ecosystem,d.packageName,d.installedVersion,[...d.sourceFiles].sort(),[...d.fixedVersions].sort()]);
+ return JSON.stringify([d.ecosystem,d.packageName,d.installedVersion,(Array.isArray(d.sourceFiles)?[...d.sourceFiles]:[]).sort(),(Array.isArray(d.fixedVersions)?[...d.fixedVersions]:[]).sort()]);
 }
 export interface ProblemGroup {id:string;items:ProblemItem[];title:string;area:ReturnType<typeof codeArea>}
 export function groupProblems(result:SecurityReviewResponse,items:ProblemItem[]):ProblemGroup[]{
