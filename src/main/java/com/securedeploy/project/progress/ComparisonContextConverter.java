@@ -17,7 +17,7 @@ public class ComparisonContextConverter implements AttributeConverter<Comparison
         if (value == null) return null;
         try {
             var context=MAPPER.readValue(value,ComparisonContext.class);
-            if(context.schemaVersion()!=1)throw new IllegalArgumentException();
+            if(context.schemaVersion()!=1||context.workspaceScan()!=null&&context.workspaceScan().schemaVersion()!=1)throw new IllegalArgumentException();
             return context;
         }
         catch (Exception invalid) {

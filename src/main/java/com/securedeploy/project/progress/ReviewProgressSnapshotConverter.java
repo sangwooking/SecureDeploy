@@ -17,7 +17,7 @@ public class ReviewProgressSnapshotConverter implements AttributeConverter<Revie
         if (value == null) return null;
         try {
             var snapshot=MAPPER.readValue(value,ReviewProgressSnapshot.class);
-            if(snapshot.comparisonSchemaVersion()!=1)throw new IllegalArgumentException();
+            if(snapshot.comparisonSchemaVersion()!=1||snapshot.workspaceScan()!=null&&snapshot.workspaceScan().schemaVersion()!=1)throw new IllegalArgumentException();
             return snapshot;
         }
         catch (Exception invalid) {
