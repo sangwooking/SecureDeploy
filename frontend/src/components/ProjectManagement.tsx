@@ -74,7 +74,7 @@ export function ProjectManagement({ project, onDeleted, variant = 'menu' }: {
       <form onSubmit={event => { event.preventDefault(); void remove(); }}>
         <h2 id={`${id}-title`}>프로젝트를 삭제하시겠습니까?</h2>
         <p className="delete-project-name">{project.name}</p>
-        <p id={`${id}-description`}>SecureDeploy에 저장된 이 프로젝트와 연결된 분석 기록을 삭제합니다. 삭제한 데이터는 화면에서 복구할 수 없습니다.</p>
+        <p id={`${id}-description`}>SecureDeploy에 저장된 이 프로젝트와 연결된 분석 기록·저장된 수정 작업을 삭제합니다. 삭제한 데이터는 화면에서 복구할 수 없습니다.</p>
         <p>GitHub 원본 저장소, 계정과 GitHub 연결, 다른 프로젝트는 유지됩니다. 열려 있는 수정 작업이나 진행 중인 검사가 있으면 삭제할 수 없습니다.</p>
         <details className="delete-scope-limit"><summary>삭제 범위의 한계</summary>
           <p>이미 내려받은 ZIP·Patch, 관리용 백업과 과거의 미확인 임시 파일까지 지우는 보안 삭제는 아닙니다. 종료된 검사의 최소 상태 정보는 잠시 남을 수 있지만 삭제한 분석 결과와 소스에는 접근할 수 없습니다.</p>

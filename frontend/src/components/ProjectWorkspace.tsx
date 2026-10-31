@@ -117,7 +117,7 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
       <dl className="technical-grid"><div><dt>프로젝트명</dt><dd>{project.name}</dd></div><div><dt>분석 방식</dt><dd>{project.sourceType}</dd></div>
         {project.repositoryUrl && <div><dt>GitHub URL</dt><dd>{project.repositoryUrl}</dd></div>}
         <div><dt>생성일</dt><dd>{dateLabel(project.createdAt)}</dd></div><div><dt>최근 분석</dt><dd>{dateLabel(project.latestReview?.createdAt)}</dd></div></dl>
-      <p>프로젝트를 삭제하면 연결된 분석 결과도 모두 삭제됩니다.</p>
+      <p>프로젝트를 삭제하면 연결된 분석 결과와 저장된 수정 작업도 모두 삭제됩니다.</p>
       <ProjectManagement project={project} onDeleted={onDeleted} variant="settings" />
     </section>}
   </section>;
