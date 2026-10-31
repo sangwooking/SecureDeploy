@@ -1,0 +1,1 @@
+allprojects { tasks.register('ready02Classpath') { dependsOn testClasses; doLast { new File('/private/tmp/securedeploy-ready02-runtime/classpath.json').text = groovy.json.JsonOutput.toJson(sourceSets.test.runtimeClasspath.files.collect { it.absolutePath }) } } }

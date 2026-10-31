@@ -49,3 +49,5 @@ application-secret.yml
 *.key
 __pycache__/
 *.pyc
+
+/frontend/dist-preview/

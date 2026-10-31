@@ -13,7 +13,9 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 class ReleaseLedgerPostgresTest {
  JdbcTemplate db;long user,project;
  @BeforeEach void setup(){
-  db=new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://127.0.0.1:58057/release_gate01","ai05_fixture",""));
+  String url=System.getenv().getOrDefault("SECUREDEPLOY_RELEASE_PG_URL","jdbc:postgresql://127.0.0.1:58057/release_gate01");
+  if(!Set.of("jdbc:postgresql://127.0.0.1:58057/release_gate01","jdbc:postgresql://127.0.0.1:58220/ready02_fixture").contains(url))throw new IllegalStateException("ISOLATED_DB_REQUIRED");
+  db=new JdbcTemplate(new DriverManagerDataSource(url,"ai05_fixture",""));
   var row=db.queryForMap("select user_id,id from projects where user_id is not null order by id limit 1");
   user=((Number)row.get("user_id")).longValue();project=((Number)row.get("id")).longValue();db.update("delete from ai_usage_request_v1");
  }
