@@ -179,7 +179,7 @@ and Python owner-policy omission as the next independent evaluation targets.
 
 Use the exact URL http://127.0.0.1:5222 and the controlled account reported in the
 completion message, never an operating account. Open the pinned baseline Finding
-URL from PREVIEW.json, choose the environment response issue, open repair and
+URL from PREVIEW_TRIAL.json, choose the environment response issue, open repair and
 resume the saved Workspace, select gateway.js, inspect evidence, create the free
 deterministic proposal, review Diff/limitations and explicitly approve. Inspect
 ZIP/Patch then rescan/history. New tabs/refresh should offer the same Workspace;
