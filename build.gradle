@@ -40,6 +40,15 @@ tasks.named('test') {
             .withPropertyName('pythonAnalyzer').withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
+// Evaluation classpath only; never changes the production artifact or its OSV endpoint.
+tasks.register('source02EvaluationClasspath') {
+    dependsOn tasks.named('testClasses')
+    doLast {
+        if (!project.hasProperty('evaluationClasspathFile')) throw new GradleException('evaluationClasspathFile is required')
+        file(project.property('evaluationClasspathFile')).text = sourceSets.test.runtimeClasspath.asPath
+    }
+}
+
 def javaSqlWorkerJar = tasks.register('javaSqlWorkerJar', Jar) {
     dependsOn tasks.named('compileJava')
     from(tasks.named('compileJava').flatMap { it.destinationDirectory }) {

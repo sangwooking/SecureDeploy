@@ -65,7 +65,7 @@ public class DependencyUpdatePlanService {
                         dep.affectedRanges()==null?List.of():List.copyOf(dep.affectedRanges()),dep.modified(),copy(dep.referenceUrls()),copy(dep.sourceFiles()),
                         kind,List.copyOf(locations),fixed,candidates,lock?"NPM_LOCK_OBSERVED_VERSION_UNVERIFIED":"UNKNOWN",action,
                         "REVIEW_REQUIRED",false,"NOT_VERIFIED","REGENERATION_NOT_VERIFIED",
-                        "저장된 버전과 보안 공지가 연결되어 있습니다. "+(indirect?"다른 패키지의 설치 경로에 포함되어 있어 상위 선언이나 범위를 제한한 override를 검토해야 합니다.":"직접 선언과 잠금 버전을 대조한 뒤 업데이트를 검토하세요.")+" 실제 악용 가능성이 확인된 것은 아닙니다.",
+                        "저장된 버전과 보안 공지가 연결되어 있습니다. "+(indirect?"다른 패키지가 함께 설치합니다. 상위 패키지 업데이트를 먼저 검토하고, 불가능한 근거가 확인된 경우에만 정확한 경로·버전에 한정한 override를 검토해야 합니다.":"직접 선언과 잠금 버전을 대조한 뒤 업데이트를 검토하세요.")+" 실제 악용 가능성이 확인된 것은 아닙니다.",
                         List.of("원본 SHA와 manifest·lockfile 해시 및 직접·간접 경로를 확인하세요.",
                                 "공식 공지와 registry에서 후보 버전·Node 요구사항·peer 조건을 확인하세요.",
                                 "승인된 격리 환경에서 패키지 관리자로 lockfile을 재생성하세요. lockfile의 임의 텍스트 치환은 사용하지 마세요.",

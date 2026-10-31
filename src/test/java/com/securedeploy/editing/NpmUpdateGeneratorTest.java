@@ -31,4 +31,13 @@ class NpmUpdateGeneratorTest {
   ((com.fasterxml.jackson.databind.node.ObjectNode)nested.path("packages").path("node_modules/leaf").path("peerDependencies")).put("remote","^1.0.0-beta.2");generator.validateInput(json.readTree(m),nested,"leaf","1.0.0","1.0.1");
  }
 
+
+ @Test void unchangedNestedTargetWithoutResolvedUrlRejectsFalseDirectSuccess()throws Exception{
+  String m="{\"dependencies\":{\"leaf\":\"1.0.0\"}}";
+  var l=(com.fasterxml.jackson.databind.node.ObjectNode)json.readTree(lock);((com.fasterxml.jackson.databind.node.ObjectNode)l.path("packages")).set("",json.readTree(m));
+  ((com.fasterxml.jackson.databind.node.ObjectNode)l.path("packages")).putObject("node_modules/parent/node_modules/leaf").put("version","1.0.0");
+  var next=l.deepCopy();var leaf=(com.fasterxml.jackson.databind.node.ObjectNode)next.path("packages").path("node_modules/leaf");leaf.put("version","1.0.1").put("resolved","https://registry.npmjs.org/leaf/-/leaf-1.0.1.tgz").put("integrity","sha512-new");
+  ((com.fasterxml.jackson.databind.node.ObjectNode)next.path("packages").path("").path("dependencies")).put("leaf","1.0.1");
+  var e=assertThrows(IllegalArgumentException.class,()->generator.validateOutput(bytes(m),json.writeValueAsBytes(l),bytes(m.replace("1.0.0","1.0.1")),json.writeValueAsBytes(next),"leaf","1.0.0","1.0.1",true,"sha512-new","https://registry.npmjs.org/leaf/-/leaf-1.0.1.tgz"));assertEquals("TARGET_VERSION_REMAINS",e.getMessage());
+ }
 }

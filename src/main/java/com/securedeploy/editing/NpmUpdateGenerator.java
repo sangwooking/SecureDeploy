@@ -78,7 +78,10 @@ public class NpmUpdateGenerator {
             if(b!=null){var check=b.deepCopy();for(String field:List.of("version","integrity","resolved"))((ObjectNode)check).remove(field);var previous=a==null?json.createObjectNode():a.deepCopy();for(String field:List.of("version","integrity","resolved"))((ObjectNode)previous).remove(field);if(!check.equals(previous))throw new IllegalArgumentException("PACKAGE_CONTRACT_CHANGED");}
             changed.add(p);
         }
-        if(changed.isEmpty())throw new IllegalArgumentException("NO_CHANGE");for(var v:nextLock.path("packages"))if(v.path("version").asText().equals(current)&&v.path("resolved").asText().contains("/"+name+"/-/"))throw new IllegalArgumentException("TARGET_VERSION_REMAINS");
+        // Check every installed path by package identity, including entries without a resolved URL.
+        // A new safe direct version is not proof that an unchanged nested vulnerable copy was fixed.
+        for(var it=nextLock.path("packages").fields();it.hasNext();){var row=it.next();if(row.getKey().endsWith("node_modules/"+name)&&row.getValue().path("version").asText().equals(current))throw new IllegalArgumentException("TARGET_VERSION_REMAINS");}
+        if(changed.isEmpty())throw new IllegalArgumentException("NO_CHANGE");
         return new Result(afterManifest.clone(),afterLock.clone(),List.copyOf(changed));
     }
     private JsonNode read(byte[] bytes)throws Exception{if(bytes.length>SourceArchive.EDIT_BYTES||SourceArchive.text(bytes)==null)throw new IllegalArgumentException();String text=new String(bytes,StandardCharsets.UTF_8);if(text.contains("\r")||text.startsWith("\ufeff"))throw new IllegalArgumentException("UTF8_LF_REQUIRED");var node=json.reader().with(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION).with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readTree(bytes);if(!node.isObject())throw new IllegalArgumentException();return node;}
