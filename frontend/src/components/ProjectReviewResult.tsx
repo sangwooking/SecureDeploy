@@ -1,3 +1,4 @@
+import {OriginalSourceStatus} from './OriginalSourceStatus';
 import {editContext,problemItems} from './problemGroups';
 import { useEffect, useRef, useState } from 'react';
 import { downloadAiReviewReport, downloadReviewReport, updateVulnerabilityStatus } from '../api/securityReviewApi';
@@ -53,6 +54,7 @@ export function ProjectReviewResult({ result, view, onView, onRescan, editing: e
     {capabilities.value?.compatibilityMode&&<p role="status" className="notice">호환 운영 모드입니다. 새 분석과 수동 수정·승인·재검사는 사용할 수 있고 자동 수정·외부 AI·npm 생성은 중단되어 있습니다.</p>}
     {capabilities.value?.recoveryReadOnly&&<p role="status" className="notice">읽기 전용 복구 모드입니다. 저장된 분석 결과를 조회할 수 있으며 수정·재검사는 중단되어 있습니다.</p>}
     {error && <p role="alert" className="error-message">{error}</p>}
+    {selectedId&&<OriginalSourceStatus reviewId={current.reviewId}/>}
     <ReviewResultWorkspace selection={selection} result={current} view={view} onViewChange={onView} progress={null}
       onEditDependency={current.sourceType==='WORKSPACE'?undefined:id=>{setDependencyAdviceId(id);setEditingPath(undefined);setEditing(true,{...selection,adviceId:id});}}
       onEditFile={current.sourceType==='WORKSPACE'?undefined:path=>{setDependencyAdviceId(undefined);setEditingPath(path);setEditing(true);}}

@@ -1,3 +1,6 @@
+import {originalVerified} from './sourceVerification';
+import {loadSourceVerification,type SourceVerification} from '../api/editingApi';
+import {OriginalSourceStatus} from './OriginalSourceStatus';
 import {ProblemRepairGuide} from './ProblemRepairGuide';
 import type {EditContext} from './problemGroups';
 import {workspaceStorageKey} from './workspaceStorage';
@@ -38,6 +41,11 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const [content, setContent] = useState<EditingContent | null>(null);
   const [text, setText] = useState('');
   const [zip, setZip] = useState<File | null>(null);
+  const [sourceRecord,setSourceRecord]=useState<{id:number;value:SourceVerification}|null>(null);
+  const [sourceConsent,setSourceConsent]=useState(false);
+  const [sourceFailure,setSourceFailure]=useState<SourceVerification>();
+  useEffect(()=>{let current=true;setSourceConsent(false);setSourceFailure(undefined);if(result.reviewId)loadSourceVerification(result.reviewId).then(value=>{if(current)setSourceRecord({id:result.reviewId!,value});}).catch(()=>{});return()=>{current=false;};},[result.reviewId]);
+  const retention=sourceRecord&&sourceRecord.id===result.reviewId?sourceRecord.value.retention:undefined;
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [diffs, setDiffs] = useState<EditingDiff[] | null>(null), [approved, setApproved] = useState(false);
   const [expired, setExpired] = useState(false);
@@ -90,7 +98,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const run = async (action: () => Promise<void>) => {
     if (busy) return;
     setBusy(true); setError('');
-    try { await action(); } catch (e) { if(e instanceof ApiRequestError&&e.code==='WORKSPACE_REVISION_CONFLICT')setRevisionConflict(true);
+    try { await action(); } catch (e) { if(!workspace&&e instanceof ApiRequestError&&(e.code==='SOURCE_MISMATCH'||e.code==='SOURCE_UNAVAILABLE'||[403,404,502,503].includes(e.status)))setSourceFailure({status:e.code==='SOURCE_MISMATCH'?'MISMATCH':'UNAVAILABLE',message:e.message,scope:'ORIGINAL_BYTES_ONLY',recorded:!!sourceRecord?.value.recorded,fileCount:sourceRecord?.value.fileCount??0}); if(e instanceof ApiRequestError&&e.code==='WORKSPACE_REVISION_CONFLICT')setRevisionConflict(true);
       if(result.reviewId&&e instanceof ApiRequestError&&e.code==='WORKSPACE_ALREADY_OPEN')discoverEditingWorkspace(result.reviewId).then(setDiscovery).catch(()=>{});
       if (mounted.current) setError(e instanceof ApiRequestError?requestProblem(e,'수정 작업').message:e instanceof TypeError?'서버에 연결하지 못했어요. 네트워크를 확인해 주세요.':e instanceof Error?e.message:'요청을 완료하지 못했습니다.'); }
     finally { if (mounted.current) setBusy(false); }
@@ -115,6 +123,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
     setWorkspace(next);setContent(value);setText(value?.text.replace(/\r\n/g,'\n')??'');setDiffs(null);setApproved(false);setRevisionConflict(false);
   });
   const start = () => run(async () => {
+    setSourceFailure(undefined);
     if (!result.reviewId) return;
     if(dirty&&!window.confirm('새 작업은 이전 편집을 복원하지 않습니다. 현재 편집 내용을 복사했으며 새 작업을 시작할까요?'))return;
     const value = await createEditingWorkspace(result.reviewId, result.sourceType === 'ZIP' ? zip ?? undefined : undefined);
@@ -134,7 +143,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
     if(workspace&&!expired&&!selected&&targetPath&&!busy){const file=workspace.files.find(f=>f.path===targetPath);if(file)select(file,problemContext?.line);}
   },[workspace?.id,targetPath,busy,selected?.id]);
   useEffect(()=>{
-    const line=pendingLine.current;if(!line||!content||content.currentHash!==content.originalHash||workspace?.identityStatus!=='EXACT_GIT_COMMIT')return;
+    const line=pendingLine.current;if(!line||!content||content.currentHash!==content.originalHash||!originalVerified(workspace))return;
     const lines=content.text.replace(/\r\n/g,'\n').split('\n');if(line<1||line>lines.length)return;
     const editor=document.getElementById('source-code') as HTMLTextAreaElement|null;if(!editor)return;
     const start=lines.slice(0,line-1).reduce((n,s)=>n+s.length+1,0);editor.setSelectionRange(start,start+lines[line-1].length);editor.scrollTop=Math.max(0,(line-3)*22);editor.focus({preventScroll:true});pendingLine.current=undefined;
@@ -170,9 +179,9 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
     sessionStorage.removeItem(key); setResumeId(''); setRecovery(null); setWorkspace(null); setContent(null); setSelected(null); setText(''); setDiffs(null); setApproved(false); setExpired(false); setFileQuery('');
   });
   const visibleFiles=useMemo(()=>workspace?.files.filter(f=>f.path.toLowerCase().includes(fileQuery.trim().toLowerCase()))??[],[workspace,fileQuery]);
-  const findings = selected && workspace?.identityStatus === 'EXACT_GIT_COMMIT'
+  const findings = selected && originalVerified(workspace)
     ? result.vulnerabilities.filter(v => v.filePath.replace(/\\/g, '/') === selected.path) : [];
-  const flowFindings = selected && workspace?.identityStatus === 'EXACT_GIT_COMMIT'
+  const flowFindings = selected && originalVerified(workspace)
     ? [...(result.serverAnalysis?.validatedFindings ?? []), ...(result.serverAnalysis?.pythonAnalysis?.validatedFindings ?? [])]
       .filter(f => f.location.filePath.replace(/\\/g, '/') === selected.path) : [];
   if(cap.value?.recoveryReadOnly)return <section aria-label="수정 작업 공간"><p role="status">읽기 전용 복구 모드에서는 수정 작업을 재개할 수 없습니다. 저장된 작업은 삭제되지 않으며 정상 모드로 복귀한 뒤 다시 열 수 있습니다.</p></section>;
@@ -180,8 +189,9 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
     <header className="source-editor-header"><div><h2>수정 작업 공간</h2><p>{result.projectName} · 검사 #{result.reviewId}</p></div>
       {!embedded&&<button type="button" className="secondary-button" aria-label="분석 결과로 돌아가기" disabled={busy} onClick={() => { if (!dirty || window.confirm('저장하지 않은 편집을 버리고 결과로 돌아갈까요?')) onBack(); }}>결과로 돌아가기</button>}</header>
     {invalidProblem&&<p role="alert">선택한 문제가 이 검사에 없습니다. 위치를 추정하지 않으며 보안 결과에서 다시 선택해 주세요.</p>}
+    {sourceFailure?<OriginalSourceStatus value={sourceFailure}/>:workspace?<OriginalSourceStatus value={workspace.sourceVerification}/>:<OriginalSourceStatus reviewId={result.reviewId}/>}
     {problemContext&&<section className="editing-problem-context" aria-label="현재 수정 중인 문제"><h3>현재 수정 중: {problemContext.title}</h3><p><code>{problemContext.path}</code>{problemContext.line?` · 원본 ${problemContext.line}행`:''}</p><details><summary>선택한 문제 식별 정보</summary><p>검사 #{result.reviewId} · {problemContext.findingId} · {problemContext.ruleId}</p></details>
-      {workspace&&<><p>{workspace.identityStatus==='EXACT_GIT_COMMIT'?'원본 commit 연결 확인':'원본 동일성 미확인 · 과거 행 위치 확정 연결 안 함'} · 수정본 r{workspace.revision}</p><details onToggle={e=>setShowLocations(e.currentTarget.open)}><summary>원본 해시·수정 위치 ({problemContext.locations.length}곳)</summary><p>{workspace.sourceRevision}</p>{showLocations&&problemContext.locations.slice(locationPage*50,locationPage*50+50).map(l=>{const f=workspace.files.find(f=>f.path===l.path);return <div key={l.findingId}><button type="button" disabled={busy||expired||!f} onClick={()=>f&&select(f,l.line)}>문제 위치 보기 · {l.path}{l.line?` · ${l.line}행`:''}</button>{f&&<code>{f.originalHash}</code>}</div>})}{showLocations&&problemContext.locations.length>50&&<nav aria-label="작업 문제 위치 페이지"><button disabled={locationPage===0} onClick={()=>setLocationPage(n=>n-1)}>이전 위치</button><span>{locationPage+1} / {Math.ceil(problemContext.locations.length/50)}</span><button disabled={(locationPage+1)*50>=problemContext.locations.length} onClick={()=>setLocationPage(n=>n+1)}>다음 위치</button></nav>}</details></>}
+      {workspace&&<><p>{originalVerified(workspace)?'원본 바이트·해시 연결 확인':'원본 동일성 미확인 · 과거 행 위치 확정 연결 안 함'} · 수정본 r{workspace.revision}</p><details onToggle={e=>setShowLocations(e.currentTarget.open)}><summary>원본 해시·수정 위치 ({problemContext.locations.length}곳)</summary><p>{workspace.sourceRevision}</p>{showLocations&&problemContext.locations.slice(locationPage*50,locationPage*50+50).map(l=>{const f=workspace.files.find(f=>f.path===l.path);return <div key={l.findingId}><button type="button" disabled={busy||expired||!f} onClick={()=>f&&select(f,l.line)}>문제 위치 보기 · {l.path}{l.line?` · ${l.line}행`:''}</button>{f&&<code>{f.originalHash}</code>}</div>})}{showLocations&&problemContext.locations.length>50&&<nav aria-label="작업 문제 위치 페이지"><button disabled={locationPage===0} onClick={()=>setLocationPage(n=>n-1)}>이전 위치</button><span>{locationPage+1} / {Math.ceil(problemContext.locations.length/50)}</span><button disabled={(locationPage+1)*50>=problemContext.locations.length} onClick={()=>setLocationPage(n=>n+1)}>다음 위치</button></nav>}</details></>}
       <button type="button" onClick={()=>{setEvidenceOpen(true);setPane('evidence');requestAnimationFrame(()=>document.getElementById('workspace-problem-guide')?.scrollIntoView({block:'nearest'}));}}>수정 가이드 보기</button></section>}
     {recovery && <div role="alert" className="workspace-recovery"><p><strong>{recovery.message}</strong></p><p>이 안내만으로 만료나 데이터 손실을 확정할 수 없습니다. 이전 작업 식별자는 재시도를 위해 유지합니다.</p><button type="button" disabled={busy} onClick={()=>setResumeAttempt(n=>n+1)}>이전 작업 다시 확인</button></div>}
     {error && <p className="error-message" role="alert">{error}</p>}
@@ -192,11 +202,12 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
       {discovery?.state==='OTHER_REVIEW'&&<p role="status">다른 검사에서 진행 중인 수정 작업이 있어요. 해당 작업을 내보내고 명시적으로 닫은 뒤 새 작업을 시작해 주세요.</p>}
       {discovery?.state==='CREATING'&&<p role="status">다른 탭에서 원본을 확보하고 있어요. 잠시 후 이 화면을 다시 확인해 주세요.</p>}
       <p>보관 방식과 만료 시각은 원본 확보 후 표시됩니다. 미저장 편집은 복구되지 않습니다. 편집 내용은 자동 재검사되거나 GitHub에 반영되지 않으며, 다른 탭에서 계정을 변경하기 전에 필요한 Patch/ZIP을 내보내 주세요.</p>
-      {result.sourceType === 'ZIP' ? <><p role="note">과거 ZIP과 일치하는지 검증할 기록이 없습니다. 과거 경고 위치를 확정 연결하지 않으며 다운로드 후 새로 분석해야 합니다.</p>
+      {result.sourceType === 'ZIP' ? <><p role="note">검사 당시 업로드한 ZIP을 선택하세요. 저장된 ZIP·파일 해시와 비교하며, 기록이 없는 과거 검사는 동일성을 확정하지 않습니다.</p>
         <label>원본 ZIP <input type="file" accept=".zip,application/zip" disabled={busy} onChange={e => setZip(e.target.files?.[0] ?? null)} /></label></>
         : <p>현재 읽기 권한을 확인하고 분석 당시 commit만 가져옵니다. 해당 commit을 확보하지 못하면 작업을 중단합니다.</p>}
       {result.sourceType === 'WORKSPACE' && <p role="note">수정본 Review에는 전체 소스를 보관하지 않습니다. 기존 작업 공간을 이용하거나 다운로드한 ZIP으로 새 분석을 시작해 주세요.</p>}
-      <button className="primary-button" type="button" disabled={busy || (!!discovery&&discovery.state!=='NONE') || (!!resumeId && recovery?.allowSourceAttempt!==true) || !result.reviewId || !result.sourceType || result.sourceType === 'WORKSPACE' || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 시도 후 새 작업 시작'}</button>
+      {retention&&<label><input type="checkbox" checked={sourceConsent} disabled={busy} onChange={e=>setSourceConsent(e.target.checked)}/>{retention.storageMode==='ENCRYPTED_PERSISTENT'?'암호화된 서버':'서버 메모리'}에 원본과 저장한 수정 내용을 {Math.floor(retention.seconds/60)}분 동안 보관하는 데 동의합니다. 최대 {retention.maxFiles}개 항목·{Math.floor(retention.maxBytes/1024/1024)}MiB이며, 미저장 편집은 보관되지 않습니다.</label>}
+      <button className="primary-button" type="button" disabled={busy || !retention || !sourceConsent || (!!discovery&&discovery.state!=='NONE') || (!!resumeId && recovery?.allowSourceAttempt!==true) || !result.reviewId || !result.sourceType || result.sourceType === 'WORKSPACE' || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 시도 후 새 작업 시작'}</button>
     </div> : <>
       <div className="source-editor-status"><p><strong>수정본 버전 {workspace.revision}</strong> · 만료 {new Date(workspace.expiresAt).toLocaleString('ko-KR')} · 변경 {workspace.changedFileIds.length}개</p>
         <p role="note">{workspace.storageMode==='ENCRYPTED_PERSISTENT'
@@ -224,6 +235,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
             {!visibleFiles.length&&<p role="status">일치하는 파일이 없습니다.</p>}
           </nav>
           <div className="source-edit-pane">
+            {workspace&&targetPath&&!workspace.files.some(f=>f.path===targetPath)&&<p role="alert">선택한 문제의 파일을 확보하지 못했습니다. 다른 파일을 대신 열지 않았습니다.</p>}
             {selected ? <><h3>{selected.path}</h3><p>{selected.size.toLocaleString()} bytes · {selected.editable ? `${content?.newline ?? 'UTF-8'}${content?.bom ? ' · BOM 보존' : ''}` : '읽기 전용: 바이너리·크기·인코딩 제한'}</p>
               {selected.editable && content && <><label className="source-code-label" htmlFor="source-code"><span className="editor-file-path">{selected.path}</span><span role="status">{dirty ? '저장하지 않은 변경' : selected.changed ? '임시 서버 저장 · 재검사로 확인 필요' : '원본과 동일'}</span><span className="visually-hidden">파일 내용</span></label>
                 <textarea id="source-code" className="source-code" value={text} spellCheck={false} autoCapitalize="off" autoComplete="off" autoCorrect="off" disabled={busy} onChange={e => { setText(e.target.value); setApproved(false); setDiffs(null); }} />
@@ -233,6 +245,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
           </div>
           <aside className="source-evidence-pane" aria-label="선택 파일의 수정 근거">
             {problemContext&&<div id="workspace-problem-guide"><h3>{problemContext.title}</h3>{selected&&!problemContext.locations.some(l=>l.path===selected.path)&&<p role="note">현재 연 파일은 선택한 문제의 원본 경로와 다릅니다. 이 파일 변경이 해당 문제를 해결한다는 의미가 아닙니다.</p>}{cap.loading?<p role="status">수정 지원 정보를 확인합니다.</p>:cap.problem?<p role="note">지원 정보를 확인하지 못했습니다{cap.problem.status?` (HTTP ${cap.problem.status})`:''}. AI 서버 오류로 단정하지 않으며 수동 수정은 유지합니다.</p>:!cap.value?.providerAvailable?<p role="note">현재 AI Provider가 비활성화되어 있습니다. 기본 가이드와 수동 수정을 이용하세요.</p>:cap.value.providerOrigin==='MOCK'?<p className="source-label">현재 시험 Provider는 Mock입니다. 실제 모델 호출·품질 검증과 구분합니다.</p>:null}<ProblemRepairGuide rule={problemContext.ruleId} v={problemContext.vulnerability}/>{problemContext.flow&&<><p>{problemContext.flow.recommendedAction}</p><ol>{problemContext.flow.verificationSteps.map((s,i)=><li key={i}>{s}</li>)}</ol></>}</div>}
+            {workspace&&targetPath&&!workspace.files.some(f=>f.path===targetPath)&&<p role="alert">선택한 문제의 파일을 확보하지 못했습니다. 다른 파일을 대신 열지 않았습니다.</p>}
             {selected ? <>
               {selected.editable && content && ((selected.path.endsWith('.properties')&&findings.some(f=>['DEBUG_ENABLED','STACKTRACE_EXPOSURE','INSECURE_COOKIE'].includes(f.ruleId)))||(/\.[cm]?[jt]s$/.test(selected.path)&&flowFindings.some(f=>f.ruleId==='TS_SENSITIVE_DATA_EXPOSURE'&&(f.location.kind==='HTTP_RESPONSE'||f.location.kind==='EXPRESS_HTTP_RESPONSE'&&cap.value?.patchScopes?.includes('EXPRESS_DIRECT_ENV_JSON'))))) && <AiPatchPanel initialFinding={selected.path===problemContext?.path?(problemContext.flow?"flow:"+problemContext.flow.findingId:problemContext.vulnerability?.vulnerabilityId!=null?String(problemContext.vulnerability.vulnerabilityId):undefined):undefined} key={selected.id} workspace={workspace} file={selected} content={content} findings={findings} flowFindings={flowFindings} dirty={dirty} disabled={busy}
                 onApplied={async next => { setWorkspace(next);setDiffs(null);setApproved(false);setSelected(next.files.find(f => f.id === selected.id) ?? null);

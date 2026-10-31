@@ -1,3 +1,4 @@
+import {originalVerified} from './sourceVerification';
 import {AiRequestDisclosure} from './AiRequestDisclosure';
 import {useUiCapabilities} from './useUiCapabilities';
 import {providerOriginLabel} from './EvidenceSupportLayout';
@@ -73,13 +74,13 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
     const next = await applyAiPatch(workspace.id,selected);
     update({ ...selected, state: 'ACCEPTED' }); setAccepted(false); await onApplied(next);
   });
-  const eligible = workspace.identityStatus === 'EXACT_GIT_COMMIT' && (file.path.endsWith('.properties')||/\.[cm]?[jt]s$/.test(file.path));
+  const eligible = originalVerified(workspace) && (file.path.endsWith('.properties')||/\.[cm]?[jt]s$/.test(file.path));
   return <section className="source-ai-patch" aria-label="보안 수정안">
     <h3>보안 수정안</h3>
     {cap.value?.compatibilityMode&&<p role="status">호환 운영 모드에서는 직접 코드를 편집한 뒤 Diff를 검토하고 승인·재검사해 주세요.</p>}
     <p>제안 생성은 파일을 바꾸지 않습니다. 검토 후 적용해도 실제 보안 문제 해결 여부는 재검사해야 합니다.</p>
     {!!flows.length&&<p>Deno 직접 Response.json과 Express 기본 ESM import app의 inline JSON 응답에서 환경값 필드 제거만 제한적으로 지원합니다. Router·별칭·동적 객체는 수동 검토가 필요합니다. 서버가 코드 범위를 확인하지 못하면 전송하지 않고 수동 검토를 안내합니다.</p>}
-    {!eligible ? <p>원본 commit과 일치하는 단순 .properties 설정 또는 제한된 Deno·Express 객체 응답만 지원합니다. ZIP 원본 미검증·다른 코드 유형은 수동 검토가 필요합니다.</p>
+    {!eligible ? <p>원본 바이트가 검증된 단순 .properties 설정 또는 제한된 Deno·Express 객체 응답만 지원합니다. ZIP 원본 미검증·다른 코드 유형은 수동 검토가 필요합니다.</p>
       : <>{cap.value?.compatibilityMode?<p>호환 운영 모드에서는 수동 편집을 사용해 주세요. 자동·AI 수정안 생성은 중단되어 있습니다.</p>:provider?.available?<p>AI 선택 시 Provider: {provider.name} · 모델: {provider.model} · 외부 전송 및 비용 발생 가능</p>:<p>AI 수정 Provider가 준비되지 않았습니다. 지원되는 자동 수정안과 수동 편집은 사용할 수 있습니다.</p>}
         {candidates.length === 0 && flows.length === 0 ? <p>이 파일에 자동 수정 범위로 연결할 수 있는 Finding이 없습니다. 권한·RLS·SCA·동적 흐름은 추가 검토 대상입니다.</p>
           : <><label htmlFor="patch-finding">수정할 분석 항목</label><select id="patch-finding" value={finding} disabled={disabled || !!pending} onChange={e => setFinding(e.target.value)}>

@@ -1,9 +1,11 @@
 import { authHeaders, jsonHeaders, parseJsonResponse } from './securityReviewApi';
 
 const BASE = `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'}/api/editing-workspaces`;
+export interface SourceVerification {status:'VERIFIED'|'MISMATCH'|'UNAVAILABLE'|'PARTIAL'|'UNVERIFIED';message:string;scope:string;recorded:boolean;archiveSha256?:string|null;commitSha?:string|null;fileCount:number;retention?:{storageMode:'ENCRYPTED_PERSISTENT'|'MEMORY_TEMPORARY';seconds:number;maxBytes:number;maxFiles:number}}
+export const loadSourceVerification=(reviewId:number)=>call<SourceVerification>(`/review/${reviewId}/source`);
 export interface ChangeAttribution {revision:number;generator:string;providerOrigin?:string|null;model?:string|null;proposalId?:string|null;directionOrigin?:string|null;adviceId?:string|null;approved:boolean;userId:number;at:string;currentHash:string}
 export interface EditingFile { id: string; path: string; originalHash: string; size: number; directory: boolean; editable: boolean; readOnlyReason: string | null; changed: boolean; changeOrigin?:string; provenance?:ChangeAttribution[] }
-export interface EditingWorkspace { storageMode?: 'MEMORY_TEMPORARY' | 'ENCRYPTED_PERSISTENT'; id: string; reviewId: number; revision: number; createdAt: string; expiresAt: string; sourceRevision: string; identityStatus: 'UNVERIFIED_REUPLOAD' | 'EXACT_GIT_COMMIT'; files: EditingFile[]; changedFileIds: string[]; exports?:{revision:number;format:string;userId:number;at:string;provenanceHash:string}[] }
+export interface EditingWorkspace { storageMode?: 'MEMORY_TEMPORARY' | 'ENCRYPTED_PERSISTENT'; id: string; reviewId: number; revision: number; createdAt: string; expiresAt: string; sourceRevision: string; identityStatus: 'UNVERIFIED_REUPLOAD' | 'EXACT_GIT_COMMIT' | 'VERIFIED_ZIP_MANIFEST' | 'PARTIAL_ZIP_MANIFEST'; sourceVerification?:SourceVerification; files: EditingFile[]; changedFileIds: string[]; exports?:{revision:number;format:string;userId:number;at:string;provenanceHash:string}[] }
 export interface EditingContent { fileId: string; revision: number; originalHash: string; currentHash: string; text: string; newline: 'LF' | 'CRLF'; bom: boolean }
 export interface EditingDiff { revision: number; fileId: string; originalHash: string; patch: string; changeOrigin?:string; provenance?:ChangeAttribution[] }
 async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -11,8 +13,8 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   return parseJsonResponse<T>(response, '수정 작업 공간 요청을 처리하지 못했습니다.');
 }
 export async function createEditingWorkspace(reviewId: number, file?: File): Promise<EditingWorkspace> {
-  if (file) { const form = new FormData(); form.append('file', file); return call(`/zip/${reviewId}`, { method: 'POST', body: form }); }
-  return call(`/github/${reviewId}`, { method: 'POST' });
+  if (file) { const form = new FormData(); form.append('file', file); return call(`/zip/${reviewId}?sourceRetentionAcknowledged=true`, { method: 'POST', body: form }); }
+  return call(`/github/${reviewId}?sourceRetentionAcknowledged=true`, { method: 'POST' });
 }
 export interface WorkspaceDiscovery {state:'AVAILABLE'|'NONE'|'OTHER_REVIEW'|'CREATING';workspace:EditingWorkspace|null}
 export const discoverEditingWorkspace=(reviewId:number)=>call<WorkspaceDiscovery>(`/review/${reviewId}/active`);
