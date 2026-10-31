@@ -50,6 +50,7 @@ export function ProjectReviewResult({ result, view, onView, onRescan, editing: e
   const selectedId=selection?.findingId??(selection?.advisory!=null?problemItems(current).filter(f=>f.source==='DEPENDENCY'&&'dependency'in f&&f.dependency)[selection.advisory]?.findingId:undefined);
   if (editing) return <SourceEditingWorkspace embedded key={current.reviewId} result={current} problemContext={editContext(current,selectedId)} invalidProblem={!!selectedId&&!editContext(current,selectedId)} initialPath={editingPath} initialAdviceId={selection?.adviceId??dependencyAdviceId} onBack={() => setEditing(false)} />;
   return <>
+    {capabilities.value?.compatibilityMode&&<p role="status" className="notice">호환 운영 모드입니다. 새 분석과 수동 수정·승인·재검사는 사용할 수 있고 자동 수정·외부 AI·npm 생성은 중단되어 있습니다.</p>}
     {capabilities.value?.recoveryReadOnly&&<p role="status" className="notice">읽기 전용 복구 모드입니다. 저장된 분석 결과를 조회할 수 있으며 수정·재검사는 중단되어 있습니다.</p>}
     {error && <p role="alert" className="error-message">{error}</p>}
     <ReviewResultWorkspace selection={selection} result={current} view={view} onViewChange={onView} progress={null}

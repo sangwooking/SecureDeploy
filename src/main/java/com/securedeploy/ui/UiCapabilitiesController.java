@@ -34,9 +34,11 @@ public class UiCapabilitiesController {
         result.put("patchScopes",java.util.List.of("SPRING_LITERAL_PROPERTIES","DENO_DIRECT_ENV_JSON","EXPRESS_DIRECT_ENV_JSON"));
         result.put("aiCapabilityMatrix",AiCapabilityMatrix.entries());
         boolean recovery=environment!=null&&environment.acceptsProfiles(org.springframework.core.env.Profiles.of("release-recovery"));
+        boolean compatible=environment!=null&&environment.acceptsProfiles(org.springframework.core.env.Profiles.of("release-compatible"));
+        result.put("compatibilityMode",compatible);result.put("deterministicFixes",!compatible&&!recovery);
         result.put("recoveryReadOnly",recovery);result.put("durableAiAdmission",ledger!=null&&ledger.enabled());
         result.put("legacyAiReport",false); // No per-request consent contract: real legacy reports remain disabled.
-        if(recovery){for(String name:java.util.List.of("dependencyAdvice","workspaceSemanticReview","dependencyFiles","npmGeneration","providerAvailable","structuredPatchPlans"))result.put(name,false);}
+        if(recovery||compatible){for(String name:java.util.List.of("dependencyAdvice","workspaceSemanticReview","dependencyFiles","npmGeneration","providerAvailable","structuredPatchPlans"))result.put(name,false);}
         return result;
     }
 }

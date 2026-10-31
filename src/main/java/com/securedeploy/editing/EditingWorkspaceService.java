@@ -222,12 +222,16 @@ public class EditingWorkspaceService {
         var state = owned(id); var file = file(state, fileId);
         return new Difference(state.revision, file.id, file.hash, patch(file),file.changeOrigin,List.copyOf(file.provenance));
     }
+    private boolean automationEnabled=true;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureAutomation(@org.springframework.beans.factory.annotation.Value("${securedeploy.editing.automation-enabled:true}") boolean enabled){automationEnabled=enabled;}
     public synchronized WorkspacePatch.View preparePatch(String id, WorkspacePatch.Prepare request, WorkspacePatch.Provider provider) {
         return preparePatch(id,request,provider,true);
     }
     public synchronized WorkspacePatch.View preparePlan(String id,WorkspacePatch.Prepare request,WorkspacePatch.Provider provider){return preparePatch(id,request,provider,true,true);}
     public synchronized WorkspacePatch.FixOption fixOption(String id,WorkspacePatch.Prepare request,WorkspacePatch.Provider provider) {
         var state=owned(id);var file=file(state,request.fileId());
+        if(!automationEnabled)return new WorkspacePatch.FixOption("MANUAL_REVIEW","호환 운영 모드에서는 수동 편집·Diff·승인·재검사를 사용할 수 있습니다.");
         if(!"EXACT_GIT_COMMIT".equals(state.identity))return new WorkspacePatch.FixOption("MANUAL_REVIEW","원본 일치가 검증되지 않아 수동 편집 후 새 분석이 필요합니다.");
         if(!(file.original.path().endsWith(".properties")||file.original.path().matches(".*\\.[cm]?[jt]s")))
             return new WorkspacePatch.FixOption("UNSUPPORTED","이 파일 유형의 수정안 생성은 지원하지 않습니다.");
@@ -248,6 +252,7 @@ public class EditingWorkspaceService {
     private WorkspacePatch.View preparePatch(String id, WorkspacePatch.Prepare request, WorkspacePatch.Provider provider,boolean retain) {return preparePatch(id,request,provider,retain,false);}
     private WorkspacePatch.View preparePatch(String id, WorkspacePatch.Prepare request, WorkspacePatch.Provider provider,boolean retain,boolean plan) {
         var state=owned(id);
+        if(!automationEnabled)throw fail(HttpStatus.SERVICE_UNAVAILABLE,"호환 운영 모드에서는 자동·AI 수정 대신 수동 편집을 사용해 주세요.");
         if(!"EXACT_GIT_COMMIT".equals(state.identity))throw fail(HttpStatus.CONFLICT,"원본 일치 미검증 ZIP에는 AI 패치를 연결할 수 없습니다. 수동 편집 후 새 분석이 필요합니다.");
         if(retain&&!provider.available())throw fail(HttpStatus.SERVICE_UNAVAILABLE,"AI 수정 Provider가 준비되지 않았습니다. 수동 편집과 기존 가이드는 계속 사용할 수 있습니다.");
         var file=file(state,request.fileId());

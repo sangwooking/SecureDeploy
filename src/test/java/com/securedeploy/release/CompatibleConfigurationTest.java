@@ -1,0 +1,7 @@
+package com.securedeploy.release;
+import static org.junit.jupiter.api.Assertions.*;import static org.mockito.Mockito.*;import com.securedeploy.ai.config.*;import org.springframework.mock.env.MockEnvironment;import org.springframework.jdbc.core.JdbcTemplate;import org.junit.jupiter.api.Test;
+class CompatibleConfigurationTest {
+ MockEnvironment env(){return new MockEnvironment().withProperty("securedeploy.editing.automation-enabled","false");}
+ @Test void paidOrAutomatedOverrideCannotEnableDuringCompatibleOperation(){var ai=new AiProperties();var db=mock(JdbcTemplate.class);var e=env();when(db.queryForObject(anyString(),eq(Boolean.class))).thenReturn(false);assertDoesNotThrow(()->new CompatibleConfigurationGuard(ai,e,db));ai.setProvider(AiProviderType.OPENAI);assertThrows(IllegalStateException.class,()->new CompatibleConfigurationGuard(ai,e,db));ai.setProvider(AiProviderType.TEMPLATE);e.withProperty("securedeploy.ai.ledger.enabled","true");assertThrows(IllegalStateException.class,()->new CompatibleConfigurationGuard(ai,e,db));}
+ @Test void encryptedRowsCannotBeHiddenByDisablingPersistence(){var ai=new AiProperties();var db=mock(JdbcTemplate.class);when(db.queryForObject(anyString(),eq(Boolean.class))).thenReturn(true);when(db.queryForObject(anyString(),eq(Long.class))).thenReturn(1L);var e=env();assertThrows(IllegalStateException.class,()->new CompatibleConfigurationGuard(ai,e,db));e.withProperty("securedeploy.editing.persistence.enabled","true");assertDoesNotThrow(()->new CompatibleConfigurationGuard(ai,e,db));}
+}
