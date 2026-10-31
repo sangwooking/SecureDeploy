@@ -430,7 +430,7 @@ export function nodeServer(api) {
       return {value:unknown()};
     }
     if(['express-response','pages-response'].includes(receiver?.tag)&&['send','json','render','redirect','status','end','write','type','set','header','setHeader'].includes(method)) {
-      if(['type','set','header','setHeader'].includes(method))return {value:api.html.header(receiver,args,method,state)};
+      if(['type','set','header','setHeader'].includes(method))return {value:api.html.header(receiver,args,method,state,node)};
       if(method==='status')return {value:api.html.status(receiver,args,state)};
       api.html.output(receiver,method==='render'?[union(...args)]:args,node,state,method);
       if(['send','json','end','write'].includes(method)&&args.length){

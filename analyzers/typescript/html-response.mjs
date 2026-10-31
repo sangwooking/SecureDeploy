@@ -1,5 +1,6 @@
 import {rawHtmlTextInputs} from './html-text-proof.mjs';
 import {outputContexts,encodeReplace} from './html-context.mjs';
+import ts from 'typescript';
 // Review contexts and a separate, narrower HTML_TEXT_INPUT_FLOW proof contract.
 // No target execution, template engine execution or sanitizer-name trust.
 export function htmlResponses({loc,append,result,note,modules}) {
@@ -7,8 +8,25 @@ export function htmlResponses({loc,append,result,note,modules}) {
     ? /^(?:text\/html|application\/xhtml\+xml)(?:\s*;|$)/i.test(v.constant)?'HTML'
       : /^application\/(?:[\w.-]+\+)?json(?:\s*;|$)/i.test(v.constant)?'JSON'
       : /^text\/plain(?:\s*;|$)/i.test(v.constant)?'PLAIN':'OTHER' : 'UNKNOWN';
-  function header(receiver,args,method,state){
+  function header(receiver,args,method,state,node){
     let mode='UNKNOWN';
+    // Express set/header has an object overload. Only direct inert string maps
+    // are summarized: no alias, getter, spread, computed key or coercion effects.
+    if(receiver.tag==='express-response'&&['set','header'].includes(method)&&args.length===1){
+      const syntax=node?.arguments?.[0],map=args[0];
+      const inert=syntax&&ts.isObjectLiteralExpression(syntax)&&syntax.properties.length<=16
+        &&syntax.properties.every(p=>ts.isPropertyAssignment(p)
+          &&(ts.isIdentifier(p.name)||ts.isStringLiteral(p.name))&&ts.isStringLiteralLike(p.initializer)
+          &&!['__proto__','prototype','constructor'].includes(p.name.text.toLowerCase()));
+      if(inert&&map?.ref&&!map.unknown&&!map.ref.unknown&&map.ref.properties.size===syntax.properties.length){
+        const entries=[...map.ref.properties];
+        if(entries.every(([,v])=>!v.unknown&&!v.ref&&typeof v.constant==='string')){
+          const contentTypes=entries.filter(([k])=>k.toLowerCase()==='content-type');
+          if(contentTypes.length===0)return receiver;
+          if(contentTypes.length===1)return header(receiver,[{constant:'Content-Type'},contentTypes[0][1]],'set',state);
+        }
+      }
+    }
     if(method==='type'&&args.length===1)mode=args[0]?.constant==='html'?'HTML':args[0]?.constant==='text'?'PLAIN':args[0]?.constant==='json'?'JSON':mime(args[0]);
     else if(args.length===2&&typeof args[0]?.constant==='string'&&args[0].constant.toLowerCase()==='content-type')mode=mime(args[1]);
     else if(args.length===2&&typeof args[0]?.constant==='string')return receiver;

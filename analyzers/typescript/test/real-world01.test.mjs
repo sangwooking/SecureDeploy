@@ -1,0 +1,3 @@
+import{test}from'node:test';import assert from'node:assert/strict';import fs from'node:fs';import{analyze}from'../analyzer.mjs';
+const cases=JSON.parse(fs.readFileSync(new URL('../../../scripts/evaluation/real-world01-inputs.json',import.meta.url))).cases;
+for(const c of cases)test('real-world01 frozen oracle: '+c.id,()=>{const r=analyze(c.input),f=r.findings.filter(f=>f.ruleId===c.rule);assert.equal(f.length,c.truth===true?1:0,c.oracle);assert.equal(r.status,'PARTIAL');for(const x of f){assert.equal(x.disposition,'REVIEW_REQUIRED');assert.ok(x.flow.some(t=>t.kind==='HTML_RESPONSE_MIME_CONFIRMED'));assert.ok(x.flow.some(t=>t.kind==='HTML_FUNCTION_RETURN'));assert.ok(x.source.filePath);}});
