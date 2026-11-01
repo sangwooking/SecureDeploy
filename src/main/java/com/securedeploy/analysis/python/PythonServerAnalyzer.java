@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PythonServerAnalyzer {
-    private static final int MAX_FILES = 100, MAX_FILE_CHARS = 100_000, MAX_TOTAL_CHARS = 1_000_000;
+    private static final int MAX_FILES = 100, MAX_FILE_CHARS = 250_000, MAX_TOTAL_CHARS = 1_000_000;
     private static final int MAX_OUTPUT_BYTES = 2_000_000;
     private final Semaphore capacity = new Semaphore(2);
     private final PythonAnalysisProperties properties;
@@ -117,7 +117,7 @@ public class PythonServerAnalyzer {
     }
 
     private ServerAnalysisSnapshot unavailable(String status, List<FileCoverage> files, String reason) {
-        return new ServerAnalysisSnapshot(1, "py-django-v11", null, status, files, List.of(), List.of(), List.of(), List.of(reason), List.of(), List.of());
+        return new ServerAnalysisSnapshot(1, "py-django-v12", null, status, files, List.of(), List.of(), List.of(), List.of(reason), List.of(), List.of());
     }
 
     private FileCoverage skipped(String path, String reason) {
@@ -125,7 +125,7 @@ public class PythonServerAnalyzer {
     }
 
     private void validate(ServerAnalysisSnapshot result, Map<String, Integer> files) {
-        if (result.schemaVersion() != 1 || !"py-django-v11".equals(result.analyzerVersion()) || result.parserVersion() == null || !result.parserVersion().matches("CPython-3\\.\\d+\\.\\d+")
+        if (result.schemaVersion() != 1 || !"py-django-v12".equals(result.analyzerVersion()) || result.parserVersion() == null || !result.parserVersion().matches("CPython-3\\.\\d+\\.\\d+")
                 || result.files().size() != files.size() || result.findings().size() > 200 || result.sqlUses().size() > 200
                 || result.httpUses() == null || result.httpUses().size() > 200
                 || result.resourceUses() == null || result.resourceUses().size() > 200

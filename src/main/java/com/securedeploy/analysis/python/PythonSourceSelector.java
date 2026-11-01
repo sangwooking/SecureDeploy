@@ -33,7 +33,7 @@ final class PythonSourceSelector {
             edges.put(path, references);
             priorities.put(path, 99); reasons.put(path, "DETERMINISTIC_FALLBACK");
             long length = file.lines().stream().mapToLong(s -> s.length() + 1L).sum();
-            if (length > 100_000) continue;
+            if (length > 250_000) continue;
             if (hintFiles >= MAX_HINT_FILES || hintCharacters + length > MAX_HINT_CHARACTERS) {
                 reasons.put(path, "SELECTION_HINT_LIMIT");
                 continue;

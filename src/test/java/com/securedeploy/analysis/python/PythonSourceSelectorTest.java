@@ -31,7 +31,7 @@ class PythonSourceSelectorTest {
         var analyzer = new PythonServerAnalyzer(new PythonAnalysisProperties());
         var result = analyzer.analyze(new ProjectStructure(Path.of("/none"), List.of(
                 file("x.py", "from django.urls import path\nnot_a_route=path('fake', unknown)"),
-                file("y.py", "from rest_framework.decorators import api_view\n"+"#".repeat(100_000)))));
+                file("y.py", "from rest_framework.decorators import api_view\n"+"#".repeat(250_000)))));
         assertThat(result.findings()).isEmpty();
         assertThat(result.files().stream().mapToInt(f -> f.entrypoints()).sum()).isZero();
         assertThat(result.files().stream().filter(f -> f.filePath().equals("y.py")).findFirst().orElseThrow().limitations())
@@ -66,5 +66,20 @@ class PythonSourceSelectorTest {
         Collections.shuffle(files,new Random(27));
         assertThat(PythonSourceSelector.order(files)).isEqualTo(first);
         assertThat(first.stream().filter(c -> c.reason().equals("SELECTION_HINT_LIMIT"))).hasSize(2);
+    }
+    @Test void largeRelatedModuleRetainsOriginalLinesImportsAndBinding() {
+        String padding="# original source line\n".repeat(6000);
+        var analyzer=new PythonServerAnalyzer(new PythonAnalysisProperties());
+        for(boolean safe:List.of(false,true)) {
+            var result=analyzer.analyze(new ProjectStructure(Path.of("/none"),List.of(
+                file("urls.py","from django.urls import path\nfrom views import lookup\nurlpatterns=[path('records/<str:key>',lookup)]"),
+                file("views.py","from service import query\ndef lookup(request,key):\n return query(key)"),
+                file("service.py",padding+"from django.db import connection\ndef query(key):\n with connection.cursor() as c:\n  "+(safe?"c.execute('select name where id=%s',[key])":"c.execute('select name where id='+key)")))));
+            assertThat(result.analyzerVersion()).isEqualTo("py-django-v12");
+            assertThat(result.status()).isEqualTo("PARTIAL");
+            assertThat(result.files().stream().filter(f->f.filePath().equals("service.py")).findFirst().orElseThrow().limitations()).contains("LARGE_FILE_BOUNDED_REACHABLE_ANALYSIS");
+            assertThat(result.validatedFindings()).hasSize(safe?0:1);
+            if(!safe) assertThat(result.findings().get(0).sink().line()).isEqualTo(6004);
+        }
     }
 }

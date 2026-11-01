@@ -33,7 +33,10 @@ _service_module = importlib.util.module_from_spec(_service_spec)
 _service_spec.loader.exec_module(_service_module)
 ServiceEvidence = _service_module.ServiceEvidence
 
-VERSION = "py-django-v11"
+VERSION = "py-django-v12"
+MAX_FILE_CHARS = 250_000
+LARGE_FILE_CHARS = 100_000
+MAX_LARGE_FILE_NODES = 20_000
 MAX_NODES = 60000
 MAX_STEPS = 30000
 MAX_DEPTH = 5
@@ -114,14 +117,23 @@ class Analyzer:
                                        entrypoints=0, functionsAnalyzed=0, prepareCallSites=0,
                                        tracedPrepareCallSites=0, limitations=[])
             try:
+                if len(item["content"]) > MAX_FILE_CHARS:
+                    self.coverage[path]["parseStatus"] = "LIMIT_EXCEEDED"
+                    self.note("FILE_CHARACTER_LIMIT", path)
+                    continue
+                large = len(item["content"]) > LARGE_FILE_CHARS
+                if large:
+                    # Full AST, original lines/imports/guards retained. Flow traversal is
+                    # still entry-reachable and bounded; no snippets are assumed safe.
+                    self.note("LARGE_FILE_BOUNDED_REACHABLE_ANALYSIS", path)
                 self.tick()
                 tree = ast.parse(item["content"], filename="<source>")
                 count = 0
                 for _ in ast.walk(tree):
                     count += 1
-                    if count > MAX_NODES - node_count:
+                    if count > min(MAX_NODES - node_count, MAX_LARGE_FILE_NODES if large else MAX_NODES):
                         break
-                if count > MAX_NODES - node_count:
+                if count > min(MAX_NODES - node_count, MAX_LARGE_FILE_NODES if large else MAX_NODES):
                     self.coverage[path]["parseStatus"] = "LIMIT_EXCEEDED"
                     self.note("AST_NODE_LIMIT", path)
                     continue
@@ -1167,7 +1179,7 @@ def main():
         raise ValueError("SOURCE_LIMIT")
     for f in files:
         path = PurePosixPath(f["filePath"])
-        if path.is_absolute() or ".." in path.parts or len(f["content"]) > 100_000:
+        if path.is_absolute() or ".." in path.parts or len(f["content"]) > MAX_FILE_CHARS:
             raise ValueError("INVALID_SOURCE")
     result = Analyzer(files).run()
     if sys.platform == "darwin":
