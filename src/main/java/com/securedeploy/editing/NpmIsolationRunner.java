@@ -89,7 +89,7 @@ public class NpmIsolationRunner {
         }finally{capacity.release();}
     }
     static long jsonStringBudget(String text){
-        long bytes=2;for(int i=0;i<text.length();i++){char c=text.charAt(i);bytes+=c<32?6:c==34||c==92?2:c<128?1:4;}return bytes;
+        long bytes=2;for(int i=0;i<text.length();i++){char c=text.charAt(i);bytes+=c<32?6:c==34||c==92?2:c<128?1:6;}return bytes;
     }
     void cleanup(String name)throws Exception {
         try{run(List.of("rm","--force",name),null,5,1024);}
