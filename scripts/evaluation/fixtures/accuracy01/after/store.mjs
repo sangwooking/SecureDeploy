@@ -1,0 +1,1 @@
+const rows={alpha:{id:'alpha',owner:'A',label:'First'},beta:{id:'beta',owner:'B',label:'Second'}};export async function read(id){return rows[id]??null;}

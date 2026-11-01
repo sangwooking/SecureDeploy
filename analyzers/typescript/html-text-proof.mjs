@@ -1,17 +1,25 @@
 import {htmlParts} from './html-context.mjs';
 // Deliberately small tokenizer. Ambiguous/malformed/foreign/raw-text syntax is not a proof.
 // Unlike the review classifier, '>' inside a quoted attribute never returns to DATA.
-export function rawHtmlTextInputs(value) {
+export function rawHtmlTextInputs(value,{attributes=false}={}) {
  if(value?.unknown||value?.ref||value?.htmlPartsLimited)return [];
  let state='DATA',tag='',attr='',closing=false,quote='',stack=[],opaque=false,declaration='',rawTag='',rawBuffer='';
  const raw=new Set(['script','style','textarea','title','xmp','iframe','noembed','noframes','plaintext','noscript','svg','math','template']);
  const voids=new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
  const complete=()=>{const name=tag.toLowerCase();if(!name||['noscript','svg','math','template','plaintext'].includes(name))return false;if(!closing&&raw.has(name)){stack.push(name);rawTag=name;rawBuffer='';state='RAW';return true;}if(closing){if(stack.pop()!==name)return false;}else if(!voids.has(name))stack.push(name);state='DATA';return stack.length<=32;};
  const found=[];
- for(const part of htmlParts(value)) {
+ const parts=htmlParts(value);
+ for(const [index,part] of parts.entries()) {
   if(part.text===undefined){
    const encoded=part.encoding?.join('|')==='&|<|>|"|\'';
-   if(!opaque&&!part.unknown&&part.trace?.length&&state==='DATA'&&!part.encoding?.length&&(!part.trace.some(l=>l.kind==='EXPRESS_PARAMS')||part.paramVerified))found.push(part);
+   const sourceKnown=!opaque&&!part.unknown&&part.trace?.length&&!part.encoding?.length&&(!part.trace.some(l=>l.kind==='EXPRESS_PARAMS')||part.paramVerified);
+   if(sourceKnown&&state==='DATA')found.push({...part,context:'HTML_TEXT'});
+   // Only complete, quoted inert attributes. Event/URL/style/srcdoc/foreign syntax
+   // remains review-only; HTML text encoding is never treated as a universal sanitizer.
+   const suffix=parts[index+1]?.text;
+   if(sourceKnown&&attributes&&state==='QUOTED'&&['title','alt','aria-label'].includes(attr.toLowerCase())
+      &&typeof suffix==='string'&&suffix.startsWith(quote)&&/^[\s>]/.test(suffix.slice(1)))
+     found.push({...part,context:'HTML_ATTRIBUTE',attribute:attr.toLowerCase()});
    if(!encoded||!['DATA','QUOTED'].includes(state))opaque=true;
    continue;
   }

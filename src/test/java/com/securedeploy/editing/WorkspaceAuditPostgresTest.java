@@ -12,7 +12,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 /** Independent PostgreSQL failure injection; never accepts an operating datasource. */
 @EnabledIfEnvironmentVariable(named="SECUREDEPLOY_RELEASE_PG_TEST",matches="1")
-@EnabledIfEnvironmentVariable(named="SECUREDEPLOY_RELEASE_PG_URL",matches="jdbc:postgresql://127\\.0\\.0\\.1:58550/(?:trust02_pgtest|release_cut01_pgtest)")
+@EnabledIfEnvironmentVariable(named="SECUREDEPLOY_RELEASE_PG_URL",matches="jdbc:postgresql://127\\.0\\.0\\.1:58550/(?:trust02_pgtest|release_cut01_pgtest|accuracy01_pgtest)")
 class WorkspaceAuditPostgresTest {
  @Test void commitAndDeletionEvidenceAreAtomicAndReceiptsSurviveSourceExpiry() throws Exception {
   String url=System.getenv("SECUREDEPLOY_RELEASE_PG_URL"),schema="trust02_audit_"+UUID.randomUUID().toString().replace("-","");

@@ -5,7 +5,7 @@ class Epic01HandlerIntegrationTest {
  ProjectStructure project(Map<String,String> source){return new ProjectStructure(Path.of("/not-an-executable-project"),source.entrySet().stream().map(e->new ProjectFile(Path.of(e.getKey()),e.getKey(),e.getKey().endsWith("json")?ProjectFileType.PACKAGE_JSON:ProjectFileType.TYPESCRIPT,e.getValue().lines().toList())).toList());}
  @Test void namespaceFindingSurvivesRestrictedWorkerValidationAndHasCalleeFileEvidence(){
   var p=project(Map.of("package.json","{\"type\":\"module\",\"dependencies\":{\"express\":\"4.21.2\"}}","entry.mjs","import express from 'express';import * as h from './handlers.mjs';const app=express();app.post('/lookup',h.lookup);","handlers.mjs","import {read} from './read.mjs';export function lookup(req,res){eval(read(req.body.code));}","read.mjs","export function read(input){return input;}"));
-  var r=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties()).analyze(p);assertEquals("ts-server-v58",r.analyzerVersion());
+  var r=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties()).analyze(p);assertEquals("ts-server-v59",r.analyzerVersion());
   var f=r.validatedFindings().stream().filter(x->x.ruleId().equals("JS_EVAL_INPUT_FLOW")).findFirst().orElseThrow();assertEquals("REVIEW_REQUIRED",f.priority().name());assertEquals("NOT_COMPARED",f.comparisonPolicy());
   assertTrue(f.evidence().get(0).flow().stream().anyMatch(l->l.filePath().equals("read.mjs")&&l.kind().equals("FUNCTION_PARAMETER")));
   assertTrue(r.nodeUses().stream().anyMatch(x->x.kind().equals("ENTRY_REGISTERED")&&x.location().filePath().equals("entry.mjs")));

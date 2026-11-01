@@ -70,20 +70,25 @@ public record ServerFlowFinding(String findingId, String sourceType, String anal
         if(snapshot.nodeUses()==null)return List.of();
         var groups=new LinkedHashMap<ServerAnalysisSnapshot.Location,List<ServerAnalysisSnapshot.Finding>>();
         for(var f:snapshot.findings()){
+            boolean text=f.flow().stream().anyMatch(l->l.kind().equals("HTML_OUTPUT_CONTEXT_HTML_TEXT"))
+                &&f.flow().stream().anyMatch(l->l.kind().equals("RAW_REQUEST_HTML_TEXT_NO_ENCODING"));
+            boolean attribute=f.flow().stream().anyMatch(l->l.kind().equals("HTML_OUTPUT_CONTEXT_HTML_ATTRIBUTE"))
+                &&f.flow().stream().anyMatch(l->l.kind().equals("RAW_REQUEST_HTML_ATTRIBUTE_NO_ENCODING"))
+                &&f.flow().stream().anyMatch(l->Set.of("QUOTED_INERT_ATTRIBUTE_TITLE","QUOTED_INERT_ATTRIBUTE_ALT","QUOTED_INERT_ATTRIBUTE_ARIA_LABEL").contains(l.kind()));
             if(!"HTTP_HTML_INPUT_FLOW".equals(f.ruleId())||!"CWE-79".equals(f.kind())||!"HIGH".equals(f.confidence())||!"REVIEW_REQUIRED".equals(f.disposition())
                 ||!Set.of("EXPRESS_QUERY","EXPRESS_BODY","EXPRESS_PARAMS","EXPRESS_HEADERS","NEXT_PAGES_QUERY","NEXT_PAGES_BODY","NEXT_PAGES_HEADERS","QUERY_PARAMETER","REQUEST_BODY","REQUEST_HEADER").contains(f.source().kind())
                 ||!"HTTP_HTML_RESPONSE".equals(f.sink().kind())||f.flow().stream().noneMatch(l->Set.of("EXPRESS_HANDLER","NEXT_ROUTE_HANDLER","NEXT_PAGES_HANDLER").contains(l.kind()))
                 ||f.flow().stream().noneMatch(l->l.kind().equals("HTML_RESPONSE_MIME_CONFIRMED"))
                 ||!f.defenses().isEmpty()||!f.flow().contains(f.source())||!f.flow().contains(f.sink())
-                ||f.flow().stream().noneMatch(l->l.kind().equals("HTML_OUTPUT_CONTEXT_HTML_TEXT"))
-                ||f.flow().stream().noneMatch(l->l.kind().equals("RAW_REQUEST_HTML_TEXT_NO_ENCODING")))continue;
-            if(snapshot.nodeUses().stream().noneMatch(u->u.ruleId().equals(f.ruleId())&&u.kind().equals("HTML_TEXT_INPUT_FLOW")&&u.location().equals(f.sink())&&u.trace().equals(f.flow())))continue;
+                ||!(text^attribute))continue;
+            String witness=attribute?"HTML_ATTRIBUTE_INPUT_FLOW":"HTML_TEXT_INPUT_FLOW";
+            if(snapshot.nodeUses().stream().noneMatch(u->u.ruleId().equals(f.ruleId())&&u.kind().equals(witness)&&u.location().equals(f.sink())&&u.trace().equals(f.flow())))continue;
             groups.computeIfAbsent(f.sink(),ignored->new ArrayList<>()).add(f);
         }
         return groups.values().stream().map(g->{var f=g.get(0);return new ServerFlowFinding(identity(snapshot.analyzerVersion(),f.ruleId(),f.sink()),"TYPESCRIPT_DATA_FLOW",snapshot.analyzerVersion(),f.ruleId(),RiskPriority.REVIEW_REQUIRED,"NOT_COMPARED",f.sink(),List.copyOf(g),List.of(f.sink()),
             "사용자가 전달한 값이 HTML로 해석될 위험이 있습니다",
-            "요청 입력이 등록된 HTTP Handler의 HTML 텍스트 위치까지 인코딩 없이 전달되는 정적 경로를 확인했습니다(CWE-79). 브라우저 스크립트 실행·운영 악용 가능성은 검증하지 않았습니다. "+f.message(),
-            f.recommendation(),List.of("Source·함수 전달·응답 Sink와 HTML Content-Type을 확인하세요.","해당 텍스트 문맥에 맞는 인코딩 또는 text/plain 응답을 검토하고 정상 구조를 보존하세요. JS·URL·CSS·속성은 별도 문맥 검토가 필요합니다.","소유한 통제 환경에서 무해한 HTML 마커가 요소가 아닌 텍스트가 되는지 DOM으로 확인하고 재검사하세요. 이 항목은 기존 점수·배포 판단·해결 건수와 별도입니다."));}).toList();
+            "요청 입력이 등록된 HTTP Handler의 HTML 텍스트 또는 지원하는 따옴표 속성까지 인코딩 없이 전달되는 정적 경로를 확인했습니다(CWE-79). 브라우저 스크립트 실행·운영 악용 가능성은 검증하지 않았습니다. "+f.message(),
+            f.recommendation(),List.of("Source·함수 전달·응답 Sink와 HTML Content-Type을 확인하세요.","해당 출력 문맥에 맞는 인코딩과 정상 구조 보존을 확인하세요. 속성 계약은 따옴표로 둘러싼 title·alt·aria-label에 한정하며 JS·URL·CSS·srcdoc는 별도 검토가 필요합니다.","소유한 통제 환경에서 무해한 마커가 새 요소·속성이 되지 않는지 DOM으로 확인하고 재검사하세요. 이 항목은 기존 점수·배포 판단·해결 건수와 별도입니다."));}).toList();
     }
 
     private static List<ServerFlowFinding> connectNode(ServerAnalysisSnapshot snapshot) {

@@ -1,0 +1,1 @@
+import express from 'express';import {render} from './presentation.mjs';import {records} from './records.mjs';const app=express();app.get('/card',(req,res)=>res.send(render(req.query.name)));app.use('/records',records);app.get('/health',(req,res)=>res.json({ready:true,count:12}));export default app;

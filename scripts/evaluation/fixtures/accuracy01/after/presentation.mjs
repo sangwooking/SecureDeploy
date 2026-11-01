@@ -1,0 +1,1 @@
+export function render(name){const safe=`${name}`.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#x27;");return `<main><h1 title="${safe}">Profile</h1></main>`;}

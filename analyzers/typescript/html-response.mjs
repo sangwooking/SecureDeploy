@@ -61,19 +61,19 @@ export function htmlResponses({loc,append,result,note,modules}) {
     if(proof&&definite&&!state.context.htmlOpaqueCall&&!state.context.unresolved&&!state.context.defenses?.length&&!state.context.checks?.some(t=>t.kind==='CONDITIONAL_CHECK')){
       const endpoint=state.context.htmlEndpoint??state.context.entry?.kind;
       if(typeof endpoint!=='string'||endpoint.length>200){note(state.mod,'HTML_ENDPOINT_PROOF_UNRESOLVED');return;}
-      const inputs=rawHtmlTextInputs(v).filter(p=>p.trace.some(t=>/^(?:EXPRESS_(?:QUERY|BODY|PARAMS|HEADERS)|NEXT_PAGES_(?:QUERY|BODY|HEADERS)|QUERY_PARAMETER|REQUEST_BODY|REQUEST_HEADER)$/.test(t.kind)));
+      const inputs=rawHtmlTextInputs(v,{attributes:true}).filter(p=>p.trace.some(t=>/^(?:EXPRESS_(?:QUERY|BODY|PARAMS|HEADERS)|NEXT_PAGES_(?:QUERY|BODY|HEADERS)|QUERY_PARAMETER|REQUEST_BODY|REQUEST_HEADER)$/.test(t.kind)));
       if(inputs.length){
         const source=inputs[0].trace.find(t=>/^(?:EXPRESS_(?:QUERY|BODY|PARAMS|HEADERS)|NEXT_PAGES_(?:QUERY|BODY|HEADERS)|QUERY_PARAMETER|REQUEST_BODY|REQUEST_HEADER)$/.test(t.kind));
-        const entry=state.context.entry,transfer=inputs[0].trace;
+        const entry=state.context.entry,transfer=inputs[0].trace,attribute=inputs[0].context==='HTML_ATTRIBUTE';
         if(transfer.length>10||(v.htmlFlow??[]).length>4){note(state.mod,'HTML_TRANSFER_PROOF_LIMIT');return;}
-        const flow=[...transfer,entry,...(state.context.checks??[]).filter(t=>t.kind==='EXPRESS_REGISTRATION').slice(0,1),...(v.htmlFlow??[]).slice(0,4),{...location,kind:'HTML_RESPONSE_MIME_CONFIRMED'},{...location,kind:'HTML_OUTPUT_CONTEXT_HTML_TEXT'},{...location,kind:'RAW_REQUEST_HTML_TEXT_NO_ENCODING'},location].filter(Boolean);
+        const flow=[...transfer,entry,...(state.context.checks??[]).filter(t=>t.kind==='EXPRESS_REGISTRATION').slice(0,1),...(v.htmlFlow??[]).slice(0,4),{...location,kind:'HTML_RESPONSE_MIME_CONFIRMED'},{...location,kind:attribute?'HTML_OUTPUT_CONTEXT_HTML_ATTRIBUTE':'HTML_OUTPUT_CONTEXT_HTML_TEXT'},...(attribute?[{...location,kind:'QUOTED_INERT_ATTRIBUTE_'+inputs[0].attribute.toUpperCase().replaceAll('-','_')}]:[]),{...location,kind:attribute?'RAW_REQUEST_HTML_ATTRIBUTE_NO_ENCODING':'RAW_REQUEST_HTML_TEXT_NO_ENCODING'},location].filter(Boolean);
         if(flow.length<=20&&!result.findings.some(f=>f.ruleId==='HTTP_HTML_INPUT_FLOW'&&JSON.stringify(f.sink)===JSON.stringify(location))){
-          const limits=['STATIC_HTML_TEXT_FLOW_NOT_BROWSER_EXPLOIT_PROOF','MIDDLEWARE_CSP_AND_RUNTIME_NOT_VERIFIED','HTML_ATTRIBUTES_SCRIPT_URL_CSS_NOT_COVERED'];
-          const witness={ruleId:'HTTP_HTML_INPUT_FLOW',kind:'HTML_TEXT_INPUT_FLOW',operation:endpoint,location,trace:flow,limitations:limits};
+          const limits=[attribute?'STATIC_QUOTED_INERT_ATTRIBUTE_FLOW_NOT_BROWSER_EXPLOIT_PROOF':'STATIC_HTML_TEXT_FLOW_NOT_BROWSER_EXPLOIT_PROOF','MIDDLEWARE_CSP_AND_RUNTIME_NOT_VERIFIED',attribute?'ONLY_QUOTED_TITLE_ALT_ARIA_LABEL_NOT_SCRIPT_URL_CSS_SRCDOC':'HTML_ATTRIBUTES_SCRIPT_URL_CSS_NOT_COVERED'];
+          const witness={ruleId:'HTTP_HTML_INPUT_FLOW',kind:attribute?'HTML_ATTRIBUTE_INPUT_FLOW':'HTML_TEXT_INPUT_FLOW',operation:endpoint,location,trace:flow,limitations:limits};
           append(result.nodeUses,witness,state.mod);if(!result.nodeUses.includes(witness)){note(state.mod,'HTML_PROOF_OUTPUT_BUDGET_EXCEEDED');return;}
           append(result.findings,{ruleId:'HTTP_HTML_INPUT_FLOW',kind:'CWE-79',confidence:'HIGH',disposition:'REVIEW_REQUIRED',source,sink:location,flow,defenses:[],limitations:limits,
-            message:'요청값이 인코딩되지 않은 HTML 텍스트 위치에 전달되는 정적 경로입니다. 등록 근거: '+endpoint,
-            recommendation:'해당 출력이 일반 텍스트라면 문맥에 맞는 HTML 텍스트 인코딩 또는 text/plain 응답을 검토하세요. HTML이 필요하면 검증된 정제 처리를 사용하고 정상 응답 구조를 보존하세요. 무해한 마커의 DOM 해석과 재검사를 확인하세요.'},state.mod);
+            message:attribute?'요청값이 따옴표로 둘러싼 '+inputs[0].attribute+' 속성에 인코딩 없이 전달됩니다. 등록 근거: '+endpoint:'요청값이 인코딩되지 않은 HTML 텍스트 위치에 전달되는 정적 경로입니다. 등록 근거: '+endpoint,
+            recommendation:attribute?'속성의 따옴표를 유지하고 &, <, >, 양쪽 따옴표를 출력 문맥에 맞게 인코딩하세요. JS·URL·CSS·srcdoc에는 이 방법을 일반화하지 마세요. 정상 속성값과 무해한 DOM 마커로 검증하고 재검사하세요.':'해당 출력이 일반 텍스트라면 문맥에 맞는 HTML 텍스트 인코딩 또는 text/plain 응답을 검토하세요. HTML이 필요하면 검증된 정제 처리를 사용하고 정상 응답 구조를 보존하세요. 무해한 마커의 DOM 해석과 재검사를 확인하세요.'},state.mod);
         }
       }
     }

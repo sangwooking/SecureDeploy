@@ -16,6 +16,7 @@ import {staticRoutes} from './static-routes.mjs';
 export function nodeServer(api) {
   const {ts,modules,limits,result,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames}=api;
   const loaded=new Map(), loading=new Set(), apps=[], routes=[];
+  const staticDependencies=new Map();
   const controlParents=new Map();
   const routeControls=new WeakMap();
   const controls=middlewareControl(api);
@@ -65,6 +66,7 @@ export function nodeServer(api) {
   const candidates=api.routeAudit?staticRoutes({...api,audit:api.routeAudit,controls,functionValue}):undefined;
   function findModule(mod,spec,mode='require') {
     const target=resolver.resolve(mod,spec,mode);
+    if(target){if(!staticDependencies.has(mod.filePath))staticDependencies.set(mod.filePath,new Set());staticDependencies.get(mod.filePath).add(target.filePath);}
     api.audit?.add('moduleLinks',{from:mod.filePath,to:target?.filePath??null,status:target?'TARGET_SELECTED':'UNRESOLVED_OR_UNSELECTED',mode});return target;
   }
   function dependency(mod,spec,mode='require') {
@@ -278,7 +280,8 @@ export function nodeServer(api) {
       trace:[...queries.flatMap(q=>q.identifierTrace??q.trace??[]).slice(0,16),loc(callback.target.node,callback.target.mod,'MONGO_CALLBACK_TARGET',callback.target)],
       limitations:['CONDITIONAL_CALLBACK_NOT_RUNTIME_COMPLETION','RESULT_AND_OWNERSHIP_POLICY_UNKNOWN','ERROR_BRANCH_NOT_SUCCESS_RESULT']},state.mod);
     const source=loc(node,state.mod,'MONGO_RESULT_ORIGIN',state.fn);
-    invoke(callback.target,[constant(null),{...unknown(),dbResultOrigins:[source]}],1,state.context,new Set(),true);
+    const element={...unknown(),dbResultOrigins:[source]};
+    invoke(callback.target,[constant(null),{...element,...(operation==='MONGODB_CURSOR_TOARRAY'?{dbCollection:true,dbElement:element}:{})}],state.depth+1,state.context,state.stack,true);
     note(state.mod,'MONGO_CALLBACK_RESULT_OPAQUE');
   }
   function queryExecution(queries,origin,node,state,operation,createdAt) {
@@ -298,6 +301,30 @@ export function nodeServer(api) {
   }
   function call(node,callee,receiver,args,state,global,callable) {
     if(!state.nodeMode)return;
+    // Conditional native toArray result only, never arbitrary objects named map.
+    // Summarize one possible element; do not infer cardinality, callback completion,
+    // captured-array mutations, authentication or object authorization.
+    const collectionMethod=ts.isPropertyAccessExpression(callee)?callee.name.text:undefined;
+    if(receiver?.dbCollection&&['map','forEach'].includes(collectionMethod)){
+      const cb=args[0];
+      const scope=new Set([state.mod.filePath,state.context.entry?.filePath,...(state.context.checks??[]).filter(l=>l.kind==='EXPRESS_REGISTRATION').map(l=>l.filePath)].filter(Boolean));
+      const queue=[...scope];for(let i=0;i<queue.length;i++){tick(state.mod);for(const f of staticDependencies.get(queue[i])??[])if(!scope.has(f)){scope.add(f);queue.push(f);}}
+      const mutation=[...modules.values()].some(m=>scope.has(m.filePath)&&/\b(?:prototype|defineProperty|defineProperties)\b|\.(?:map|forEach)\s*=|\[\s*['"](?:map|forEach)['"]\s*\]\s*=/.test(m.ast.text));
+      if(args.length!==1||!cb?.target||cb.unknown||cb.ref?.unknown||cb.target.node.asteriskToken||cb.target.node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword)||mutation){note(state.mod,'MONGO_COLLECTION_CALLBACK_UNRESOLVED');return {value:unknown()};}
+      const mapped=invoke(cb.target,[receiver.dbElement??{...unknown(),dbResultOrigins:receiver.dbResultOrigins??[]},unknown(),receiver],state.depth+1,state.context,state.stack,true);
+      append(result.nodeUses,{ruleId:'JS_MONGO_RESOURCE_ACCESS',kind:'MONGO_COLLECTION_ELEMENT_CALLBACK_POSSIBLE',operation:collectionMethod,
+        location:loc(node,state.mod,'MONGO_COLLECTION_ITERATION',state.fn),trace:receiver.dbResultOrigins??[],
+        limitations:['UNKNOWN_CARDINALITY_CONDITIONAL_ELEMENT_ONLY','CAPTURED_MUTATIONS_AND_COMPLETION_NOT_PROVEN','OBJECT_OWNERSHIP_AND_AUTHENTICATION_NOT_VERIFIED','STATIC_SERVER_MODULE_GRAPH_ONLY_RUNTIME_GLOBALS_UNVERIFIED']},state.mod);
+      note(state.mod,'MONGO_COLLECTION_CARDINALITY_AND_CAPTURED_MUTATIONS_UNKNOWN');
+      if(collectionMethod==='forEach')return {value:constant(undefined)};
+      const origins=[],seen=new Set();let remaining=80;
+      const scan=(v,depth=0)=>{tick(state.mod);if(!v||depth>3||--remaining<0||seen.has(v.ref??v))return;seen.add(v.ref??v);
+        for(const l of v.dbResultOrigins??[])if(origins.length<20&&!origins.some(o=>JSON.stringify(o)===JSON.stringify(l)))origins.push(l);
+        for(const child of v.ref?.properties?.values()??[])scan(child,depth+1);
+      };scan(mapped);
+      // A constant projection must not inherit the collection's discarded data.
+      return {value:{...unknown(),dbCollection:true,dbElement:mapped,dbResultOrigins:origins}};
+    }
     const classCall=classes.call(node,receiver,args,state,callable);if(classCall)return classCall;
     // A verified HTTP listener registration retains the app identity; it does
     // not execute requests, listen callbacks or application initialization.

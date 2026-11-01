@@ -1,0 +1,1 @@
+export function render(name){return `<main><h1 title="${name}">Profile</h1></main>`;}
