@@ -8,7 +8,7 @@ class WorkerV53IntegrationTest {
    "package.json","{\"dependencies\":{\"next\":\"15.3.0\"}}",
    "pages/api/check.ts","export {default} from '../../handler.ts';",
    "handler.ts","export default function check(req,res){eval(req.query.code);res.json({ok:true});}")));
-  assertEquals("ts-server-v55",r.analyzerVersion());
+  assertEquals("ts-server-v56",r.analyzerVersion());
   assertTrue(r.nodeUses().stream().anyMatch(n->n.operation().equals("NEXT_PAGES_DEFAULT_HANDLER")&&n.location().filePath().equals("pages/api/check.ts")));
   assertTrue(r.validatedFindings().stream().anyMatch(f->f.ruleId().equals("JS_EVAL_INPUT_FLOW")&&f.location().filePath().equals("handler.ts")));
   assertTrue(r.validatedFindings().stream().filter(f->f.ruleId().equals("JS_EVAL_INPUT_FLOW")).allMatch(f->f.riskExplanation().contains("Next.js Pages API 요청")));
@@ -18,7 +18,7 @@ class WorkerV53IntegrationTest {
   var r=new TypeScriptServerAnalyzer(new TypeScriptAnalysisProperties()).analyze(project(Map.of(
    "package.json","{\"type\":\"module\",\"dependencies\":{\"express\":\"4.21.2\"}}",
    "entry.mjs","import express from 'express';const app=express();app.get('/',(req,res)=>res.send(`<p>${req.query.name}</p>`));")));
-  assertEquals("ts-server-v55",r.analyzerVersion());
+  assertEquals("ts-server-v56",r.analyzerVersion());
   assertTrue(r.nodeUses().stream().anyMatch(n->n.kind().equals("HTML_RESPONSE_INPUT_CANDIDATE")&&!n.trace().isEmpty()));
   assertTrue(r.validatedFindings().stream().anyMatch(f->f.ruleId().equals("HTTP_HTML_INPUT_FLOW")));
  }

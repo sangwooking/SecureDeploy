@@ -1,8 +1,16 @@
 import type { AnalysisLocation, AuthorizationDetails } from '../types/serverAnalysis';
 
 const labels: Record<string,string> = {
+  READ_RESPONSE:'조회한 객체의 응답 전달',
+  REQUEST_KEYED_READ_OWNER_POLICY_REVIEW_REQUIRED:'요청 ID로 조회한 객체의 응답 · 공개 여부와 객체 권한 정책 확인 필요',
+  REQUEST_KEYED_DB_POLICY_REVIEW_REQUIRED:'요청 ID가 DB 접근에 연결됨 · 사용자별 허용 정책 확인 필요',
+  MONGODB_FINDONE:'MongoDB 단건 조회',MONGODB_FIND:'MongoDB 다건 조회',MONGODB_UPDATEONE:'MongoDB 단건 수정',MONGODB_DELETEONE:'MongoDB 단건 삭제',
+  REQUEST_PRINCIPAL_IS_NOT_VERIFIED_IDENTITY:'요청 사용자 참조만 확인했으며 인증 성공은 입증하지 않았습니다.',
+  DATABASE_POLICY_AND_MODEL_RELATIONS_UNKNOWN:'DB 권한 정책과 객체의 소유 관계는 확인하지 못했습니다.',
+  PRINCIPAL_FILTER_OBSERVATION_NOT_OWNERSHIP_PROOF:'사용자 참조를 쿼리에서 관찰해도 실제 소유권 제한을 보증하지 않습니다.',
+  RESPONSE_PROJECTION_UNRESOLVED:'응답의 동적 변환이나 직렬화는 추적하지 못했습니다.',
   BULK_WRITE:'QuerySet 일괄 수정',BULK_DELETE:'QuerySet 일괄 삭제',
-  OWNER_POLICY_REVIEW_REQUIRED:'요청 식별자로 변경·삭제 · 객체 소유권 정책의 추가 확인 필요',
+  OWNER_POLICY_REVIEW_REQUIRED:'요청 식별자로 정보 접근 · 객체별 권한 정책의 추가 확인 필요',
   REQUEST_KEYED_WRITE_OWNER_POLICY_REVIEW_REQUIRED:'요청 ID로 조회한 소유자 필드가 있는 객체의 변경 · 외부 권한 정책 확인 필요',
   UNKNOWN:'확인하지 못함', DECLARED_LOGIN_REQUIRED:'로그인 요구 선언 확인', DECLARED_STAFF_REQUIRED:'직원·관리자 역할 요구 선언 확인',
   DECLARED_PUBLIC:'공개 접근 선언 확인', NOT_ESTABLISHED:'객체별 접근 권한을 판단하지 못함',

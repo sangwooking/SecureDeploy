@@ -307,6 +307,43 @@ class AuthorizationEvidence:
             return self.attribute(node, self.value(node.value, env)) or self.V(unknown=True)
         return self.V(unknown=True)
 
+    def response(self, node, function, env):
+        """Observe only literal response projections, never execute a serializer/property.
+
+        Calls, comprehensions and arbitrary response aliases need separate contracts.
+        A read is an access requiring policy review, not proof of unauthorized access.
+        """
+        if self.active is None or function.unknown or function.symbol not in {
+            "django.http.JsonResponse", "django.http.response.JsonResponse", "rest_framework.response.Response"
+        }:
+            return
+        body = node.args[0] if node.args else next((k.value for k in node.keywords if k.arg == "data"), None)
+        seen = set()
+        def visit(expr, depth=0):
+            self.a.tick()
+            if expr is None or depth > 5:
+                return
+            if isinstance(expr, ast.Dict):
+                if any(k is None for k in expr.keys):
+                    self.add("limitations", "RESPONSE_PROJECTION_UNRESOLVED")
+                    return
+                for v in expr.values:
+                    visit(v, depth + 1)
+            elif isinstance(expr, (ast.List, ast.Tuple)):
+                for v in expr.elts:
+                    visit(v, depth + 1)
+            elif isinstance(expr, (ast.Attribute, ast.Name)):
+                base = expr
+                while isinstance(base, ast.Attribute):
+                    base = base.value
+                value = env.get(base.id) if isinstance(base, ast.Name) else None
+                if value and value.tag == "auth-resource" and value.symbol not in seen:
+                    seen.add(value.symbol)
+                    self.access(node, value.symbol, "READ_RESPONSE", list(value.defenses))
+            elif isinstance(expr, ast.Call):
+                self.add("limitations", "RESPONSE_PROJECTION_UNRESOLVED")
+        visit(body)
+
     def helper_after(self, key, args, keywords, caller):
         if self.active is None or key not in self.a.functions:
             return
@@ -399,6 +436,8 @@ class AuthorizationEvidence:
         constrained = bool(kinds & {"USER_FOREIGN_KEY_QUERY_SCOPE", "OWNER_REJECTION_GUARD", "ROLE_REJECTION_GUARD"}) or self.active["authenticationStatus"] == "DECLARED_STAFF_REQUIRED"
         if operation in {"WRITE", "DELETE", "BULK_WRITE", "BULK_DELETE"} and resource["fields"] and resource["identifiers"] and not unresolved and not constrained:
             conclusion = "REQUEST_KEYED_WRITE_OWNER_POLICY_REVIEW_REQUIRED"
+        if operation == "READ_RESPONSE" and resource["fields"] and resource["identifiers"] and not unresolved and not constrained:
+            conclusion = "REQUEST_KEYED_READ_OWNER_POLICY_REVIEW_REQUIRED"
         if inverse and operation in {"WRITE", "DELETE", "BULK_WRITE", "BULK_DELETE"} and resource["identifiers"] and not unresolved and not constrained:
             conclusion = "INVERTED_OWNER_REJECTION_CANDIDATE"
         if unresolved:
@@ -419,4 +458,5 @@ class AuthorizationEvidence:
         if not self.active:
             return
         conclusions = {r["conclusion"] for r in self.active["accesses"]}
-        self.active["objectAuthorizationStatus"] = "RISK_LOGIC_CANDIDATE" if "INVERTED_OWNER_REJECTION_CANDIDATE" in conclusions else "PROTECTION_EVIDENCE_NOT_FULL_ASSURANCE" if conclusions & {"USER_SCOPE_QUERY_EVIDENCE", "OWNER_GUARD_EVIDENCE", "ROLE_GUARD_EVIDENCE"} else "OWNER_POLICY_REVIEW_REQUIRED" if "REQUEST_KEYED_WRITE_OWNER_POLICY_REVIEW_REQUIRED" in conclusions else "NOT_ESTABLISHED" if conclusions else "NO_RESOURCE_ACCESS_TRACED"
+        # A protected query/other object cannot hide an unprotected effect in this endpoint.
+        self.active["objectAuthorizationStatus"] = "RISK_LOGIC_CANDIDATE" if "INVERTED_OWNER_REJECTION_CANDIDATE" in conclusions else "OWNER_POLICY_REVIEW_REQUIRED" if conclusions & {"REQUEST_KEYED_WRITE_OWNER_POLICY_REVIEW_REQUIRED", "REQUEST_KEYED_READ_OWNER_POLICY_REVIEW_REQUIRED"} else "PROTECTION_EVIDENCE_NOT_FULL_ASSURANCE" if conclusions & {"USER_SCOPE_QUERY_EVIDENCE", "OWNER_GUARD_EVIDENCE", "ROLE_GUARD_EVIDENCE"} else "NOT_ESTABLISHED" if conclusions else "NO_RESOURCE_ACCESS_TRACED"

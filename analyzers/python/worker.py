@@ -33,7 +33,7 @@ _service_module = importlib.util.module_from_spec(_service_spec)
 _service_spec.loader.exec_module(_service_module)
 ServiceEvidence = _service_module.ServiceEvidence
 
-VERSION = "py-django-v10"
+VERSION = "py-django-v11"
 MAX_NODES = 60000
 MAX_STEPS = 30000
 MAX_DEPTH = 5
@@ -906,6 +906,7 @@ class Analyzer:
             if token_value.tag in {'token-key-env','token-key-env-fallback'}:
                 token_value = replace(token_value, exposures=(self.loc(node,'ENVIRONMENT_VALUE_UNVERIFIED'),))
             return token_value
+        self.authorization.response(node, function, env)
         exposure_value = self.exposure.call(node, function, base, name, args, keywords)
         if exposure_value is not None:
             return exposure_value

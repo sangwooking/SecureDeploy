@@ -161,6 +161,8 @@ export function nodeServer(api) {
     }finally{loading.delete(mod);}
   }
   function property(base,key,node,state) {
+    // Preserve a request principal observation across fields; never establish identity.
+    if(base.principal)return {...unknown(),principal:true,principalTrace:[...(base.principalTrace??[]),loc(node,state.mod,'PRINCIPAL_FIELD_UNVERIFIED',state.fn)].slice(0,6)};
     if(base.htmlParamsRoot)return {...(fields.read(base,key,node,state)??base),htmlParamsRoot:false,htmlParamLeaf:true,htmlParamVerified:state.context.htmlParamNames?.includes(key)===true};
     if(base.htmlParamLeaf)return {...(fields.read(base,key,node,state)??base),htmlParamVerified:false};
     const classProperty=classes.property(base,key,node,state);if(classProperty)return classProperty;
@@ -196,7 +198,8 @@ export function nodeServer(api) {
         htmlParamsRoot:key==='params',fieldOrigin:fields.root(base,key,node,state),fieldValidationUncertain:base.fieldValidationUncertain});
       if(['user','session'].includes(key)){
         if(key==='session')state.webSessionRead=true;
-        state.context.checks.push(loc(node,state.mod,'PRINCIPAL_CONTEXT_UNVERIFIED',state.fn));return {...unknown(),principal:true};
+        const principal=loc(node,state.mod,'PRINCIPAL_CONTEXT_UNVERIFIED',state.fn);
+        state.context.checks.push(principal);return {...unknown(),principal:true,principalTrace:[principal]};
       }
       return unknown();
     }
@@ -243,8 +246,29 @@ export function nodeServer(api) {
       message:ruleId==='JS_SHELL_COMMAND_INPUT_FLOW'?'사용자가 보낸 값이 서버의 shell 명령 문자열에 전달됩니다.':ruleId==='JS_EVAL_INPUT_FLOW'?'사용자가 보낸 값이 서버의 코드 실행에 전달될 수 있습니다.':'사용자가 보낸 값이 데이터베이스의 실행 문자열에 들어갈 수 있습니다.',
       recommendation:ruleId==='JS_SHELL_COMMAND_INPUT_FLOW'?'요청값을 shell 명령에 결합하지 마세요. 필요한 작업만 서버의 고정된 실행 파일과 shell을 사용하지 않는 인자 배열로 제공하고 입력 형식·허용 작업·실행 권한을 검증하세요. 인자 주입과 운영 환경은 별도 확인이 필요합니다.':ruleId==='JS_EVAL_INPUT_FLOW'?'입력값을 코드로 실행하지 말고 필요한 숫자 변환이나 스키마 검증을 사용하세요.':ruleId==='JS_SEQUELIZE_SQL_INPUT_FLOW'?'SQL 문장을 고정하고 사용자 값은 지원 버전의 bind 또는 replacements 매개변수로 분리하세요. 이미 입력이 결합된 SQL에 바인딩 옵션을 추가하는 것만으로 해결되지 않습니다. 식별자는 서버의 고정된 허용 목록으로 제한하고 설치 버전·방언·정상 동작을 로컬에서 검증하세요.':'$where 문자열 결합을 피하고 일반적인 값 비교 쿼리와 입력 타입 검증을 사용하세요.'},state.mod);
   }
+  function authorizationQuery(query,origin,node,state,operation) {
+      if(!state.context.setup){
+        const identifierInputs=[],principalReferences=[],seen=new Set();let visited=0;
+        const unique=(list,item)=>{if(list.length<40&&!list.some(x=>JSON.stringify(x)===JSON.stringify(item)))list.push(item);};
+        const scan=(v,depth=0)=>{
+          tick(state.mod);if(!v||depth>3||++visited>100||seen.has(v.ref??v))return;
+          seen.add(v.ref??v);
+          for(const l of v.trace??[])if(/^(EXPRESS_(PARAMS|QUERY|BODY)|NEXT_PAGES_(QUERY|BODY))$/.test(l.kind))unique(identifierInputs,l);
+          for(const l of v.principalTrace??[])unique(principalReferences,l);
+          if(v.ref?.properties)for(const child of v.ref.properties.values())scan(child,depth+1);
+        };scan(query);
+        const location=loc(node,state.mod,'MONGO_RESOURCE_ACCESS',state.fn);
+        const details=state.context.details??={authenticationStatus:'UNKNOWN',objectAuthorizationStatus:'NOT_ESTABLISHED',permissionSource:'UNKNOWN',permissionDeclarations:[],principalReferences:[],ownershipComparisons:[],accesses:[],limitations:['AUTH_MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED','REQUEST_PRINCIPAL_IS_NOT_VERIFIED_IDENTITY','DATABASE_POLICY_AND_MODEL_RELATIONS_UNKNOWN']};
+        for(const l of principalReferences)unique(details.principalReferences,l);
+        if(details.accesses.length<40)details.accesses.push({operation,location,resourceLocation:origin?.at(-1)??location,identifierInputs,checks:principalReferences,
+          conclusion:identifierInputs.length?'REQUEST_KEYED_DB_POLICY_REVIEW_REQUIRED':'OBJECT_AUTHORIZATION_NOT_ESTABLISHED',
+          limitations:['DATABASE_POLICY_AND_MODEL_RELATIONS_UNKNOWN','PRINCIPAL_FILTER_OBSERVATION_NOT_OWNERSHIP_PROOF']});
+        if(identifierInputs.length)details.objectAuthorizationStatus='OWNER_POLICY_REVIEW_REQUIRED';
+      }
+  }
   function queryExecution(queries,origin,node,state,operation,createdAt) {
     for(const query of queries){
+      authorizationQuery(query,origin,node,state,operation);
       const where=query.ref?.properties.get('$where');
       if(!where&&!query.unknown&&!query.ref?.unknown){
         const location=loc(node,state.mod,'MONGO_RESOURCE_ACCESS',state.fn);
@@ -401,6 +425,14 @@ export function nodeServer(api) {
     }
     if(receiver?.tag==='mongo-db'&&validMongo(receiver)&&method==='collection'&&literal(args[0])){
       const collection=object('mongo-collection');collection.ref.originParent=receiver.ref;collection.ref.driverMajor=receiver.ref.driverMajor;collection.ref.origin=[...(receiver.ref.origin??[]),loc(node,state.mod,'MONGODB_COLLECTION_ORIGIN',state.fn)].slice(-4);return {value:collection};
+    }
+    // Bounded native-driver mutation observation only. No query result or permission success is inferred.
+    if(receiver?.tag==='mongo-collection'&&validMongo(receiver)&&['updateOne','updateMany','deleteOne','deleteMany','findOneAndUpdate','findOneAndDelete'].includes(method)) {
+      if(!state.context.setup){
+        authorizationQuery(args[0]??unknown(),receiver.ref.origin,node,state,'MONGODB_'+method.toUpperCase());
+        state.context.resources.push(loc(node,state.mod,'MONGO_RESOURCE_ACCESS',state.fn));
+      }
+      return {value:unknown()};
     }
     if(receiver?.tag==='mongo-collection'&&validMongo(receiver)&&['find','findOne','countDocuments'].includes(method)) {
       const queries=(args[0]?.nodeAlternatives??[args[0]??unknown()]).slice(0,4);
