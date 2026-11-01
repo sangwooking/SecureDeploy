@@ -17,7 +17,7 @@ export function rawHtmlTextInputs(value,{attributes=false}={}) {
    // Only complete, quoted inert attributes. Event/URL/style/srcdoc/foreign syntax
    // remains review-only; HTML text encoding is never treated as a universal sanitizer.
    const suffix=parts[index+1]?.text;
-   if(sourceKnown&&attributes&&state==='QUOTED'&&['title','alt','aria-label'].includes(attr.toLowerCase())
+   if(sourceKnown&&attributes&&state==='QUOTED'&&!raw.has(tag.toLowerCase())&&['title','alt','aria-label'].includes(attr.toLowerCase())
       &&typeof suffix==='string'&&suffix.startsWith(quote)&&/^[\s>]/.test(suffix.slice(1)))
      found.push({...part,context:'HTML_ATTRIBUTE',attribute:attr.toLowerCase()});
    if(!encoded||!['DATA','QUOTED'].includes(state))opaque=true;
