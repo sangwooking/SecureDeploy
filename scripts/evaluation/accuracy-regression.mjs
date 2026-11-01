@@ -11,8 +11,10 @@ export function compareCase(before,after) {
   if(count(before,key)!==null && (count(after,key)===null||count(after,key)<count(before,key)))fail('COVERAGE_LOSS_'+key.toUpperCase());
  }
  if(before.truth===null&&after.classification!=='UNKNOWN')fail('UNKNOWN_PROMOTION');
- if(after.unexpectedUnknownPromotion)fail('UNKNOWN_FINDING_PROMOTION');
+ const newUnknownReview=after.unexpectedUnknownPromotion&&!before.unexpectedUnknownPromotion;
+ if(newUnknownReview&&(after.classification!=='UNKNOWN'||!after.findings.length||!after.findings.every(f=>f.disposition==='REVIEW_REQUIRED'&&proven(f))))fail('UNKNOWN_FINDING_PROMOTION');
  if(before.truth===true && !['TP','FN'].includes(after.classification))fail('VULNERABLE_CASE_ABANDONED');
+ if(['TN','FP'].includes(before.classification)&&after.classification==='UNKNOWN')fail('KNOWN_NORMAL_CASE_ABANDONED');
  if(before.classification==='TP' && after.classification!=='TP')fail('TRUE_POSITIVE_LOST');
  if(before.truth===false && after.classification!=='TN' && before.classification==='TN')fail('SAFE_CASE_REGRESSION');
  if(before.classification==='FN'&&after.classification==='TP'&&!after.findings.some(proven))fail('NEW_TP_WITHOUT_FLOW_EVIDENCE');
@@ -20,8 +22,8 @@ export function compareCase(before,after) {
   if(!after.findings.some(g=>g.ruleId===f.ruleId&&location(g.source)===location(f.source)&&location(g.sink)===location(f.sink)))fail('ESTABLISHED_SOURCE_SINK_LOST');
  }
  if(before.classification==='FP'&&after.classification==='TN'&&!(after.protections?.length))fail('FP_HIDDEN_WITHOUT_PROTECTION_EVIDENCE');
- if(before.protections?.length && !after.protections?.length)fail('PROTECTION_EVIDENCE_LOST');
- return {id:before.id,before:before.classification,after:after.classification,improved:failures.length===0&&((before.classification==='FN'&&after.classification==='TP')||(before.classification==='FP'&&after.classification==='TN')),passed:!failures.length,failures};
+ for(const proof of before.protections??[])if(!(after.protections??[]).some(p=>location(p.location??p)===location(proof.location??proof)))fail('PROTECTION_EVIDENCE_LOST');
+ return {newUnknownReviewRetainedAsUnknown:!!newUnknownReview,id:before.id,before:before.classification,after:after.classification,improved:failures.length===0&&((before.classification==='FN'&&after.classification==='TP')||(before.classification==='FP'&&after.classification==='TN')),passed:!failures.length,failures};
 }
 export function compareCohort(before,after) {
  const ids=new Set(before.map(x=>x.id));if(ids.size!==before.length||new Set(after.map(x=>x.id)).size!==after.length)throw Error('DUPLICATE_CASE_ID');

@@ -8,7 +8,7 @@ import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 
 const repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
-const output=process.argv[2],baseline=process.argv[3];
+const output=process.argv[2],baseline=process.argv[3],candidate=process.argv[4]??repo;
 if(!output||!baseline)throw Error('Usage: node scripts/evaluation/release-v55-gate.mjs OUTPUT_DIRECTORY BASELINE_ROOT');
 fs.mkdirSync(output,{recursive:true});
 const git=(...args)=>execFileSync('git',['-C',repo,...args],{encoding:'utf8'}).trim();
@@ -35,7 +35,7 @@ const jobs=[
 const results=[];
 for(const [name,stem,historical]of jobs){
  const python=name.startsWith('PY'),versions=[];
- for(const [label,root]of [['baseline',baseline],['candidate',repo]]){
+ for(const [label,root]of [['baseline',baseline],['candidate',candidate]]){
   const script=python?stem+'.py':stem+'-evaluate.mjs',target=path.resolve(output,name+'-'+label+'.json');
   execFileSync(python?'python3':process.execPath,[path.join(repo,'scripts/evaluation',script),path.join(root,python?'analyzers/python/worker.py':'analyzers/typescript/analyzer.mjs'),target],{cwd:repo,timeout:60000});
   const raw=JSON.parse(fs.readFileSync(target));if(label==='baseline')assert.deepEqual(raw.counts,historical,name+' baseline changed');

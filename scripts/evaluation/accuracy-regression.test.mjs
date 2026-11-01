@@ -10,3 +10,7 @@ test('new TP needs HIGH source/sink flow',()=>{const a=row('TP');a.findings=[{ru
 test('changed original or oracle cannot be blessed',()=>{const a=row('TP');a.inputHash='changed';assert.equal(compareCase(row(),a).passed,false);a.inputHash='frozen-hash';a.truth=false;assert.equal(compareCase(row(),a).passed,false);});
 test('engine/finding ID change alone cannot erase established flow',()=>{const b=row('TP'),a=row('TP');a.findings=[{...flow,id:'new',engine:'v60'}];assert.equal(compareCase(b,a).passed,true);a.findings=[];assert.equal(compareCase(b,a).passed,false);});
 test('case removal and duplication fail closed',()=>{assert.throws(()=>compareCohort([row()],[]));assert.throws(()=>compareCohort([row(),row()],[row(),row()]));});
+
+test('evidence-backed review on unknown stays UNKNOWN, never counted TP',()=>{const b=row('UNKNOWN',null),a=row('UNKNOWN',null);a.unexpectedUnknownPromotion=true;a.findings=[{...flow,disposition:'REVIEW_REQUIRED'}];assert.equal(compareCase(b,a).passed,true);assert.equal(compareCase(b,a).improved,false);a.findings[0].disposition='CONFIRMED';assert.equal(compareCase(b,a).passed,false);});
+
+test('normal case cannot disappear into UNKNOWN and binding proofs cannot be discarded',()=>{assert.equal(compareCase(row('TN',false),row('UNKNOWN',false)).passed,false);const b=row('TN',false),a=row('TN',false);b.protections=[{kind:'VALUE_BINDING',filePath:'a',line:4},{kind:'NUMERIC_GUARD',filePath:'a',line:1}];a.protections=[b.protections[1]];assert.equal(compareCase(b,a).passed,false);});
