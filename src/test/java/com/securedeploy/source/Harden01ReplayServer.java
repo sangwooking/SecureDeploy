@@ -17,7 +17,9 @@ public final class Harden01ReplayServer {
     public static class Replay {
         @Bean @Primary VulnerabilityDataSource capturedOfficialFeed() throws Exception {
             var json=new ObjectMapper();
-            var feed=json.readTree(Path.of(System.getenv("HARDEN01_EVAL_ROOT"),"official-feed.json").toFile());
+            String capture=System.getenv().getOrDefault("HARDEN01_OSV_CAPTURE","official-feed.json");
+            if(!Set.of("official-feed.json","official-feed-expanded.json").contains(capture))throw new IllegalArgumentException("CONTROLLED_CAPTURE_ONLY");
+            var feed=json.readTree(Path.of(System.getenv("HARDEN01_EVAL_ROOT"),capture).toFile());
             var mapper=new OsvAdvisoryMapper();
             return components->{
                 var groups=new LinkedHashMap<String,List<DependencyComponent>>();
@@ -31,6 +33,14 @@ public final class Harden01ReplayServer {
                     if(valid)complete.add(row.getKey());
                 }
                 boolean incomplete=complete.size()!=groups.size();
+                if(incomplete)try {
+                    var missing=groups.keySet().stream().filter(id->!complete.contains(id)).sorted().toList();
+                    synchronized(Harden01ReplayServer.class){
+                        var file=Path.of(System.getenv("HARDEN01_EVAL_ROOT"),"missing-osv-identities-private.json");
+                        var collected=new TreeSet<String>();if(Files.exists(file))for(var id:json.readTree(file.toFile()))collected.add(id.asText());
+                        collected.addAll(missing);Files.writeString(file,json.writeValueAsString(collected));
+                    }
+                }catch(Exception capture){throw new IllegalStateException("CONTROLLED_CAPTURE_FAILED");}
                 return new VulnerabilityDataSource.LookupResult(findings,complete,incomplete,incomplete?List.of("OFFICIAL_CAPTURE_MISSING_QUERY"):List.of());
             };
         }
