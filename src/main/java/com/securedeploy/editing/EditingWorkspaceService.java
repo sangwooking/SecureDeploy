@@ -73,7 +73,8 @@ public class EditingWorkspaceService {
         }
         void clear() { try { files.forEach(StoredFile::clear); patches.clear(); } finally { lease.close(); } }
     }
-    private final Map<String, State> states = new HashMap<>();
+    // Bounded access-order cache; the vault, not this map, owns durable workspace lifetime.
+    private final Map<String, State> states = new LinkedHashMap<>(8, .75f, true);
     private final Set<Long> creating = new HashSet<>();
     private final ReviewAccessService reviews;
     private final CurrentUserService users;
@@ -130,7 +131,7 @@ public class EditingWorkspaceService {
             restore(user);
             if (creating.contains(user) || states.values().stream().anyMatch(s -> s.user == user))
                 throw new EditingConflictException("WORKSPACE_ALREADY_OPEN", "진행 중인 수정 작업이 있어요. 기존 작업을 확인하고 이어서 진행해 주세요.");
-            if (states.size() + creating.size() >= 4) throw fail(HttpStatus.TOO_MANY_REQUESTS, "작업 공간이 가득 찼습니다. 잠시 후 다시 시도해 주세요.");
+            reserveCacheSlot();
             creating.add(user);
         }
         List<SourceArchive.Entry> entries = null;
@@ -600,8 +601,27 @@ public class EditingWorkspaceService {
         if(review.getProject().getId()!=s.project())throw fail(HttpStatus.NOT_FOUND,"작업 공간에 접근할 수 없습니다.");
         if(cached!=null&&cached.id.equals(s.id())&&cached.storeVersion==value.version())return;
         if(cached!=null){states.remove(cached.id);cached.clear();}
-        if(states.size()>=4)throw fail(HttpStatus.TOO_MANY_REQUESTS,"작업 공간이 가득 찼습니다.");
+        reserveCacheSlot();
         var next=new State(value,lifecycle.work(s.project()));states.put(next.id,next);
+    }
+    private void reserveCacheSlot() {
+        // Called only under this service monitor. Each acquisition in flight reserves one slot.
+        while (states.size() + creating.size() >= 4) {
+            State victim = null;
+            if (vault != null && vault.enabled()) {
+                for (var candidate : states.values()) {
+                    candidate.patches.values().forEach(p -> refreshPatch(candidate,p));
+                    // Model plans are memory-only: do not discard reviewable or in-flight proposals.
+                    boolean pinned = candidate.patches.values().stream().anyMatch(p ->
+                            Set.of("APPROVAL_REQUIRED","GENERATING","PROPOSED").contains(p.state));
+                    if (candidate.storeVersion > 0 && !pinned) { victim = candidate; break; }
+                }
+            }
+            if (victim == null) throw fail(HttpStatus.TOO_MANY_REQUESTS,
+                    "동시 처리 또는 미승인 제안 한도에 도달했습니다. 기존 작업을 보존했으며 진행 중인 요청이나 제안을 확인해 주세요.");
+            states.remove(victim.id);
+            victim.clear(); // Zero memory/release cache lease only. Never delete or rewrite the vault row.
+        }
     }
     private synchronized void expire() {
         var iterator = states.values().iterator();

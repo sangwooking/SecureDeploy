@@ -39,6 +39,27 @@ class WorkspaceVaultTest {
     EditingWorkspaceService.Workspace open(EditingWorkspaceService s)throws Exception {
         return s.create(1,new MockMultipartFile("file","source.zip","application/zip",SourceArchive.zip(List.of(new SourceArchive.Entry("src/a.ts","const original = 1;\n".getBytes(StandardCharsets.UTF_8),false,0100644)))));
     }
+    @Test void sixOwnersCanRotateBoundedCacheWithoutDeletingDurableDraftOrApproval()throws Exception {
+        for(long id=2;id<=6;id++)jdbc.update("insert into users values(?)",id);
+        var service=service();var workspaces=new ArrayList<EditingWorkspaceService.Workspace>();
+        for(long id=1;id<=6;id++){
+            user.set(id);var w=open(service);var file=w.files().get(0);
+            var saved=service.save(w.id(),file.id(),new EditingWorkspaceService.Change(1,file.originalHash(),"const owner = "+id+";\n"),false);
+            service.download(w.id(),"zip",new EditingWorkspaceService.Approval(2,saved.changedFileIds(),true));
+            workspaces.add(saved);
+        }
+        assertEquals(6,jdbc.queryForObject("select count(*) from editing_workspace_v1",Integer.class));
+        for(int cycle=0;cycle<2;cycle++)for(int index=0;index<6;index++){
+            user.set(index+1);var w=workspaces.get(index);var restored=service.get(w.id());
+            assertEquals(2,restored.revision());assertEquals(1,restored.exports().size());
+            assertEquals("const owner = "+(index+1)+";\n",service.content(w.id(),w.files().get(0).id()).text());
+            assertThrows(EditingConflictException.class,()->service.save(w.id(),w.files().get(0).id(),new EditingWorkspaceService.Change(1,w.files().get(0).originalHash(),"stale"),false));
+            var foreign=workspaces.get((index+1)%6).id();assertThrows(RuntimeException.class,()->service.get(foreign));
+        }
+        service.shutdown();var restarted=service();
+        for(int index=0;index<6;index++){user.set(index+1);assertEquals(2,restarted.get(workspaces.get(index).id()).revision());}
+        assertEquals(6,jdbc.queryForObject("select count(*) from editing_workspace_v1",Integer.class));
+    }
     @Test void restartPreservesRevisionOwnershipOriginalHashDraftAndExportApproval()throws Exception {
         var first=service();var w=open(first);var f=w.files().get(0);
         var saved=first.save(w.id(),f.id(),new EditingWorkspaceService.Change(1,f.originalHash(),"const changed = 2;\n"),false);
@@ -60,6 +81,20 @@ class WorkspaceVaultTest {
         var row=vault().owner(1,now.get()).orElseThrow();
         vault().put(row.snapshot(),row.version());
         assertThrows(EditingConflictException.class,()->vault().put(row.snapshot(),row.version()));
+    }
+    @Test void simultaneousTabsHaveExactlyOneRevisionWinner()throws Exception {
+        var first=service();var w=open(first);var second=service();second.get(w.id());var f=w.files().get(0);
+        var gate=new java.util.concurrent.CountDownLatch(1);var pool=java.util.concurrent.Executors.newFixedThreadPool(2);
+        try {
+            var tasks=new ArrayList<java.util.concurrent.Future<String>>();
+            for(var pair:List.of(Map.entry(first,"A"),Map.entry(second,"B")))tasks.add(pool.submit(()->{
+                gate.await();try{pair.getKey().save(w.id(),f.id(),new EditingWorkspaceService.Change(1,f.originalHash(),"const winner = '"+pair.getValue()+"';\n"),false);return "SAVED";}
+                catch(EditingConflictException conflict){return "CONFLICT";}
+            }));
+            gate.countDown();var results=new ArrayList<String>();for(var task:tasks)results.add(task.get(10,java.util.concurrent.TimeUnit.SECONDS));
+            assertEquals(1,results.stream().filter("SAVED"::equals).count());assertEquals(1,results.stream().filter("CONFLICT"::equals).count());
+            assertEquals(2,first.get(w.id()).revision());assertEquals(first.content(w.id(),f.id()).text(),second.content(w.id(),f.id()).text());
+        }finally{pool.shutdownNow();}
     }
     @Test void ciphertextTamperingMetadataTamperingAndWrongOrMissingKeyFailClosed()throws Exception {
         var s=service();var w=open(s);byte[] payload=jdbc.queryForObject("select payload from editing_workspace_v1",byte[].class);
