@@ -1,0 +1,235 @@
+{
+  "scope": "Preimplementation owned static startup oracles, not external or blind",
+  "cases": [
+    {
+      "id": "direct",
+      "expected": "DIRECT",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();app.get('/profile',(req,res)=>res.json({ready:true}));"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "development"
+    },
+    {
+      "id": "helper",
+      "expected": "DIRECT",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();function install(server){server.get('/profile',(req,res)=>res.json({ready:true}));}install(app);"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "development"
+    },
+    {
+      "id": "then",
+      "expected": "CONDITIONAL",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();Promise.resolve().then(()=>{app.get('/profile',(req,res)=>res.json({ready:true}));});"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "development"
+    },
+    {
+      "id": "async-promise",
+      "expected": "CONDITIONAL",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();async function prepare(){return 1;}prepare().then(()=>{app.get('/profile',(req,res)=>res.json({ready:true}));});"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "development"
+    },
+    {
+      "id": "await-helper",
+      "expected": "CONDITIONAL",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();function attach(server){server.get('/profile',(req,res)=>res.json({ready:true}));}async function boot(){await Promise.resolve(1);attach(app);}boot();"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "final-not-blind"
+    },
+    {
+      "id": "renamed",
+      "expected": "CONDITIONAL",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();const alias=app;async function warm(){return true;}function wire(server){server.post('/profile',(req,res)=>res.json({ready:true}));}warm().then(()=>wire(alias));"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "final-not-blind"
+    },
+    {
+      "id": "next-middleware",
+      "expected": "CONDITIONAL",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();app.use((req,res,next)=>next());Promise.resolve().then(()=>{app.get('/profile',(req,res)=>res.json({ready:true}));});"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "final-not-blind"
+    },
+    {
+      "id": "error-only",
+      "expected": "UNREACHABLE",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();Promise.reject('own fixture').then(()=>{app.get('/profile',(req,res)=>res.json({ready:true}));});"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "final-not-blind"
+    },
+    {
+      "id": "catch-only",
+      "expected": "UNREACHABLE",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();Promise.resolve().catch(()=>{app.get('/profile',(req,res)=>res.json({ready:true}));});"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "final-not-blind"
+    },
+    {
+      "id": "uncalled",
+      "expected": "UNREACHABLE",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();function unused(){app.get('/profile',(req,res)=>res.json({ready:true}));}"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "development"
+    },
+    {
+      "id": "test-only",
+      "expected": "TEST_ONLY",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();if(process.env.NODE_ENV==='test'){Promise.resolve().then(()=>{app.get('/profile',(req,res)=>res.json({ready:true}));});}"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "final-not-blind"
+    },
+    {
+      "id": "thenable",
+      "expected": "UNKNOWN",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();const p={then:external};p.then(()=>{app.get('/profile',(req,res)=>res.json({ready:true}));});"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "development"
+    },
+    {
+      "id": "changed-function",
+      "expected": "UNKNOWN",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();async function prep(){return 1;}prep=other;prep().then(()=>{app.get('/profile',(req,res)=>res.json({ready:true}));});"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "final-not-blind"
+    },
+    {
+      "id": "prototype",
+      "expected": "UNKNOWN",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();Promise.prototype.then=other;Promise.resolve().then(()=>{app.get('/profile',(req,res)=>res.json({ready:true}));});"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "development"
+    },
+    {
+      "id": "dynamic",
+      "expected": "UNKNOWN",
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();const fn=handlers[process.env.CHOOSE];fn().then(()=>{app.get('/profile',(req,res)=>res.json({ready:true}));});"
+        }
+      ],
+      "oracle": "Independently authored static registration reachability, not runtime exposure",
+      "cohort": "final-not-blind"
+    },
+    {
+      "id": "service-concat",
+      "expected": "CONDITIONAL",
+      "truth": true,
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();const install=require('./registration');Promise.resolve().then(()=>install(app));"
+        },
+        {
+          "filePath": "registration.js",
+          "content": "const handler=require('./handler');module.exports=function(server){server.post('/find',handler);};"
+        },
+        {
+          "filePath": "handler.js",
+          "content": "const service=require('./service');module.exports=function(req,res){service(req.body.key);res.json({ready:true});};"
+        },
+        {
+          "filePath": "service.js",
+          "content": "const Sequelize=require('sequelize');const client=new Sequelize('sqlite::memory:');module.exports=function(key){client.query('SELECT name FROM items WHERE id='+key);};"
+        }
+      ],
+      "cohort": "final-not-blind",
+      "oracle": "Conditional registered HTTP source reaches supported raw query or constant/bound query; not whole app safety"
+    },
+    {
+      "id": "service-bound",
+      "expected": "CONDITIONAL",
+      "truth": false,
+      "files": [
+        {
+          "filePath": "entry.cjs",
+          "content": "const express=require('express');const app=express();const install=require('./registration');Promise.resolve().then(()=>install(app));"
+        },
+        {
+          "filePath": "registration.js",
+          "content": "const handler=require('./handler');module.exports=function(server){server.post('/find',handler);};"
+        },
+        {
+          "filePath": "handler.js",
+          "content": "const service=require('./service');module.exports=function(req,res){service(req.body.key);res.json({ready:true});};"
+        },
+        {
+          "filePath": "service.js",
+          "content": "const Sequelize=require('sequelize');const client=new Sequelize('sqlite::memory:');module.exports=function(key){client.query('SELECT name FROM items WHERE id=$id',{bind:{id:key}});};"
+        }
+      ],
+      "cohort": "final-not-blind",
+      "oracle": "Conditional registered HTTP source reaches supported raw query or constant/bound query; not whole app safety"
+    }
+  ]
+}
