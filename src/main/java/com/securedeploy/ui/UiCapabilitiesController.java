@@ -32,8 +32,9 @@ public class UiCapabilitiesController {
                 "dependencyFiles",true,"npmGeneration",npm.enabled(),"providerAvailable",available,
                 "providerOrigin",provider.executionOrigin()==null?"UNVERIFIED_PROVIDER":provider.executionOrigin()));
         result.put("advisoryDetails",true);
-        result.put("npmIsolation",Map.of("state","UNAVAILABLE","hostFallback",false,
-                "message","안전한 실행 환경을 사용할 수 없어 자동 npm 생성을 중단했습니다. 수정 버전 근거와 수동 수정을 이용하세요."));
+        boolean isolated=treePlans!=null&&treePlans.executionAvailable();
+        result.put("npmIsolation",Map.of("state",isolated?"AVAILABLE_OFFLINE_BROKER":"UNAVAILABLE","hostFallback",false,
+                "message",isolated?"npm은 네트워크가 차단된 격리 환경에서 실행하며 공개 registry 메타데이터만 중개합니다.":"안전한 실행 환경을 사용할 수 없어 자동 npm 생성을 중단했습니다. 수정 버전 근거와 수동 수정을 이용하세요."));
         result.put("npmTreePlans",treePlans!=null&&treePlans.enabled());
         result.put("aiCost",com.securedeploy.ai.usage.AiCostPolicy.disclosure(properties.getOpenai().getModel()));
         result.put("structuredPatchPlans",true);

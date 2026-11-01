@@ -14,6 +14,16 @@ import org.springframework.stereotype.Component;
 public class NpmRegistry {
     private final ObjectMapper json;
     public NpmRegistry(ObjectMapper json){this.json=json;}
+    public String packument(String name)throws Exception {
+        NpmIsolationRunner.packageFromMiss(name);
+        try(var input=body(name,null)){
+            var node=json.readTree(input);if(!name.equals(node.path("name").asText())||!node.path("versions").isObject()||node.path("versions").size()>50000)throw new IllegalArgumentException("REGISTRY_IDENTITY");
+            // Descriptive text is not needed for offline resolution. Preserve version/dependency/dist facts.
+            ((com.fasterxml.jackson.databind.node.ObjectNode)node).remove(java.util.List.of("readme","maintainers","users"));
+            for(var version:node.path("versions"))if(version.isObject())((com.fasterxml.jackson.databind.node.ObjectNode)version).remove(java.util.List.of("readme","maintainers","_npmUser","_npmOperationalInternal"));
+            return json.writeValueAsString(node);
+        }
+    }
     public List<JsonNode> releases(String name,String current)throws Exception{
         var result=new ArrayList<JsonNode>();
         try(var input=body(name,null);var parser=json.getFactory().createParser(input)){
@@ -35,6 +45,12 @@ public class NpmRegistry {
         try(var input=body(name,version)){var node=json.readTree(input);if(!name.equals(node.path("name").asText())||!version.equals(node.path("version").asText()))throw new IllegalArgumentException("REGISTRY_IDENTITY");return node;}
     }
     protected java.io.InputStream body(String name,String version)throws Exception{
+        // Fixed public TLS origin, no redirects or proxy. Reject private DNS answers before connecting.
+        for(var address:java.net.InetAddress.getAllByName("registry.npmjs.org")){
+            byte[] raw=address.getAddress();int first=raw[0]&255;
+            if(address.isAnyLocalAddress()||address.isLoopbackAddress()||address.isLinkLocalAddress()||address.isSiteLocalAddress()||address.isMulticastAddress()
+                ||raw.length==16&&(first&254)==252||raw.length==4&&(first==0||first>=240||first==100&&((raw[1]&255)>=64&&(raw[1]&255)<=127)))throw new IllegalArgumentException("REGISTRY_NONPUBLIC_DNS");
+        }
         var uri=URI.create("https://registry.npmjs.org/"+URLEncoder.encode(name,StandardCharsets.UTF_8)+(version!=null?"/"+URLEncoder.encode(version,StandardCharsets.UTF_8):""));
         var connection=(java.net.HttpURLConnection)uri.toURL().openConnection(java.net.Proxy.NO_PROXY);connection.setInstanceFollowRedirects(false);connection.setConnectTimeout(5000);connection.setReadTimeout(8000);connection.setRequestProperty("Accept",version==null?"application/vnd.npm.install-v1+json":"application/json");connection.setRequestProperty("User-Agent","SecureDeploy-SCA03/1.0");
         try{int status=connection.getResponseCode();if(status!=200)throw new IllegalArgumentException("REGISTRY_HTTP_"+status);long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(12);try(var body=connection.getInputStream();var bytes=new java.io.ByteArrayOutputStream()){byte[] buffer=new byte[8192];int count;while((count=body.read(buffer))!=-1){if(System.nanoTime()>deadline)throw new IllegalArgumentException("REGISTRY_TIMEOUT");if(bytes.size()+count>40*1024*1024)throw new IllegalArgumentException("REGISTRY_SIZE_LIMIT");bytes.write(buffer,0,count);}return new java.io.ByteArrayInputStream(bytes.toByteArray());}}finally{connection.disconnect();}
