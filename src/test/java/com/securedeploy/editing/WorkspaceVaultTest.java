@@ -39,6 +39,17 @@ class WorkspaceVaultTest {
     EditingWorkspaceService.Workspace open(EditingWorkspaceService s)throws Exception {
         return s.create(1,new MockMultipartFile("file","source.zip","application/zip",SourceArchive.zip(List.of(new SourceArchive.Entry("src/a.ts","const original = 1;\n".getBytes(StandardCharsets.UTF_8),false,0100644)))));
     }
+    @Test void resultReadConfirmsPersistedBytesAndNeverAcceptsForeignOrStaleState()throws Exception {
+        var s=service();var w=open(s);var f=w.files().get(0);String value="const persisted = 2;\n";String hash=SourceArchive.hash(value.getBytes(StandardCharsets.UTF_8));
+        var q=new EditingWorkspaceService.SaveQuery(f.id(),1,hash,UUID.randomUUID().toString());
+        assertEquals("NOT_SAVED",s.saveResult(w.id(),q).state());
+        s.save(w.id(),f.id(),new EditingWorkspaceService.Change(1,f.originalHash(),value),false);
+        assertEquals("CONFIRMED",s.saveResult(w.id(),q).state());assertEquals(2,s.saveResult(w.id(),q).revision());
+        s.save(w.id(),f.id(),new EditingWorkspaceService.Change(2,f.originalHash(),"const other = 3;\n"),false);
+        assertEquals("CONFLICT",s.saveResult(w.id(),q).state());
+        now.set(now.get().plusSeconds(3601));assertEquals("EXPIRED",s.saveResult(w.id(),q).state());
+        user.set(2);assertThrows(RuntimeException.class,()->s.saveResult(w.id(),q));assertThrows(RuntimeException.class,()->s.audit(w.id()));
+    }
     @Test void sixOwnersCanRotateBoundedCacheWithoutDeletingDurableDraftOrApproval()throws Exception {
         for(long id=2;id<=6;id++)jdbc.update("insert into users values(?)",id);
         var service=service();var workspaces=new ArrayList<EditingWorkspaceService.Workspace>();

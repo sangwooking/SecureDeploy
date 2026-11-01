@@ -27,7 +27,11 @@ public class EditingWorkspaceService {
                             String identityStatus, List<FileInfo> files, List<String> changedFileIds,List<ExportApproval> exports,String storageMode,SourceVerification sourceVerification) { }
     public record ExportApproval(long revision,String format,long userId,Instant at,String provenanceHash) { }
     public record Content(String fileId, long revision, String originalHash, String currentHash, String text, String newline, boolean bom) { }
-    public record Change(long revision, String originalHash, String text) { }
+    public record Change(long revision, String originalHash, String text,String requestId) {
+        public Change(long revision,String originalHash,String text){this(revision,originalHash,text,null);}
+    }
+    public record SaveQuery(String fileId,long baseRevision,String expectedHash,String requestId) { }
+    public record SaveResult(String state,Long revision,String currentHash,Instant expiresAt,Boolean requestCommitted,List<ExportApproval> exports,String storageMode) { }
     public record Approval(long revision, List<String> changedFileIds, boolean approved) { }
     public record Difference(long revision, String fileId, String originalHash, String patch,String changeOrigin,List<ChangeAttribution> provenance) { }
     public record Download(byte[] bytes, String filename, String type,String provenanceHash,long revision) { }
@@ -56,6 +60,7 @@ public class EditingWorkspaceService {
         final List<ExportApproval> exports=new ArrayList<>();
         long revision = 1;
         long storeVersion;
+        WorkspaceVault.Write write;
         State(long user, long review, long project, ProjectLifecycleGuard.Lease lease, Instant now,
                 String source, String identity, List<SourceArchive.Entry> entries,Duration retention) {
             this.id=UUID.randomUUID().toString();
@@ -218,7 +223,11 @@ public class EditingWorkspaceService {
                 text.contains("\r\n") ? "CRLF" : "LF", bom);
     }
     public synchronized Workspace save(String id,String fileId,Change change,boolean revert) {
-        var state=owned(id);saveInternal(state,fileId,change,revert);var f=file(state,fileId);
+        if(change!=null&&change.requestId()!=null&&!change.requestId().matches("[0-9a-f-]{36}"))throw fail(HttpStatus.BAD_REQUEST,"유효한 요청 식별자가 필요합니다.");
+        var state=owned(id);
+        if(change!=null&&change.requestId()!=null&&vault!=null&&vault.audited()&&vault.receipt(id,state.user,change.requestId()).isPresent())throw new EditingConflictException("WORKSPACE_REVISION_CONFLICT","이미 처리된 요청입니다. 저장 결과를 확인해 주세요.");
+        saveInternal(state,fileId,change,revert);var f=file(state,fileId);
+        state.write=new WorkspaceVault.Write(change.requestId(),fileId,SourceArchive.hash(f.current()),change.revision(),"SAVED");
         record(state,f,"MANUAL",null,null,null,null,null,false);persist(state);return describe(state);
     }
     private Workspace saveInternal(State state, String fileId, Change change, boolean revert) {
@@ -464,6 +473,7 @@ public class EditingWorkspaceService {
         if(!Set.of("zip","patch").contains(format))throw fail(HttpStatus.BAD_REQUEST,"지원하지 않는 다운로드 형식입니다.");
         if(state.exports.size()>=128)throw fail(HttpStatus.TOO_MANY_REQUESTS,"다운로드 승인 이력 한도에 도달했습니다.");
         String provenanceHash=provenanceHash(fileFacts(state));
+        state.write=new WorkspaceVault.Write(null,null,null,state.revision,"EXPORT_APPROVED");
         state.exports.add(new ExportApproval(state.revision,format,state.user,Instant.now(clock),provenanceHash));
         persist(state);
         if ("zip".equals(format)) {
@@ -542,6 +552,29 @@ public class EditingWorkspaceService {
         }
         return state;
     }
+    public synchronized SaveResult saveResult(String id,SaveQuery q){
+        if(q==null||q.fileId()==null||!q.fileId().matches("[0-9a-f-]{36}")||q.baseRevision()<1||q.expectedHash()==null||!q.expectedHash().matches("[0-9a-f]{64}")||q.requestId()!=null&&!q.requestId().matches("[0-9a-f-]{36}"))throw fail(HttpStatus.BAD_REQUEST,"저장 확인 정보가 올바르지 않습니다.");
+        long user=users.currentUserId();
+        if(vault==null||!vault.enabled())return new SaveResult("UNVERIFIABLE",null,null,null,false,List.of(),"MEMORY_TEMPORARY");
+        var stored=vault.stored(id,user);var events=vault.events(id,user);
+        var receipt=vault.receipt(id,user,q.requestId());
+        Boolean committed=receipt.isEmpty()?null:q.fileId().equals(receipt.get().fileId())&&q.expectedHash().equals(receipt.get().currentHash())&&"SAVED".equals(receipt.get().type());
+        if(stored.isEmpty()){
+            if(events.isEmpty())throw fail(HttpStatus.NOT_FOUND,"작업 공간 상태를 확인할 수 없습니다.");
+            var e=events.get(0);reviews.findAccessibleReviewWithVulnerabilities(e.reviewId(),"분석 결과에 접근할 수 없습니다.");
+            return new SaveResult(events.stream().anyMatch(v->v.type().equals("EXPIRED"))?"EXPIRED":"UNAVAILABLE",null,null,e.expiresAt(),committed,List.of(),"ENCRYPTED_PERSISTENT");
+        }
+        var s=stored.get().snapshot();reviews.findAccessibleReviewWithVulnerabilities(s.review(),"분석 결과에 접근할 수 없습니다.");
+        var f=s.files().stream().filter(v->v.id().equals(q.fileId())).findFirst().orElseThrow(()->fail(HttpStatus.NOT_FOUND,"파일 상태를 확인할 수 없습니다."));
+        String hash=SourceArchive.hash(f.edit()==null?f.original():f.edit());
+        String state=!Instant.now(clock).isBefore(s.expires())?"EXPIRED":hash.equals(q.expectedHash())?"CONFIRMED":s.revision()==q.baseRevision()?"NOT_SAVED":"CONFLICT";
+        return new SaveResult(state,s.revision(),hash,s.expires(),committed,List.copyOf(s.exports()),"ENCRYPTED_PERSISTENT");
+    }
+    public synchronized List<WorkspaceVault.Event> audit(String id){
+        long user=users.currentUserId();var events=vault==null?List.<WorkspaceVault.Event>of():vault.events(id,user);
+        if(events.isEmpty()){owned(id);return List.of();}
+        reviews.findAccessibleReviewWithVulnerabilities(events.get(0).reviewId(),"분석 결과에 접근할 수 없습니다.");return events;
+    }
     private StoredFile file(State state, String id) {
         return state.files.stream().filter(f -> f.id.equals(id)).findFirst().orElseThrow(() -> fail(HttpStatus.NOT_FOUND, "파일에 접근할 수 없습니다."));
     }
@@ -595,7 +628,7 @@ public class EditingWorkspaceService {
         if(vault==null||!vault.enabled())return;
         var snapshot=new WorkspaceVault.Snapshot(1,s.id,s.user,s.project,s.review,s.revision,s.created,s.expires,s.source,s.identity,
             s.files.stream().map(f->new WorkspaceVault.File(f.id,f.original.path(),f.original.bytes(),f.original.directory(),f.original.mode(),f.hash,f.edit,f.changeOrigin,List.copyOf(f.provenance))).toList(),List.copyOf(s.exports));
-        try {s.storeVersion=vault.put(snapshot,s.storeVersion);
+        try {s.storeVersion=vault.audited()?vault.put(snapshot,s.storeVersion,s.write):vault.put(snapshot,s.storeVersion);s.write=null;
             // A blocked SQL write can commit after retention has ended. Never acknowledge
             // a resumable save in that case; ordinary expiration cleanup still owns deletion.
             if(!Instant.now(clock).isBefore(s.expires))throw new EditingConflictException("WORKSPACE_EXPIRED","저장 처리 중 보존 기한이 끝났어요. 저장 완료로 안내할 수 없습니다. 미저장 편집을 복사해 보관해 주세요.");

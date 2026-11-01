@@ -1,0 +1,4 @@
+const{test}=require('node:test'),assert=require('node:assert/strict'),load=require('./load-component.cjs');
+const{confirmedSaveState,editedHash,saveLabels}=load('saveConfirmation');const{createHash}=require('node:crypto');
+test('save confirmation preserves uncertainty instead of converting absent ACK into failure',()=>{for(const s of ['CONFIRMED','NOT_SAVED','CONFLICT','EXPIRED'])assert.equal(confirmedSaveState({state:s}),s);for(const s of ['UNAVAILABLE','UNVERIFIABLE'])assert.equal(confirmedSaveState({state:s}),'UNKNOWN');assert.equal(new Set(Object.values(saveLabels)).size,6);});
+test('confirmation hash matches server newline/BOM bytes rather than displayed editor text',async()=>{for(const bom of[false,true])for(const newline of['LF','CRLF']){const bytes=(bom?'\ufeff':'')+'a'+(newline==='LF'?'\n':'\r\n')+'b';assert.equal(await editedHash('a\nb',{bom,newline}),createHash('sha256').update(bytes).digest('hex'));}});

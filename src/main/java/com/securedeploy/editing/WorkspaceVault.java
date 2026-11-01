@@ -28,6 +28,18 @@ public class WorkspaceVault {
     private final byte[] key;
     private final String keyId;
     private final Duration retention;
+    private boolean auditEnabled;
+    private org.springframework.transaction.support.TransactionTemplate auditTx;
+    record Write(String requestId,String fileId,String hash,Long beforeRevision,String type) { }
+    record Event(String eventId,String workspaceId,long ownerId,long projectId,long reviewId,String type,Instant at,Instant expiresAt,Long beforeRevision,Long afterRevision,long storeVersion,String requestId,String fileId,String currentHash,String outcome,String executionPath) { }
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureAudit(@Value("${securedeploy.editing.audit.enabled:false}") boolean active) {
+        if(active&&!enabled)throw new IllegalStateException("Workspace audit requires persistent storage");
+        if(active){jdbc.queryForObject("select count(*) from editing_workspace_event_v1 where 1=0",Long.class);
+            auditTx=new org.springframework.transaction.support.TransactionTemplate(new org.springframework.jdbc.datasource.DataSourceTransactionManager(Objects.requireNonNull(jdbc.getDataSource())));}
+        auditEnabled=active;
+    }
+    boolean audited(){return auditEnabled;}
     private final SecureRandom random=new SecureRandom();
 
     public WorkspaceVault(JdbcTemplate jdbc,ObjectMapper mapper,boolean enabled,String encoded,String keyId,long retentionSeconds){this(jdbc,mapper,enabled,encoded,keyId,retentionSeconds,"");}
@@ -68,7 +80,12 @@ public class WorkspaceVault {
             (r,n)->decode(r.getString(1),owner,r.getLong(2),r.getLong(3),r.getLong(4),r.getTimestamp(5).toInstant(),r.getString(6),r.getBytes(7)),owner,java.sql.Timestamp.from(now));
         return rows.stream().findFirst();
     }
-    long put(Snapshot s,long expected){
+    long put(Snapshot s,long expected){return put(s,expected,null);}
+    long put(Snapshot s,long expected,Write write){
+        if(auditEnabled)return auditTx.execute(status->putInternal(s,expected,write));
+        return putInternal(s,expected,write);
+    }
+    private long putInternal(Snapshot s,long expected,Write write){
         if(!enabled)return 0;
         validate(s);
         long next=expected+1;
@@ -80,15 +97,38 @@ public class WorkspaceVault {
             else changed=jdbc.update("update editing_workspace_v1 set store_version=?,expires_at=?,key_id=?,payload=? where id=? and owner_id=? and project_id=? and review_id=? and store_version=?",
                 next,java.sql.Timestamp.from(s.expires),keyId,encrypted,s.id,s.owner,s.project,s.review,expected);
             if(changed!=1)throw conflict();
+            if(auditEnabled)event(s.id,s.owner,s.project,s.review,expected==0?"CREATED":write==null?"MUTATED":write.type,Instant.now(),s.expires,write==null?null:write.beforeRevision,s.revision,next,write==null?null:write.requestId,write==null?null:write.fileId,write==null?null:write.hash,"COMMITTED","USER_REQUEST");
             return next;
         }catch(org.springframework.dao.DataIntegrityViolationException race){throw conflict();}
         finally {Arrays.fill(encrypted,(byte)0);}
     }
     void delete(String id,long owner,long version){
-        if(enabled&&jdbc.update("delete from editing_workspace_v1 where id=? and owner_id=? and store_version=?",id,owner,version)!=1)throw conflict();
+        if(!enabled)return;
+        if(!auditEnabled){if(jdbc.update("delete from editing_workspace_v1 where id=? and owner_id=? and store_version=?",id,owner,version)!=1)throw conflict();return;}
+        auditTx.executeWithoutResult(tx->{var rows=jdbc.queryForList("select id,owner_id,project_id,review_id,store_version,expires_at from editing_workspace_v1 where id=? and owner_id=? and store_version=? for update",id,owner,version);if(rows.size()!=1)throw conflict();remove(rows.get(0),"DELETED","USER_REQUEST",Instant.now());});
     }
-    void cleanupOwner(long owner,Instant now){if(enabled)jdbc.update("delete from editing_workspace_v1 where owner_id=? and expires_at<=?",owner,java.sql.Timestamp.from(now));}
-    int cleanup(Instant now){return enabled?jdbc.update("delete from editing_workspace_v1 where id in (select id from editing_workspace_v1 where expires_at<=? order by expires_at limit 100)",java.sql.Timestamp.from(now)):0;}
+    void cleanupOwner(long owner,Instant now){if(!enabled)return;if(!auditEnabled){jdbc.update("delete from editing_workspace_v1 where owner_id=? and expires_at<=?",owner,java.sql.Timestamp.from(now));return;}clean(owner,now);}
+    int cleanup(Instant now){if(!enabled)return 0;if(!auditEnabled)return jdbc.update("delete from editing_workspace_v1 where id in (select id from editing_workspace_v1 where expires_at<=? order by expires_at limit 100)",java.sql.Timestamp.from(now));return clean(null,now);}
+    private int clean(Long owner,Instant now){return auditTx.execute(tx->{
+        var rows=owner==null?jdbc.queryForList("select id,owner_id,project_id,review_id,store_version,expires_at from editing_workspace_v1 where expires_at<=? order by expires_at limit 100 for update skip locked",java.sql.Timestamp.from(now)):
+            jdbc.queryForList("select id,owner_id,project_id,review_id,store_version,expires_at from editing_workspace_v1 where owner_id=? and expires_at<=? order by expires_at limit 100 for update skip locked",owner,java.sql.Timestamp.from(now));
+        for(var row:rows)remove(row,"EXPIRED",owner==null?"SCHEDULED_EXPIRY":"OWNER_ACQUIRE_EXPIRY",now);
+        // Fixed 30-day audit retention; bounded sweep, independent of source retention.
+        jdbc.update("delete from editing_workspace_event_v1 where event_id in (select event_id from editing_workspace_event_v1 where occurred_at<? order by occurred_at limit 500)",java.sql.Timestamp.from(now.minus(Duration.ofDays(30))));return rows.size();});}
+    private void remove(Map<String,Object> row,String type,String path,Instant now){
+        String id=(String)row.get("id");long owner=((Number)row.get("owner_id")).longValue(),project=((Number)row.get("project_id")).longValue(),review=((Number)row.get("review_id")).longValue(),version=((Number)row.get("store_version")).longValue();
+        if(jdbc.update("delete from editing_workspace_v1 where id=? and owner_id=? and store_version=?",id,owner,version)!=1)throw conflict();
+        event(id,owner,project,review,type,now,((java.sql.Timestamp)row.get("expires_at")).toInstant(),null,null,version,null,null,null,"COMMITTED",path);
+    }
+    private void event(String id,long owner,long project,long review,String type,Instant at,Instant expires,Long before,Long after,long version,String request,String file,String hash,String outcome,String path){
+        jdbc.update("insert into editing_workspace_event_v1(event_id,workspace_id,owner_id,project_id,review_id,event_type,occurred_at,expires_at,before_revision,after_revision,store_version,request_id,file_id,current_hash,outcome,execution_path) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",UUID.randomUUID().toString(),id,owner,project,review,type,java.sql.Timestamp.from(at),java.sql.Timestamp.from(expires),before,after,version,request,file,hash,outcome,path);
+    }
+    List<Event> events(String id,long owner){return readEvents(id,owner,null);}
+    Optional<Event> receipt(String id,long owner,String request){if(request==null)return Optional.empty();return readEvents(id,owner,request).stream().findFirst();}
+    private List<Event> readEvents(String id,long owner,String request){if(!auditEnabled)return List.of();
+        String sql="select * from editing_workspace_event_v1 where workspace_id=? and owner_id=?"+(request==null?"":" and request_id=?")+" order by occurred_at desc,event_id desc limit 100";
+        return jdbc.query(sql,(r,n)->new Event(r.getString("event_id"),r.getString("workspace_id"),r.getLong("owner_id"),r.getLong("project_id"),r.getLong("review_id"),r.getString("event_type"),r.getTimestamp("occurred_at").toInstant(),r.getTimestamp("expires_at").toInstant(),(Long)r.getObject("before_revision"),(Long)r.getObject("after_revision"),r.getLong("store_version"),r.getString("request_id"),r.getString("file_id"),r.getString("current_hash"),r.getString("outcome"),r.getString("execution_path")),request==null?new Object[]{id,owner}:new Object[]{id,owner,request});}
+    Optional<Loaded> stored(String id,long owner){if(!enabled)return Optional.empty();return jdbc.query("select project_id,review_id,store_version,expires_at,key_id,payload from editing_workspace_v1 where id=? and owner_id=?",(r,n)->decode(id,owner,r.getLong(1),r.getLong(2),r.getLong(3),r.getTimestamp(4).toInstant(),r.getString(5),r.getBytes(6)),id,owner).stream().findFirst();}
     private byte[] aad(String id,long owner,long project,long review,long version,Instant expiry,String kid){
         return ("securedeploy-workspace-v1|"+id+"|"+owner+"|"+project+"|"+review+"|"+version+"|"+expiry+"|"+kid).getBytes(StandardCharsets.UTF_8);
     }

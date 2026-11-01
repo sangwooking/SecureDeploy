@@ -1,3 +1,5 @@
+import {confirmedSaveState,editedHash,saveLabels,type SaveState} from './saveConfirmation';
+import {confirmEditingSave} from '../api/editingApi';
 import {NpmTreePlanPanel} from './NpmTreePlanPanel';
 import {originalVerified} from './sourceVerification';
 import {loadSourceVerification,type SourceVerification} from '../api/editingApi';
@@ -41,6 +43,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const [selected, setSelected] = useState<EditingFile | null>(null);
   const [content, setContent] = useState<EditingContent | null>(null);
   const [text, setText] = useState('');
+  const textRef=useRef(text);textRef.current=text;
   const [zip, setZip] = useState<File | null>(null);
   const [sourceRecord,setSourceRecord]=useState<{id:number;value:SourceVerification}|null>(null);
   const [sourceConsent,setSourceConsent]=useState(false);
@@ -56,6 +59,8 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const [revisionConflict,setRevisionConflict]=useState(false);
   const [resumeAttempt,setResumeAttempt]=useState(0);
   const [recovery,setRecovery]=useState<ReturnType<typeof workspaceRecoveryProblem>|null>(null);
+  const [saveState,setSaveState]=useState<SaveState|null>(null);
+  const [pendingSave,setPendingSave]=useState<{workspaceId:string;fileId:string;baseRevision:number;expectedHash:string;requestId:string;text:string}|null>(null);
   const [stage, setStage] = useState<'edit'|'diff'|'scan'>('edit');
   const [pane, setPane] = useState<'files'|'code'|'evidence'>('files');
   const [evidenceOpen, setEvidenceOpen] = useState(!!problemContext);
@@ -86,7 +91,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
     return () => { current=false;mounted.current = false; };
   }, [key,resumeAttempt]);
   useEffect(() => {
-    const check = () => { if(workspace)setRemainingMinutes(Math.max(0,Math.ceil((Date.parse(workspace.expiresAt)-Date.now())/60000))); if (workspace && Date.parse(workspace.expiresAt) <= Date.now()) { setExpired(true); setDiffs(null); setApproved(false); } };
+    const check = () => { if(workspace)setRemainingMinutes(Math.max(0,Math.ceil((Date.parse(workspace.expiresAt)-Date.now())/60000))); if (workspace && Date.parse(workspace.expiresAt) <= Date.now()) { setExpired(true);setSaveState('EXPIRED'); setDiffs(null); setApproved(false); } };
     check(); const timer = setInterval(check, 1000); return () => clearInterval(timer);
   }, [workspace]);
   useEffect(() => {
@@ -133,7 +138,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   });
   const select = (file: EditingFile,line?:number) => void run(async () => {
     if (dirty && !window.confirm('저장하지 않은 편집을 버리고 다른 파일을 열까요?')) return;
-    setDiffs(null); setApproved(false); setSelected(file); setContent(null); setText('');
+    setSaveState(null);setPendingSave(null);setDiffs(null); setApproved(false); setSelected(file); setContent(null); setText('');
     pendingLine.current=line??(file.path===problemContext?.path?problemContext.line:undefined);setPane('code');
     if (workspace && !expired && file.editable) {
       const value = await loadEditingFile(workspace.id, file.id);
@@ -150,12 +155,33 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
     const editor=document.getElementById('source-code') as HTMLTextAreaElement|null;if(!editor)return;
     const start=lines.slice(0,line-1).reduce((n,s)=>n+s.length+1,0);editor.setSelectionRange(start,start+lines[line-1].length);editor.scrollTop=Math.max(0,(line-3)*22);editor.focus({preventScroll:true});pendingLine.current=undefined;
   },[content,workspace?.identityStatus]);
+  const verifySave = async (pending:NonNullable<typeof pendingSave>) => {
+    setSaveState('CHECKING');
+    try {
+      const status=await confirmEditingSave(pending.workspaceId,pending);if(!mounted.current)return;
+      const state=confirmedSaveState(status);setSaveState(state);
+      if(state==='EXPIRED'){setExpired(true);setApproved(false);setDiffs(null);return;}
+      if(state==='CONFLICT'){setRevisionConflict(true);return;}
+      if(state!=='CONFIRMED'){if(state==='NOT_SAVED')setPendingSave(null);return;}
+      const next=await loadEditingWorkspace(pending.workspaceId),value=await loadEditingFile(pending.workspaceId,pending.fileId);
+      if(next.revision!==status.revision||value.revision!==next.revision||value.currentHash!==pending.expectedHash){setSaveState('CONFLICT');setRevisionConflict(true);return;}
+      if(Date.parse(next.expiresAt)<=Date.now()){setExpired(true);setSaveState('EXPIRED');return;}
+      setWorkspace(next);setSelected(next.files.find(f=>f.id===pending.fileId)??null);setContent(value);
+      // A new browser edit made during reconnection is never discarded.
+      setText(current=>current===pending.text?value.text.replace(/\r\n/g,'\n'):current);
+      setSaveState(textRef.current===pending.text?'CONFIRMED':null);setDiffs(null);setApproved(false);setRevisionConflict(false);setPendingSave(null);
+    }catch(e){if(!mounted.current)return;setSaveState('UNKNOWN');if(e instanceof ApiRequestError&&e.status===403)setError('접근 권한을 확인할 수 없습니다. 현재 편집을 보관해 주세요.');}
+  };
   const save = (revert: boolean) => void run(async () => {
-    if (!workspace || !selected || expired) return;
+    if (!workspace || !selected || !content || expired) return;
+    if(pendingSave){await verifySave(pendingSave);return;}
     if (revert && !window.confirm('이 파일의 변경을 모두 취소하고 불변 원본으로 되돌릴까요?')) return;
-    const next = await saveEditingFile(workspace, selected, text, revert);
-    setWorkspace(next); setDiffs(null); setApproved(false); setSelected(next.files.find(f => f.id === selected.id) ?? null);
-    const value = await loadEditingFile(next.id, selected.id); setContent(value); setText(value.text.replace(/\r\n/g, '\n'));
+    const pending={workspaceId:workspace.id,fileId:selected.id,baseRevision:workspace.revision,expectedHash:revert?selected.originalHash:await editedHash(text,content),requestId:crypto.randomUUID(),text};
+    setPendingSave(pending);setSaveState('CHECKING');
+    try {await saveEditingFile(workspace,selected,text,revert,pending.requestId);}
+    catch(e){if(e instanceof ApiRequestError&&e.code==='WORKSPACE_EXPIRED'){setSaveState('EXPIRED');setExpired(true);setApproved(false);setDiffs(null);return;}}
+    // One read-only verification; no automatic write replay, even after response loss.
+    await verifySave(pending);
   });
   const reviewDiff = () => void run(async () => {
     if (!workspace || dirty || expired) return;
@@ -196,6 +222,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
       {workspace&&<><p>{originalVerified(workspace)?'원본 바이트·해시 연결 확인':'원본 동일성 미확인 · 과거 행 위치 확정 연결 안 함'} · 수정본 r{workspace.revision}</p><details onToggle={e=>setShowLocations(e.currentTarget.open)}><summary>원본 해시·수정 위치 ({problemContext.locations.length}곳)</summary><p>{workspace.sourceRevision}</p>{showLocations&&problemContext.locations.slice(locationPage*50,locationPage*50+50).map(l=>{const f=workspace.files.find(f=>f.path===l.path);return <div key={l.findingId}><button type="button" disabled={busy||expired||!f} onClick={()=>f&&select(f,l.line)}>문제 위치 보기 · {l.path}{l.line?` · ${l.line}행`:''}</button>{f&&<code>{f.originalHash}</code>}</div>})}{showLocations&&problemContext.locations.length>50&&<nav aria-label="작업 문제 위치 페이지"><button disabled={locationPage===0} onClick={()=>setLocationPage(n=>n-1)}>이전 위치</button><span>{locationPage+1} / {Math.ceil(problemContext.locations.length/50)}</span><button disabled={(locationPage+1)*50>=problemContext.locations.length} onClick={()=>setLocationPage(n=>n+1)}>다음 위치</button></nav>}</details></>}
       <button type="button" onClick={()=>{setEvidenceOpen(true);setPane('evidence');requestAnimationFrame(()=>document.getElementById('workspace-problem-guide')?.scrollIntoView({block:'nearest'}));}}>수정 가이드 보기</button></section>}
     {recovery && <div role="alert" className="workspace-recovery"><p><strong>{recovery.message}</strong></p><p>이 안내만으로 만료나 데이터 손실을 확정할 수 없습니다. 이전 작업 식별자는 재시도를 위해 유지합니다.</p><button type="button" disabled={busy} onClick={()=>setResumeAttempt(n=>n+1)}>이전 작업 다시 확인</button></div>}
+    {saveState&&<div role="status" aria-label="저장 결과"><strong>{saveLabels[saveState]}</strong>{saveState==='CONFIRMED'?<p>영속 Workspace의 파일 해시와 최신 버전을 확인했습니다. 재검사·다운로드 승인은 별도입니다.</p>:<p>현재 편집을 유지합니다. 응답이 없었다는 이유만으로 저장 실패를 확정하지 않으며, 자동으로 다시 저장하지 않습니다.</p>}{pendingSave&&saveState!=='CHECKING'&&<button type="button" disabled={busy} onClick={()=>void run(()=>verifySave(pendingSave))}>저장 결과 다시 확인</button>}</div>}
     {error && <p className="error-message" role="alert">{error}</p>}
     {content&&(dirty||expired)&&<div role="note"><p>이 탭에 남은 현재 편집을 텍스트로 내보낼 수 있습니다. 미저장 편집은 다른 탭·서버에 보관되지 않습니다. 새로고침·계정 변경 전에 내보내 주세요.</p><button type="button" onClick={exportDraft}>현재 편집 텍스트 내보내기</button></div>}
     {revisionConflict&&<div role="alert"><p>이 탭의 편집은 유지했습니다. 다른 탭의 변경을 덮어쓰지 않았습니다.</p><button type="button" disabled={busy} onClick={refreshSaved}>편집 내보내기 후 최신 저장본 확인</button></div>}
@@ -211,13 +238,13 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
       {retention&&<label><input type="checkbox" checked={sourceConsent} disabled={busy} onChange={e=>setSourceConsent(e.target.checked)}/>{retention.storageMode==='ENCRYPTED_PERSISTENT'?'암호화된 서버':'서버 메모리'}에 원본과 저장한 수정 내용을 {Math.floor(retention.seconds/60)}분 동안 보관하는 데 동의합니다. 최대 {retention.maxFiles}개 항목·{Math.floor(retention.maxBytes/1024/1024)}MiB이며, 미저장 편집은 보관되지 않습니다.</label>}
       <button className="primary-button" type="button" disabled={busy || !retention || !sourceConsent || (!!discovery&&discovery.state!=='NONE') || (!!resumeId && recovery?.allowSourceAttempt!==true) || !result.reviewId || !result.sourceType || result.sourceType === 'WORKSPACE' || (result.sourceType === 'ZIP' && !zip)} onClick={() => void start()}>{busy ? '원본 확인 중...' : '원본 확보 시도 후 새 작업 시작'}</button>
     </div> : <>
-      <div className="source-editor-status"><p><strong>수정본 버전 {workspace.revision}</strong> · 만료 {new Date(workspace.expiresAt).toLocaleString('ko-KR')} · 변경 {workspace.changedFileIds.length}개</p>
+      <div className="source-editor-status"><p><strong>수정본 버전 {workspace.revision}</strong> · 만료 {new Date(workspace.expiresAt).toLocaleString('ko-KR')} · 변경 {workspace.changedFileIds.length}개</p><p>생성 시각부터 보존하며 저장·재접속으로 만료 시각이 연장되지 않습니다. 재검사 기록은 별도이고, 서버의 다운로드 승인 이력은 Workspace 만료까지만 보관됩니다. 이미 내려받은 파일은 사용자 보관 자료입니다.</p>
         <p role="note">{workspace.storageMode==='ENCRYPTED_PERSISTENT'
           ? '암호화된 서버 저장 작업입니다. 저장한 파일·수정 출처·다운로드 승인 이력은 만료 전까지 서버 재시작 후 이어갈 수 있습니다. 미저장 편집과 검토 중인 제안은 복구되지 않습니다.'
           : '임시 작업 공간입니다. 저장한 파일과 AI 제안도 30분 또는 서버 재시작 시 사라집니다. 보관하려면 변경 검토·승인 후 Patch/ZIP을 내보내 주세요.'}</p>
         <details><summary>원본·해시 정보</summary><p className="source-revision">원본: {workspace.sourceRevision}</p></details>
         {workspace.identityStatus === 'UNVERIFIED_REUPLOAD' && <p role="note">이전 검사 원본과 같은 파일인지 확인하지 못했어요. 과거 문제 위치를 연결하지 않으며, 수정 후 새 검사가 필요해요.</p>}
-        {remainingMinutes!==null&&remainingMinutes>0&&remainingMinutes<=5&&<p role="alert">작업 공간 이용 시간이 {remainingMinutes}분 이내로 남았어요. 미저장 변경을 저장한 뒤 변경 검토·승인을 거쳐 Patch/ZIP을 내보내 주세요. 자동 다운로드하지 않습니다.</p>}
+        {remainingMinutes!==null&&remainingMinutes>0&&remainingMinutes<=5&&<p role="alert">작업 공간 이용 시간이 {remainingMinutes}분 이내로 남았어요. 서버에 저장한 변경은 기한 전에 검토·승인 후 Patch/ZIP으로 내보내세요. 이 탭의 미저장 변경은 별도로 텍스트를 내보내세요. 저장으로 기한이 연장되지 않습니다. 자동 다운로드하지 않습니다.</p>}
         {expired && <div role="alert"><p>이전 수정 작업을 이어갈 수 없어요. 작업 공간의 이용 시간이 지났습니다.</p><p>새 작업은 이전 변경을 복원하지 않습니다. 아래 편집 내용이 남아 있다면 먼저 복사해 보관해 주세요.</p>{result.sourceType==='GITHUB'&&result.sourceMetadata?.commitSha&&<><p>분석 당시 원본을 실제로 확보한 경우에만 새 작업을 시작합니다.</p><button type="button" className="primary-button" disabled={busy} onClick={()=>void start()}>원본 확보 가능 여부 확인</button></>}{content&&<label>브라우저에 남은 편집 내용<textarea aria-label="만료된 작업의 편집 내용" className="source-code" readOnly value={text}/></label>}</div>}
         <details><summary>작업 공간 관리</summary><button type="button" className="secondary-button" disabled={busy} onClick={clear}>작업 공간 삭제</button></details>
       </div>
@@ -241,8 +268,8 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
           <div className="source-edit-pane">
             {workspace&&targetPath&&!workspace.files.some(f=>f.path===targetPath)&&<p role="alert">선택한 문제의 파일을 확보하지 못했습니다. 다른 파일을 대신 열지 않았습니다.</p>}
             {selected ? <><h3>{selected.path}</h3><p>{selected.size.toLocaleString()} bytes · {selected.editable ? `${content?.newline ?? 'UTF-8'}${content?.bom ? ' · BOM 보존' : ''}` : '읽기 전용: 바이너리·크기·인코딩 제한'}</p>
-              {selected.editable && content && <><label className="source-code-label" htmlFor="source-code"><span className="editor-file-path">{selected.path}</span><span role="status">{dirty ? '저장하지 않은 변경' : selected.changed ? '임시 서버 저장 · 재검사로 확인 필요' : '원본과 동일'}</span><span className="visually-hidden">파일 내용</span></label>
-                <textarea id="source-code" className="source-code" value={text} spellCheck={false} autoCapitalize="off" autoComplete="off" autoCorrect="off" disabled={busy} onChange={e => { setText(e.target.value); setApproved(false); setDiffs(null); }} />
+              {selected.editable && content && <><label className="source-code-label" htmlFor="source-code"><span className="editor-file-path">{selected.path}</span><span role="status">{dirty ? pendingSave?'저장 결과 미확인 · 이 탭의 편집':'저장하지 않은 변경' : selected.changed ? workspace.storageMode==='ENCRYPTED_PERSISTENT'?'서버 저장본 · 재검사로 확인 필요':'임시 서버 저장 · 재검사로 확인 필요' : '원본과 동일'}</span><span className="visually-hidden">파일 내용</span></label>
+                <textarea id="source-code" className="source-code" value={text} spellCheck={false} autoCapitalize="off" autoComplete="off" autoCorrect="off" disabled={busy} onChange={e => { setText(e.target.value);if(!pendingSave)setSaveState(null); setApproved(false); setDiffs(null); }} />
                 <div className="source-editor-actions"><button type="button" className="primary-button" disabled={busy || !dirty} onClick={() => save(false)}>변경 저장</button>
                   <button type="button" className="secondary-button" disabled={busy || (!selected.changed && !dirty)} onClick={() => save(true)}>원본으로 되돌리기</button></div></>}
             </> : <p>파일을 선택해 주세요.</p>}

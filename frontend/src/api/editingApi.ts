@@ -22,9 +22,9 @@ export const loadEditingWorkspace = (id: string) => call<EditingWorkspace>(`/${e
 export const loadEditingFile = (id: string, file: string) => call<EditingContent>(`/${encodeURIComponent(id)}/files/${encodeURIComponent(file)}`);
 export const loadEditingDiff = (id: string, file: string) => call<EditingDiff>(`/${encodeURIComponent(id)}/files/${encodeURIComponent(file)}/diff`);
 export const deleteEditingWorkspace = (id: string) => call(`/${encodeURIComponent(id)}`, { method: 'DELETE' });
-export const saveEditingFile = (workspace: EditingWorkspace, file: EditingFile, text: string, revert = false) => call<EditingWorkspace>(
+export const saveEditingFile = (workspace: EditingWorkspace, file: EditingFile, text: string, revert = false, requestId?:string) => call<EditingWorkspace>(
   `/${encodeURIComponent(workspace.id)}/files/${encodeURIComponent(file.id)}${revert ? '/revert' : ''}`, {
-    method: revert ? 'POST' : 'PUT', headers: jsonHeaders(), body: JSON.stringify({ revision: workspace.revision, originalHash: file.originalHash, text }),
+    method: revert ? 'POST' : 'PUT', headers: jsonHeaders(), body: JSON.stringify({ revision: workspace.revision, originalHash: file.originalHash, text, requestId }),
   });
 export async function exportEditingWorkspace(workspace: EditingWorkspace, format: 'zip' | 'patch'): Promise<Blob> {
   const response = await fetch(`${BASE}/${encodeURIComponent(workspace.id)}/export/${format}`, {
@@ -77,3 +77,6 @@ export interface NpmTreePlan {id:string;state:string;revision:number;inputHash:s
 export const prepareNpmTreePlan=(w:EditingWorkspace,planIndex:number)=>call<NpmTreePlan>(`/${w.id}/npm-tree-plans`,{method:'POST',headers:jsonHeaders(),body:JSON.stringify({revision:w.revision,planIndex})});
 export const generateNpmTreePlan=(w:EditingWorkspace,p:NpmTreePlan)=>call<NpmTreePlan>(`/${w.id}/npm-tree-plans/${p.id}/generate`,{method:'POST',headers:jsonHeaders(),body:JSON.stringify({inputHash:p.inputHash,approved:true})});
 export const applyNpmTreePlan=(w:EditingWorkspace,p:NpmTreePlan)=>call<EditingWorkspace>(`/${w.id}/npm-tree-plans/${p.id}/apply`,{method:'POST',headers:jsonHeaders(),body:JSON.stringify({inputHash:p.inputHash,approved:true})});
+
+export interface SaveResult {state:'CONFIRMED'|'NOT_SAVED'|'CONFLICT'|'EXPIRED'|'UNVERIFIABLE'|'UNAVAILABLE';revision:number|null;currentHash:string|null;expiresAt:string|null;requestCommitted:boolean|null;exports:NonNullable<EditingWorkspace['exports']>;storageMode:string}
+export const confirmEditingSave=(id:string,query:{fileId:string;baseRevision:number;expectedHash:string;requestId:string})=>call<SaveResult>(`/${encodeURIComponent(id)}/save-status`,{method:'POST',headers:jsonHeaders(),body:JSON.stringify(query)});

@@ -22,10 +22,16 @@ public class EditingWorkspaceController {
     public ResponseEntity<?> active(@PathVariable long reviewId) { return json(service.discover(reviewId)); }
     @ExceptionHandler(EditingConflictException.class)
     public ResponseEntity<?> conflict(EditingConflictException error) {
+        // Attempt outcome only, not a claim of a committed DB event. No URI/body/source/token.
+        org.slf4j.LoggerFactory.getLogger(EditingWorkspaceController.class).info("workspace_request_rejected outcome={} code={}","REJECTED",error.code);
         return ResponseEntity.status(409).cacheControl(CacheControl.noStore()).body(java.util.Map.of("code",error.code,"message",error.getMessage()));
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable String id) { return json(service.get(id)); }
+    @PostMapping("/{id}/save-status")
+    public ResponseEntity<?> saveStatus(@PathVariable String id,@RequestBody EditingWorkspaceService.SaveQuery query){return json(service.saveResult(id,query));}
+    @GetMapping("/{id}/audit")
+    public ResponseEntity<?> audit(@PathVariable String id){return json(service.audit(id));}
     @GetMapping("/{id}/files/{fileId}")
     public ResponseEntity<?> file(@PathVariable String id, @PathVariable String fileId) { return json(service.content(id, fileId)); }
     @PutMapping("/{id}/files/{fileId}")
