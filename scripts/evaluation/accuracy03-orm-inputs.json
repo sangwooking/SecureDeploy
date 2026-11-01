@@ -1,0 +1,453 @@
+{
+  "scope": "Preimplementation conditional result callback controls, not security labels",
+  "cases": [
+    {
+      "id": "rows",
+      "expected": true,
+      "cohort": "development",
+      "input": {
+        "files": [
+          {
+            "filePath": "entry.js",
+            "content": "const express=require('express');const db=require('./models');const app=express();app.get('/items',(req,res)=>{db.User.findAll({where:{login:req.query.label}}).then(rows=>res.json({label:req.query.label,rows}));});"
+          },
+          {
+            "filePath": "config/db.js",
+            "content": "module.exports = {\n  username: process.env.MYSQL_USER,\n  password: process.env.MYSQL_PASSWORD,\n  database: process.env.MYSQL_DATABASE,\n  host: process.env.MYSQL_HOST || 'mysql-db',\n  port: process.env.MYSQL_PORT || 3306,\n  dialect: 'mysql'\n}"
+          },
+          {
+            "filePath": "models/index.js",
+            "content": "\"use strict\";\n\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar Sequelize = require(\"sequelize\");\nvar env = process.env.NODE_ENV || \"development\";\nvar config = require(\"../config/db.js\")\n\nif (process.env.DATABASE_URL) {\n  var sequelize = new Sequelize(process.env.DATABASE_URL);\n} else {\n  var sequelize = new Sequelize(config.database, config.username, config.password, {\n    host: config.host,\n    dialect: config.dialect\n  });\n}\n\nsequelize\n  .authenticate()\n  .then(function (err) {\n    console.log('Connection has been established successfully.');\n  })\n  .catch(function (err) {\n    console.log('Unable to connect to the database:', err);\n  })\n\nsequelize\n  .sync( /*{ force: true }*/ ) // Force To re-initialize tables on each run\n  .then(function (err) {\n    console.log('It worked!');\n  }, function (err) {\n    console.log('An error occurred while creating the table:', err);\n  })\n\nvar db = {};\n\nfs\n  .readdirSync(__dirname)\n  .filter(function (file) {\n    return (file.indexOf(\".\") !== 0) && (file !== \"index.js\");\n  })\n  .forEach(function (file) {\n    var model = sequelize.import(path.join(__dirname, file));\n    db[model.name] = model;\n  });\n\nObject.keys(db).forEach(function (modelName) {\n  if (\"associate\" in db[modelName]) {\n    db[modelName].associate(db);\n  }\n});\n\ndb.sequelize = sequelize;\ndb.Sequelize = Sequelize;\n\nmodule.exports = db;"
+          },
+          {
+            "filePath": "models/product.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var Product = sequelize.define(\"Product\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        code: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        description: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        tags: {\n            type: DataTypes.STRING\n        }\n    });\n    return Product;\n};"
+          },
+          {
+            "filePath": "models/user.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var User = sequelize.define(\"User\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false,\n        },\n        login: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        email: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        password: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        role: {\n            type: DataTypes.STRING,\n            allowNull: true\n        }\n    });\n    return User;\n};"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "^4.16.2",
+            "sequelize": "^4.13.10",
+            "mongodb": null,
+            "validator": null,
+            "mongoose": null,
+            "moduleType": "commonjs",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "nodeSourceInventory": [
+          "entry.js",
+          "config/db.js",
+          "models/index.js",
+          "models/product.js",
+          "models/user.js"
+        ],
+        "nodeSourceInventoryComplete": true,
+        "nodeEnumeratedDirectories": [
+          ".",
+          "core",
+          "models",
+          "routes",
+          "config"
+        ]
+      }
+    },
+    {
+      "id": "constant",
+      "expected": true,
+      "cohort": "development",
+      "input": {
+        "files": [
+          {
+            "filePath": "entry.js",
+            "content": "const express=require('express');const db=require('./models');const app=express();app.get('/items',(req,res)=>{db.User.findAll({}).then(rows=>res.json({ok:true}));});"
+          },
+          {
+            "filePath": "config/db.js",
+            "content": "module.exports = {\n  username: process.env.MYSQL_USER,\n  password: process.env.MYSQL_PASSWORD,\n  database: process.env.MYSQL_DATABASE,\n  host: process.env.MYSQL_HOST || 'mysql-db',\n  port: process.env.MYSQL_PORT || 3306,\n  dialect: 'mysql'\n}"
+          },
+          {
+            "filePath": "models/index.js",
+            "content": "\"use strict\";\n\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar Sequelize = require(\"sequelize\");\nvar env = process.env.NODE_ENV || \"development\";\nvar config = require(\"../config/db.js\")\n\nif (process.env.DATABASE_URL) {\n  var sequelize = new Sequelize(process.env.DATABASE_URL);\n} else {\n  var sequelize = new Sequelize(config.database, config.username, config.password, {\n    host: config.host,\n    dialect: config.dialect\n  });\n}\n\nsequelize\n  .authenticate()\n  .then(function (err) {\n    console.log('Connection has been established successfully.');\n  })\n  .catch(function (err) {\n    console.log('Unable to connect to the database:', err);\n  })\n\nsequelize\n  .sync( /*{ force: true }*/ ) // Force To re-initialize tables on each run\n  .then(function (err) {\n    console.log('It worked!');\n  }, function (err) {\n    console.log('An error occurred while creating the table:', err);\n  })\n\nvar db = {};\n\nfs\n  .readdirSync(__dirname)\n  .filter(function (file) {\n    return (file.indexOf(\".\") !== 0) && (file !== \"index.js\");\n  })\n  .forEach(function (file) {\n    var model = sequelize.import(path.join(__dirname, file));\n    db[model.name] = model;\n  });\n\nObject.keys(db).forEach(function (modelName) {\n  if (\"associate\" in db[modelName]) {\n    db[modelName].associate(db);\n  }\n});\n\ndb.sequelize = sequelize;\ndb.Sequelize = Sequelize;\n\nmodule.exports = db;"
+          },
+          {
+            "filePath": "models/product.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var Product = sequelize.define(\"Product\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        code: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        description: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        tags: {\n            type: DataTypes.STRING\n        }\n    });\n    return Product;\n};"
+          },
+          {
+            "filePath": "models/user.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var User = sequelize.define(\"User\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false,\n        },\n        login: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        email: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        password: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        role: {\n            type: DataTypes.STRING,\n            allowNull: true\n        }\n    });\n    return User;\n};"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "^4.16.2",
+            "sequelize": "^4.13.10",
+            "mongodb": null,
+            "validator": null,
+            "mongoose": null,
+            "moduleType": "commonjs",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "nodeSourceInventory": [
+          "entry.js",
+          "config/db.js",
+          "models/index.js",
+          "models/product.js",
+          "models/user.js"
+        ],
+        "nodeSourceInventoryComplete": true,
+        "nodeEnumeratedDirectories": [
+          ".",
+          "core",
+          "models",
+          "routes",
+          "config"
+        ]
+      }
+    },
+    {
+      "id": "unregistered",
+      "expected": false,
+      "cohort": "development",
+      "input": {
+        "files": [
+          {
+            "filePath": "entry.js",
+            "content": "const express=require('express');const db=require('./models');const app=express();function unused(req,res){db.User.findAll({}).then(rows=>res.json(rows));}"
+          },
+          {
+            "filePath": "config/db.js",
+            "content": "module.exports = {\n  username: process.env.MYSQL_USER,\n  password: process.env.MYSQL_PASSWORD,\n  database: process.env.MYSQL_DATABASE,\n  host: process.env.MYSQL_HOST || 'mysql-db',\n  port: process.env.MYSQL_PORT || 3306,\n  dialect: 'mysql'\n}"
+          },
+          {
+            "filePath": "models/index.js",
+            "content": "\"use strict\";\n\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar Sequelize = require(\"sequelize\");\nvar env = process.env.NODE_ENV || \"development\";\nvar config = require(\"../config/db.js\")\n\nif (process.env.DATABASE_URL) {\n  var sequelize = new Sequelize(process.env.DATABASE_URL);\n} else {\n  var sequelize = new Sequelize(config.database, config.username, config.password, {\n    host: config.host,\n    dialect: config.dialect\n  });\n}\n\nsequelize\n  .authenticate()\n  .then(function (err) {\n    console.log('Connection has been established successfully.');\n  })\n  .catch(function (err) {\n    console.log('Unable to connect to the database:', err);\n  })\n\nsequelize\n  .sync( /*{ force: true }*/ ) // Force To re-initialize tables on each run\n  .then(function (err) {\n    console.log('It worked!');\n  }, function (err) {\n    console.log('An error occurred while creating the table:', err);\n  })\n\nvar db = {};\n\nfs\n  .readdirSync(__dirname)\n  .filter(function (file) {\n    return (file.indexOf(\".\") !== 0) && (file !== \"index.js\");\n  })\n  .forEach(function (file) {\n    var model = sequelize.import(path.join(__dirname, file));\n    db[model.name] = model;\n  });\n\nObject.keys(db).forEach(function (modelName) {\n  if (\"associate\" in db[modelName]) {\n    db[modelName].associate(db);\n  }\n});\n\ndb.sequelize = sequelize;\ndb.Sequelize = Sequelize;\n\nmodule.exports = db;"
+          },
+          {
+            "filePath": "models/product.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var Product = sequelize.define(\"Product\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        code: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        description: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        tags: {\n            type: DataTypes.STRING\n        }\n    });\n    return Product;\n};"
+          },
+          {
+            "filePath": "models/user.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var User = sequelize.define(\"User\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false,\n        },\n        login: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        email: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        password: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        role: {\n            type: DataTypes.STRING,\n            allowNull: true\n        }\n    });\n    return User;\n};"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "^4.16.2",
+            "sequelize": "^4.13.10",
+            "mongodb": null,
+            "validator": null,
+            "mongoose": null,
+            "moduleType": "commonjs",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "nodeSourceInventory": [
+          "entry.js",
+          "config/db.js",
+          "models/index.js",
+          "models/product.js",
+          "models/user.js"
+        ],
+        "nodeSourceInventoryComplete": true,
+        "nodeEnumeratedDirectories": [
+          ".",
+          "core",
+          "models",
+          "routes",
+          "config"
+        ]
+      }
+    },
+    {
+      "id": "fake",
+      "expected": false,
+      "cohort": "development",
+      "input": {
+        "files": [
+          {
+            "filePath": "entry.js",
+            "content": "const express=require('express');const db=require('./models');const app=express();app.get('/items',(req,res)=>{const db={User:{findAll:unknownDriver}};db.User.findAll({}).then(rows=>res.json(rows));});"
+          },
+          {
+            "filePath": "config/db.js",
+            "content": "module.exports = {\n  username: process.env.MYSQL_USER,\n  password: process.env.MYSQL_PASSWORD,\n  database: process.env.MYSQL_DATABASE,\n  host: process.env.MYSQL_HOST || 'mysql-db',\n  port: process.env.MYSQL_PORT || 3306,\n  dialect: 'mysql'\n}"
+          },
+          {
+            "filePath": "models/index.js",
+            "content": "\"use strict\";\n\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar Sequelize = require(\"sequelize\");\nvar env = process.env.NODE_ENV || \"development\";\nvar config = require(\"../config/db.js\")\n\nif (process.env.DATABASE_URL) {\n  var sequelize = new Sequelize(process.env.DATABASE_URL);\n} else {\n  var sequelize = new Sequelize(config.database, config.username, config.password, {\n    host: config.host,\n    dialect: config.dialect\n  });\n}\n\nsequelize\n  .authenticate()\n  .then(function (err) {\n    console.log('Connection has been established successfully.');\n  })\n  .catch(function (err) {\n    console.log('Unable to connect to the database:', err);\n  })\n\nsequelize\n  .sync( /*{ force: true }*/ ) // Force To re-initialize tables on each run\n  .then(function (err) {\n    console.log('It worked!');\n  }, function (err) {\n    console.log('An error occurred while creating the table:', err);\n  })\n\nvar db = {};\n\nfs\n  .readdirSync(__dirname)\n  .filter(function (file) {\n    return (file.indexOf(\".\") !== 0) && (file !== \"index.js\");\n  })\n  .forEach(function (file) {\n    var model = sequelize.import(path.join(__dirname, file));\n    db[model.name] = model;\n  });\n\nObject.keys(db).forEach(function (modelName) {\n  if (\"associate\" in db[modelName]) {\n    db[modelName].associate(db);\n  }\n});\n\ndb.sequelize = sequelize;\ndb.Sequelize = Sequelize;\n\nmodule.exports = db;"
+          },
+          {
+            "filePath": "models/product.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var Product = sequelize.define(\"Product\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        code: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        description: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        tags: {\n            type: DataTypes.STRING\n        }\n    });\n    return Product;\n};"
+          },
+          {
+            "filePath": "models/user.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var User = sequelize.define(\"User\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false,\n        },\n        login: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        email: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        password: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        role: {\n            type: DataTypes.STRING,\n            allowNull: true\n        }\n    });\n    return User;\n};"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "^4.16.2",
+            "sequelize": "^4.13.10",
+            "mongodb": null,
+            "validator": null,
+            "mongoose": null,
+            "moduleType": "commonjs",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "nodeSourceInventory": [
+          "entry.js",
+          "config/db.js",
+          "models/index.js",
+          "models/product.js",
+          "models/user.js"
+        ],
+        "nodeSourceInventoryComplete": true,
+        "nodeEnumeratedDirectories": [
+          ".",
+          "core",
+          "models",
+          "routes",
+          "config"
+        ]
+      }
+    },
+    {
+      "id": "overridden",
+      "expected": false,
+      "cohort": "development",
+      "input": {
+        "files": [
+          {
+            "filePath": "entry.js",
+            "content": "const express=require('express');const db=require('./models');const app=express();app.get('/items',(req,res)=>{db.User.findAll=other;db.User.findAll({}).then(rows=>res.json(rows));});"
+          },
+          {
+            "filePath": "config/db.js",
+            "content": "module.exports = {\n  username: process.env.MYSQL_USER,\n  password: process.env.MYSQL_PASSWORD,\n  database: process.env.MYSQL_DATABASE,\n  host: process.env.MYSQL_HOST || 'mysql-db',\n  port: process.env.MYSQL_PORT || 3306,\n  dialect: 'mysql'\n}"
+          },
+          {
+            "filePath": "models/index.js",
+            "content": "\"use strict\";\n\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar Sequelize = require(\"sequelize\");\nvar env = process.env.NODE_ENV || \"development\";\nvar config = require(\"../config/db.js\")\n\nif (process.env.DATABASE_URL) {\n  var sequelize = new Sequelize(process.env.DATABASE_URL);\n} else {\n  var sequelize = new Sequelize(config.database, config.username, config.password, {\n    host: config.host,\n    dialect: config.dialect\n  });\n}\n\nsequelize\n  .authenticate()\n  .then(function (err) {\n    console.log('Connection has been established successfully.');\n  })\n  .catch(function (err) {\n    console.log('Unable to connect to the database:', err);\n  })\n\nsequelize\n  .sync( /*{ force: true }*/ ) // Force To re-initialize tables on each run\n  .then(function (err) {\n    console.log('It worked!');\n  }, function (err) {\n    console.log('An error occurred while creating the table:', err);\n  })\n\nvar db = {};\n\nfs\n  .readdirSync(__dirname)\n  .filter(function (file) {\n    return (file.indexOf(\".\") !== 0) && (file !== \"index.js\");\n  })\n  .forEach(function (file) {\n    var model = sequelize.import(path.join(__dirname, file));\n    db[model.name] = model;\n  });\n\nObject.keys(db).forEach(function (modelName) {\n  if (\"associate\" in db[modelName]) {\n    db[modelName].associate(db);\n  }\n});\n\ndb.sequelize = sequelize;\ndb.Sequelize = Sequelize;\n\nmodule.exports = db;"
+          },
+          {
+            "filePath": "models/product.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var Product = sequelize.define(\"Product\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        code: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        description: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        tags: {\n            type: DataTypes.STRING\n        }\n    });\n    return Product;\n};"
+          },
+          {
+            "filePath": "models/user.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var User = sequelize.define(\"User\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false,\n        },\n        login: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        email: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        password: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        role: {\n            type: DataTypes.STRING,\n            allowNull: true\n        }\n    });\n    return User;\n};"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "^4.16.2",
+            "sequelize": "^4.13.10",
+            "mongodb": null,
+            "validator": null,
+            "mongoose": null,
+            "moduleType": "commonjs",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "nodeSourceInventory": [
+          "entry.js",
+          "config/db.js",
+          "models/index.js",
+          "models/product.js",
+          "models/user.js"
+        ],
+        "nodeSourceInventoryComplete": true,
+        "nodeEnumeratedDirectories": [
+          ".",
+          "core",
+          "models",
+          "routes",
+          "config"
+        ]
+      }
+    },
+    {
+      "id": "findOne",
+      "expected": true,
+      "cohort": "final-not-blind",
+      "input": {
+        "files": [
+          {
+            "filePath": "entry.js",
+            "content": "const express=require('express');const db=require('./models');const app=express();app.get('/items',(req,res)=>{db.User.findOne({where:{id:req.query.key}}).then(row=>res.json(row));});"
+          },
+          {
+            "filePath": "config/db.js",
+            "content": "module.exports = {\n  username: process.env.MYSQL_USER,\n  password: process.env.MYSQL_PASSWORD,\n  database: process.env.MYSQL_DATABASE,\n  host: process.env.MYSQL_HOST || 'mysql-db',\n  port: process.env.MYSQL_PORT || 3306,\n  dialect: 'mysql'\n}"
+          },
+          {
+            "filePath": "models/index.js",
+            "content": "\"use strict\";\n\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar Sequelize = require(\"sequelize\");\nvar env = process.env.NODE_ENV || \"development\";\nvar config = require(\"../config/db.js\")\n\nif (process.env.DATABASE_URL) {\n  var sequelize = new Sequelize(process.env.DATABASE_URL);\n} else {\n  var sequelize = new Sequelize(config.database, config.username, config.password, {\n    host: config.host,\n    dialect: config.dialect\n  });\n}\n\nsequelize\n  .authenticate()\n  .then(function (err) {\n    console.log('Connection has been established successfully.');\n  })\n  .catch(function (err) {\n    console.log('Unable to connect to the database:', err);\n  })\n\nsequelize\n  .sync( /*{ force: true }*/ ) // Force To re-initialize tables on each run\n  .then(function (err) {\n    console.log('It worked!');\n  }, function (err) {\n    console.log('An error occurred while creating the table:', err);\n  })\n\nvar db = {};\n\nfs\n  .readdirSync(__dirname)\n  .filter(function (file) {\n    return (file.indexOf(\".\") !== 0) && (file !== \"index.js\");\n  })\n  .forEach(function (file) {\n    var model = sequelize.import(path.join(__dirname, file));\n    db[model.name] = model;\n  });\n\nObject.keys(db).forEach(function (modelName) {\n  if (\"associate\" in db[modelName]) {\n    db[modelName].associate(db);\n  }\n});\n\ndb.sequelize = sequelize;\ndb.Sequelize = Sequelize;\n\nmodule.exports = db;"
+          },
+          {
+            "filePath": "models/product.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var Product = sequelize.define(\"Product\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        code: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        description: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        tags: {\n            type: DataTypes.STRING\n        }\n    });\n    return Product;\n};"
+          },
+          {
+            "filePath": "models/user.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var User = sequelize.define(\"User\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false,\n        },\n        login: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        email: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        password: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        role: {\n            type: DataTypes.STRING,\n            allowNull: true\n        }\n    });\n    return User;\n};"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "^4.16.2",
+            "sequelize": "^4.13.10",
+            "mongodb": null,
+            "validator": null,
+            "mongoose": null,
+            "moduleType": "commonjs",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "nodeSourceInventory": [
+          "entry.js",
+          "config/db.js",
+          "models/index.js",
+          "models/product.js",
+          "models/user.js"
+        ],
+        "nodeSourceInventoryComplete": true,
+        "nodeEnumeratedDirectories": [
+          ".",
+          "core",
+          "models",
+          "routes",
+          "config"
+        ]
+      }
+    },
+    {
+      "id": "error-only",
+      "expected": false,
+      "cohort": "final-not-blind",
+      "input": {
+        "files": [
+          {
+            "filePath": "entry.js",
+            "content": "const express=require('express');const db=require('./models');const app=express();app.get('/items',(req,res)=>{db.User.findAll({}).catch(error=>res.json(error));});"
+          },
+          {
+            "filePath": "config/db.js",
+            "content": "module.exports = {\n  username: process.env.MYSQL_USER,\n  password: process.env.MYSQL_PASSWORD,\n  database: process.env.MYSQL_DATABASE,\n  host: process.env.MYSQL_HOST || 'mysql-db',\n  port: process.env.MYSQL_PORT || 3306,\n  dialect: 'mysql'\n}"
+          },
+          {
+            "filePath": "models/index.js",
+            "content": "\"use strict\";\n\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar Sequelize = require(\"sequelize\");\nvar env = process.env.NODE_ENV || \"development\";\nvar config = require(\"../config/db.js\")\n\nif (process.env.DATABASE_URL) {\n  var sequelize = new Sequelize(process.env.DATABASE_URL);\n} else {\n  var sequelize = new Sequelize(config.database, config.username, config.password, {\n    host: config.host,\n    dialect: config.dialect\n  });\n}\n\nsequelize\n  .authenticate()\n  .then(function (err) {\n    console.log('Connection has been established successfully.');\n  })\n  .catch(function (err) {\n    console.log('Unable to connect to the database:', err);\n  })\n\nsequelize\n  .sync( /*{ force: true }*/ ) // Force To re-initialize tables on each run\n  .then(function (err) {\n    console.log('It worked!');\n  }, function (err) {\n    console.log('An error occurred while creating the table:', err);\n  })\n\nvar db = {};\n\nfs\n  .readdirSync(__dirname)\n  .filter(function (file) {\n    return (file.indexOf(\".\") !== 0) && (file !== \"index.js\");\n  })\n  .forEach(function (file) {\n    var model = sequelize.import(path.join(__dirname, file));\n    db[model.name] = model;\n  });\n\nObject.keys(db).forEach(function (modelName) {\n  if (\"associate\" in db[modelName]) {\n    db[modelName].associate(db);\n  }\n});\n\ndb.sequelize = sequelize;\ndb.Sequelize = Sequelize;\n\nmodule.exports = db;"
+          },
+          {
+            "filePath": "models/product.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var Product = sequelize.define(\"Product\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        code: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        description: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        tags: {\n            type: DataTypes.STRING\n        }\n    });\n    return Product;\n};"
+          },
+          {
+            "filePath": "models/user.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var User = sequelize.define(\"User\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false,\n        },\n        login: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        email: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        password: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        role: {\n            type: DataTypes.STRING,\n            allowNull: true\n        }\n    });\n    return User;\n};"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "^4.16.2",
+            "sequelize": "^4.13.10",
+            "mongodb": null,
+            "validator": null,
+            "mongoose": null,
+            "moduleType": "commonjs",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "nodeSourceInventory": [
+          "entry.js",
+          "config/db.js",
+          "models/index.js",
+          "models/product.js",
+          "models/user.js"
+        ],
+        "nodeSourceInventoryComplete": true,
+        "nodeEnumeratedDirectories": [
+          ".",
+          "core",
+          "models",
+          "routes",
+          "config"
+        ]
+      }
+    },
+    {
+      "id": "unknown-method",
+      "expected": false,
+      "cohort": "final-not-blind",
+      "input": {
+        "files": [
+          {
+            "filePath": "entry.js",
+            "content": "const express=require('express');const db=require('./models');const app=express();app.get('/items',(req,res)=>{db.User.customLookup({}).then(row=>res.json(row));});"
+          },
+          {
+            "filePath": "config/db.js",
+            "content": "module.exports = {\n  username: process.env.MYSQL_USER,\n  password: process.env.MYSQL_PASSWORD,\n  database: process.env.MYSQL_DATABASE,\n  host: process.env.MYSQL_HOST || 'mysql-db',\n  port: process.env.MYSQL_PORT || 3306,\n  dialect: 'mysql'\n}"
+          },
+          {
+            "filePath": "models/index.js",
+            "content": "\"use strict\";\n\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar Sequelize = require(\"sequelize\");\nvar env = process.env.NODE_ENV || \"development\";\nvar config = require(\"../config/db.js\")\n\nif (process.env.DATABASE_URL) {\n  var sequelize = new Sequelize(process.env.DATABASE_URL);\n} else {\n  var sequelize = new Sequelize(config.database, config.username, config.password, {\n    host: config.host,\n    dialect: config.dialect\n  });\n}\n\nsequelize\n  .authenticate()\n  .then(function (err) {\n    console.log('Connection has been established successfully.');\n  })\n  .catch(function (err) {\n    console.log('Unable to connect to the database:', err);\n  })\n\nsequelize\n  .sync( /*{ force: true }*/ ) // Force To re-initialize tables on each run\n  .then(function (err) {\n    console.log('It worked!');\n  }, function (err) {\n    console.log('An error occurred while creating the table:', err);\n  })\n\nvar db = {};\n\nfs\n  .readdirSync(__dirname)\n  .filter(function (file) {\n    return (file.indexOf(\".\") !== 0) && (file !== \"index.js\");\n  })\n  .forEach(function (file) {\n    var model = sequelize.import(path.join(__dirname, file));\n    db[model.name] = model;\n  });\n\nObject.keys(db).forEach(function (modelName) {\n  if (\"associate\" in db[modelName]) {\n    db[modelName].associate(db);\n  }\n});\n\ndb.sequelize = sequelize;\ndb.Sequelize = Sequelize;\n\nmodule.exports = db;"
+          },
+          {
+            "filePath": "models/product.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var Product = sequelize.define(\"Product\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        code: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        description: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        tags: {\n            type: DataTypes.STRING\n        }\n    });\n    return Product;\n};"
+          },
+          {
+            "filePath": "models/user.js",
+            "content": "\"use strict\";\n\nmodule.exports = function (sequelize, DataTypes) {\n    var User = sequelize.define(\"User\", {\n        id: {\n            type: DataTypes.INTEGER,\n            autoIncrement: true,\n            primaryKey: true\n        },\n        name: {\n            type: DataTypes.STRING,\n            allowNull: false,\n        },\n        login: {\n            type: DataTypes.STRING,\n            allowNull: false,\n            unique: true\n        },\n        email: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        password: {\n            type: DataTypes.STRING,\n            allowNull: false\n        },\n        role: {\n            type: DataTypes.STRING,\n            allowNull: true\n        }\n    });\n    return User;\n};"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "^4.16.2",
+            "sequelize": "^4.13.10",
+            "mongodb": null,
+            "validator": null,
+            "mongoose": null,
+            "moduleType": "commonjs",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "nodeSourceInventory": [
+          "entry.js",
+          "config/db.js",
+          "models/index.js",
+          "models/product.js",
+          "models/user.js"
+        ],
+        "nodeSourceInventoryComplete": true,
+        "nodeEnumeratedDirectories": [
+          ".",
+          "core",
+          "models",
+          "routes",
+          "config"
+        ]
+      }
+    }
+  ]
+}
