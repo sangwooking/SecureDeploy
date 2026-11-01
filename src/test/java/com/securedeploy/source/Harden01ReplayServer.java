@@ -40,7 +40,7 @@ public final class Harden01ReplayServer {
                         var collected=new TreeSet<String>();if(Files.exists(file))for(var id:json.readTree(file.toFile()))collected.add(id.asText());
                         collected.addAll(missing);Files.writeString(file,json.writeValueAsString(collected));
                     }
-                }catch(Exception capture){throw new IllegalStateException("CONTROLLED_CAPTURE_FAILED");}
+                }catch(Exception captureFailure){throw new IllegalStateException("CONTROLLED_CAPTURE_FAILED");}
                 return new VulnerabilityDataSource.LookupResult(findings,complete,incomplete,incomplete?List.of("OFFICIAL_CAPTURE_MISSING_QUERY"):List.of());
             };
         }

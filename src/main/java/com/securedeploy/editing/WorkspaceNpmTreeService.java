@@ -33,7 +33,7 @@ public class WorkspaceNpmTreeService {
     public boolean enabled(){return configured&&npm.available()&&environment.getProperty("securedeploy.editing.automation-enabled",Boolean.class,true)&&!environment.acceptsProfiles(Profiles.of("release-compatible","release-recovery"));}
     public View prepare(String workspace,Prepare request){
         workspaces.get(workspace);if(request==null||request.revision()<1||request.planIndex()<0)throw fail(HttpStatus.BAD_REQUEST,"올바른 수정본 revision과 저장된 공지 선택이 필요합니다.");
-        if(!enabled())throw fail(HttpStatus.SERVICE_UNAVAILABLE,"안전한 실행 환경을 사용할 수 없어 자동 npm 생성을 중단했습니다. 기존 분석 근거와 수동 수정을 이용하세요.");
+        if(!enabled())throw fail(HttpStatus.SERVICE_UNAVAILABLE,executionAvailable()?"현재 정책에서 자동 npm 생성을 비활성화했습니다. 기존 분석 근거와 수동 수정을 이용하세요.":"안전한 실행 환경을 사용할 수 없어 자동 npm 생성을 중단했습니다. 기존 분석 근거와 수동 수정을 이용하세요.");
         try(var input=workspaces.captureScan(workspace,request.revision())){
             if(!input.provenance().baselineVerified()||input.provenance().files().stream().anyMatch(WorkspaceScanSnapshot.File::changed))throw fail(HttpStatus.CONFLICT,"검증된 원본과 일치하는 변경 없는 Workspace가 필요합니다.");
             var snapshot=plans.get(input.provenance().originalReviewId());if(request.planIndex()<0||request.planIndex()>=snapshot.plans().size())throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"저장된 공지 계획을 선택하세요.");var selected=snapshot.plans().get(request.planIndex());
