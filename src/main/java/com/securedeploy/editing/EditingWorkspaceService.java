@@ -71,10 +71,13 @@ public class EditingWorkspaceService {
             this.files=s.files().stream().map(f->{var v=new StoredFile(f.id(),new SourceArchive.Entry(f.path(),f.original(),f.directory(),f.mode()));v.edit=f.edit();v.changeOrigin=f.origin();v.provenance.addAll(f.provenance());return v;}).toList();
             this.exports.addAll(s.exports());
         }
-        void clear() { try { files.forEach(StoredFile::clear); patches.clear(); } finally { lease.close(); } }
+        void evictFiles() { files.forEach(StoredFile::clear); patches.clear(); }
+        void clear() { try { evictFiles(); } finally { lease.close(); } }
     }
     // Bounded access-order cache; the vault, not this map, owns durable workspace lifetime.
     private final Map<String, State> states = new LinkedHashMap<>(8, .75f, true);
+    private record RetainedLease(long owner,long project,Instant expires,ProjectLifecycleGuard.Lease lease) { }
+    private final Map<String,RetainedLease> retainedLeases = new HashMap<>();
     private final Set<Long> creating = new HashSet<>();
     private final ReviewAccessService reviews;
     private final CurrentUserService users;
@@ -595,14 +598,18 @@ public class EditingWorkspaceService {
         if(vault==null||!vault.enabled())return;
         var loaded=vault.owner(user,Instant.now(clock));
         var cached=states.values().stream().filter(s->s.user==user).findFirst().orElse(null);
-        if(loaded.isEmpty()){if(cached!=null){states.remove(cached.id);cached.clear();}return;}
+        if(loaded.isEmpty()){if(cached!=null){states.remove(cached.id);cached.clear();}releaseRetainedOwner(user,null);return;}
         var value=loaded.get();var s=value.snapshot();
         var review=reviews.findAccessibleReviewWithVulnerabilities(s.review(),"분석 결과에 접근할 수 없습니다.");
         if(review.getProject().getId()!=s.project())throw fail(HttpStatus.NOT_FOUND,"작업 공간에 접근할 수 없습니다.");
+        releaseRetainedOwner(user,s.id());
         if(cached!=null&&cached.id.equals(s.id())&&cached.storeVersion==value.version())return;
         if(cached!=null){states.remove(cached.id);cached.clear();}
-        reserveCacheSlot();
-        var next=new State(value,lifecycle.work(s.project()));states.put(next.id,next);
+        var retained=retainedLeases.remove(s.id());
+        try {
+            reserveCacheSlot();
+            var next=new State(value,retained==null?lifecycle.work(s.project()):retained.lease());states.put(next.id,next);
+        }catch(RuntimeException failure){if(retained!=null)retainedLeases.put(s.id(),retained);throw failure;}
     }
     private void reserveCacheSlot() {
         // Called only under this service monitor. Each acquisition in flight reserves one slot.
@@ -619,14 +626,21 @@ public class EditingWorkspaceService {
             }
             if (victim == null) throw fail(HttpStatus.TOO_MANY_REQUESTS,
                     "동시 처리 또는 미승인 제안 한도에 도달했습니다. 기존 작업을 보존했으며 진행 중인 요청이나 제안을 확인해 주세요.");
+            if(retainedLeases.size()>=4092)throw fail(HttpStatus.TOO_MANY_REQUESTS,"저장 작업의 삭제 보호 한도입니다. 기존 작업을 보존했습니다.");
+            retainedLeases.put(victim.id,new RetainedLease(victim.user,victim.project,victim.expires,victim.lease));
             states.remove(victim.id);
-            victim.clear(); // Zero memory/release cache lease only. Never delete or rewrite the vault row.
+            victim.evictFiles(); // Only heavy data is removed. Keep the lightweight deletion lease until close/expiry.
         }
+    }
+    private void releaseRetainedOwner(long owner,String except) {
+        var iterator=retainedLeases.entrySet().iterator();
+        while(iterator.hasNext()){var row=iterator.next();if(row.getValue().owner()==owner&&!row.getKey().equals(except)){iterator.remove();row.getValue().lease().close();}}
     }
     private synchronized void expire() {
         var iterator = states.values().iterator();
         while (iterator.hasNext()) { var state = iterator.next(); if (!state.expires.isAfter(Instant.now(clock))) { iterator.remove(); state.clear(); } }
+        var retained=retainedLeases.values().iterator();while(retained.hasNext()){var row=retained.next();if(!row.expires().isAfter(Instant.now(clock))){retained.remove();row.lease().close();}}
     }
-    @PreDestroy public synchronized void shutdown() { closed = true; expiry.shutdownNow(); states.values().forEach(State::clear); states.clear(); }
+    @PreDestroy public synchronized void shutdown() { closed = true; expiry.shutdownNow(); states.values().forEach(State::clear); states.clear(); retainedLeases.values().forEach(r->r.lease().close());retainedLeases.clear(); }
     private SecureDeployException fail(HttpStatus status, String message) { return new SecureDeployException(status, message); }
 }

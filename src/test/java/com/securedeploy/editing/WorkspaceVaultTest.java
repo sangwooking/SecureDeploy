@@ -60,6 +60,17 @@ class WorkspaceVaultTest {
         for(int index=0;index<6;index++){user.set(index+1);assertEquals(2,restarted.get(workspaces.get(index).id()).revision());}
         assertEquals(6,jdbc.queryForObject("select count(*) from editing_workspace_v1",Integer.class));
     }
+    @Test void cacheEvictionKeepsProjectDeletionLeaseUntilExplicitWorkspaceClose()throws Exception {
+        var projects=new HashMap<Long,ProjectEntity>();
+        for(long id=1;id<=5;id++){if(id>1){jdbc.update("insert into users values(?)",id);jdbc.update("insert into projects values(?)",id);jdbc.update("insert into reviews values(?)",id);}var project=mock(ProjectEntity.class);when(project.getId()).thenReturn(id);projects.put(id,project);}
+        when(reviews.findAccessibleReviewWithVulnerabilities(anyLong(),anyString())).thenAnswer(i->{long id=i.getArgument(0);var r=new ReviewEntity("owned",ReviewSourceType.ZIP,null,1,0,100,"READY");r.assignProject(projects.get(id));return r;});
+        var guard=new ProjectLifecycleGuard();var s=new EditingWorkspaceService(reviews,users,sources,Clock.fixed(now.get(),ZoneOffset.UTC),guard,vault());services.add(s);
+        String first=null;for(long id=1;id<=5;id++){user.set(id);var w=s.create(id,new MockMultipartFile("file","source.zip","application/zip",SourceArchive.zip(List.of(new SourceArchive.Entry("a.ts","const owned = 1;".getBytes(StandardCharsets.UTF_8),false,0100644)))));if(id==1)first=w.id();}
+        assertThrows(RuntimeException.class,()->guard.deletion(projects.get(1L)));
+        assertEquals(5,jdbc.queryForObject("select count(*) from editing_workspace_v1",Integer.class));
+        user.set(1);s.delete(first);assertDoesNotThrow(()->guard.deletion(projects.get(1L)).close());
+        assertEquals(4,jdbc.queryForObject("select count(*) from editing_workspace_v1",Integer.class));
+    }
     @Test void restartPreservesRevisionOwnershipOriginalHashDraftAndExportApproval()throws Exception {
         var first=service();var w=open(first);var f=w.files().get(0);
         var saved=first.save(w.id(),f.id(),new EditingWorkspaceService.Change(1,f.originalHash(),"const changed = 2;\n"),false);
