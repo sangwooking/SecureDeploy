@@ -1,0 +1,634 @@
+{
+  "scope": "Preimplementation owned development/heldout-not-blind corpus; no external accuracy claim",
+  "cases": [
+    {
+      "id": "raw-title",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<img title=\"${req.query.name}\">`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encoded-title",
+      "truth": false,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{const safe=req.query.name.replaceAll(\"&\",\"&amp;\").replaceAll(\"<\",\"&lt;\").replaceAll(\">\",\"&gt;\").replaceAll('\"',\"&quot;\").replaceAll(\"'\",\"&#x27;\");res.send(`<img title=\"${safe}\">`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "raw-alt",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<img alt=\"${req.query.name}\">`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encoded-alt",
+      "truth": false,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{const safe=req.query.name.replaceAll(\"&\",\"&amp;\").replaceAll(\"<\",\"&lt;\").replaceAll(\">\",\"&gt;\").replaceAll('\"',\"&quot;\").replaceAll(\"'\",\"&#x27;\");res.send(`<img alt=\"${safe}\">`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "raw-aria-label",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<img aria-label=\"${req.query.name}\">`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "encoded-aria-label",
+      "truth": false,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{const safe=req.query.name.replaceAll(\"&\",\"&amp;\").replaceAll(\"<\",\"&lt;\").replaceAll(\">\",\"&gt;\").replaceAll('\"',\"&quot;\").replaceAll(\"'\",\"&#x27;\");res.send(`<img aria-label=\"${safe}\">`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "single-quoted-title",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<p title='${req.params.slug}'>card</p>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cross-file-attribute",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import {render} from './format.mjs';import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(render(req.query.name));});"
+          },
+          {
+            "filePath": "format.mjs",
+            "content": "export function render(name){const copy=name;return `<span title=\"${copy}\">hello</span>`;}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "text-existing",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<p>${req.query.name}</p>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "constant",
+      "truth": false,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<p title=\"known\">ok</p>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "json-existing",
+      "truth": false,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.json(req.query.name);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "plain-existing",
+      "truth": false,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.type(\"text/plain\");res.send(req.query.name);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-href",
+      "truth": null,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<a href=\"${req.query.name}\">x</a>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-onclick",
+      "truth": null,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<a onclick=\"${req.query.name}\">x</a>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-style",
+      "truth": null,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<a style=\"${req.query.name}\">x</a>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-srcdoc",
+      "truth": null,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<a srcdoc=\"${req.query.name}\">x</a>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unterminated-attribute",
+      "truth": null,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<p title=\"${req.query.name}suffix`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "custom-sanitizer",
+      "truth": null,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{const safe=unknownClean(req.query.name);res.send(`<p title=\"${safe}\">x</p>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "quoted-gt-title",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "development",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<p title=\"known > ${req.query.name}\">x</p>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "heldout-next-title",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "heldout-not-blind",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "app/api/card/route.ts",
+            "content": "export function GET(req){const q=new URL(req.url).searchParams.get(\"q\");return new Response(`<section title=\"${q}\">x</section>`,{headers:{\"Content-Type\":\"text/html\"}});}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "heldout-next-encoded",
+      "truth": false,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "heldout-not-blind",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "app/api/card/route.ts",
+            "content": "export function GET(req){const q=new URL(req.url).searchParams.get(\"q\");const safe=q.replaceAll(\"&\",\"&amp;\").replaceAll(\"<\",\"&lt;\").replaceAll(\">\",\"&gt;\").replaceAll('\"',\"&quot;\").replaceAll(\"'\",\"&#x27;\");return new Response(`<section title=\"${safe}\">x</section>`,{headers:{\"Content-Type\":\"text/html\"}});}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "heldout-alias",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "heldout-not-blind",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{const value=req.query.name;const payload={label:value};res.send(`<div aria-label=\"${payload.label}\">x</div>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "heldout-second-safe-hole",
+      "truth": true,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "heldout-not-blind",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{const safe=req.query.name.replaceAll(\"&\",\"&amp;\").replaceAll(\"<\",\"&lt;\").replaceAll(\">\",\"&gt;\").replaceAll('\"',\"&quot;\").replaceAll(\"'\",\"&#x27;\");res.send(`<p title=\"${safe}\">${req.query.name}</p>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "heldout-event-review",
+      "truth": null,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "heldout-not-blind",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';const app=express();app.get('/profile/:slug',(req,res)=>{res.send(`<div onfocus=\"${req.query.name}\">x</div>`);});"
+          }
+        ]
+      }
+    },
+    {
+      "id": "heldout-dead-handler",
+      "truth": false,
+      "rule": "HTTP_HTML_INPUT_FLOW",
+      "cohort": "heldout-not-blind",
+      "oracle": "Owned specification: request text must remain data; unencoded quotes in a complete inert quoted attribute can change markup. Script/URL/CSS/invalid contexts not asserted by this contract.",
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "entry.mjs",
+            "content": "import express from 'express';function unused(req,res){res.send(`<p title=\"${req.query.name}\">x</p>`)};"
+          }
+        ]
+      }
+    }
+  ]
+}

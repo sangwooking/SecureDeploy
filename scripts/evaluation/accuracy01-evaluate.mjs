@@ -1,0 +1,11 @@
+// Trusted static analyzer only: supplied code is data, never an imported module.
+import fs from 'node:fs';import path from 'node:path';import{pathToFileURL}from'node:url';import{createHash}from'node:crypto';
+const[worker,output,mode='all']=process.argv.slice(2),{evaluatePipeline}=await import(pathToFileURL(path.resolve(worker)));
+const summary={scope:'Separate frozen owned cohorts, not blinded; UNKNOWN is never TN',worker,cohorts:[]};
+for(const name of ['html','collection']){
+ const bytes=fs.readFileSync(new URL(`./accuracy01-${name}-inputs.json`,import.meta.url)),input=JSON.parse(bytes),counts={TP:0,FP:0,TN:0,FN:0,UNKNOWN:0};const rows=[];
+ for(const c of input.cases){if(mode==='development'&&c.cohort==='heldout-not-blind')continue;const t=performance.now(),rssBefore=process.memoryUsage().rss,{analysis:r,pipeline}=evaluatePipeline(c.input);const f=r.findings.filter(f=>f.ruleId===c.rule),observed=r.nodeUses.some(n=>n.kind==='MONGO_RESULT_HTTP_RESPONSE_OBSERVED');const category=c.truth===null?'UNKNOWN':c.truth?(f.length?'TP':'FN'):(f.length?'FP':'TN');counts[category]++;
+ rows.push({id:c.id,cohort:c.cohort??'flow',truth:c.truth,classification:category,expectedResponseOrigin:c.expectedResponseOrigin,observedResponseOrigin:observed,unexpectedFlow:c.expectedResponseOrigin===false&&observed,unexpectedUnknownPromotion:c.truth===null&&r.findings.some(f=>name==='collection'?/IDOR|AUTHORIZATION/.test(f.ruleId):f.ruleId===c.rule),sourceHashes:c.input.files.map(f=>({filePath:f.filePath,sha256:createHash('sha256').update(f.content).digest('hex')})),files:r.files,findings:f,nodeUses:r.nodeUses.filter(n=>n.kind?.startsWith('MONGO_')||n.kind?.includes('HTML_')),pipeline,partial:r.status==='PARTIAL',limitations:r.limitations,wallMs:performance.now()-t,rssBefore,rssAfter:process.memoryUsage().rss});}
+ summary.cohorts.push({name,inputSha256:createHash('sha256').update(bytes).digest('hex'),counts,rows});
+}
+fs.writeFileSync(output,JSON.stringify(summary,null,2));console.log(JSON.stringify(summary.cohorts.map(x=>({name:x.name,counts:x.counts,flows:x.rows.filter(r=>r.observedResponseOrigin).length,unexpected:x.rows.filter(r=>r.unexpectedFlow||r.unexpectedUnknownPromotion).length}))));

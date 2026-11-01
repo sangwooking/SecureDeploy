@@ -1,0 +1,173 @@
+{
+  "scope": "Preimplementation DB-result provenance oracles, not vulnerability labels",
+  "cases": [
+    {
+      "id": "map",
+      "expectedResponseOrigin": true,
+      "truth": null,
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "main.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://owned.invalid',(err,connection)=>{const db=connection.collection('records');app.get('/records/:id',(req,res)=>{db.find({key:req.params.id}).toArray((err,rows)=>{if(err)return res.status(500).end();res.json(rows.map(row=>({label:row.label})));});});});"
+          }
+        ]
+      },
+      "oracle": "Conditional native driver success result reaches HTTP or does not. Object authorization remains UNKNOWN, not confirmed IDOR."
+    },
+    {
+      "id": "forEach",
+      "expectedResponseOrigin": true,
+      "truth": null,
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "main.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://owned.invalid',(err,connection)=>{const db=connection.collection('records');app.get('/records/:id',(req,res)=>{db.find({key:req.params.id}).toArray((err,rows)=>{if(err)return res.status(500).end();rows.forEach(row=>{res.json(row);});});});});"
+          }
+        ]
+      },
+      "oracle": "Conditional native driver success result reaches HTTP or does not. Object authorization remains UNKNOWN, not confirmed IDOR."
+    },
+    {
+      "id": "accumulator",
+      "expectedResponseOrigin": true,
+      "truth": null,
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "main.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://owned.invalid',(err,connection)=>{const db=connection.collection('records');app.get('/records/:id',(req,res)=>{db.find({key:req.params.id}).toArray((err,rows)=>{if(err)return res.status(500).end();const out=[];rows.forEach(row=>{out.push({value:row.label});});res.json(out);});});});"
+          }
+        ]
+      },
+      "oracle": "Conditional native driver success result reaches HTTP or does not. Object authorization remains UNKNOWN, not confirmed IDOR."
+    },
+    {
+      "id": "unrelated-map",
+      "expectedResponseOrigin": false,
+      "truth": null,
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "main.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://owned.invalid',(err,connection)=>{const db=connection.collection('records');app.get('/records/:id',(req,res)=>{db.find({key:req.params.id}).toArray((err,rows)=>{if(err)return res.status(500).end();res.json(rows.map(row=>({label:'fixed'})));});});});"
+          }
+        ]
+      },
+      "oracle": "Conditional native driver success result reaches HTTP or does not. Object authorization remains UNKNOWN, not confirmed IDOR."
+    },
+    {
+      "id": "unused-collection",
+      "expectedResponseOrigin": false,
+      "truth": null,
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "main.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://owned.invalid',(err,connection)=>{const db=connection.collection('records');app.get('/records/:id',(req,res)=>{db.find({key:req.params.id}).toArray((err,rows)=>{if(err)return res.status(500).end();rows.map(row=>row.label);res.json({ok:true});});});});"
+          }
+        ]
+      },
+      "oracle": "Conditional native driver success result reaches HTTP or does not. Object authorization remains UNKNOWN, not confirmed IDOR."
+    },
+    {
+      "id": "error-only",
+      "expectedResponseOrigin": false,
+      "truth": null,
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "main.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://owned.invalid',(err,connection)=>{const db=connection.collection('records');app.get('/records/:id',(req,res)=>{db.find({key:req.params.id}).toArray((err,rows)=>{if(err)return res.status(500).end();if(err){res.json(rows);}res.end();});});});"
+          }
+        ]
+      },
+      "oracle": "Conditional native driver success result reaches HTTP or does not. Object authorization remains UNKNOWN, not confirmed IDOR."
+    },
+    {
+      "id": "nested",
+      "expectedResponseOrigin": true,
+      "truth": null,
+      "input": {
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36",
+            "next": "15.3.0",
+            "moduleType": "module",
+            "resolutionStatus": "PARSED"
+          }
+        ],
+        "files": [
+          {
+            "filePath": "main.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://owned.invalid',(err,connection)=>{const db=connection.collection('records');app.get('/records/:id',(req,res)=>{db.find({key:req.params.id}).toArray((err,rows)=>{if(err)return res.status(500).end();const out=[];rows.forEach(row=>{db.findOne({key:row.key},(err,detail)=>{if(err)return res.end();row.label=detail.label;out.push(row);res.json(out);});});});});});"
+          }
+        ]
+      },
+      "oracle": "Conditional native driver success result reaches HTTP or does not. Object authorization remains UNKNOWN, not confirmed IDOR."
+    }
+  ]
+}
