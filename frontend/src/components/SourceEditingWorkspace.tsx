@@ -286,7 +286,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
                 {flowFindings.map(f => <details key={f.findingId}><summary>{f.title} · 원본 {f.location.line}행</summary><p>{f.riskExplanation}</p><p>{f.recommendedAction}</p>
                   <ul>{f.verificationSteps.map((s,i) => <li key={i}>{s}</li>)}</ul></details>)}
                 <p>편집 후 줄 위치는 달라질 수 있습니다. 수정 완료는 재검사로 확인해야 합니다.</p></details>}
-              {findings.length===0&&flowFindings.length===0&&<p>이 파일에 연결된 코드 Finding은 없어요. 라이브러리 공지와 코드 Patch 지원은 별개이며, 수동 편집 후 재검사할 수 있습니다.</p>}
+              {findings.length===0&&flowFindings.length===0&&<p>{problemContext?.locations.some(l=>l.path===selected.path)?'선택한 문제의 함수 전달 근거에 연결된 파일입니다. 원본 근거와 출력 문맥을 확인하고 수동 편집 후 재검사하세요. 자동 Patch 지원을 의미하지 않습니다.':'이 파일에 연결된 코드 Finding은 없어요. 라이브러리 공지와 코드 Patch 지원은 별개이며, 수동 편집 후 재검사할 수 있습니다.'}</p>}
             </> : <p>파일을 선택하면 연결된 분석 근거를 확인할 수 있습니다.</p>}
           </aside>
         </div>
