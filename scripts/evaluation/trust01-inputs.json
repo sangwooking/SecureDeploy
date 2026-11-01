@@ -1,0 +1,237 @@
+{
+  "frozenBeforeImplementation": true,
+  "scope": "11 controlled flow oracles; ownership truth UNKNOWN, not TN by absence",
+  "cases": [
+    {
+      "id": "params",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.params.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Object ownership/authentication policy not independently verified; vulnerability label UNKNOWN. Direct DB result flow can be observed separately.",
+      "category": "callback",
+      "truth": null
+    },
+    {
+      "id": "session",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.session.userId},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Object ownership/authentication policy not independently verified; vulnerability label UNKNOWN. Direct DB result flow can be observed separately.",
+      "category": "callback",
+      "truth": null
+    },
+    {
+      "id": "comparison",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{if(req.params.id!==req.session.userId)return res.status(403).end();db.findOne({key:req.params.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Object ownership/authentication policy not independently verified; vulnerability label UNKNOWN. Direct DB result flow can be observed separately.",
+      "category": "callback",
+      "truth": null
+    },
+    {
+      "id": "admin",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{if(!req.user.isAdmin)return res.status(403).end();db.findOne({key:req.params.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Object ownership/authentication policy not independently verified; vulnerability label UNKNOWN. Direct DB result flow can be observed separately.",
+      "category": "callback",
+      "truth": null
+    },
+    {
+      "id": "public",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.params.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Object ownership/authentication policy not independently verified; vulnerability label UNKNOWN. Direct DB result flow can be observed separately.",
+      "category": "callback",
+      "truth": null
+    },
+    {
+      "id": "error",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.params.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Object ownership/authentication policy not independently verified; vulnerability label UNKNOWN. Direct DB result flow can be observed separately.",
+      "category": "callback",
+      "truth": null
+    },
+    {
+      "id": "renamed",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:Number(req.params.key)},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Object ownership/authentication policy not independently verified; vulnerability label UNKNOWN. Direct DB result flow can be observed separately.",
+      "category": "callback",
+      "truth": null
+    },
+    {
+      "id": "dynamic",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{resolve().findOne({key:req.params.id},(err,row)=>res.json(row));});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Object ownership/authentication policy not independently verified; vulnerability label UNKNOWN. Direct DB result flow can be observed separately.",
+      "category": "unknown",
+      "truth": null
+    },
+    {
+      "id": "no_response",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.params.id},(err,row)=>{if(err)return;const value=row.label;});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Object ownership/authentication policy not independently verified; vulnerability label UNKNOWN. Direct DB result flow can be observed separately.",
+      "category": "callback",
+      "truth": null
+    },
+    {
+      "id": "error_only",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.params.id},(err,row)=>{if(err)return res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Object ownership/authentication policy not independently verified; vulnerability label UNKNOWN. Direct DB result flow can be observed separately.",
+      "category": "callback",
+      "truth": null
+    },
+    {
+      "id": "projection",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.params.id},(err,row)=>{if(err)return;const alias=row;res.json({label:alias.label});});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Object ownership/authentication policy not independently verified; vulnerability label UNKNOWN. Direct DB result flow can be observed separately.",
+      "category": "callback",
+      "truth": null
+    }
+  ]
+}

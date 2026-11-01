@@ -114,6 +114,13 @@ class WorkspaceVaultTest {
         assertThrows(EditingConflictException.class,()->first.save(w.id(),f.id(),new EditingWorkspaceService.Change(1,f.originalHash(),"const lost = 3;\n"),false));
         assertEquals("const winner = 2;\n",first.content(w.id(),f.id()).text());assertEquals(2,first.get(w.id()).revision());
     }
+    @Test void commitCrossingRetentionDeadlineCannotAcknowledgeResumableSave()throws Exception {
+        var store=spy(vault());var clock=new Clock(){public ZoneId getZone(){return ZoneOffset.UTC;}public Clock withZone(ZoneId z){return this;}public Instant instant(){return now.get();}};
+        var service=new EditingWorkspaceService(reviews,users,sources,clock,new ProjectLifecycleGuard(),store);services.add(service);var w=open(service);var f=w.files().get(0);
+        doAnswer(call->{var version=call.callRealMethod();now.set(now.get().plusSeconds(3601));return version;}).when(store).put(any(WorkspaceVault.Snapshot.class),anyLong());
+        var failure=assertThrows(EditingConflictException.class,()->service.save(w.id(),f.id(),new EditingWorkspaceService.Change(1,f.originalHash(),"const saved = 2;\n"),false));
+        assertEquals("WORKSPACE_EXPIRED",failure.code);assertThrows(com.securedeploy.global.error.SecureDeployException.class,()->service.get(w.id()));
+    }
     @Test void ciphertextTamperingMetadataTamperingAndWrongOrMissingKeyFailClosed()throws Exception {
         var s=service();var w=open(s);byte[] payload=jdbc.queryForObject("select payload from editing_workspace_v1",byte[].class);
         assertFalse(new String(payload,StandardCharsets.ISO_8859_1).contains("const original"));

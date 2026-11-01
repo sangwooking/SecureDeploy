@@ -588,10 +588,18 @@ public class EditingWorkspaceService {
         return SourceArchive.hash(value.toString().getBytes(StandardCharsets.UTF_8));
     }
     private void persist(State s) {
+        if(!Instant.now(clock).isBefore(s.expires)){
+            states.remove(s.id);s.clear();
+            throw new EditingConflictException("WORKSPACE_EXPIRED","작업 공간의 보존 기한이 끝났어요. 저장 완료로 안내할 수 없습니다. 미저장 편집을 복사해 보관해 주세요.");
+        }
         if(vault==null||!vault.enabled())return;
         var snapshot=new WorkspaceVault.Snapshot(1,s.id,s.user,s.project,s.review,s.revision,s.created,s.expires,s.source,s.identity,
             s.files.stream().map(f->new WorkspaceVault.File(f.id,f.original.path(),f.original.bytes(),f.original.directory(),f.original.mode(),f.hash,f.edit,f.changeOrigin,List.copyOf(f.provenance))).toList(),List.copyOf(s.exports));
-        try {s.storeVersion=vault.put(snapshot,s.storeVersion);}
+        try {s.storeVersion=vault.put(snapshot,s.storeVersion);
+            // A blocked SQL write can commit after retention has ended. Never acknowledge
+            // a resumable save in that case; ordinary expiration cleanup still owns deletion.
+            if(!Instant.now(clock).isBefore(s.expires))throw new EditingConflictException("WORKSPACE_EXPIRED","저장 처리 중 보존 기한이 끝났어요. 저장 완료로 안내할 수 없습니다. 미저장 편집을 복사해 보관해 주세요.");
+        }
         catch(RuntimeException failure){states.remove(s.id);s.clear();throw failure;}
     }
     private void restore(long user) {

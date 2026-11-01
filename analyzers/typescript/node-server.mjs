@@ -161,6 +161,8 @@ export function nodeServer(api) {
     }finally{loading.delete(mod);}
   }
   function property(base,key,node,state) {
+    // A database result field remains opaque data, never an authenticated identity or injection source.
+    if(base.dbResultOrigins?.length)return {...unknown(),dbResultOrigins:base.dbResultOrigins};
     // Preserve a request principal observation across fields; never establish identity.
     if(base.principal)return {...unknown(),principal:true,principalTrace:[...(base.principalTrace??[]),loc(node,state.mod,'PRINCIPAL_FIELD_UNVERIFIED',state.fn)].slice(0,6)};
     if(base.htmlParamsRoot)return {...(fields.read(base,key,node,state)??base),htmlParamsRoot:false,htmlParamLeaf:true,htmlParamVerified:state.context.htmlParamNames?.includes(key)===true};
@@ -275,7 +277,8 @@ export function nodeServer(api) {
       location:loc(node,state.mod,'MONGO_CALLBACK_REGISTRATION',state.fn),
       trace:[...queries.flatMap(q=>q.identifierTrace??q.trace??[]).slice(0,16),loc(callback.target.node,callback.target.mod,'MONGO_CALLBACK_TARGET',callback.target)],
       limitations:['CONDITIONAL_CALLBACK_NOT_RUNTIME_COMPLETION','RESULT_AND_OWNERSHIP_POLICY_UNKNOWN','ERROR_BRANCH_NOT_SUCCESS_RESULT']},state.mod);
-    invoke(callback.target,[constant(null),unknown()],1,state.context,new Set(),true);
+    const source=loc(node,state.mod,'MONGO_RESULT_ORIGIN',state.fn);
+    invoke(callback.target,[constant(null),{...unknown(),dbResultOrigins:[source]}],1,state.context,new Set(),true);
     note(state.mod,'MONGO_CALLBACK_RESULT_OPAQUE');
   }
   function queryExecution(queries,origin,node,state,operation,createdAt) {
@@ -477,6 +480,16 @@ export function nodeServer(api) {
       return {value:unknown()};
     }
     if(['express-response','pages-response'].includes(receiver?.tag)&&['send','json','render','redirect','status','end','write','type','set','header','setHeader'].includes(method)) {
+      if(['send','json','render','end','write'].includes(method)&&!state.context.setup){
+        const origins=[],seen=new Set();let budget=100;
+        const scan=(v,depth=0)=>{tick(state.mod);if(!v||depth>3||--budget<0||seen.has(v.ref??v))return;seen.add(v.ref??v);
+          for(const l of v.dbResultOrigins??[])if(origins.length<20&&!origins.some(o=>JSON.stringify(o)===JSON.stringify(l)))origins.push(l);
+          if(v.ref?.properties)for(const child of v.ref.properties.values())scan(child,depth+1);
+        };args.forEach(a=>scan(a));
+        if(origins.length)append(result.nodeUses,{ruleId:'JS_MONGO_RESOURCE_ACCESS',kind:'MONGO_RESULT_HTTP_RESPONSE_OBSERVED',operation:method,
+          location:loc(node,state.mod,'MONGO_RESULT_HTTP_RESPONSE',state.fn),trace:origins,
+          limitations:['CONDITIONAL_SUCCESS_PATH_NOT_RUNTIME_COMPLETION','OBJECT_OWNERSHIP_AND_AUTHENTICATION_NOT_VERIFIED','DATABASE_RESULT_NOT_REQUEST_INJECTION_TAINT']},state.mod);
+      }
       if(['type','set','header','setHeader'].includes(method))return {value:api.html.header(receiver,args,method,state,node)};
       if(method==='status')return {value:api.html.status(receiver,args,state)};
       api.html.output(receiver,method==='render'?[union(...args)]:args,node,state,method);
