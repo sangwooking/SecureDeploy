@@ -42,7 +42,7 @@ export function DependencyUpdatePlans({reviewId,onEditDependency,selectedDepende
       {reviewId&&cap.value?.dependencyAdvice&&cap.value?.providerAvailable&&<DependencyAiAdvicePanel reviewId={reviewId} evidence={result} onEditDependency={onEditDependency} selectedIndex={selectedDependency?selectedIndex:undefined} />}
       {!result.plans.length&&<p>이 저장 결과에는 업데이트 계획으로 연결할 보안 공지가 없습니다. 전체 안전을 의미하지 않습니다.</p>}
       {selectedDependency&&selectedIndex===-1&&<p role="note">이 공지에 연결된 업데이트 근거가 없거나 여러 계획과 겹칩니다. 다른 공지의 AI 의견을 대신 표시하지 않습니다.</p>}
-      {!cap.value?.providerAvailable&&!cap.value?.npmTreePlans&&<p>AI Provider 설정이 필요해요. 아래 근거 기반 계획과 수동 수정을 이용할 수 있습니다.</p>}
+      {cap.value?.npmIsolation?.state==='UNAVAILABLE'?<p role="note">{cap.value.npmIsolation.message}</p>:!cap.value?.providerAvailable&&!cap.value?.npmTreePlans&&<p>AI Provider 설정이 필요해요. 아래 근거 기반 계획과 수동 수정을 이용할 수 있습니다.</p>}
       {shownPlans.map((p,i)=><details key={`${p.ecosystem}:${p.packageName}:${p.lockedVersion}:${p.advisoryId}:${i}`}>
         <summary>{p.packageName}@{p.lockedVersion} → {p.sameMajorCandidates.join(', ')||'같은 major 후보 미확인'} · {p.advisoryId} · 적용 가능 미확인</summary>
         <h4>확인된 근거</h4><p>{p.explanation}</p>
