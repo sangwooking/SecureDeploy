@@ -29,13 +29,14 @@ public class WorkspaceVault {
     private final String keyId;
     private final Duration retention;
     private boolean auditEnabled;
+    private final String instanceId=UUID.randomUUID().toString();
     private org.springframework.transaction.support.TransactionTemplate auditTx;
     record Write(String requestId,String fileId,String hash,Long beforeRevision,String type) { }
-    record Event(String eventId,String workspaceId,long ownerId,long projectId,long reviewId,String type,Instant at,Instant expiresAt,Long beforeRevision,Long afterRevision,long storeVersion,String requestId,String fileId,String currentHash,String outcome,String executionPath) { }
+    record Event(String eventId,String workspaceId,long ownerId,long projectId,long reviewId,String type,Instant at,Instant expiresAt,Long beforeRevision,Long afterRevision,long storeVersion,String requestId,String fileId,String currentHash,String outcome,String executionPath,String actorType,String instanceId) { }
     @org.springframework.beans.factory.annotation.Autowired
     void configureAudit(@Value("${securedeploy.editing.audit.enabled:false}") boolean active) {
         if(active&&!enabled)throw new IllegalStateException("Workspace audit requires persistent storage");
-        if(active){jdbc.queryForObject("select count(*) from editing_workspace_event_v1 where 1=0",Long.class);
+        if(active){jdbc.queryForList("select actor_type,instance_id from editing_workspace_event_v1 where 1=0");
             auditTx=new org.springframework.transaction.support.TransactionTemplate(new org.springframework.jdbc.datasource.DataSourceTransactionManager(Objects.requireNonNull(jdbc.getDataSource())));}
         auditEnabled=active;
     }
@@ -121,13 +122,13 @@ public class WorkspaceVault {
         event(id,owner,project,review,type,now,((java.sql.Timestamp)row.get("expires_at")).toInstant(),null,null,version,null,null,null,"COMMITTED",path);
     }
     private void event(String id,long owner,long project,long review,String type,Instant at,Instant expires,Long before,Long after,long version,String request,String file,String hash,String outcome,String path){
-        jdbc.update("insert into editing_workspace_event_v1(event_id,workspace_id,owner_id,project_id,review_id,event_type,occurred_at,expires_at,before_revision,after_revision,store_version,request_id,file_id,current_hash,outcome,execution_path) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",UUID.randomUUID().toString(),id,owner,project,review,type,java.sql.Timestamp.from(at),java.sql.Timestamp.from(expires),before,after,version,request,file,hash,outcome,path);
+        jdbc.update("insert into editing_workspace_event_v1(event_id,workspace_id,owner_id,project_id,review_id,event_type,occurred_at,expires_at,before_revision,after_revision,store_version,request_id,file_id,current_hash,outcome,execution_path,actor_type,instance_id) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",UUID.randomUUID().toString(),id,owner,project,review,type,java.sql.Timestamp.from(at),java.sql.Timestamp.from(expires),before,after,version,request,file,hash,outcome,path,path.equals("USER_REQUEST")?"OWNER":"SYSTEM",instanceId);
     }
     List<Event> events(String id,long owner){return readEvents(id,owner,null);}
     Optional<Event> receipt(String id,long owner,String request){if(request==null)return Optional.empty();return readEvents(id,owner,request).stream().findFirst();}
     private List<Event> readEvents(String id,long owner,String request){if(!auditEnabled)return List.of();
         String sql="select * from editing_workspace_event_v1 where workspace_id=? and owner_id=?"+(request==null?"":" and request_id=?")+" order by occurred_at desc,event_id desc limit 100";
-        return jdbc.query(sql,(r,n)->new Event(r.getString("event_id"),r.getString("workspace_id"),r.getLong("owner_id"),r.getLong("project_id"),r.getLong("review_id"),r.getString("event_type"),r.getTimestamp("occurred_at").toInstant(),r.getTimestamp("expires_at").toInstant(),(Long)r.getObject("before_revision"),(Long)r.getObject("after_revision"),r.getLong("store_version"),r.getString("request_id"),r.getString("file_id"),r.getString("current_hash"),r.getString("outcome"),r.getString("execution_path")),request==null?new Object[]{id,owner}:new Object[]{id,owner,request});}
+        return jdbc.query(sql,(r,n)->new Event(r.getString("event_id"),r.getString("workspace_id"),r.getLong("owner_id"),r.getLong("project_id"),r.getLong("review_id"),r.getString("event_type"),r.getTimestamp("occurred_at").toInstant(),r.getTimestamp("expires_at").toInstant(),(Long)r.getObject("before_revision"),(Long)r.getObject("after_revision"),r.getLong("store_version"),r.getString("request_id"),r.getString("file_id"),r.getString("current_hash"),r.getString("outcome"),r.getString("execution_path"),r.getString("actor_type"),r.getString("instance_id")),request==null?new Object[]{id,owner}:new Object[]{id,owner,request});}
     Optional<Loaded> stored(String id,long owner){if(!enabled)return Optional.empty();return jdbc.query("select project_id,review_id,store_version,expires_at,key_id,payload from editing_workspace_v1 where id=? and owner_id=?",(r,n)->decode(id,owner,r.getLong(1),r.getLong(2),r.getLong(3),r.getTimestamp(4).toInstant(),r.getString(5),r.getBytes(6)),id,owner).stream().findFirst();}
     private byte[] aad(String id,long owner,long project,long review,long version,Instant expiry,String kid){
         return ("securedeploy-workspace-v1|"+id+"|"+owner+"|"+project+"|"+review+"|"+version+"|"+expiry+"|"+kid).getBytes(StandardCharsets.UTF_8);
