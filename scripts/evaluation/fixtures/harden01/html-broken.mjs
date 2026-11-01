@@ -1,0 +1,2 @@
+function escapeHTML(value){return value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#x27;');}
+export function render(name){return `<main><h1>Profile</h1><p id="output">${escapeHTML(name)}</p><footer>Normal footer</footer></main>`;}
