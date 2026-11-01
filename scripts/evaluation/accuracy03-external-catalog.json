@@ -1,0 +1,564 @@
+{
+  "oracles": {
+    "rows": [
+      {
+        "id": "sql-unsafe",
+        "label": "master",
+        "commit": "9ba473add536f66ac9007966acb2a775dd31277a",
+        "function": "userSearch",
+        "rule": "JS_SEQUELIZE_SQL_INPUT_FLOW",
+        "truth": true,
+        "oracle": "Developer documented raw SQL string construction from login; registered POST /app/usersearch",
+        "cohort": "development",
+        "independentDefect": "sql-usersearch"
+      },
+      {
+        "id": "sql-orm",
+        "label": "orm",
+        "commit": "dc1f9c54685eb04f55e444370d6d622834e4cc00",
+        "function": "userSearch",
+        "rule": "JS_SEQUELIZE_SQL_INPUT_FLOW",
+        "truth": false,
+        "oracle": "Targeted raw SQL construction removed in official dc1f9c5; ORM values only; not whole SQL/NoSQL/auth safety",
+        "cohort": "development",
+        "independentDefect": "sql-usersearch"
+      },
+      {
+        "id": "shell-unsafe",
+        "label": "master",
+        "commit": "9ba473add536f66ac9007966acb2a775dd31277a",
+        "function": "ping",
+        "rule": "JS_SHELL_COMMAND_INPUT_FLOW",
+        "truth": true,
+        "oracle": "Developer documented request address concatenated into child_process.exec",
+        "cohort": "development",
+        "independentDefect": "shell-ping"
+      },
+      {
+        "id": "shell-argv",
+        "label": "execfile",
+        "commit": "4fe36fcfbd615fc9ea340e1238be33dd0d140ef8",
+        "function": "ping",
+        "rule": "JS_SHELL_COMMAND_INPUT_FLOW",
+        "truth": false,
+        "oracle": "Official execFile fixed executable + argument array, shell disabled by default; argument injection not asserted safe",
+        "cohort": "final-not-blind",
+        "independentDefect": "shell-ping"
+      },
+      {
+        "id": "guarded-raw-sql",
+        "label": "validation",
+        "commit": "e246018f8d781baeb98ce2aeee737e82b5a42101",
+        "function": "userSearch",
+        "rule": "JS_SEQUELIZE_SQL_INPUT_FLOW",
+        "truth": null,
+        "oracle": "validator whitelist helper uses global binding; engine/runtime policy not independently proven; retain review",
+        "cohort": "development",
+        "independentDefect": "sql-usersearch"
+      },
+      {
+        "id": "ejs-before",
+        "label": "xssBefore",
+        "commit": "c8d519e41a752def46d80de699a94a23800df426",
+        "function": "productSearch",
+        "rule": "HTTP_HTML_INPUT_FLOW",
+        "truth": null,
+        "oracle": "Official EJS raw searchTerm output defect known; template input contract unsupported, capability audit not TN",
+        "cohort": "final-not-blind",
+        "independentDefect": "ejs-searchterm"
+      },
+      {
+        "id": "ejs-after",
+        "label": "xssAfter",
+        "commit": "6acbb14b51df84d4c4986d95f8fa4e3a6d600e35",
+        "function": "productSearch",
+        "rule": "HTTP_HTML_INPUT_FLOW",
+        "truth": null,
+        "oracle": "Official raw-to-escaped EJS output change, automatic escape contract unsupported",
+        "cohort": "final-not-blind",
+        "independentDefect": "ejs-searchterm"
+      },
+      {
+        "id": "2017-sql-still-unsafe",
+        "label": "fixes2017",
+        "commit": "56c5e82c1a000e26ae19afb67b6696d634ceab2e",
+        "function": "userSearch",
+        "rule": "JS_SEQUELIZE_SQL_INPUT_FLOW",
+        "truth": true,
+        "oracle": "fixes-2017 does not change userSearch raw query; duplicate of same independent SQL defect",
+        "cohort": "final-not-blind",
+        "independentDefect": "sql-usersearch"
+      }
+    ],
+    "independentSupportedDefects": 2,
+    "notBlinded": true,
+    "noExternalApplicationExecuted": true
+  },
+  "sourceManifestSha256": "c43eff5f3313436f28ed64d732bb08e86b048efa3b930406a143113d284a3ec3",
+  "juice": {
+    "commit": "717f5efa886b0417eeecb52378b03cf10567b7e2",
+    "selected": 100,
+    "serverInventory": 215,
+    "selection": "Focused bounded static relative import BFS from actual actual app bootstrap/server/login/search/model entry source; not complete archive analysis",
+    "files": [
+      {
+        "path": "app.ts",
+        "sha256": "5e7f09a5e82cf0de75fc0f5bc69c4f2c96c37bdb9221aa5c3c4de2ba75985051"
+      },
+      {
+        "path": "server.ts",
+        "sha256": "1aef4d60cbdfb3458a25610d017a678ab4d69fc835bb8b592db9a13aceb20cb1"
+      },
+      {
+        "path": "routes/login.ts",
+        "sha256": "cf11d682edff6744bcb54339bce4b2dd6da5e80f9038facd7605df857b0a0b7b"
+      },
+      {
+        "path": "routes/search.ts",
+        "sha256": "6e3272ef4065d080295d995a04964e8c5e6b1e06c4b4c8ebed3234286686ee5f"
+      },
+      {
+        "path": "models/index.ts",
+        "sha256": "42bf703e1dfa70883a509b0bd59f8d1c9982951222ad87f6ad87e6ea312061bb"
+      },
+      {
+        "path": "models/user.ts",
+        "sha256": "89d0636aec0ddbd582162c40da590fa361fef7617573bd95ecef3339171deb59"
+      },
+      {
+        "path": "models/card.ts",
+        "sha256": "7bb5086956a13ada3013c3376cebed567537f36eea291eb95812ed64059232bc"
+      },
+      {
+        "path": "models/hint.ts",
+        "sha256": "f23e9bbca7d4a241cfe7be0a6475ce0699a943667642d49cfe690b9a2f4c3008"
+      },
+      {
+        "path": "models/wallet.ts",
+        "sha256": "4386cf9c80e34c141502281ce0cf49b6016a88765c82f64d848f9f67efb5455e"
+      },
+      {
+        "path": "models/product.ts",
+        "sha256": "7b1fe1706e76274ba545d4c37dc86ddf8e0375852225d9e0ab809efb9ce05b15"
+      },
+      {
+        "path": "models/recycle.ts",
+        "sha256": "62c592fca80882ceaeef4c834e29280df6a2b677c5635010f53d3b1ede8469e9"
+      },
+      {
+        "path": "models/address.ts",
+        "sha256": "305b4a190461279351ae449be0f2be636c7d8389b0a8d3d8db553ebf2c76a92a"
+      },
+      {
+        "path": "models/quantity.ts",
+        "sha256": "dea01d5768d5d761054cf95f41021a8a6801d3e7b9e17b3dfedefa61cc0c0669"
+      },
+      {
+        "path": "models/feedback.ts",
+        "sha256": "24ef867d9854df2889c9286a688b6cee8668a08a5e1d987f867c9268dbeb4750"
+      },
+      {
+        "path": "models/complaint.ts",
+        "sha256": "936ce5aad5143019dfedc14a9a52ddba86286bd8e6e9750ce515cd0a0a9b964e"
+      },
+      {
+        "path": "models/challenge.ts",
+        "sha256": "0631caf537600b6b45ce733085b562c9c0f7c0308e6507c3936c49f9694fea6f"
+      },
+      {
+        "path": "models/challengeDependency.ts",
+        "sha256": "75415075c683e90a9a3781188e0abd7933f17d94302bd709191b738af5fe5fbc"
+      },
+      {
+        "path": "models/basketitem.ts",
+        "sha256": "222c79eed31c745926610d2f8c7a380e19f0c0edabf89dbcf19699e4f385db17"
+      },
+      {
+        "path": "models/securityAnswer.ts",
+        "sha256": "a9be1444233e6db3fb0838166f038487fca2236b1e0e511e99e98e316fffeee4"
+      },
+      {
+        "path": "models/privacyRequests.ts",
+        "sha256": "3f8257781ec720a8031acffcc54e242ff373b17db7d7e7177d89248b24853293"
+      },
+      {
+        "path": "models/securityQuestion.ts",
+        "sha256": "5edac6a85af16e05347c6b65edf5b16cbd96b704ad8359f365888004ac662a7a"
+      },
+      {
+        "path": "lib/logger.ts",
+        "sha256": "7bc1b32ddeec0077be9777e7a159cc57fe172f15ca3fbe2d33ef02e2bd3a9df1"
+      },
+      {
+        "path": "lib/utils.ts",
+        "sha256": "c484e91394eba88d30fc5c9d5e64bc147d944b20072bc5530b03071d6019102e"
+      },
+      {
+        "path": "lib/antiCheat.ts",
+        "sha256": "34a8bf712bcb6c694cc2e4be928e15e76a065e0f36ee690b9d427a774a487a15"
+      },
+      {
+        "path": "lib/insecurity.ts",
+        "sha256": "c3496760cac6a5fde403bf739a8ab5e2536d2bbc57a6e3b6a0ac50b01a6e8b8d"
+      },
+      {
+        "path": "lib/terraformCustomization.ts",
+        "sha256": "3c541208bc4500ec74653ceb85ab660eaa2d9b5fb4a335ef50c88e5856550669"
+      },
+      {
+        "path": "lib/startup/validateConfig.ts",
+        "sha256": "4e44bb2621e653588b60bda35be1aea355d04b638661f5fdaaa303f6cb0eb810"
+      },
+      {
+        "path": "lib/startup/cleanupFtpFolder.ts",
+        "sha256": "d09b8895056a0310af08763379d9a8eb9b1865b63b8af9f6ed88f88b8d98d16d"
+      },
+      {
+        "path": "lib/startup/customizeEasterEgg.ts",
+        "sha256": "b0272f0a902a5b6083bf2e2cf68f588ee289c4dde04c8bfc2b4a521c70db5e12"
+      },
+      {
+        "path": "lib/startup/customizeApplication.ts",
+        "sha256": "6b3b6b405fbe30e736cdfc6453d30b6d9ef6b9905dc7c26add3e1aa081fda064"
+      },
+      {
+        "path": "lib/startup/validatePreconditions.ts",
+        "sha256": "a0b7fcd8627ea6a500e09beed8155dc91d5e404ff7d8fdc9e986eccaa3ae13dc"
+      },
+      {
+        "path": "lib/startup/registerWebsocketEvents.ts",
+        "sha256": "0c23043c50701f82dae5271d4c3a5bcde48db0e0a81acea3262d4b0e415778eb"
+      },
+      {
+        "path": "lib/startup/restoreOverwrittenFilesWithOriginals.ts",
+        "sha256": "e535cff2edccf8f95e6acf8f536921f7f9e8622fb145c96f6a0ec9b93431f127"
+      },
+      {
+        "path": "data/datacreator.ts",
+        "sha256": "a119b02f98e67eb85c1e90690e29871704791bf88aca09701dca54effbc7a5b2"
+      },
+      {
+        "path": "routes/verify.ts",
+        "sha256": "9564a950864d515bbb9aff2718e6b904691bb8dc71a60a13905db80a04b8feff"
+      },
+      {
+        "path": "routes/address.ts",
+        "sha256": "99413492a060638771636237a5c178a6a5907948f17cb8bf50dda648386d2084"
+      },
+      {
+        "path": "routes/metrics.ts",
+        "sha256": "b00e6a62b4f97338ea263bba9efafe7158d6d23829d468186c00c9078eeffd8f"
+      },
+      {
+        "path": "routes/payment.ts",
+        "sha256": "91ef541a6e38235575c565c15c246bae358e6be4e60fccb48922b6116d1de44e"
+      },
+      {
+        "path": "routes/order.ts",
+        "sha256": "747a80d5fcd79d88f906ad396adb00c1c68a376fd47a6c80628ca91c70e02300"
+      },
+      {
+        "path": "routes/b2bOrder.ts",
+        "sha256": "5e4affbd4072fae7d98737ef2b78cabcd039b157fec879d59308e5c0fde32f48"
+      },
+      {
+        "path": "routes/delivery.ts",
+        "sha256": "28a62a61365d6e9595d3fd96c4c0d0884de2cd07f3e7d28f74172a4c73e37faf"
+      },
+      {
+        "path": "routes/recycles.ts",
+        "sha256": "f8977228ee52db67c928dadbdb0547539bf9e6c7fe07eacb0640f6b5b9dcfa89"
+      },
+      {
+        "path": "routes/2fa.ts",
+        "sha256": "5c899e51dc17e5576b1d8041038b003ebfe35253e062a30aa01bc631d7df4996"
+      },
+      {
+        "path": "routes/coupon.ts",
+        "sha256": "481aa9a06b38d2a3467a48be15aeebb5fdbfc50d34b03db9a35143463c39d6df"
+      },
+      {
+        "path": "routes/dataErasure.ts",
+        "sha256": "11231aefa83ceec4b0c6903ecd4fb9ccddc24b49044961fcac017e3cf7c631ba"
+      },
+      {
+        "path": "routes/dataExport.ts",
+        "sha256": "eec989ea6e99d21e4387725ccd11a34eaecae36ad40eba7fdfbaf986f367a2ee"
+      },
+      {
+        "path": "routes/chat.ts",
+        "sha256": "d4e711f5eb0b072feb7f31ab73870ab18f25b689c0c0d469921e37ac19d24fee"
+      },
+      {
+        "path": "routes/basket.ts",
+        "sha256": "e7caa72828db41ba24d88677cd83a0a62301aadf3abd93fdfefa134300eb8306"
+      },
+      {
+        "path": "routes/trackOrder.ts",
+        "sha256": "8f0d91a9c902a7634ecb5822e8d348354f6bc7ee0c10e21079134e7f4aa17958"
+      },
+      {
+        "path": "routes/saveLoginIp.ts",
+        "sha256": "d163f868f4cbee5791db410202cab7869294a4ef30271d3d796f3ec629753823"
+      },
+      {
+        "path": "routes/keyServer.ts",
+        "sha256": "b47736841886e865dbe07f6db3596b5e1e64435051c3362a18a21bac2412c712"
+      },
+      {
+        "path": "routes/basketItems.ts",
+        "sha256": "92daf82179b91d534014ee19e1e0745dfce79230427b8e6eff77f135fde55fcc"
+      },
+      {
+        "path": "routes/redirect.ts",
+        "sha256": "f1345c3bb3a276a4e80db74f5d1eee04cd62013e8d4d7730ef92153154484607"
+      },
+      {
+        "path": "routes/easterEgg.ts",
+        "sha256": "6d6ccc64490ff955988a4f339783c5840a3f5ba85909e4ddffd379ab2654c9ae"
+      },
+      {
+        "path": "routes/languages.ts",
+        "sha256": "5a995c3d9bf22d3bfcf8af275e63256ac6b2af812626d32f51a699bebe08f863"
+      },
+      {
+        "path": "routes/userProfile.ts",
+        "sha256": "07251f3d0dd9f4c530da60e3911091d8ff1bded650f72c31cbee499093979b39"
+      },
+      {
+        "path": "routes/angular.ts",
+        "sha256": "c0d70e3cd3ddc7d2e1bee55dd516ac71403e74cf3e42ca01f4a3e7b7322f55b8"
+      },
+      {
+        "path": "routes/resetPassword.ts",
+        "sha256": "c79c198fd0c860afe1bc321daf210736b88745d311d0a07a450b0288b44b578a"
+      },
+      {
+        "path": "routes/logfileServer.ts",
+        "sha256": "37fe634d42307b1197b76b7fc85a506a47f0a6a67543961e55aa496ea1ef7379"
+      },
+      {
+        "path": "routes/fileServer.ts",
+        "sha256": "3291e01af092d95cfdaea506c13ff2b4ae4533cea351cde9a48134f4ed55f9f9"
+      },
+      {
+        "path": "routes/memory.ts",
+        "sha256": "7083639b83dfed3bd72ddfa10c41db378206242083b4839fc3fbef77f16af897"
+      },
+      {
+        "path": "routes/changePassword.ts",
+        "sha256": "8856fd47ef909e64924def8f29c9bf282881aea3658bd7bb94f177aadee422a4"
+      },
+      {
+        "path": "routes/countryMapping.ts",
+        "sha256": "03194b853301e71a0e0605cb724435147c85f7ff0294a1c507752cb521b4376d"
+      },
+      {
+        "path": "routes/appVersion.ts",
+        "sha256": "228178b1ba2557a26c9f09a0f4cff6e9b2dd9bddd879c3d1fa9eb72cbb2fe5fb"
+      },
+      {
+        "path": "routes/captcha.ts",
+        "sha256": "b48ecb634f38f033ce1331148a2a0c1dc24aecd3a01e72c773fd74b716cf17e1"
+      },
+      {
+        "path": "routes/restoreProgress.ts",
+        "sha256": "cecf3d973a42052e1fb819ecbda9b30a34f420923fe7aec355f83cf7e3b2f12e"
+      },
+      {
+        "path": "routes/checkKeys.ts",
+        "sha256": "10fd0e5f1cd8475f643ca3a2c3d39eb4eb669abf7d0a95005bf85cf8a8a9d909"
+      },
+      {
+        "path": "routes/currentUser.ts",
+        "sha256": "b91a6dee202f62b69b27c0b6b6b4c0bacaa6621a2c8c2fd706baf1154e0d4886"
+      },
+      {
+        "path": "routes/authenticatedUsers.ts",
+        "sha256": "5c828c5377bcd07fe52e7ca8ccb1e4c3f1bf93f20831a85388b882e0a75a183f"
+      },
+      {
+        "path": "routes/securityQuestion.ts",
+        "sha256": "3d749e40c214f54b60dce66972e34d2b1ad267a1500f1019471105f325a87378"
+      },
+      {
+        "path": "routes/premiumReward.ts",
+        "sha256": "6ce50a7702b8f15f3fdab20145684bb756648da1d355da4f29a3b09682fbda0d"
+      },
+      {
+        "path": "routes/web3Wallet.ts",
+        "sha256": "0c45454abcb084e68eef1cffa5f5ce809cea6f4a4cfa6649e53d08e13ab95627"
+      },
+      {
+        "path": "routes/updateUserProfile.ts",
+        "sha256": "2eec586af91cd04ab60503ec3477e52dd7c524cfdbfad9ffcfeb4000a23b0641"
+      },
+      {
+        "path": "routes/videoHandler.ts",
+        "sha256": "5c3bdfb5e0662bf1da44f63ae4f3d62ac857d9579b8b11e937bab4b7229ec552"
+      },
+      {
+        "path": "routes/likeProductReviews.ts",
+        "sha256": "7c546a5113be93475f6feb2461f266a32e20a9c212f49c7dc21c0a4dc0c818ea"
+      },
+      {
+        "path": "routes/repeatNotification.ts",
+        "sha256": "525484abeedc2507207e59ec9ea98bfdaec763d3d05ce55a9112e460045b5257"
+      },
+      {
+        "path": "routes/quarantineServer.ts",
+        "sha256": "4e5fce67300b892ab31acda43e381d4889136cfaf5bb97de7a9c116c66486a4d"
+      },
+      {
+        "path": "routes/showProductReviews.ts",
+        "sha256": "5159697e5a419fee472b6dba1869c3e6548cbeee435681ee2f8e38c5edc8e61f"
+      },
+      {
+        "path": "routes/nftMint.ts",
+        "sha256": "0eee2281f8f5d70b5b96cb8c7d6cfb8f3b82faa3c153602e5f22592512712f5a"
+      },
+      {
+        "path": "routes/createProductReviews.ts",
+        "sha256": "ee550527ecdd43b8c4d506cebe2b3886f63cf89316bc8723ee35406473a9c746"
+      },
+      {
+        "path": "routes/wallet.ts",
+        "sha256": "144c427cada5e584400282f4bc8f9f7d28cdcae7ee4dce343587486918a3e371"
+      },
+      {
+        "path": "routes/appConfiguration.ts",
+        "sha256": "bfd59ad93ed8791710239663f100aae63d884df7e3bd487c4931011d18c1856d"
+      },
+      {
+        "path": "routes/updateProductReviews.ts",
+        "sha256": "711928a6d6188c2413e3df62c85db1e77f8fe7ad04e5605e6588de42e9dd6ad2"
+      },
+      {
+        "path": "routes/privacyPolicyProof.ts",
+        "sha256": "94ac8b5ec72afdb8321a7184d78971aec400c2f9b7f751cf6af899fd072c594b"
+      },
+      {
+        "path": "routes/profileImageUrlUpload.ts",
+        "sha256": "75140f35e65141135d3abb4b3b86aad1556c0d2a22d733ae1d50a127cd0cbb26"
+      },
+      {
+        "path": "routes/profileImageFileUpload.ts",
+        "sha256": "6c19407cb05fbb2e8b676f2d964eccec79db13d302cc806ed1fef0e757b312c7"
+      },
+      {
+        "path": "routes/vulnCodeFixes.ts",
+        "sha256": "947bfb300d76d2347d2f3dba8a6432129281b8fcc5aa7f7e806fe9f8207dac96"
+      },
+      {
+        "path": "routes/imageCaptcha.ts",
+        "sha256": "ba895da0a21170d3978556bc7d33ce77da8eec712b08f8109ade4fbfeacb80a6"
+      },
+      {
+        "path": "routes/deluxe.ts",
+        "sha256": "9ea0743c7dce215fb92f9de41c9ae36922b8a5faab49c50df1167bb4ccf43291"
+      },
+      {
+        "path": "routes/vulnCodeSnippet.ts",
+        "sha256": "1521983d9a9e6e6f967b8bf7df2c655e7af0aed9976abfe464d3244c6b3e265c"
+      },
+      {
+        "path": "routes/orderHistory.ts",
+        "sha256": "488c19347008770bf47336c8ef5fffdd3dae39016841027c0b6db4edb228d1ba"
+      },
+      {
+        "path": "routes/continueCode.ts",
+        "sha256": "7e79bedc62a7c5fda1ec4949dfa43865e3295107c5dcea2c25e2109bb0c88cd5"
+      },
+      {
+        "path": "routes/fileUpload.ts",
+        "sha256": "cbaa5d28d378d7ce5b521b634f5250bb8d1fa09c6ac6004bf3f4759bab892573"
+      },
+      {
+        "path": "lib/challengeUtils.ts",
+        "sha256": "9ca426cbf8541dabbcedbf50e34fae97dcd1eceb9722a952d9782c630260f451"
+      },
+      {
+        "path": "data/datacache.ts",
+        "sha256": "83f895e3762599e0669930802b425964c3d0a5366443b6453b50e9baa300f8c6"
+      },
+      {
+        "path": "models/basket.ts",
+        "sha256": "236aa96ca8f3e0fc223129236af22c7d77ad19794706c40428796ea550e233a6"
+      },
+      {
+        "path": "data/types.ts",
+        "sha256": "563f664852582a2aedb2acac727799a0416f67b5517e6dd32814137735cfebe6"
+      },
+      {
+        "path": "models/captcha.ts",
+        "sha256": "aa27f5a336fda3e362111f73fbf068e85800c59e6109ecaeb0a728cfd48034c0"
+      },
+      {
+        "path": "models/delivery.ts",
+        "sha256": "c3c155c760eebcfe7deaa1f527c0b8e710cda35c94676e8b594ce029e54f2b39"
+      },
+      {
+        "path": "models/imageCaptcha.ts",
+        "sha256": "834443952c1bba299798ce5188133d298e875c5c8061d3da77434f5c2f802aef"
+      }
+    ],
+    "oracle": "Original login/search SQL string interpolation is intentional developer-labelled SQL Injection; routes registered in server.ts",
+    "truth": true,
+    "noFixedPairClaimed": true,
+    "externalExecution": false
+  },
+  "benchmark": {
+    "commit": "f1291485808b66e20ddb6b01b10dc71b3df8c8ba",
+    "files": [
+      {
+        "path": "app.py",
+        "sha256": "1e66534772ea54e7fa0c5ed395fba345c281f697bae2277ad637af779a17aeb7"
+      },
+      {
+        "path": "requirements.txt",
+        "sha256": "d071df9f5084dcb89af43d5e2dd5138460ad010bda4d1ae4b363b60e61876177"
+      },
+      {
+        "path": "expectedresults-0.1.csv",
+        "sha256": "6396f37c97cfd0c018db3d8750095ce6c678a083f83620cfb3e88fe27a46bb0c"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+      },
+      {
+        "path": "testcode/BenchmarkTest00001.py",
+        "sha256": "be0322edf87adb01228dbf054908e12ce34612e02b722e14384ff5eecb967df6"
+      },
+      {
+        "path": "testcode/BenchmarkTest00002.py",
+        "sha256": "2cc22b494fb5ac5e9cdcc597105d2060eccc03c50b7c15f6270e0bdbfd347fb5"
+      },
+      {
+        "path": "testcode/BenchmarkTest00003.py",
+        "sha256": "d2dd230b83f8e523bd2bea4313d98025344b0fb54a642b52d88a84270e1720a3"
+      },
+      {
+        "path": "testcode/BenchmarkTest00004.py",
+        "sha256": "3c6222deb60ce9a389a1cf19222ba5dc246a40b52d640e3f41a1954aa8ee777f"
+      },
+      {
+        "path": "testcode/BenchmarkTest00005.py",
+        "sha256": "20496b6b8a8510be0f0599ddaaf65a83f0c96c96d9395641a8d55b0658748092"
+      },
+      {
+        "path": "testcode/BenchmarkTest00006.py",
+        "sha256": "48e123db3bda456ae102ea8414cec7ebdea703a8a03480c750122e0758f26b7b"
+      }
+    ],
+    "status": "OUTSIDE_DJANGO_CONTRACT_FLASK_DYNAMIC_REGISTRATION",
+    "classification": "UNKNOWN_NOT_TN",
+    "requirementsInstalled": false,
+    "applicationExecuted": false
+  },
+  "independentControlsFrozenCommit": "70e0c25",
+  "notBlinded": true,
+  "juiceBootstrapIncluded": true,
+  "initialFocusedSelectionOmittedAppBootstrapAndWasCorrected": true,
+  "selectionCorrectionNotEngineImprovement": true
+}

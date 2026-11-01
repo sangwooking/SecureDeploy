@@ -1,0 +1,5 @@
+// Static data only: no external target modules or install scripts are executed.
+import fs from'node:fs';import path from'node:path';import{pathToFileURL}from'node:url';import{createHash}from'node:crypto';
+const[worker,output]=process.argv.slice(2);const{evaluatePipeline}=await import(pathToFileURL(path.resolve(worker)));const bytes=fs.readFileSync(new URL('./accuracy03-orm-inputs.json',import.meta.url)),input=JSON.parse(bytes),rows=[];
+for(const c of input.cases){const{analysis,pipeline}=evaluatePipeline(c.input),observed=analysis.nodeUses.some(n=>n.kind==='SEQUELIZE_RESULT_CALLBACK_POSSIBLE');rows.push({id:c.id,cohort:c.cohort,expected:c.expected,observed,matched:observed===c.expected,files:analysis.files,findings:analysis.findings,nodeUses:analysis.nodeUses,pipeline,status:analysis.status});}
+fs.writeFileSync(output,JSON.stringify({scope:input.scope,inputSha256:createHash('sha256').update(bytes).digest('hex'),matched:rows.filter(r=>r.matched).length,total:rows.length,rows},null,2));console.log(JSON.stringify({matched:rows.filter(r=>r.matched).length,total:rows.length}));

@@ -15,7 +15,46 @@ export function sequelizeContracts(api) {
     const instance=object('sequelize-instance');instance.ref.origin=[loc(node,mod,'SEQUELIZE_DECLARED_INSTANCE_ORIGIN')];
     instance.ref.sequelizeMajor=Number(version(mod));return instance;
   }
+  function callbackEnvironmentKnown(state) {
+    const roots=[state.mod.filePath,state.context.entry?.filePath,...(state.context.checks??[]).filter(x=>x.kind==='EXPRESS_REGISTRATION').map(x=>x.filePath)].filter(Boolean);
+    const seen=new Set(),queue=[...roots];
+    for(let i=0;i<queue.length;i++){
+      const mod=modules.get(queue[i]);if(!mod||seen.has(mod.filePath))continue;seen.add(mod.filePath);tick(mod);
+      // Static server graph only; unrelated client/vendor modules cannot certify
+      // or invalidate this promise. Runtime global monkey-patching stays unverified.
+      if(/\b(?:prototype|defineProperty|defineProperties)\b|\.then\s*=|\[\s*['"]then['"]\s*\]\s*=/.test(mod.ast.text))return false;
+      for(const edge of mod.syntaxIndex?.dependencies??[]){tick(mod);if(!edge.spec.startsWith('.'))continue;const target=api.findModule(mod,edge.spec,edge.mode??'require');if(target&&!seen.has(target.filePath))queue.push(target.filePath);}
+    }
+    return true;
+  }
+  function property(base,key) {
+    if(base.unknown||base.ref?.unknown)return;
+    if(base.native==='sequelize-model'&&['find','findOne','findAll','findByPk'].includes(key))return native('sequelize-model-'+key,base.nativeMod);
+    if(base.native==='sequelize-result-promise'&&['then','catch'].includes(key))return native('sequelize-result-'+key,base.nativeMod);
+  }
   function call(node,receiver,args,state,callable){
+    const method=ts.isPropertyAccessExpression(node.expression)?node.expression.name.text:null;
+    if(receiver?.native==='sequelize-model'&&!receiver.unknown&&!receiver.ref?.unknown&&['find','findOne','findAll','findByPk'].includes(method)){
+      if(method==='find'&&receiver.ref.sequelizeMajor!==4)return {value:unknown()};
+      if(state.context.setup)return {value:unknown()};
+      const origin=loc(node,state.mod,'SEQUELIZE_MODEL_QUERY',state.fn);
+      api.append(api.result.nodeUses,{ruleId:rule,kind:'DECLARED_ORM_QUERY_NOT_RAW_SQL',operation:method,location:origin,trace:[...(receiver.ref.origin??[])],
+        limitations:['DECLARED_MODEL_API_NOT_RUNTIME_OR_TYPE_PROOF','QUERY_OPTIONS_HOOKS_OBJECT_POLICY_AND_OPERATOR_ALIASES_NOT_VERIFIED']},state.mod);
+      const promise=native('sequelize-result-promise',state.mod);promise.ref.origin=[origin];return {value:promise};
+    }
+    if(receiver?.native==='sequelize-result-promise'&&!receiver.unknown&&!receiver.ref?.unknown&&['then','catch'].includes(method)){
+      const callback=args[0];
+      if(method!=='then'||!callbackEnvironmentKnown(state)||args.length<1||args.length>2||!callback?.target||callback.unknown||callback.ref?.unknown||callback.target.node.asteriskToken
+         ||callback.target.node.modifiers?.some(m=>m.kind===ts.SyntaxKind.AsyncKeyword))return {value:unknown()};
+      const target=loc(callback.target.node,callback.target.mod,'SEQUELIZE_CALLBACK_TARGET',callback.target);
+      api.append(api.result.nodeUses,{ruleId:rule,kind:'SEQUELIZE_RESULT_CALLBACK_POSSIBLE',operation:'then',location:loc(node,state.mod,'SEQUELIZE_THEN_REGISTRATION',state.fn),trace:[...receiver.ref.origin,target],
+        limitations:['FULFILLMENT_IS_CONDITIONAL_NOT_RUNTIME_COMPLETION','RESULT_SCHEMA_CARDINALITY_AND_AUTHORIZATION_UNKNOWN','CAPTURED_MUTATIONS_NOT_PROMISE_COMPLETION_PROOF','RUNTIME_GLOBAL_PROMISE_PROTOTYPE_NOT_VERIFIED']},state.mod);
+      api.invoke(callback.target,[unknown()],state.depth+1,state.context,state.stack,true);
+      // The result of then() is a different promise: do not invent fulfillment
+      // values or follow catch() as the successful DB-result path.
+      return {value:unknown()};
+    }
+
     if(callable?.native==='sequelize'&&ts.isNewExpression(node)&&!callable.unknown&&!callable.ref?.unknown){
       if(args.some(v=>v.ref&&(v.tag!=='object'||v.unknown||v.ref.unknown||v.ref.properties.has('hooks')||v.ref.properties.has('dialectModule')))){
         note(state.mod,'SEQUELIZE_CONSTRUCTOR_EFFECTS_UNKNOWN');return {value:unknown()};
@@ -182,11 +221,11 @@ export function sequelizeContracts(api) {
     const db=object('object'),instance=create(mod,mod.ast);
     instance.ref.origin=evidence.filter(e=>e.kind==='SEQUELIZE_DECLARED_INSTANCE_ORIGIN');
     db.ref.properties.set('sequelize',instance);if(constructorExport)db.ref.properties.set('Sequelize',native('sequelize',mod));
-    for(const name of names)db.ref.properties.set(name,unknown());
+    for(const name of names){const model=native('sequelize-model',mod);model.ref.sequelizeMajor=Number(version(mod));model.ref.origin=evidence.filter(e=>e.kind==='SEQUELIZE_DEFINE_ONLY_MODEL');db.ref.properties.set(name,model);}
     note(mod,'SEQUELIZE_INITIALIZATION_SUMMARY_NOT_RUNTIME_EXECUTION');
     api.append(api.result.nodeUses,{ruleId:'JS_CONSTRUCTOR_EFFECT',kind:'INITIALIZATION_SUMMARY_MUST',operation:'SEQUELIZE_REGISTRY_SUMMARY',
       location:loc(mod.ast,mod,'SEQUELIZE_REGISTRY_SUMMARY'),trace:evidence.slice(0,20),limitations:['SOURCE_INVENTORY_NOT_RUNTIME_DIRECTORY','DECLARED_VERSION_NOT_INSTALLED_VERSION','MODEL_API_AND_AUTHORIZATION_NOT_PROVEN']},mod);
     return db;
   }
-  return {call,summarize};
+  return {call,summarize,property};
 }

@@ -172,6 +172,7 @@ export function nodeServer(api) {
     const classProperty=classes.property(base,key,node,state);if(classProperty)return classProperty;
     const rateProperty=rate.property(base,key);if(rateProperty)return rateProperty;
     const fileProperty=api.filesSupport.property(base,key,node,state);if(fileProperty)return fileProperty;
+    const sqlProperty=sequelize.property(base,key);if(sqlProperty)return sqlProperty;
     const mongooseProperty=mongoose.property(base,key);if(mongooseProperty)return mongooseProperty;
     if(base.unknown||base.ref?.unknown)return;
     if(base.tag==='function')return base.ref?.properties.get(key)??unknown();
