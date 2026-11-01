@@ -24,7 +24,7 @@ import {externalNext} from './external-next.mjs';
 import {asyncBoundaries} from './async-boundary.mjs';
 import {asyncExceptions} from './async-exception.mjs';
 
-export const VERSION = 'ts-server-v56';
+export const VERSION = 'ts-server-v57';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -84,6 +84,8 @@ function union(...values) {
     filePathChoices:pathChoices?.length<=8&&pathChoices.reduce((n,s)=>n+s.length,0)<=1000?pathChoices:undefined,
     fieldValidationUncertain:values.some(v=>v?.fieldValidationUncertain||v?.fieldString||v?.fieldEmail||v?.fieldPredicate),
     shellRestricted: values.some(v=>v?.trace?.length)&&values.filter(v=>v?.trace?.length).every(v=>v.shellRestricted),
+    identifierTrace: values.flatMap(v=>v?.identifierTrace??[]).slice(0,20),
+    principalTrace: values.flatMap(v=>v?.principalTrace??[]).slice(0,6),
     exposures: values.flatMap(v => exposureSources(v)).slice(0, 20),
     exposureTrail: values.flatMap(v => exposureTrails(v)).slice(0, 10),
     responseLocations: values.flatMap(v => v?.responseLocations ?? []).slice(0, 20),
@@ -496,7 +498,8 @@ export function analyze(input, overrides = {}) {
       note(state.mod, 'NUMERIC_COERCION_PARTIAL');
       return { ...incoming, tag: 'numeric', unknown: true, constant: undefined };
     }
-    return value('numeric');
+    // Numeric coercion closes injection taint, not the origin of an object identifier.
+    return value('numeric',[],{identifierTrace:[...(incoming.identifierTrace??[]),...incoming.trace].slice(0,20),principalTrace:incoming.principalTrace});
   }
   function referenceOf(original, state) {
     const node = unwrap(original), { mod, fn } = state;

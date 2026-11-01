@@ -20,9 +20,10 @@ public class NpmIsolationRunner {
         this.json=json;this.registry=registry;
         docker=env.getProperty("securedeploy.editing.npm-isolation.docker-executable","/opt/homebrew/bin/docker");
         socket=env.getProperty("securedeploy.editing.npm-isolation.socket",System.getProperty("user.home")+"/.docker/run/docker.sock");
-        image=env.getProperty("securedeploy.editing.npm-isolation.image","");Path privateConfig=null;String source="";
+        String requested=env.getProperty("securedeploy.editing.npm-isolation.image","");
+        image=canonicalImage(requested);Path privateConfig=null;String source="";
         if(env.getProperty("securedeploy.editing.npm-isolation.enabled",Boolean.class,false))try{
-            if(!validImage(image)||!Path.of(docker).isAbsolute()||!Path.of(socket).isAbsolute()||Files.isSymbolicLink(Path.of(socket))
+            if(!validImage(requested)||!Path.of(docker).isAbsolute()||!Path.of(socket).isAbsolute()||Files.isSymbolicLink(Path.of(socket))
                     ||!Files.getOwner(Path.of(socket)).getName().equals(System.getProperty("user.name")))throw new IllegalArgumentException();
             privateConfig=Files.createTempDirectory("securedeploy-docker-config-");Files.setPosixFilePermissions(privateConfig,java.nio.file.attribute.PosixFilePermissions.fromString("rwx------"));
             try(var input=getClass().getResourceAsStream("/npm-isolation-runner.mjs")){if(input==null)throw new IllegalArgumentException();source=new String(input.readNBytes(32769),StandardCharsets.UTF_8);if(source.length()>32768)throw new IllegalArgumentException();}
@@ -30,7 +31,7 @@ public class NpmIsolationRunner {
         config=privateConfig;script=source;
         if(config!=null)try{
             var inspection=run(List.of("image","inspect",image,"--format","{{json .RepoDigests}}"),null,5,8192);
-            var digests=json.readTree(inspection);boolean match=false;for(var digest:digests)if(digest.asText().equals(image)||digest.asText().equals("docker.io/library/"+image))match=true;
+            var digests=json.readTree(inspection);boolean match=false;for(var digest:digests)if(digest.asText().equals(image)||digest.asText().equals(requested))match=true;
             var info=json.readTree(run(List.of("info","--format","{{json .}}"),null,5,262144));
             ready=match&&info.path("OSType").asText().equals("linux")&&info.path("CgroupVersion").asText().equals("2")
                     &&info.path("SecurityOptions").toString().contains("seccomp");
@@ -41,6 +42,7 @@ public class NpmIsolationRunner {
         }catch(Exception unavailable){ready=false;}
     }
     public boolean available(){return ready;}
+    static String canonicalImage(String requested){return validImage(requested)?"docker.io/library/"+requested:requested;}
     static boolean validImage(String image){return image!=null&&image.matches("node@sha256:[a-f0-9]{64}");}
     static String packageFromMiss(String name){if(name==null||name.length()>214||name.contains("..")||!name.matches("(?:@[A-Za-z0-9_.-]+/)?[A-Za-z0-9_.-]+"))throw new IllegalArgumentException("NPM_BROKER_NAME");return name;}
     List<String> containerArgs(String name,String code){

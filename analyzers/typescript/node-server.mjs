@@ -253,7 +253,7 @@ export function nodeServer(api) {
         const scan=(v,depth=0)=>{
           tick(state.mod);if(!v||depth>3||++visited>100||seen.has(v.ref??v))return;
           seen.add(v.ref??v);
-          for(const l of v.trace??[])if(/^(EXPRESS_(PARAMS|QUERY|BODY)|NEXT_PAGES_(QUERY|BODY))$/.test(l.kind))unique(identifierInputs,l);
+          for(const l of [...(v.identifierTrace??[]),...(v.trace??[])])if(/^(EXPRESS_(PARAMS|QUERY|BODY)|NEXT_PAGES_(QUERY|BODY))$/.test(l.kind))unique(identifierInputs,l);
           for(const l of v.principalTrace??[])unique(principalReferences,l);
           if(v.ref?.properties)for(const child of v.ref.properties.values())scan(child,depth+1);
         };scan(query);
@@ -265,6 +265,18 @@ export function nodeServer(api) {
           limitations:['DATABASE_POLICY_AND_MODEL_RELATIONS_UNKNOWN','PRINCIPAL_FILTER_OBSERVATION_NOT_OWNERSHIP_PROOF']});
         if(identifierInputs.length)details.objectAuthorizationStatus='OWNER_POLICY_REVIEW_REQUIRED';
       }
+  }
+  function mongoCallback(args,node,state,operation,queries) {
+    const callback=args.at(-1);
+    if(!callback?.target||callback.unknown||state.context.setup)return;
+    // Only native-driver error-first signatures. A possible success is not proof of completion.
+    // Keep result data opaque: aggregates, iteration and ownership need independent contracts.
+    append(result.nodeUses,{ruleId:'JS_MONGO_RESOURCE_ACCESS',kind:'MONGO_CALLBACK_SUCCESS_POSSIBLE',operation,
+      location:loc(node,state.mod,'MONGO_CALLBACK_REGISTRATION',state.fn),
+      trace:[...queries.flatMap(q=>q.identifierTrace??q.trace??[]).slice(0,16),loc(callback.target.node,callback.target.mod,'MONGO_CALLBACK_TARGET',callback.target)],
+      limitations:['CONDITIONAL_CALLBACK_NOT_RUNTIME_COMPLETION','RESULT_AND_OWNERSHIP_POLICY_UNKNOWN','ERROR_BRANCH_NOT_SUCCESS_RESULT']},state.mod);
+    invoke(callback.target,[constant(null),unknown()],1,state.context,new Set(),true);
+    note(state.mod,'MONGO_CALLBACK_RESULT_OPAQUE');
   }
   function queryExecution(queries,origin,node,state,operation,createdAt) {
     for(const query of queries){
@@ -438,7 +450,7 @@ export function nodeServer(api) {
       const queries=(args[0]?.nodeAlternatives??[args[0]??unknown()]).slice(0,4);
       if(method==='countDocuments'&&receiver.ref.driverMajor<3){note(state.mod,'MONGODB_METHOD_VERSION_UNKNOWN');return {value:unknown()};}
       if(method==='find'){
-        const cursor=object('mongo-cursor');cursor.ref.originParent=receiver.ref;cursor.ref.origin=receiver.ref.origin;
+        const cursor=object('mongo-cursor');cursor.ref.originParent=receiver.ref;cursor.ref.origin=receiver.ref.origin;cursor.ref.driverMajor=receiver.ref.driverMajor;
         cursor.ref.createdAt=loc(node,state.mod,'MONGODB_CURSOR_CREATION',state.fn);
         queries.forEach((q,i)=>cursor.ref.properties.set(String(i),q));
         if(!state.context.setup)append(result.nodeUses,{ruleId:'JS_MONGO_WHERE_INPUT_FLOW',kind:'CURSOR_CREATED_EXECUTION_NOT_OBSERVED',operation:method,
@@ -446,12 +458,15 @@ export function nodeServer(api) {
           limitations:['CURSOR_CONSUMPTION_REQUIRED','NOT_EXECUTION_PROOF']},state.mod);
         return {value:cursor};
       }
-      queryExecution(queries,receiver.ref.origin,node,state,'MONGODB_'+method.toUpperCase());return {value:unknown()};
+      queryExecution(queries,receiver.ref.origin,node,state,'MONGODB_'+method.toUpperCase());
+      if(receiver.ref.driverMajor===2&&method==='findOne')mongoCallback(args,node,state,'MONGODB_FINDONE',queries);
+      return {value:unknown()};
     }
     if(receiver?.tag==='mongo-cursor'&&validMongo(receiver)){
       if(['limit','sort'].includes(method))return {value:args.some(a=>a.unknown||a.ref?.unknown)?{...receiver,unknown:true}:receiver};
       if(['toArray','next'].includes(method)){
         queryExecution([...receiver.ref.properties.values()],receiver.ref.origin,node,state,'MONGODB_CURSOR_'+method.toUpperCase(),receiver.ref.createdAt);
+        if(receiver.ref.driverMajor===2)mongoCallback(args,node,state,'MONGODB_CURSOR_'+method.toUpperCase(),[...receiver.ref.properties.values()]);
         return {value:unknown()};
       }
     }

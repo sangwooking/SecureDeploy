@@ -1,0 +1,265 @@
+{
+  "scope": "Frozen before implementation; source/DB/callback evidence, not vulnerability accuracy labels",
+  "cases": [
+    {
+      "id": "params",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.params.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "callback"
+    },
+    {
+      "id": "query",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.query.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "callback"
+    },
+    {
+      "id": "body",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.body.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "callback"
+    },
+    {
+      "id": "numeric",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:parseInt(req.params.id)},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "callback"
+    },
+    {
+      "id": "session",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.session.userId},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "callback"
+    },
+    {
+      "id": "renamed",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:Number(req.params.key)},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "callback"
+    },
+    {
+      "id": "promise",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.params.id}).then(row=>res.json(row));});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "promise"
+    },
+    {
+      "id": "public",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.params.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "callback"
+    },
+    {
+      "id": "admin",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{if(!req.user.isAdmin)return res.status(403).end();db.findOne({key:req.params.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "callback"
+    },
+    {
+      "id": "comparison",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{if(req.params.id!==req.session.userId)return res.status(403).end();db.findOne({key:req.params.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "callback"
+    },
+    {
+      "id": "error",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{db.findOne({key:req.params.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "callback"
+    },
+    {
+      "id": "unregistered",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');function unused(req,res){db.findOne({key:req.params.id},(err,row)=>{if(err)return res.status(500).end();res.json(row);});}});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "callback"
+    },
+    {
+      "id": "dynamic",
+      "input": {
+        "files": [
+          {
+            "filePath": "app.mjs",
+            "content": "import express from 'express';import{MongoClient}from'mongodb';const app=express();MongoClient.connect('mongodb://fixture.invalid',(err,connection)=>{const db=connection.collection('items');app.get('/items/:id',(req,res)=>{resolve().findOne({key:req.params.id},(err,row)=>res.json(row));});});"
+          }
+        ],
+        "nodeManifests": [
+          {
+            "filePath": "package.json",
+            "express": "4.21.2",
+            "mongodb": "2.2.36"
+          }
+        ]
+      },
+      "oracle": "Flow observation only; session, comparison, administrator and public policies are not independently verified; no confirmed Finding expected",
+      "category": "unknown"
+    }
+  ]
+}

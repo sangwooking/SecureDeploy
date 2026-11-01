@@ -18,6 +18,7 @@ class NpmIsolationPolicyTest {
             assertEquals(3,args.stream().filter(a->a.startsWith("--tmpfs=")&&a.contains("noexec,nosuid,nodev,size=")).count());
         }finally{runner.close();}
     }
+    @Test void canonicalReferenceKeepsExactOfficialDigest(){String input="node@sha256:"+"a".repeat(64);assertEquals("docker.io/library/"+input,NpmIsolationRunner.canonicalImage(input));assertFalse(NpmIsolationRunner.validImage("other/node@sha256:"+"a".repeat(64)));}
     @Test void metadataBudgetBoundsUtf8AndEscapesBeforeAccumulatingBodies()throws Exception {
         var json=new ObjectMapper();for(String text:List.of("ascii","홍익🙂","\"\\\n",String.valueOf((char)0)))assertTrue(NpmIsolationRunner.jsonStringBudget(text)>=json.writeValueAsBytes(text).length);
     }
