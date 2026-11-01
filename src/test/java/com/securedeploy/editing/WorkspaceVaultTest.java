@@ -107,6 +107,13 @@ class WorkspaceVaultTest {
             assertEquals(2,first.get(w.id()).revision());assertEquals(first.content(w.id(),f.id()).text(),second.content(w.id(),f.id()).text());
         }finally{pool.shutdownNow();}
     }
+    @Test void competingCommitBetweenReadAndPersistMustNotTurnLostEditIntoSuccess()throws Exception {
+        var firstVault=spy(vault());var first=new EditingWorkspaceService(reviews,users,sources,Clock.fixed(now.get(),ZoneOffset.UTC),new ProjectLifecycleGuard(),firstVault);services.add(first);
+        var w=open(first);var second=service();second.get(w.id());var f=w.files().get(0);var armed=new AtomicBoolean(true);
+        doAnswer(call->{var observed=call.callRealMethod();if(armed.compareAndSet(true,false))second.save(w.id(),f.id(),new EditingWorkspaceService.Change(1,f.originalHash(),"const winner = 2;\n"),false);return observed;}).when(firstVault).owner(eq(1L),any(Instant.class));
+        assertThrows(EditingConflictException.class,()->first.save(w.id(),f.id(),new EditingWorkspaceService.Change(1,f.originalHash(),"const lost = 3;\n"),false));
+        assertEquals("const winner = 2;\n",first.content(w.id(),f.id()).text());assertEquals(2,first.get(w.id()).revision());
+    }
     @Test void ciphertextTamperingMetadataTamperingAndWrongOrMissingKeyFailClosed()throws Exception {
         var s=service();var w=open(s);byte[] payload=jdbc.queryForObject("select payload from editing_workspace_v1",byte[].class);
         assertFalse(new String(payload,StandardCharsets.ISO_8859_1).contains("const original"));

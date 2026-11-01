@@ -218,11 +218,11 @@ public class EditingWorkspaceService {
                 text.contains("\r\n") ? "CRLF" : "LF", bom);
     }
     public synchronized Workspace save(String id,String fileId,Change change,boolean revert) {
-        saveInternal(id,fileId,change,revert);var state=owned(id);var f=file(state,fileId);
+        var state=owned(id);saveInternal(state,fileId,change,revert);var f=file(state,fileId);
         record(state,f,"MANUAL",null,null,null,null,null,false);persist(state);return describe(state);
     }
-    private Workspace saveInternal(String id, String fileId, Change change, boolean revert) {
-        var state = owned(id); var file = file(state, fileId);
+    private Workspace saveInternal(State state, String fileId, Change change, boolean revert) {
+        var file = file(state, fileId);
         if (change == null || change.revision() != state.revision || !file.hash.equals(change.originalHash()))
             throw new EditingConflictException("WORKSPACE_REVISION_CONFLICT", "다른 탭에서 저장했거나 원본 해시가 달라졌어요. 현재 편집을 먼저 내보낸 뒤 최신 내용을 확인해 주세요.");
         if (!file.editable()) throw fail(HttpStatus.UNPROCESSABLE_ENTITY, "이 파일은 읽기 전용입니다.");
@@ -436,7 +436,7 @@ public class EditingWorkspaceService {
         var file=file(state,session.fileId);String current=WorkspacePatch.normalize(SourceArchive.text(file.current()));
         if(!current.regionMatches(session.offset,session.before,0,session.before.length()))throw fail(HttpStatus.CONFLICT,"예상한 변경 위치가 다릅니다.");
         String updated=current.substring(0,session.offset)+session.after+current.substring(session.offset+session.before.length());
-        var next=saveInternal(id,file.id,new Change(state.revision,file.hash,updated),false);
+        saveInternal(state,file.id,new Change(state.revision,file.hash,updated),false);
         session.state="ACCEPTED";file.changeOrigin=session.method().equals("DETERMINISTIC_FIX")?"DETERMINISTIC_APPROVED":"MOCK".equals(session.provider.origin())?"MOCK_AI_APPROVED":"AI_APPROVED";
         record(state,file,session.plan?"SECUREDEPLOY_AST":session.method().equals("DETERMINISTIC_FIX")?"DETERMINISTIC":"MOCK".equals(session.provider.origin())?"MOCK":"OPENAI".equals(session.provider.origin())?"OPENAI":"UNVERIFIED_AI",session.provider.origin(),session.usage==null?session.provider.model():session.usage.model(),session.id,session.plan?session.provider.origin():null,null,true);persist(state);return describe(state);
     }
