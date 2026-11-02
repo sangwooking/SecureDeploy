@@ -46,7 +46,7 @@ export function asyncBoundaries(api){
   if(!intrinsicTrusted){note(state.mod,'PROMISE_INTRINSIC_ORIGIN_UNKNOWN');return promise('UNKNOWN');}
   if(args.length>1)return promise('UNKNOWN');
   const v=args[0]??constant(undefined);
-  return promise(callee.name.text==='reject'?'REJECTED':primitive(v)?'FULFILLED':'UNKNOWN',v);
+  return {...promise(callee.name.text==='reject'?'REJECTED':primitive(v)?'FULFILLED':'UNKNOWN',v),nativePromiseOrigin:true};
  }
  function awaitValue(v,node,state){
   const frame=state.asyncFrame;

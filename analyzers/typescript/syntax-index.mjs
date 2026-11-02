@@ -1,6 +1,6 @@
 // Reuse the already bounded parse walk. These are syntax facts, not execution or trust proofs.
 export function syntaxIndex() {
-  return {declarations:new Map(),bindings:new Set(),nextInlineServerClosure:false,writes:new Set(),exportWrites:new Set(),nodes:[],typeOnly:new Set(),dependencies:[],argumentUses:new Map(),argumentReferenceIncomplete:new Set(),aliases:new Map()};
+  return {mutators:[],assignments:[],promiseMutation:false,declarations:new Map(),bindings:new Set(),nextInlineServerClosure:false,writes:new Set(),exportWrites:new Set(),nodes:[],typeOnly:new Set(),dependencies:[],argumentUses:new Map(),argumentReferenceIncomplete:new Set(),aliases:new Map()};
 }
 export function indexSyntax(ts,n,index) {
   if(ts.isIdentifier(n)&&n.text==='Array')index.arrayIntrinsicReferenced=true;
@@ -13,7 +13,10 @@ export function indexSyntax(ts,n,index) {
   }
   if(ts.isDeleteExpression(n)||(ts.isPrefixUnaryExpression(n)||ts.isPostfixUnaryExpression(n))
       &&[ts.SyntaxKind.PlusPlusToken,ts.SyntaxKind.MinusMinusToken].includes(n.operator)){
+    index.mutators.push(n);
     let x=n.expression??n.operand;while(ts.isPropertyAccessExpression(x)||ts.isElementAccessExpression(x))x=x.expression;
+    const member=n.expression??n.operand;
+    if(ts.isElementAccessExpression(member)||ts.isPropertyAccessExpression(member)&&['then','prototype','Promise'].includes(member.name.text)||ts.isIdentifier(x)&&x.text==='Promise')index.promiseMutation=true;
     if(ts.isIdentifier(x))index.exportWrites.add(x.text);
   }
   if(ts.isVariableDeclaration(n)&&ts.isIdentifier(n.name)&&n.initializer){
@@ -34,7 +37,7 @@ export function indexSyntax(ts,n,index) {
     if(depth===8)index.argumentReferenceIncomplete.add(n.text);
   }
   if(n.name&&ts.isIdentifier(n.name)&&[ts.isParameter,ts.isVariableDeclaration,ts.isFunctionDeclaration,ts.isClassDeclaration,ts.isImportClause,ts.isImportSpecifier,ts.isNamespaceImport,ts.isImportEqualsDeclaration,ts.isBindingElement].some(f=>f(n)))index.bindings.add(n.name.text);
-  if(ts.isCallExpression(n))index.nodes.push(n);
+  if(ts.isCallExpression(n)){index.nodes.push(n);if(ts.isPropertyAccessExpression(n.expression)&&['defineProperty','defineProperties','setPrototypeOf'].includes(n.expression.name.text))index.promiseMutation=true;}
   if(n.name&&ts.isIdentifier(n.name)&&[ts.isVariableDeclaration,ts.isParameter,ts.isFunctionDeclaration,ts.isClassDeclaration,ts.isBindingElement].some(f=>f(n))){
     const a=index.declarations.get(n.name.text)??[];a.push(n);index.declarations.set(n.name.text,a);
   }
@@ -46,7 +49,16 @@ export function indexSyntax(ts,n,index) {
   if(ts.isCallExpression(n)&&ts.isIdentifier(n.expression)&&n.expression.text==='require'&&n.arguments.length===1&&ts.isStringLiteral(n.arguments[0]))
     index.dependencies.push({pos:n.pos,spec:n.arguments[0].text,mode:'require'});
   if(ts.isBinaryExpression(n)&&ts.isAssignmentOperator(n.operatorToken.kind)){
-    let x=n.left;while(ts.isPropertyAccessExpression(x)||ts.isElementAccessExpression(x))x=x.expression;
+    index.assignments.push(n);
+    let x=n.left,unknownKey=false,globalPromiseMember=false;
+    while(ts.isPropertyAccessExpression(x)||ts.isElementAccessExpression(x)){
+      const key=ts.isPropertyAccessExpression(x)?x.name.text:ts.isStringLiteral(x.argumentExpression)?x.argumentExpression.text:null;
+      if(key===null)unknownKey=true;
+      if(key==='Promise')globalPromiseMember=true;
+      if(['prototype','then'].includes(key))index.promiseMutation=true;
+      x=x.expression;
+    }
+    if(ts.isIdentifier(x)&&(x.text==='Promise'||['global','globalThis'].includes(x.text)&&(globalPromiseMember||unknownKey||x===n.left)))index.promiseMutation=true;
     if(ts.isIdentifier(x))index.writes.add(x.text);
   }
 }

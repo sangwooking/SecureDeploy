@@ -24,7 +24,7 @@ import {externalNext} from './external-next.mjs';
 import {asyncBoundaries} from './async-boundary.mjs';
 import {asyncExceptions} from './async-exception.mjs';
 
-export const VERSION = 'ts-server-v60';
+export const VERSION = 'ts-server-v61';
 const DEFAULTS = { maxFiles: 100, maxFileChars: 100000, maxTotalChars: 1000000, maxDepth: 3,
   maxSteps: 100000, maxNodes: 200000, maxResults: 200, maxFunctions: 500, timeoutMs: 5000 };
 const LIMITATION = '제한된 정적 경로만 확인했습니다. 미들웨어, 동적 호출, 실제 배포·실행·권한 정책은 검증하지 않았습니다.';
@@ -658,6 +658,15 @@ export function analyze(input, overrides = {}) {
         ||[ts.SyntaxKind.TrueKeyword,ts.SyntaxKind.FalseKeyword,ts.SyntaxKind.NullKeyword].includes(n.kind);};
       if(inert(node.whenTrue)&&inert(node.whenFalse))return union(expr(node.whenTrue,state),expr(node.whenFalse,state));
       const a = fork(state), b = fork(state);
+      if(state.nodeMode&&state.context.setup&&ts.isBinaryExpression(node.expression)){
+        const c=node.expression,l=c.left,r=c.right;
+        const env=ts.isPropertyAccessExpression(l)&&l.name.text==='NODE_ENV'&&ts.isPropertyAccessExpression(l.expression)&&l.expression.name.text==='env'&&ts.isIdentifier(l.expression.expression)&&l.expression.expression.text==='process';
+        if(env&&ts.isStringLiteral(r)&&r.text==='test'&&[ts.SyntaxKind.EqualsEqualsEqualsToken,ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(c.operatorToken.kind)){
+          const branch=c.operatorToken.kind===ts.SyntaxKind.EqualsEqualsEqualsToken?a:b;
+          branch.context=Object.assign(Object.create(branch.context),{startupTestOnly:true});
+        }
+      }
+
       guardBranches(node.condition, condition, a, b);
       const left = expr(node.whenTrue, a), right = expr(node.whenFalse, b);
       mergeVars(state, [a, b]); return union(left, right);
@@ -797,7 +806,7 @@ export function analyze(input, overrides = {}) {
         const supported=nodeSupport.call(node,callee,receiverInput,args,state,global,member);
         if(supported){if(supported.value?.constructorAbrupt)state.constructorAbrupt=true;if(supported.value?.asyncThrown){state.asyncStop=true;state.asyncRejected=true;}return supported.value;}
         if(member?.target&&!member.unknown&&!member.ref?.unknown) {
-          if(state.context.asyncPostAwait){note(mod,'POST_AWAIT_HELPER_CONTEXT_UNKNOWN');return unknown();}
+          if(state.context.asyncPostAwait&&!state.context.setup){note(mod,'POST_AWAIT_HELPER_CONTEXT_UNKNOWN');return unknown();}
           nodeSupport.escapeFields(state);
           if(ts.isNewExpression(node)){
             const constructed=nodeSupport.construct(member.target,args,state);
@@ -1199,6 +1208,15 @@ export function analyze(input, overrides = {}) {
       if (truth(condition) === false) return node.elseStatement ? statement(node.elseStatement, state) : { values: [], stops: false };
       state.context.checks.push(loc(node.expression, mod, 'CONDITIONAL_CHECK', fn));
       const a = fork(state), b = fork(state);
+      if(state.nodeMode&&state.context.setup&&ts.isBinaryExpression(node.expression)){
+        const c=node.expression,l=c.left,r=c.right;
+        const env=ts.isPropertyAccessExpression(l)&&l.name.text==='NODE_ENV'&&ts.isPropertyAccessExpression(l.expression)&&l.expression.name.text==='env'&&ts.isIdentifier(l.expression.expression)&&l.expression.expression.text==='process';
+        if(env&&ts.isStringLiteral(r)&&r.text==='test'&&[ts.SyntaxKind.EqualsEqualsEqualsToken,ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(c.operatorToken.kind)){
+          const branch=c.operatorToken.kind===ts.SyntaxKind.EqualsEqualsEqualsToken?a:b;
+          branch.context=Object.assign(Object.create(branch.context),{startupTestOnly:true});
+        }
+      }
+
       if(state.context.classConstructorFlow){
         for(const [branch,kind]of [[a,'POSSIBLE_THEN_BRANCH'],[b,'POSSIBLE_ELSE_BRANCH']])
           branch.context=Object.assign(Object.create(state.context),{constructorBranches:[...(state.context.constructorBranches??[]),loc(node.expression,mod,kind,fn)].slice(-20)});
@@ -1307,6 +1325,7 @@ export function analyze(input, overrides = {}) {
       }
       note(mod, 'CALL_DEPTH_EXCEEDED'); return { ...union(...args), unknown: true };
     }
+    if(fn.nodeMode&&context.setup&&(context.bootstrapConditional||context.asyncPostAwait)){const summarized=nodeSupport?.summarizeSetup(fn,args,depth,context,stack);if(summarized){audit?.add('invocations',{entry:context.entry??null,target:loc(node,mod,'FUNCTION_TARGET',fn),depth,status:'SETUP_REGISTRATION_SUMMARIZED'});return summarized;}}
     tick(mod);audit?.add('invocations',{entry:context.entry??null,target:loc(node,mod,'FUNCTION_TARGET',fn),depth,status:'BODY_ENTERED'}); mod.visited.add(canonicalFunctions.get(fn) ?? fn); mod.record.functionsAnalyzed = mod.visited.size;
     if(asyncMode)context=Object.assign(Object.create(context),{asyncExecution:true});
     const state = { mod, fn, vars: new Map(fn.closure??[]), depth, context, uncertain, exposureUncertain,
@@ -1365,7 +1384,7 @@ export function analyze(input, overrides = {}) {
       }
     }
     const returns=[...r.values,...(!r.stops?[constant(undefined)]:[])];
-    if(asyncMode)return asyncSupport.finish(r,state);
+    if(asyncMode)return {...asyncSupport.finish(r,state),nativeAsyncOrigin:loc(node,mod,'NATIVE_ASYNC_FUNCTION_RETURN',fn)};
     const combined=union(...returns);
     const withResponses={...combined,environmentResponses:returns.flatMap(v=>v.environmentResponses??[]).slice(0,20)};
     const completed=fn.classConstructor?{...withResponses,constructorConditional:!!state.uncertain}:withResponses;
@@ -1416,7 +1435,7 @@ export function analyze(input, overrides = {}) {
   entryContracts({ts,modules,tick,note,loc,append,result});
   asyncSupport=asyncBoundaries({ts,modules,tick,note,unknown,constant,loc,append,result,fork,rejection:(state,node)=>exceptionSupport.rejection(state,node)});
   exceptionSupport=asyncExceptions({ts,tick,note,unknown,constant,fork,statement,mergeVars,evidence:asyncSupport.evidence});
-  nodeSupport=nodeServer({ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody,invalidateNodeReference,routeAudit,audit,html});
+  nodeSupport=nodeServer({remainingSteps:()=>limits.maxSteps-steps,ts,modules,limits,result,input,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames,claimFunction,observeExpressResponse,observeHttp,filesSupport,responseBody,invalidateNodeReference,routeAudit,audit,html});
   nodeSupport.discover();
   phase='FLOW';
   for (const mod of modules.values()) for (const entry of mod.entries) {

@@ -1,4 +1,6 @@
 import path from 'node:path';
+import {startupRoutes} from './startup-routes.mjs';
+import {startupPromises} from './startup-promises.mjs';
 import {staticHandlerLinks} from './static-handler-links.mjs';
 import {constructorSummaries} from './constructor-summary.mjs';
 import {sequelizeContracts} from './sequelize.mjs';
@@ -16,7 +18,8 @@ import {staticRoutes} from './static-routes.mjs';
 export function nodeServer(api) {
   const {ts,modules,limits,result,tick,note,value,unknown,constant,loc,append,union,expr,invoke,statement,writtenNames}=api;
   const loaded=new Map(), loading=new Set(), apps=[], routes=[];
-  const staticDependencies=new Map();
+  let startupSummarized=false;
+  const staticDependencies=new Map(),resolutionCache=new Map();
   const controlParents=new Map();
   const routeControls=new WeakMap();
   const controls=middlewareControl(api);
@@ -58,6 +61,8 @@ export function nodeServer(api) {
   };
   const summaries=constructorSummaries({...api,functionValue,object,validMongo});
   const classes=classModels({...api,functionValue,object});
+  const setupRoutes=startupRoutes({...api,functionValue,onSummary:()=>{startupSummarized=true;}});
+  const startup=startupPromises({...api,native,findModule});
   const sequelize=sequelizeContracts({...api,object,native,findModule,observe});
   const mongoose=mongooseContracts({...api,object,native});
   const fields=fieldValidation({...api,native});
@@ -65,7 +70,8 @@ export function nodeServer(api) {
   const rate=rateLimiting({...api,native,object});
   const candidates=api.routeAudit?staticRoutes({...api,audit:api.routeAudit,controls,functionValue}):undefined;
   function findModule(mod,spec,mode='require') {
-    const target=resolver.resolve(mod,spec,mode);
+    tick(mod);let cache=resolutionCache.get(mod);if(!cache){cache=new Map();resolutionCache.set(mod,cache);}
+    const key=mode+'\0'+spec;let target;if(cache.has(key))target=cache.get(key);else{target=resolver.resolve(mod,spec,mode);if(cache.size<1000)cache.set(key,target);}
     if(target){if(!staticDependencies.has(mod.filePath))staticDependencies.set(mod.filePath,new Set());staticDependencies.get(mod.filePath).add(target.filePath);}
     api.audit?.add('moduleLinks',{from:mod.filePath,to:target?.filePath??null,status:target?'TARGET_SELECTED':'UNRESOLVED_OR_UNSELECTED',mode});return target;
   }
@@ -119,6 +125,7 @@ export function nodeServer(api) {
         }
       }
       for(const s of mod.ast.statements) {
+        if(startupSummarized&&api.remainingSteps()<Math.floor(limits.maxSteps*0.25)){note(mod,'STARTUP_DISCOVERY_PARTIAL_FLOW_BUDGET_RESERVED');state.context.unresolved=true;break;}
         tick(mod);
         if(ts.isClassDeclaration(s)){
           const defined=classes.define(s,state);if(s.name)state.vars.set(s.name.text,defined);
@@ -169,6 +176,7 @@ export function nodeServer(api) {
     if(base.principal)return {...unknown(),principal:true,principalTrace:[...(base.principalTrace??[]),loc(node,state.mod,'PRINCIPAL_FIELD_UNVERIFIED',state.fn)].slice(0,6)};
     if(base.htmlParamsRoot)return {...(fields.read(base,key,node,state)??base),htmlParamsRoot:false,htmlParamLeaf:true,htmlParamVerified:state.context.htmlParamNames?.includes(key)===true};
     if(base.htmlParamLeaf)return {...(fields.read(base,key,node,state)??base),htmlParamVerified:false};
+    const startupProperty=startup.property(base,key,state);if(startupProperty)return startupProperty;
     const classProperty=classes.property(base,key,node,state);if(classProperty)return classProperty;
     const rateProperty=rate.property(base,key);if(rateProperty)return rateProperty;
     const fileProperty=api.filesSupport.property(base,key,node,state);if(fileProperty)return fileProperty;
@@ -217,6 +225,7 @@ export function nodeServer(api) {
       state.context.htmlOpaqueCall=true;
       return false;
     }
+    if(receiver?.tag==='async-promise'&&receiver.ref){receiver.ref.unknown=true;note(state.mod,'STARTUP_PROMISE_MEMBER_MUTATION_UNKNOWN');return true;}
     web.write(receiver,state);
     if(!state.nodeMode||!literal(key)||!receiver.ref)return false;
     if(['class','class-prototype'].includes(receiver.tag)){receiver.ref.unknown=true;note(state.mod,'CLASS_PROTOTYPE_OR_STATIC_MUTATION_UNKNOWN');return true;}
@@ -334,6 +343,7 @@ export function nodeServer(api) {
       note(state.mod,'NODE_HTTP_SERVER_APP_LISTENER_LINK');
       return {value:object('node-http-server')};
     }
+    const continuation=startup.call(node,receiver,args,state);if(continuation)return continuation;
     const limiter=rate.factory(callable,node,args,state);if(limiter)return limiter;
     const middleware=web.factory(callable,node,args,state);if(middleware)return middleware;
     const origin=web.request(node,receiver,args,state);if(origin)return origin;
@@ -609,6 +619,7 @@ export function nodeServer(api) {
     const queue=[...roots].map(mod=>[mod,0]),seen=new Set();
     for(let i=0;i<queue.length;i++){
       const [mod,depth]=queue[i];if(seen.has(mod))continue;seen.add(mod);
+      if(startupSummarized&&api.remainingSteps()<Math.floor(limits.maxSteps*0.25)){note(mod,'STARTUP_DISCOVERY_PARTIAL_FLOW_BUDGET_RESERVED');continue;}
       try{tick(mod);load(mod);}catch{note(mod,'NODE_DISCOVERY_BUDGET_OR_UNSUPPORTED');}
       for(const parent of parents.get(mod)??[]){
         if(seen.has(parent))continue;
@@ -665,13 +676,13 @@ export function nodeServer(api) {
       if(route.location.filePath!==mod.filePath){const declaring=modules.get(route.location.filePath);if(declaring)declaring.httpRegistrationLinked=true;}
       mod.record.entrypoints++;
       append(result.nodeUses,{ruleId:'JS_SERVER_ENTRY_CONTEXT',kind:'ENTRY_REGISTERED',operation:'EXPRESS_ROUTER_MOUNTED',
-        location:route.location,trace:[loc(route.target.node,mod,'EXPRESS_HANDLER_TARGET',route.target),...(route.setupContext.constructorBranches??[])].slice(0,20),
-        limitations:['STATIC_REGISTRATION_ONLY','MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED']},mod);
+        location:route.location,trace:[loc(route.target.node,mod,'EXPRESS_HANDLER_TARGET',route.target),...(route.setupContext.constructorBranches??[]),...(route.setupContext.bootstrapTrace??[])].slice(0,20),
+        limitations:['STATIC_REGISTRATION_ONLY','MIDDLEWARE_AND_RUNTIME_NOT_VERIFIED',...(route.setupContext.startupTestOnly?['TEST_ONLY_NODE_ENV_BRANCH']:[]),...(route.setupContext.bootstrapConditional||route.setupContext.asyncPostAwait?['CONDITIONAL_ASYNC_BOOTSTRAP_NOT_RUNTIME_SUCCESS']:[])]},mod);
     }
     for(const route of routes)if(![...reachable].some(app=>app.routes.includes(route)))note(route.target.mod,'UNMOUNTED_ROUTER_NOT_ANALYZED');
     if(candidates)try{candidates.finish(routes,reachable,routeControls,loaded);}catch{api.routeAudit.limitations.add('STATIC_ROUTE_DISCOVERY_BUDGET_OR_UNSUPPORTED');}
   }
-  return {property,write,call,construct,discover,functionValue,classValue:classes.define,constructorBranch:classes.branch,awaitValue:mongoose.consume,webEntry:web.entry,rateEntry:rate.entry,
+  return {summarizeSetup:setupRoutes.summarize,property,write,call,construct,discover,functionValue,classValue:classes.define,constructorBranch:classes.branch,awaitValue:mongoose.consume,webEntry:web.entry,rateEntry:rate.entry,
     applyFields:fields.apply,typeOfField:fields.typeName,compareFields:fields.compare,refineFields:fields.refine,
     invalidateFields:fields.invalidate,mergeFields:fields.merge,escapeFields:fields.escape};
 }
