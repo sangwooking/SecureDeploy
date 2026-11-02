@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { WorkspaceResponse, WorkspaceProject } from '../types/workspace';
 import type { ReviewHistoryResponse, ProgressAssessment } from '../types/securityReview';
 import { deploymentLabels } from './reviewPresentation';
@@ -30,14 +31,21 @@ export function importantProjects(projects:WorkspaceProject[]) {
   const rank=(p:WorkspaceProject)=>p.latestReview?.riskSummary?.deploymentAssessment==='BLOCKED'?0:p.latestReview?.riskSummary?.deploymentAssessment==='REVIEW_REQUIRED'?1:p.latestReview?2:3;
   return [...projects].sort((a,b)=>rank(a)-rank(b)||(Date.parse(b.latestReview?.createdAt??b.updatedAt)||0)-(Date.parse(a.latestReview?.createdAt??a.updatedAt)||0));
 }
+export function filterProjects(projects:WorkspaceProject[],query:string,order:string){
+  const term=query.trim().toLocaleLowerCase();const visible=projects.filter(p=>!term||[p.name,p.sourceType,p.repositoryUrl??''].some(value=>value.toLocaleLowerCase().includes(term)));
+  return order==='name'?[...visible].sort((a,b)=>a.name.localeCompare(b.name,'ko')):order==='latest'?[...visible].sort((a,b)=>(Date.parse(b.latestReview?.createdAt??b.updatedAt)||0)-(Date.parse(a.latestReview?.createdAt??a.updatedAt)||0)):importantProjects(visible);
+}
 export function ProjectList({ projects, onDeleted }: { projects: WorkspaceProject[]; onDeleted?: () => void }) {
+  const [query,setQuery]=useState(''),[order,setOrder]=useState('priority');const visible=filterProjects(projects,query,order);
   if (!projects.length) return <div className="empty-state"><p>아직 관리 중인 프로젝트가 없습니다.</p><a href="#/new">새 프로젝트 분석</a></div>;
-  return <div className="workspace-project-list">{importantProjects(projects).map(project => <article className="workspace-project-row" key={project.projectId}>
-    <div className="project-row-identity"><h3><a href={projectLink(project.projectId)} title={project.name}>{project.name}</a></h3>
+  return <><div className="project-list-toolbar" role="search" aria-label="프로젝트 찾기"><label>프로젝트 검색<input type="search" placeholder="프로젝트 이름 또는 저장소 주소" value={query} onChange={e=>setQuery(e.target.value)}/></label><label>정렬<select value={order} onChange={e=>setOrder(e.target.value)}><option value="priority">검토 우선순위</option><option value="latest">최근 검사순</option><option value="name">이름순</option></select></label><span role="status">{visible.length}개 프로젝트</span></div>
+  {!visible.length&&<div className="empty-state"><h3>검색 결과가 없어요</h3><p>다른 프로젝트 이름이나 저장소 주소로 검색해 보세요.</p><button className="secondary-button" onClick={()=>setQuery('')}>검색 지우기</button></div>}
+  <div className="workspace-project-list">{visible.map(project => <article className="workspace-project-row" key={project.projectId}>
+    <div className="project-row-identity"><div className="project-source-meta"><span className="source-type-badge">{project.sourceType==='GITHUB'?'GitHub':project.sourceType==='ZIP'?'ZIP':'수정본'}</span><span>검사 {project.reviewCount}회</span></div><h3><a href={projectLink(project.projectId)} title={project.name}>{project.name}</a></h3>
       <span className="project-row-status">{reviewStatus(project.latestReview)}</span><p className="project-row-meta"><time>{dateLabel(project.latestReview?.createdAt)}</time><span>미확인 범위·라이브러리 위험은 상세 결과에서 확인</span></p><a href={projectLink(project.projectId,'findings',project.latestReview?.reviewId)}>분석 결과와 수정 확인</a></div>
-    <PriorityCounts assessment={project.latestReview?.riskSummary} compact />
+    <div className="project-policy-summary"><p>저장된 정책 항목</p><PriorityCounts assessment={project.latestReview?.riskSummary} compact /><small>코드 흐름 후보·검사 범위는 결과에서 확인</small></div>
     <ProjectManagement project={project} onDeleted={onDeleted} />
-  </article>)}</div>;
+  </article>)}</div></>;
 }
 
 export function RecentProjects({ projects }: { projects: WorkspaceProject[] }) {

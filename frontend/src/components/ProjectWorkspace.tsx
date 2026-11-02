@@ -99,7 +99,7 @@ export function ProjectWorkspace({ route, policy, policyError, retryPolicy, onDe
       {!history.length && <p>저장된 분석 결과가 없습니다.</p>}
       {route.view==='PROGRESS'&&route.reviewId&&review?<><a href={projectLink(project.projectId,'history')}>검사 기록 목록으로 돌아가기</a><h3>검사 #{review.reviewId}의 변화</h3><p>{dateLabel(review.createdAt)}</p><ReviewProgressPanel result={review}/></>:<div className="history-list">{history.map(item => <article className="workspace-history-row" key={item.reviewId}>
         <h3>분석 #{item.reviewId} · {dateLabel(item.createdAt)}</h3><p>{item.sourceType === 'WORKSPACE' ? '작업 공간 수정본' : item.sourceType} · {reviewStatus(item)}</p>
-        <div className="result-actions"><a className="history-item" href={projectLink(project.projectId, 'findings', item.reviewId, 'SUMMARY')}>결과 보기</a>
+        <p className="history-engine">{review?.reviewId===item.reviewId?`검사 엔진: ${review.serverAnalysis?.analyzerVersion??'미기록'} · 검사 범위: ${review.coverage?.status??'UNKNOWN'}`:'검사 엔진과 분석 범위는 저장된 결과에서 확인할 수 있어요.'}</p><div className="result-actions"><a className="history-item" href={projectLink(project.projectId, 'findings', item.reviewId, 'SUMMARY')}>결과 보기</a>
           {item.comparisonAvailable ? <a href={projectLink(project.projectId, 'history', item.reviewId, 'PROGRESS')}>변화 보기</a> : <span>이전 분석과 비교 근거 없음</span>}
 </div><details className="history-item-details"><summary>검사 근거·관리</summary>        {item.sourceType === 'GITHUB' && <GitHubSourceInfo source={item.sourceMetadata} compact />}
         <PriorityCounts assessment={item.riskSummary} />

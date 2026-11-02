@@ -4,6 +4,7 @@ import App from './App';
 import './styles.css';
 import './renovation.css';
 import './product.css';
+import './polish.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

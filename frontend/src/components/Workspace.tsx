@@ -51,7 +51,7 @@ export function Workspace({ session, onLogout }: { session: AuthResponse; onLogo
   }, [route.page, notice, loading]);
   const currentPage = route.page === 'project' ? 'projects' : route.page;
   return <main className="app-shell"><a className="skip-link" href="#workspace-main" onClick={event => { event.preventDefault(); document.getElementById('workspace-main')?.focus(); }}>본문으로 이동</a><section className="workspace">
-    <header className="masthead"><div><p className="eyebrow">프로젝트 보안 관리</p><h1><a className="brand-link" href="#/dashboard">SecureDeploy</a></h1></div>
+    <header className="masthead"><div><p className="eyebrow">프로젝트 보안 관리</p><h1><a className="brand-link" href="#/dashboard"><span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 6v6c0 5-8 9-8 9S4 17 4 12V6l8-3Z"/><path d="m8.5 11.5 2.5 2.5 4.5-5"/></svg></span>SecureDeploy</a></h1></div>
       <div className="session-box"><span>{session.user.name}</span><button className="secondary-button" onClick={()=>{const e=new Event('securedeploy:before-navigate',{cancelable:true});window.dispatchEvent(e);if(!e.defaultPrevented)onLogout();}}>로그아웃</button></div></header>
     <nav className="workspace-navigation" aria-label="앱 메뉴">{[
       ['dashboard', '대시보드'], ['projects', '내 프로젝트'], ['new', '새 프로젝트'], ['account', '계정'],
@@ -61,7 +61,7 @@ export function Workspace({ session, onLogout }: { session: AuthResponse; onLogo
         {loading && <p role="status">내 프로젝트를 불러오고 있습니다.</p>}
         {error && <div><p role="alert" className="error-message">{error}</p><button className="secondary-button" onClick={() => setRevision(value => value + 1)}>다시 불러오기</button></div>}
         {data && (route.page === 'dashboard' ? <WorkspaceSummary data={data} name={session.user.name} /> : <>
-          <header className="section-heading page-heading"><div><p className="eyebrow">프로젝트</p><h2>내 프로젝트 ({data.projectCount})</h2></div><div className="project-list-actions"><button className="secondary-button" onClick={() => setRevision(value => value + 1)}>새로고침</button><a className="primary-button" href="#/new">새 프로젝트 등록</a></div></header>
+          <header className="section-heading page-heading"><div><p className="eyebrow">프로젝트</p><h2>내 프로젝트 ({data.projectCount})</h2><p className="page-description">프로젝트의 보안 문제를 확인하고, 수정과 재검사를 이어가세요.</p></div><div className="project-list-actions"><button className="secondary-button" onClick={() => setRevision(value => value + 1)}>새로고침</button><a className="primary-button" href="#/new">새 프로젝트 등록</a></div></header>
           {notice && <p role="status" className="feedback-message feedback-success">{notice}</p>}
           <ProjectList projects={data.projects} onDeleted={() => { setNotice('프로젝트와 연결된 분석 기록을 삭제했습니다.'); setRevision(value => value + 1); }} />
         </>)}
