@@ -1,7 +1,7 @@
 import type { DependencyVulnerability, SecurityReviewResponse, Vulnerability } from '../types/securityReview';
 import type { ServerFlowFinding } from '../types/serverAnalysis';
 
-export const findingPath = (path: string) => path.replace(/\\/g, '/');
+export const findingPath = (path: string) => path.replace(/\\/g, '/').replace(/^(?:\.\/)+/, '');
 export const severityOrder = ['UNKNOWN', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 export type FileFinding = {
   id: string; path: string; title: string; severity: string; line?: number;
@@ -13,8 +13,11 @@ export function indexWorkspaceFindings(result: SecurityReviewResponse, files: Re
   const evidence = new Map<string, Set<string>>();
   const inspected = new Set<string>();
   const seen = new Set<string>();
+  const unlinked = new Map<string, FileFinding>();
   const add = (item: FileFinding) => {
-    if (!files.has(item.path) || seen.has(item.id)) return false;
+    if (seen.has(item.id)) return false;
+    if (!files.has(item.path)) { unlinked.set(item.id,item); return false; }
+    unlinked.delete(item.id);
     seen.add(item.id);
     const entries = byPath.get(item.path) ?? [];
     entries.push(item);
@@ -43,10 +46,10 @@ export function indexWorkspaceFindings(result: SecurityReviewResponse, files: Re
     if (manifest.status === 'COMPLETE') inspected.add(findingPath(manifest.filePath));
   const risks = result.riskAssessment?.dependencyFindings ?? [];
   for (const dep of result.sca?.dependencyVulnerabilities ?? []) {
-    const paths = [...new Set(dep.sourceFiles.map(findingPath))].filter(path => files.has(path)).sort();
-    const lock = paths.find(path => /(?:^|\/)(?:package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml)$/.test(path));
-    const path = lock ?? paths[0];
-    if (!path) continue;
+    const paths = [...new Set(dep.sourceFiles.map(findingPath))].sort();
+    const matched = paths.filter(path => files.has(path));
+    const lock = matched.find(path => /(?:^|\/)(?:package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml)$/.test(path));
+    const path = lock ?? matched[0] ?? paths[0] ?? '';
     const risk = risks.find(r => r.ecosystem === dep.ecosystem && r.packageName === dep.packageName
       && r.version === dep.installedVersion && r.advisoryId === dep.osvId);
     const id = 'sca:' + (risk?.findingId ?? JSON.stringify([dep.ecosystem, dep.packageName, dep.installedVersion, dep.osvId]));
@@ -57,5 +60,5 @@ export function indexWorkspaceFindings(result: SecurityReviewResponse, files: Re
       evidence.set(related, ids);
     }
   }
-  return {byPath, evidence, inspected};
+  return {byPath, evidence, inspected, unlinked: [...unlinked.values()]};
 }

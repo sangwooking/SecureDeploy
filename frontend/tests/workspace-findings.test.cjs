@@ -30,3 +30,10 @@ test('SCA matches count by advisory, package and version on a real lockfile, not
   assert.equal(index.byPath.has('node_modules/undici/index.js'),false);
   assert.equal(index.inspected.has('clean.json'),false);
 });
+
+test('unmatched evidence stays visible and dot-prefixed paths match without basename guesses',()=>{
+ const entries=[{vulnerabilityId:1,filePath:'./src/x.ts',line:1},{vulnerabilityId:2,filePath:'other/x.ts',line:2}];
+ const index=indexWorkspaceFindings({vulnerabilities:entries},new Set(['src/x.ts']));
+ assert.equal(index.byPath.get('src/x.ts').length,1);
+ assert.deepEqual(index.unlinked.map(i=>i.path),['other/x.ts']);
+});

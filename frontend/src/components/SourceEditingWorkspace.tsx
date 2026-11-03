@@ -1,4 +1,4 @@
-import { indexWorkspaceFindings, severityOrder, type FileFinding } from './workspaceFindings';
+import { findingPath, indexWorkspaceFindings, severityOrder, type FileFinding } from './workspaceFindings';
 import { DependencyFindingCard } from './DependencyFindingCard';
 import { DependencyUpdatePlans } from './DependencyUpdatePlans';
 import {confirmedSaveState,editedHash,saveLabels,type SaveState} from './saveConfirmation';
@@ -31,7 +31,7 @@ const FileTree=memo(function FileTree({ files, selected, disabled, onSelect, ind
     node.file = file;
   }
   const render = (node: TreeNode): React.ReactNode => <ul>{[...node.children.values()].map(child => {
-    const path=child.file?.path ?? '';
+    const path=findingPath(child.file?.path ?? '');
     const issues=index.byPath.get(path) ?? [];
     const severity=severityOrder[Math.max(0,...issues.map(item=>severityOrder.indexOf(item.severity)))];
     const status=index.inspected.has(path)?'원본 검사에서 연결된 문제 0건':'이 파일의 검사 여부 미확인';
@@ -88,9 +88,9 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const [rescanned,setRescanned]=useState<SecurityReviewResponse>();
   const latest=rescanned?.workspaceScan?.workspaceId===workspace?.id&&rescanned?.workspaceScan?.revision===workspace?.revision&&!dirty?rescanned:undefined;
   const workspaceFiles=workspace?.files;
-  const index=useMemo(()=>indexWorkspaceFindings(result,new Set(workspaceFiles?.filter(f=>!f.directory).map(f=>f.path))),[result,workspaceFiles]);
-  const treeIndex=useMemo(()=>latest?indexWorkspaceFindings(latest,new Set(workspaceFiles?.filter(f=>!f.directory).map(f=>f.path))):index,[latest,workspaceFiles,index]);
-  const issues=selected?index.byPath.get(selected.path)??[]:[];
+  const index=useMemo(()=>indexWorkspaceFindings(result,new Set(workspaceFiles?.filter(f=>!f.directory).map(f=>findingPath(f.path)))),[result,workspaceFiles]);
+  const treeIndex=useMemo(()=>latest?indexWorkspaceFindings(latest,new Set(workspaceFiles?.filter(f=>!f.directory).map(f=>findingPath(f.path)))):index,[latest,workspaceFiles,index]);
+  const issues=selected?index.byPath.get(findingPath(selected.path))??[]:[];
   const issue=issues.find(item=>item.id===activeId);
   const selectionKey=workspace?`${key}.${workspace.id}.file-selection`:undefined;
   const pendingLine=useRef<number|undefined>(undefined);
@@ -163,7 +163,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const select = (file: EditingFile,line?:number) => void run(async () => {
     if (dirty && !window.confirm('저장하지 않은 편집을 버리고 다른 파일을 열까요?')) return;
     setSaveState(null);setPendingSave(null);setDiffs(null); setApproved(false); setSelected(file); setContent(null); setText('');
-    const items=index.byPath.get(file.path)??[];
+    const items=index.byPath.get(findingPath(file.path))??[];
     const initial=items.find(i=>i.flow?.findingId===problemContext?.flow?.findingId && i.flow && problemContext?.flow
       || i.code?.vulnerabilityId!=null&&i.code.vulnerabilityId===problemContext?.vulnerability?.vulnerabilityId
       || i.dependency?.osvId&&i.dependency.osvId===result.riskAssessment?.dependencyFindings?.find(r=>r.findingId===problemContext?.findingId)?.advisoryId);
@@ -250,7 +250,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
     if (workspace && !expired) await deleteEditingWorkspace(workspace.id);
     sessionStorage.removeItem(key); setResumeId(''); setRecovery(null); setWorkspace(null); setContent(null); setSelected(null); setText(''); setDiffs(null); setApproved(false); setExpired(false); setFileQuery('');
   });
-  const visibleFiles=useMemo(()=>workspace?.files.filter(f=>(!onlyIssues||treeIndex.byPath.has(f.path))&&f.path.toLowerCase().includes(fileQuery.trim().toLowerCase()))??[],[workspace,fileQuery,onlyIssues,treeIndex]);
+  const visibleFiles=useMemo(()=>workspace?.files.filter(f=>(!onlyIssues||treeIndex.byPath.has(findingPath(f.path)))&&f.path.toLowerCase().includes(fileQuery.trim().toLowerCase()))??[],[workspace,fileQuery,onlyIssues,treeIndex]);
   const findings = selected && originalVerified(workspace)
     ? result.vulnerabilities.filter(v => v.filePath.replace(/\\/g, '/') === selected.path) : [];
   const flowFindings = selected && originalVerified(workspace)
@@ -309,6 +309,10 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
             <label>표시할 파일 <select value={onlyIssues?'issues':'all'} onChange={e=>{setOnlyIssues(e.target.value==='issues');setAllFiles(true);}}><option value="all">전체 파일</option><option value="issues">문제가 있는 파일</option></select></label>
             <p className="workspace-finding-basis">검사 #{latest?.reviewId??result.reviewId} · 범위 {(latest??result).coverage?.status??'UNKNOWN'}{latest?' · 현재 저장본 재검사':workspace.changedFileIds.length>0||dirty?' · 수정 후 재검사 전':''}<br/>배지는 대표 위치 기준입니다. 0은 검사 범위에서 연결된 문제 없음, —는 검사 여부 미확인입니다.</p>
             <details open={allFiles} onToggle={e=>setAllFiles(e.currentTarget.open)}><summary>전체 파일 트리</summary>{allFiles&&<FileTree files={visibleFiles} selected={selected?.id} disabled={busy} onSelect={select} index={treeIndex}/>}</details>
+            {treeIndex.unlinked.length>0&&<details className="workspace-unlinked-findings"><summary>파일 위치 미연결 문제 ({treeIndex.unlinked.length}건)</summary>
+              <p>이 검사에 기록된 문제입니다. 현재 파일 트리에서 근거 경로를 확인할 수 없어 파일 배지에는 포함하지 않습니다.</p>
+              <ul>{treeIndex.unlinked.map(item=><li key={item.id}>{item.title} · {item.severity} · {item.path||'근거 경로 미기록'}</li>)}</ul>
+            </details>}
             {!visibleFiles.length&&<p role="status">일치하는 파일이 없습니다.</p>}
           </nav>
           <div className="source-edit-pane">
