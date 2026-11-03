@@ -9,4 +9,52 @@ export function repairGuide(rule:string,v?:Vulnerability){
  if(/HTTP.*URL|INSECURE_HTTP|INSECURE_API_URL/.test(rule))return {summary:'HTTP 주소 문자열이 기록됐습니다. 실제 운영 통신인지 테스트 예시인지와 전달되는 정보는 별도 확인해야 합니다.',steps:['저장된 주소가 요청·리다이렉트 등에 사용되는지 호출 위치를 확인하세요.','실제 서버의 HTTPS 제공·인증서·리다이렉트·혼합 콘텐츠 조건을 확인하세요.','운영 통신이라면 설정과 호출자를 함께 변경하고, 테스트 문자열이라면 테스트 의도와 운영 경로를 구분해 기록하세요.'],limit:'주소 문자열만으로 실제 통신이나 노출을 확정하지 않습니다. 자동 문자열 치환은 지원하지 않습니다.'};
  const g=findingGuidance(undefined,v);return {summary:g.risk,steps:g.steps,limit:['DEBUG_ENABLED','STACKTRACE_EXPOSURE','INSECURE_COOKIE','TS_SENSITIVE_DATA_EXPOSURE'].includes(rule)?'작업 공간에서 원본·Finding·AST·파일 해시를 확인한 뒤 지원되는 수정안만 생성할 수 있습니다.':'이 유형은 기본 가이드와 수동 수정 경로를 제공합니다. AI Patch 지원을 의미하지 않습니다.'};
 }
-export function ProblemRepairGuide({rule,v}:{rule:string;v?:Vulnerability}){const g=repairGuide(rule,v);return <section className="repair-guide" aria-label="기본 수정 가이드"><p className="source-label">기본 수정 가이드 · Rule/Evidence 기반 · AI 요청 없음</p><h4>어떻게 수정하나요?</h4><ol>{g.steps.map((s,i)=><li key={i}>{s}</li>)}</ol>{rule==='DEBUG_ENABLED'&&<details><summary>규칙 기반 설정 예시 · 현재 파일 검증 전</summary><pre>{'수정 전: debug=true\n수정 후: debug=false'}</pre><p>설정 오버라이드와 실제 디버그 로그를 확인하세요. 실제 AI 생성 코드가 아닙니다.</p></details>}<p role="note">{g.limit}</p></section>}
+const examples: Record<string, {before:string; after:string; check:string}> = {
+  HARDCODED_FRONTEND_SECRET: {
+    before: "const secret = 'server-secret-placeholder';",
+    after: "// Browser: request an authenticated server endpoint.\nconst response = await fetch('/api/example');",
+    check: '예시 주소입니다. 테스트 더미인지 먼저 확인하세요. 실제 비밀이면 서버에만 보관하고 기존 값을 회전하세요. 브라우저 번들과 API 응답에 값이 없는지 확인하세요.',
+  },
+  LOCAL_STORAGE_TOKEN: {
+    before: "localStorage.setItem('token', token);",
+    after: "// After the server issues an HttpOnly session cookie:\nconst response = await fetch('/api/me', { credentials: 'same-origin' });",
+    check: '서버의 쿠키 발급과 CSRF 방어가 전제입니다. 로그인·갱신·로그아웃 및 교차 출처 요구사항을 확인하세요.',
+  },
+  SQL_INJECTION: {
+    before: 'await db.query("SELECT * FROM users WHERE id = " + id);',
+    after: 'await db.query("SELECT * FROM users WHERE id = $1", [id]);',
+    check: 'PostgreSQL 스타일 예시입니다. 실제 드라이버의 바인딩 문법과 권한 검사를 확인하세요.',
+  },
+  HTTP_HTML_INPUT_FLOW: {
+    before: 'element.innerHTML = input;',
+    after: 'element.textContent = input;',
+    check: '브라우저에서 평문을 표시할 때의 예시입니다. 서버 응답은 HTML 문맥에 맞게 인코딩하고 정상 출력도 확인하세요.',
+  },
+  TS_SENSITIVE_DATA_EXPOSURE: {
+    before: 'res.json({ status, token: process.env.SERVICE_TOKEN });',
+    after: 'res.json({ status });',
+    check: '예시 필드입니다. 실제 응답 계약과 클라이언트 호환성을 확인하세요.',
+  },
+  DEBUG_ENABLED: {
+    before: 'debug=true',
+    after: 'debug=false',
+    check: '설정 오버라이드와 실제 디버그 로그를 확인하세요.',
+  },
+};
+
+export function ProblemRepairGuide({rule,v}:{rule:string;v?:Vulnerability}) {
+  const guide=repairGuide(rule,v);
+  const example=examples[rule];
+  return <section className="repair-guide" aria-label="기본 수정 가이드">
+    <p className="source-label">기본 수정 가이드 · Rule/Evidence 기반 · AI 요청 없음</p>
+    <h4>어떻게 수정하나요?</h4>
+    <ol>{guide.steps.map((step,i)=><li key={i}>{step}</li>)}</ol>
+    {example&&<details><summary>참고용 수정 전후 예시</summary>
+      <p>규칙 기반 예시입니다. 현재 파일에 적용하거나 검증한 변경은 없습니다.</p>
+      <h5>수정 전</h5><pre><code>{example.before}</code></pre>
+      <h5>수정 후</h5><pre><code>{example.after}</code></pre>
+      <p>{example.check}</p>
+    </details>}
+    <p role="note">{guide.limit}</p>
+  </section>;
+}
