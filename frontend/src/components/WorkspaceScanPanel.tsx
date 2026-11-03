@@ -9,8 +9,9 @@ import type { SecurityReviewResponse } from '../types/securityReview';
 import { ReviewProgressPanel, hasComparableReview } from './ReviewProgressPanel';
 import { ReviewSummaryPanel, summaryStateLabel } from './ReviewSummaryPanel';
 
-export function WorkspaceScanPanel({ workspace, original, disabled }: {
+export function WorkspaceScanPanel({ workspace, original, disabled, onResult }: {
   workspace: EditingWorkspace; original: SecurityReviewResponse; disabled: boolean;
+  onResult?: (result: SecurityReviewResponse) => void;
 }) {
   const key = `securedeploy.editing.scan.${workspace.id}`;
   const [scan, setScan] = useState<WorkspaceScan | null>(null);
@@ -37,6 +38,13 @@ export function WorkspaceScanPanel({ workspace, original, disabled }: {
     if (id) void poll(id);
     return () => { active = false; clearTimeout(timer); };
   }, [key, scan?.id]);
+  useEffect(()=>{
+    const snapshot=result?.workspaceScan;
+    if(result&&scan?.state==='SUCCEEDED'&&scan.workspaceId===workspace.id&&scan.reviewId===result.reviewId
+      &&snapshot?.workspaceId===workspace.id&&snapshot.originalReviewId===original.reviewId
+      &&snapshot.revision===scan.revision&&snapshot.inputHash===scan.inputHash&&snapshot.baselineVerified)
+      onResult?.(result);
+  },[result,scan,workspace.id,original.reviewId,onResult]);
   const start = async () => {
     if (starting || disabled || !approved || scan?.state === 'RUNNING') return;
     setStarting(true); setError('');
