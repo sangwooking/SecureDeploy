@@ -81,4 +81,21 @@ class ExhibitAiGateTest {
         assertFalse(exhibition.permits(request,evidence,1000,2000));
         assertFalse(main.permits(request,evidence,1000,2000));
     }
+
+    @Test void pinnedSourceCanBeReusedAcrossFreshReviewsWithoutExpandingScope() throws Exception {
+        var control=directory.resolve("pinned-source");
+        Files.writeString(control,ExhibitAiGate.MAIN_AUTHORIZATION);
+        var gate=new ExhibitAiGate(control,"","",true,ExhibitAiGate.MAIN_AUTHORIZATION);
+        var source="987:"+"a".repeat(40)+":undici:7.29.1";
+        gate.configureDependencySource("1:"+source);
+        for(int project: new int[]{43,51}){
+            var evidence=(project==43?"b":"c").repeat(64);
+            var request=new AiAdmission.Request(1,project,"fresh-"+project,"dependency_update_advice_v1",evidence,
+                "gpt-5.4-mini-2026-03-17","d".repeat(64));
+            assertTrue(gate.permits(request,source,1000,2000));
+            assertFalse(gate.permits(request,source.replace("7.29.1","7.29.2"),1000,2000));
+        }
+        assertFalse(gate.permitsDependencySource(2,source));
+        assertFalse(gate.permitsDependencySource(1,source.replace("987:","988:")));
+    }
 }
