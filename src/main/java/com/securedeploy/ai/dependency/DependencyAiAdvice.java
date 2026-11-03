@@ -31,8 +31,6 @@ public final class DependencyAiAdvice {
         var data=new LinkedHashMap<String,Object>();
         data.put("evidenceHash",snapshot.evidenceHash());data.put("packageName",p.packageName());data.put("lockedVersion",p.lockedVersion());data.put("advisoryId",p.advisoryId());
         data.put("dependencyKind",p.dependencyKind());data.put("verifiedCandidateVersions",p.sameMajorCandidates());
-        data.put("packageManagerEvidence",p.packageManagerEvidence());
-        data.put("unknowns",List.of("PARENT_VERSION_NOT_VERIFIED","LOCK_REGENERATION_NOT_VERIFIED","COMPATIBILITY_NOT_VERIFIED","RUNTIME_REACHABILITY_NOT_VERIFIED"));
         try {
             String input=mapper.writeValueAsString(data);
             if(input.getBytes(StandardCharsets.UTF_8).length>8192)throw new IllegalArgumentException();

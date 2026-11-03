@@ -31,7 +31,7 @@ class DependencyAiAdviceTest {
             "잠금 버전에 보안 공지가 연결되어 있습니다.","사용 방식에 따라 영향을 받을 수 있어 검토가 필요합니다.","운영에서 해당 기능을 사용하는지는 확인되지 않았습니다.","상위 의존성과 범위를 제한한 업데이트를 검토하세요.",List.of("변경 내용을 검토하고 같은 자료로 재검사하세요."),List.of("기능 호환성은 확인되지 않았습니다."));}
     @Test void minimalPayloadOmitsPathsParentsSummariesCodeAndPrivateMetadata()throws Exception{
         var s=evidence();var p=DependencyAiAdvice.prompt(s,0,json);var d=json.readTree(p.untrustedData());
-        assertEquals(8,d.size());assertFalse(p.untrustedData().contains("private"));assertFalse(p.untrustedData().contains("package.json"));assertFalse(p.untrustedData().contains("ignore instructions"));assertEquals(List.of("7.30.1"),json.convertValue(d.path("verifiedCandidateVersions"),List.class));
+        assertEquals(Set.of("evidenceHash","packageName","lockedVersion","advisoryId","dependencyKind","verifiedCandidateVersions"),java.util.stream.StreamSupport.stream(((Iterable<String>)d::fieldNames).spliterator(),false).collect(java.util.stream.Collectors.toSet()));assertFalse(p.untrustedData().contains("private"));assertFalse(p.untrustedData().contains("package.json"));assertFalse(p.untrustedData().contains("ignore instructions"));assertEquals(List.of("7.30.1"),json.convertValue(d.path("verifiedCandidateVersions"),List.class));
         assertDoesNotThrow(()->DependencyAiAdvice.validate(output(s),s,0));
     }
     @Test void inventedVersionsAdvisoriesHashesLocationsAssurancesAndSecretsAreRejected()throws Exception{
