@@ -55,4 +55,24 @@ class NpmTreePlanTest {
  @Test void changedOriginalEvidenceStopsBeforeRegistryOrExecution()throws Exception{when(ws.captureScan("w",1)).thenReturn(new EditingWorkspaceService.ScanInput(1,"CONTROL",new WorkspaceScanSnapshot(1,"w",1,10,1,"sha","UNVERIFIED","input",java.time.Instant.now(),"ts-server-v61",false,List.of(),""),entries));assertThrows(RuntimeException.class,this::prepare);verifyNoInteractions(registry,osv);verify(npm,never()).generate(any(),any(),anyString(),anyString(),anyString());}
 
  @Test void declaredRangeAndLockedRootCannotDisagree()throws Exception{assertTrue(NpmTreePlanner.satisfies("^1.0.0","1.2.0"));assertFalse(NpmTreePlanner.satisfies("~1.0.0","1.1.0"));assertFalse(NpmTreePlanner.satisfies("^0.0.1","0.0.2"));var m=(ObjectNode)json.readTree(manifest);((ObjectNode)m.path("dependencies")).put("build-kit","^2.0.0");var l=(ObjectNode)json.readTree(lock);((ObjectNode)l.path("packages")).set("",m);var inconsistent=NpmTreePlanner.read(json,json.writeValueAsBytes(m),json.writeValueAsBytes(l));assertThrows(Exception.class,()->NpmTreePlanner.target(inconsistent,"transport-core","1.0.0"));}
+
+ @Test void approvedNpmExecutionRequiresTheAiCandidateOnTheActualTargetGraph(){
+  var advice=mock(com.securedeploy.ai.dependency.DependencyAiAdviceService.class);
+  var proposal=mock(com.securedeploy.ai.dependency.DependencyAiAdviceService.View.class);
+  var output=mock(com.securedeploy.ai.dependency.DependencyAiAdvice.Output.class);
+  org.springframework.test.util.ReflectionTestUtils.setField(service,"advice",advice);
+  when(plans.get(10).evidenceHash()).thenReturn("evidence");
+  when(advice.get(10,"advice")).thenReturn(proposal);
+  when(proposal.evidenceHash()).thenReturn("evidence");
+  when(proposal.state()).thenReturn("GENERATED");when(proposal.output()).thenReturn(output);
+  when(output.decision()).thenReturn("PROPOSE_UPDATE");
+  var request=new WorkspaceNpmTreeService.Prepare(1,0,"advice");
+  when(output.candidateVersion()).thenReturn("1.0.2");
+  var mismatch=generate(service.prepare("w",request));
+  assertEquals("MANUAL_REVIEW",mismatch.state());
+  assertEquals("AI_CANDIDATE_NOT_PRESENT",mismatch.attempts().get(0).outcome());
+  when(output.candidateVersion()).thenReturn("1.0.1");
+  assertEquals("PROPOSED",generate(service.prepare("w",request)).state());
+  verifyNoInteractionsAfterPrepareNotPossible();
+ }
 }

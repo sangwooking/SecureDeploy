@@ -18,6 +18,13 @@ final class ExhibitAiGate {
     private final String bootToken = UUID.randomUUID().toString();
     private final String expressScope;
     private final String springScope;
+    private volatile String dependencyScope="";
+    void configureDependency(String scope){dependencyScope=scope;}
+    boolean permitsDependency(long user,long project,String evidence){
+        return MAIN_AUTHORIZATION.equals(authorization)&&open()
+            && dependencyScope.matches("[1-9][0-9]*:[1-9][0-9]*:[0-9a-f]{64}")
+            && dependencyScope.equals(user+":"+project+":"+evidence);
+    }
 
     ExhibitAiGate(Path control, String expressScope, String springScope) {
         this(control, expressScope, springScope, false);
@@ -57,6 +64,8 @@ final class ExhibitAiGate {
     boolean permits(AiAdmission.Request request, String source, int input, int output) {
         if (!open() || request==null || !MODEL.equals(request.model())
                 || input<1 || input>32768 || output<1 || output>2000) return false;
+        if("dependency_update_advice_v1".equals(request.feature()))
+            return request.consentHash().equals(source)&&permitsDependency(request.user(),request.project(),source);
         var expected = switch (request.feature()) {
             case "workspace_patch_plan_v1" -> expressScope;
             case "workspace_patch_v1" -> springScope;

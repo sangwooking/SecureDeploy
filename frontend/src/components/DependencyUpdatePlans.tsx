@@ -11,7 +11,7 @@ export function sameDependencyAdvisory(dep:DependencyVulnerability,plan:Plans['p
  if(dep.ecosystem!==plan.ecosystem||dep.packageName!==plan.packageName||dep.installedVersion!==plan.lockedVersion)return false;
  const ids=new Set([dep.osvId,...dep.aliases].map(x=>x.toUpperCase()));return [plan.advisoryId,...plan.aliases].some(x=>ids.has(x.toUpperCase()));
 }
-export function DependencyUpdatePlans({reviewId,onEditDependency,selectedDependency,onEditFile}: {reviewId?:number|null;selectedDependency?:DependencyVulnerability;onEditDependency?:(id:string)=>void;onEditFile?:(path:string)=>void}) {
+export function DependencyUpdatePlans({reviewId,onEditDependency,selectedDependency,onEditFile}: {reviewId?:number|null;selectedDependency?:DependencyVulnerability;onEditDependency?:(id:string,index:number)=>void;onEditFile?:(path:string)=>void}) {
   const cap=useUiCapabilities();
   const [problem,setProblem]=useState<ReturnType<typeof requestProblem>|null>(null);
   const [result,setResult]=useState<Plans|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);

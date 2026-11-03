@@ -80,6 +80,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const [showLocations,setShowLocations]=useState(false);
   const [locationPage,setLocationPage]=useState(0);
   const [onlyIssues,setOnlyIssues]=useState(false);
+  const [scaAdvice,setScaAdvice]=useState<{id:string;index:number;finding:string}>();
   const [activeId,setActiveId]=useState<string>();
   const [lineTarget,setLineTarget]=useState(0);
   const restoredIssue=useRef<string|undefined>(undefined);
@@ -92,6 +93,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
   const treeIndex=useMemo(()=>latest?indexWorkspaceFindings(latest,new Set(workspaceFiles?.filter(f=>!f.directory).map(f=>findingPath(f.path)))):index,[latest,workspaceFiles,index]);
   const issues=selected?index.byPath.get(findingPath(selected.path))??[]:[];
   const issue=issues.find(item=>item.id===activeId);
+  const activeScaAdvice=issue?.id===scaAdvice?.finding?scaAdvice:undefined;
   const selectionKey=workspace?`${key}.${workspace.id}.file-selection`:undefined;
   const pendingLine=useRef<number|undefined>(undefined);
   const targetPath=problemContext?.path??initialPath;
@@ -295,7 +297,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
       <nav className="editing-stages" aria-label="수정 단계">{([['edit','코드 수정'],['diff','변경 검토·승인'],['scan','재검사']] as const).map(([id,label],index)=><button key={id} type="button" aria-current={stage===id?'step':undefined} onClick={()=>setStage(id)}><span className="stage-number" aria-hidden="true">{index+1}</span>{label}</button>)}</nav>
       {initialAdviceId&&!cap.loading&&(!cap.value?.dependencyFiles||!cap.value.npmGeneration)&&<p role="note">이 서버에서는 npm 수정 파일 생성이 준비되지 않았어요. 파일을 직접 수정하고 Diff를 검토할 수 있습니다.</p>}
       {stage==='edit'&&isDependencyContext&&cap.value?.npmIsolation&&cap.value.npmIsolation.state!=='AVAILABLE_OFFLINE_BROKER'&&<p role="note">{cap.value.npmIsolation.message}</p>}
-      {stage==='edit'&&cap.value?.npmTreePlans&&!!result.sca?.dependencyVulnerabilities?.some(d=>d.ecosystem==='NPM')&&!initialAdviceId&&<NpmTreePlanPanel workspace={workspace} result={result} findingId={problemContext?.findingId} disabled={busy||dirty||expired} onApplied={async next=>{setWorkspace(next);setDiffs(null);setApproved(false);if(selected){const value=await loadEditingFile(next.id,selected.id);setContent(value);setText(value.text.replace(/\r\n/g,'\n'));}setStage('diff');}}/>}
+      {stage==='edit'&&cap.value?.npmTreePlans&&!!result.sca?.dependencyVulnerabilities?.some(d=>d.ecosystem==='NPM')&&!initialAdviceId&&<NpmTreePlanPanel workspace={workspace} result={result} advice={activeScaAdvice} findingId={problemContext?.findingId} disabled={busy||dirty||expired} onApplied={async next=>{setWorkspace(next);setDiffs(null);setApproved(false);if(selected){const value=await loadEditingFile(next.id,selected.id);setContent(value);setText(value.text.replace(/\r\n/g,'\n'));}setStage('diff');}}/>}
       {stage==='edit'&&initialAdviceId&&cap.value?.dependencyFiles&&cap.value.npmGeneration&&<WorkspaceAutomationPanels workspace={workspace} adviceId={initialAdviceId} disabled={busy||dirty||expired} onApplied={async next=>{setWorkspace(next);setDiffs(null);setApproved(false);if(selected){const value=await loadEditingFile(next.id,selected.id);setContent(value);setText(value.text.replace(/\r\n/g,'\n'));}}}/>}
       <div hidden={stage!=='scan'}>{workspace.changedFileIds.length===0&&<p>수정한 파일을 저장한 뒤 재검사할 수 있어요.</p>}<div hidden={workspace.changedFileIds.length===0}><WorkspaceScanPanel workspace={workspace} original={result} onResult={setRescanned} disabled={busy || dirty || expired || workspace.changedFileIds.length===0} /></div></div>
       {!expired && <>
@@ -332,7 +334,7 @@ export function SourceEditingWorkspace({ result, onBack, initialPath, initialAdv
             </> : <p>파일을 선택해 주세요.</p>}
           </div>
           <aside className="source-evidence-pane" aria-label="선택 파일의 수정 근거">
-            {issue?.dependency&&<><DependencyFindingCard key={issue.id} dependency={issue.dependency} reviewId={result.reviewId} components={result.sca?.components} embedded/><DependencyUpdatePlans key={`plans-${issue.id}`} reviewId={result.reviewId} selectedDependency={issue.dependency}/></>}
+            {issue?.dependency&&<><DependencyFindingCard key={issue.id} dependency={issue.dependency} reviewId={result.reviewId} components={result.sca?.components} embedded/><DependencyUpdatePlans key={`plans-${issue.id}`} reviewId={result.reviewId} selectedDependency={issue.dependency} onEditDependency={cap.value?.npmTreePlans&&originalVerified(workspace)&&!workspace.changedFileIds.length&&!dirty?(id,index)=>{setScaAdvice({id,index,finding:issue.id});requestAnimationFrame(()=>document.querySelector('.workspace-automation')?.scrollIntoView({block:'start'}));}:undefined}/></>}
             {issue&&!issue.dependency&&<div className="workspace-selected-finding"><h3>{issue.title}</h3><p>{issue.severity==='UNKNOWN'?'검토 필요':issue.severity} · {issue.path}{issue.line&&issue.line>0?`:${issue.line}`:''}</p>
               <p>{issue.code?.message??issue.flow?.riskExplanation}</p><p>{issue.code?.recommendation??issue.flow?.recommendedAction}</p>
               {issue.code?.evidence&&<pre>{issue.code.evidence}</pre>}

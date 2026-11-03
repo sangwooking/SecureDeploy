@@ -63,6 +63,16 @@ public class DurableAiLedger {
         if(row!=1)throw new IllegalStateException("Original AI reservation is missing");
         exhibit=new ExhibitAiGate(java.nio.file.Path.of(control),express,spring,true,ExhibitAiGate.MAIN_AUTHORIZATION);
     }
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureDependencyScope(@Value("${securedeploy.ai.main-cutover.dependency-scope:}") String scope){
+        dependencyScope=scope;
+    }
+    private String dependencyScope="";
+    public boolean permitsScopedDependency(long user,long project,String evidence){
+        if(!enabled||exhibit==null)return false;
+        exhibit.configureDependency(dependencyScope);
+        return exhibit.permitsDependency(user,project,evidence);
+    }
     public void requireTransmissionOpen(){if(!transmissionOpen())throw denied();}
     public boolean transmissionOpen(){return exhibit==null||exhibit.open();}
     public boolean enabled(){return enabled;}

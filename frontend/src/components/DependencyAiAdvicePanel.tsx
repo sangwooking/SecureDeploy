@@ -5,7 +5,7 @@ import { dependencyAdviceProvider, prepareDependencyAdvice, generateDependencyAd
 import type { DependencyAdviceView, DependencyAdviceProvider, DependencyUpdatePlans } from '../types/dependencyUpdatePlan';
 import { providerOriginLabel, providerSetupLabel } from './EvidenceSupportLayout';
 
-export function DependencyAiAdvicePanel({reviewId,evidence,onEditDependency,selectedIndex}:{reviewId:number;evidence:DependencyUpdatePlans;onEditDependency?:(id:string)=>void;selectedIndex?:number}) {
+export function DependencyAiAdvicePanel({reviewId,evidence,onEditDependency,selectedIndex}:{reviewId:number;evidence:DependencyUpdatePlans;onEditDependency?:(id:string,index:number)=>void;selectedIndex?:number}) {
  const [provider,setProvider]=useState<DependencyAdviceProvider|null>(null),[choice,setChoice]=useState(''),[requestId,setRequestId]=useState('');
  const [view,setView]=useState<DependencyAdviceView|null>(null),[consent,setConsent]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const generation=useRef(0);
@@ -46,7 +46,7 @@ export function DependencyAiAdvicePanel({reviewId,evidence,onEditDependency,sele
 export function adviceLead(value:string) {
  const boundary=value.search(/[.!?。](?:\s|$)/);return boundary<0?value:value.slice(0,boundary+1);
 }
-export function DependencyAdviceResult({view,onEditDependency,archived=false}:{view:DependencyAdviceView;onEditDependency?:(id:string)=>void;archived?:boolean}) {
+export function DependencyAdviceResult({view,onEditDependency,archived=false}:{view:DependencyAdviceView;onEditDependency?:(id:string,index:number)=>void;archived?:boolean}) {
 return view.output&&['GENERATED','NEEDS_REVIEW'].includes(view.state)?<div className="dependency-ai-result">
     {archived&&<p className="archive-notice" role="note">과거 OpenAI 검증 기록의 재표시 · 새 모델 호출 없음</p>}
     <h4>검증된 분석 사실</h4><p><strong>{view.output.packageName} {view.output.lockedVersion}</strong></p>
@@ -56,6 +56,6 @@ return view.output&&['GENERATED','NEEDS_REVIEW'].includes(view.state)?<div class
     <h4>수정 후 확인할 일</h4><ul>{view.output.verificationSteps.map((s,i)=><li key={i}>{s}</li>)}</ul>
     <details><summary>AI 원문·영향·불확실성과 원본 상태</summary><p>{view.output.explanation}</p><p>{view.output.whyItMatters}</p><p>{view.output.recommendedAction}</p><p>{view.output.possibleImpact}</p><ul>{view.output.uncertainties.map((s,i)=><li key={i}>{s}</li>)}</ul><p>{view.output.advisoryId} · {view.state} · {view.reviewStatus} · {view.compatibility} · 모델 품질 {view.modelQuality}</p><p>검토 상태: REVIEW_REQUIRED · 호환성: NOT_VERIFIED · 실제 적용 Patch 없음</p><p>제안은 15분 동안 임시 보관되며 서버 재시작 시 사라집니다. 원본 분석 이력은 변경하지 않습니다.</p></details>
     <p className="advice-handoff">npm이 파일을 생성하고 사용자가 Diff를 승인합니다. AI가 lockfile을 직접 작성하지 않습니다.</p>
-    {view.state==='GENERATED'&&view.output.decision==='PROPOSE_UPDATE'&&!!view.output.candidateVersion&&onEditDependency&&view.provider.origin!=='ARCHIVED_OPENAI'&&<button type="button" className="primary-button" onClick={()=>onEditDependency(view.id)}>Workspace에서 수정 파일 제안 준비</button>}
+    {view.state==='GENERATED'&&view.output.decision==='PROPOSE_UPDATE'&&!!view.output.candidateVersion&&onEditDependency&&view.provider.origin!=='ARCHIVED_OPENAI'&&<button type="button" className="primary-button" onClick={()=>onEditDependency(view.id,view.planIndex)}>Workspace에서 수정 파일 제안 준비</button>}
    </div>:null;
 }

@@ -15,7 +15,11 @@ import org.springframework.http.HttpStatus;
 /** Deterministic dependency repair. No model. A failed/partial plan cannot be applied. */
 @Service
 public class WorkspaceNpmTreeService {
-    public record Prepare(long revision,int planIndex){}
+    public record Prepare(long revision,int planIndex,String adviceId){
+        public Prepare(long revision,int planIndex){this(revision,planIndex,null);}
+    }
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.securedeploy.ai.dependency.DependencyAiAdviceService advice;
     public record Consent(String inputHash,boolean approved){}
     public record Attempt(String root,String version,String outcome){}
     public record View(String id,String state,long revision,String inputHash,String origin,String packageName,String lockedVersion,
@@ -23,7 +27,7 @@ public class WorkspaceNpmTreeService {
             Integer beforeAdvisoryItems,Integer afterAdvisoryItems,List<Attempt> attempts,List<EditingWorkspaceService.GeneratedDifference> differences,
             String evidenceHash,String npmVersion,String nodeVersion,String compatibility,String message,String executionId){}
     private static class Session {
-        String execution;String id=UUID.randomUUID().toString(),workspace,hash,state="EXECUTION_CONSENT_REQUIRED",name,version,root,from,range,to,evidence,npm,node,message="공개 registry 조회와 스크립트 없는 npm 실행에 동의한 뒤 수정안을 만듭니다.";
+        String execution, requiredLeaf;String id=UUID.randomUUID().toString(),workspace,hash,state="EXECUTION_CONSENT_REQUIRED",name,version,root,from,range,to,evidence,npm,node,message="공개 registry 조회와 스크립트 없는 npm 실행에 동의한 뒤 수정안을 만듭니다.";
         long user,revision,review;Instant expires=Instant.now().plusSeconds(900);List<String> paths=List.of(),remaining=List.of();List<Attempt> attempts=new ArrayList<>();List<EditingWorkspaceService.GeneratedDifference> differences=List.of();Map<String,byte[]> files=Map.of();Integer before,after;boolean partial;
     }
     private final EditingWorkspaceService workspaces;private final DependencyUpdatePlanService plans;private final ReviewAccessService access;private final NpmRegistry registry;private final NpmTreeExecutor npm;private final VulnerabilityDataSource osv;private final ObjectMapper json;private final Environment environment;private final boolean configured;
@@ -39,6 +43,14 @@ public class WorkspaceNpmTreeService {
             var snapshot=plans.get(input.provenance().originalReviewId());if(request.planIndex()<0||request.planIndex()>=snapshot.plans().size())throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"저장된 공지 계획을 선택하세요.");var selected=snapshot.plans().get(request.planIndex());
             if(!selected.ecosystem().equals("NPM"))throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"npm v3 잠금 파일만 지원합니다.");
             var s=new Session();s.workspace=workspace;s.user=input.userId();s.review=input.provenance().originalReviewId();s.revision=request.revision();s.hash=input.provenance().inputHash();s.name=selected.packageName();s.version=selected.lockedVersion();
+            if(request.adviceId()!=null){
+                var proposal=advice.get(s.review,request.adviceId());
+                if(!"GENERATED".equals(proposal.state())||proposal.planIndex()!=request.planIndex()
+                    ||!snapshot.evidenceHash().equals(proposal.evidenceHash())||proposal.output()==null
+                    ||!"PROPOSE_UPDATE".equals(proposal.output().decision()))
+                    throw fail(HttpStatus.CONFLICT,"현재 검사와 일치하는 검증된 AI 제안이 필요합니다.");
+                s.requiredLeaf=proposal.output().candidateVersion();
+            }
             try{var parsed=parseInput(input.entries());var target=NpmTreePlanner.target(parsed,s.name,s.version);s.root=target.root();s.from=target.rootVersion();s.range=target.declaredRange();s.paths=target.paths();s.remaining=s.paths;}catch(Exception unsupported){s.state="MANUAL_REVIEW";s.message="자동 수정 지원 범위를 확인하지 못했습니다: "+reason(unsupported)+". 상위 선언과 잠금 경로를 확인해 수동으로 수정하세요.";}
             synchronized(this){cleanup();if(sessions.size()>=32)throw fail(HttpStatus.TOO_MANY_REQUESTS,"수정안 준비 한도입니다.");sessions.put(s.id,s);}return view(s);
         }
@@ -61,6 +73,8 @@ public class WorkspaceNpmTreeService {
                     if(knownOldLeaf(release,target,cache)){s.attempts.add(new Attempt(s.root,candidate,"KNOWN_OLD_TARGET_REMAINS"));continue;}
                     generated++;NpmTreeExecutor.Output output=null;
                     try{output=npm.generate(entry(input.entries(),"package.json"),entry(input.entries(),"package-lock.json"),target.section(),target.root(),candidate);var after=NpmTreePlanner.read(json,output.manifest(),output.lockfile());NpmTreePlanner.validateGraph(before,after,target,candidate);
+                        if(s.requiredLeaf!=null&&after.components().stream().noneMatch(c->s.name.equals(c.packageName())&&s.requiredLeaf.equals(c.version())&&c.context()!=null&&c.context().paths().stream().anyMatch(path->target.root().equals(path.declaredPackage()))))
+                            throw new IllegalArgumentException("AI_CANDIDATE_NOT_PRESENT");
                         var root=after.lock().path("packages").path("node_modules/"+target.root());if(!root.path("version").asText().equals(candidate)||!root.path("integrity").asText().equals(release.at("/dist/integrity").asText())||!root.path("resolved").asText().equals(release.at("/dist/tarball").asText()))throw new IllegalArgumentException("ROOT_REGISTRY_IDENTITY");
                         for(String section:List.of("dependencies","optionalDependencies","peerDependencies","engines"))if(!Objects.equals(root.get(section),release.get(section)))throw new IllegalArgumentException("ROOT_REGISTRY_CONTRACT_CHANGED");
                         var union=new ArrayList<>(before.components());union.addAll(after.components());var facts=osv.lookup(union);var required=union.stream().map(DependencyComponent::identity).collect(java.util.stream.Collectors.toSet());if(facts.incomplete()||!facts.analyzedIdentities().containsAll(required))throw new IllegalArgumentException("OSV_PARTIAL_UNKNOWN");

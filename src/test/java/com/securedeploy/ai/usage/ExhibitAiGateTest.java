@@ -60,4 +60,25 @@ class ExhibitAiGateTest {
         Files.delete(control);
         assertFalse(gate.open());
     }
+
+    @Test void scaIsOptInForMainAndBoundToOwnerProjectAndEvidence() throws Exception {
+        var control=directory.resolve("main");
+        Files.writeString(control,ExhibitAiGate.MAIN_AUTHORIZATION);
+        var main=new ExhibitAiGate(control,"","",true,ExhibitAiGate.MAIN_AUTHORIZATION);
+        var evidence="a".repeat(64);
+        var request=new AiAdmission.Request(1,2,"id","dependency_update_advice_v1",evidence,
+                "gpt-5.4-mini-2026-03-17","b".repeat(64));
+        assertFalse(main.permits(request,evidence,1000,2000));
+        main.configureDependency("1:2:"+evidence);
+        assertTrue(main.permits(request,evidence,1000,2000));
+        assertFalse(main.permitsDependency(3,2,evidence));
+        assertFalse(main.permitsDependency(1,3,evidence));
+        assertFalse(main.permits(request,"c".repeat(64),1000,2000));
+        assertFalse(main.permits(request,evidence,1000,2001));
+        Files.writeString(control,ExhibitAiGate.LIVE_AUTHORIZATION);
+        var exhibition=new ExhibitAiGate(control,"","",true);
+        exhibition.configureDependency("1:2:"+evidence);
+        assertFalse(exhibition.permits(request,evidence,1000,2000));
+        assertFalse(main.permits(request,evidence,1000,2000));
+    }
 }
