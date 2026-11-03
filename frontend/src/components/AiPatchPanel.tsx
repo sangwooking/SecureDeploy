@@ -1,7 +1,7 @@
 import {originalVerified} from './sourceVerification';
 import {AiRequestDisclosure} from './AiRequestDisclosure';
 import {useUiCapabilities} from './useUiCapabilities';
-import {providerOriginLabel} from './EvidenceSupportLayout';
+import {aiPatchChoice,patchProviderLabel,patchUsageLabel} from './aiPatchPresentation';
 import { requestProblem } from '../api/requestProblem';
 import { useEffect, useRef, useState } from 'react';
 import { applyAiPatch, generateAiPatch, listAiPatches, patchProvider, prepareAiPatch, rejectAiPatch, fixOption, prepareDeterministicPatch, prepareAiPatchPlan } from '../api/editingApi';
@@ -47,6 +47,7 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
   const flows=flowFindings.filter(f=>f.ruleId==='TS_SENSITIVE_DATA_EXPOSURE'&&(f.location.kind==='HTTP_RESPONSE'||f.location.kind==='EXPRESS_HTTP_RESPONSE'&&cap.value?.patchScopes?.includes('EXPRESS_DIRECT_ENV_JSON')));
   const selected = proposals.find(p => p.id === selectedId) ?? proposals[proposals.length - 1];
   const deterministic=selected?.method==='DETERMINISTIC_FIX';
+  const mockProvider=provider?.origin==='MOCK';
   const update = (value: AiPatch) => { if (active.current) { setProposals(old => [...old.filter(p => p.id !== value.id), value]); setSelectedId(value.id); } };
   const perform = async (name: string, fn: () => Promise<void>) => {
     if (pending) return; setPending(name); setError('');
@@ -60,7 +61,7 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
   });
   const generate = () => void perform('generate', async () => {
     if (!selected || !consented) return;
-    update({ ...selected, state: 'GENERATING' }); setConsented(false);
+    update({ ...selected, state: 'GENERATING', explanation:selected.provider.origin==='MOCK'?'Mock 통제 제안을 요청하고 있습니다. 실제 OpenAI 전송·비용은 없습니다.':'동의한 코드 범위의 요청을 처리하고 있습니다. 전송 결과와 사용량은 서버 응답 후 확인하세요.' }); setConsented(false);
     update(await generateAiPatch(workspace.id,selected));
   });
   const reject = async () => {
@@ -81,7 +82,7 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
     <p>제안 생성은 파일을 바꾸지 않습니다. 검토 후 적용해도 실제 보안 문제 해결 여부는 재검사해야 합니다.</p>
     {!!flows.length&&<p>Deno 직접 Response.json과 Express 기본 ESM import app의 inline JSON 응답에서 환경값 필드 제거만 제한적으로 지원합니다. Router·별칭·동적 객체는 수동 검토가 필요합니다. 서버가 코드 범위를 확인하지 못하면 전송하지 않고 수동 검토를 안내합니다.</p>}
     {!eligible ? <p>원본 바이트가 검증된 단순 .properties 설정 또는 제한된 Deno·Express 객체 응답만 지원합니다. ZIP 원본 미검증·다른 코드 유형은 수동 검토가 필요합니다.</p>
-      : <>{cap.value?.compatibilityMode?<p>호환 운영 모드에서는 수동 편집을 사용해 주세요. 자동·AI 수정안 생성은 중단되어 있습니다.</p>:provider?.available?<p>AI 선택 시 Provider: {provider.name} · 모델: {provider.model} · 외부 전송 및 비용 발생 가능</p>:<p>AI 수정 Provider가 준비되지 않았습니다. 지원되는 자동 수정안과 수동 편집은 사용할 수 있습니다.</p>}
+      : <>{cap.value?.compatibilityMode?<p>호환 운영 모드에서는 수동 편집을 사용해 주세요. 자동·AI 수정안 생성은 중단되어 있습니다.</p>:provider?.available?<p>{mockProvider?`Mock 통제 Provider · 설정 모델: ${provider.model} · 실제 OpenAI 호출·비용 없음`:`AI 선택 시 Provider: ${provider.name} · 모델: ${provider.model} · 외부 전송 및 비용 발생 가능`}</p>:<p>AI 수정 Provider가 준비되지 않았습니다. 지원되는 자동 수정안과 수동 편집은 사용할 수 있습니다.</p>}
         {candidates.length === 0 && flows.length === 0 ? <p>이 파일에 자동 수정 범위로 연결할 수 있는 Finding이 없습니다. 권한·RLS·SCA·동적 흐름은 추가 검토 대상입니다.</p>
           : <><label htmlFor="patch-finding">수정할 분석 항목</label><select id="patch-finding" value={finding} disabled={disabled || !!pending} onChange={e => setFinding(e.target.value)}>
             <option value="">항목 선택</option>{candidates.map(v => <option value={v.vulnerabilityId!} key={v.vulnerabilityId}>{v.ruleId} · 원본 {v.line}행</option>)}
@@ -89,27 +90,29 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
             {finding&&!option&&<p role="status">수정 가능한 범위를 확인하고 있습니다.</p>}
             {option&&<p>{option.method==='DETERMINISTIC_FIX'?'검증된 자동 수정 · AI 호출 없음':option.method==='AI_ASSISTED'?'AI 제안 지원':option.method==='MANUAL_REVIEW'?'수동 검토 필요':'수정 기능 미지원'} · {option.reason}</p>}
             {option?.method==='DETERMINISTIC_FIX'&&<button type="button" className="primary-button" disabled={disabled||!!pending||dirty||!content.currentHash} onClick={automatic}>자동 수정안 만들기</button>}
-            {provider?.available&&option?.method==='AI_ASSISTED'&&<button type="button" className="secondary-button" disabled={disabled || !!pending || dirty || !finding || !content.currentHash} onClick={prepare}>AI 수정안 전송 범위 확인</button>}</>}
+            {provider?.available&&aiPatchChoice(option?.method,cap.value?.structuredPatchPlans,flowFindings.some(f=>`flow:${f.findingId}`===finding&&f.location.kind==='EXPRESS_HTTP_RESPONSE'))&&<>
+              {option?.method==='DETERMINISTIC_FIX'&&<p>이 범위는 AI 없이 자동 수정할 수 있습니다. 추가 제안은 별도 동의 후 비교할 수 있으며 실제 Provider의 외부 전송·비용 조건을 확인하세요.</p>}
+              <button type="button" className="secondary-button" disabled={disabled || !!pending || dirty || !finding || !content.currentHash} onClick={prepare}>AI 수정안 전송 범위 확인</button></>}</>}
       </>}
     {error && <p role="alert" className="error-message">{error}</p>}
     {proposals.length > 1 && <label>수정 제안 이력<select value={selected?.id ?? ''} disabled={!!pending} onChange={e => { setSelectedId(e.target.value);setConsented(false);setAccepted(false);setCompatibilityAccepted(false); }}>
       {proposals.map((p,i) => <option key={p.id} value={p.id}>{i+1}. {p.method==='DETERMINISTIC_FIX'?'자동':'AI'} · {p.ruleId} · {states[p.state] ?? p.state}</option>)}</select></label>}
     {selected && <div className="source-ai-proposal">
       <h4>{states[selected.state] ?? '알 수 없는 제안 상태'}</h4>
-      <p className={`proposal-method ${deterministic?'method-deterministic':'method-ai'}`}>{deterministic?'자동 수정안 · 정적 근거 기반 · 외부 AI 전송·비용 없음':providerOriginLabel(selected.provider.origin,selected.provider.name)}</p>
+      <p className={`proposal-method ${deterministic?'method-deterministic':'method-ai'}`}>{deterministic?'자동 수정안 · 정적 근거 기반 · 외부 AI 전송·비용 없음':patchProviderLabel(selected)}</p>
       <p>{file.path} · 현재 {selected.startLine}행 · 기준 revision {selected.revision} · {selected.ruleId}</p>
       {selected.flowFindingId&&!selected.context&&<p>{deterministic?'수정':'전송'} 범위: {selected.startLine}~{selected.startLine+selected.before.split('\n').length-1}행의 객체 응답 부분입니다. 파일 전체가 아닙니다.</p>}
-      {selected.plan&&<p>AI가 수정 방향을 제안하고 SecureDeploy가 검증된 AST 범위의 코드 변경을 생성합니다. 모든 필수 필드를 확인한 뒤 사용자 승인을 기다립니다.</p>}
+      {selected.plan&&<p>{selected.provider.origin==='MOCK'?'Mock 계획을 시험하며 실제 모델 검증이 아닙니다.':'AI가 수정 방향을 제안합니다.'} SecureDeploy가 검증된 AST 범위의 코드 변경을 생성합니다. {selected.state==='ACCEPTED'?'사용자 승인 후 작업 공간에 적용됐으며 재검사와 호환성 확인이 필요합니다.':'사용자 승인을 기다립니다.'}</p>}
       <p>{selected.explanation}</p>
-      {selected.usage&&<p role="status">{selected.usage.billable?'API 응답 사용량':'과금 없는 테스트 사용량'} · 모델 {selected.usage.model??'미확인'} · 입력 {selected.usage.promptTokens} / 캐시 {selected.usage.cachedInputTokens} / 출력 {selected.usage.completionTokens}토큰 · {selected.usage.estimatedCostUsd==null?'비용 미확인':`추정 US$${Number(selected.usage.estimatedCostUsd).toFixed(6)}`} · {selected.usage.usageKnown?'usage 수신':'usage 미확인'}</p>}
-      {!deterministic&&!selected.usage&&['FAILED','INVALID','GENERATING'].includes(selected.state)&&<p>실제 사용량과 비용을 아직 확인하지 못했습니다. 무료 처리됐다는 의미는 아닙니다.</p>}
+      {selected.usage&&<p role="status">{patchUsageLabel(selected)}</p>}
+      {!deterministic&&selected.provider.origin!=='MOCK'&&!selected.usage&&['FAILED','INVALID','GENERATING'].includes(selected.state)&&<p>실제 사용량과 비용을 아직 확인하지 못했습니다. 무료 처리됐다는 의미는 아닙니다.</p>}
       {!deterministic&&selected.state === 'APPROVAL_REQUIRED' && <>
         <p>전송 대상: 아래{selected.flowFindingId?' 객체 응답 코드':' 설정 한 줄'}{selected.context?' 및 아래의 AST 확인 HTTP 등록·완결된 inline Handler 문맥':''}와 Finding 규칙·파일 ID·행·내용 해시. 무관한 파일은 전송하지 않습니다.</p>
         {selected.plan&&<details><summary>구조화 수정 계획 계약</summary><p>{selected.plan.version} · 필수 위험 필드 {selected.plan.requiredFields.length}개. 코드 문자열은 모델 출력에 포함하지 않습니다.</p><pre>{JSON.stringify(selected.plan,null,2)}</pre></details>}
-        <AiRequestDisclosure task="선택한 근거의 코드 수정안 생성" scope={selected.context?'아래 수정 대상과 HTTP 등록·Handler 문맥·Source/Sink 위치·보존/제거 필드·파일/문맥 해시를 전송합니다. 주석은 제외되며 비밀값 의심 시 전송을 거부합니다.':'아래 원본 코드 범위·규칙·파일 ID·행·해시를 전송합니다. 실제 비밀값과 파일 전체는 전송하지 않습니다.'}/><pre className="source-ai-code">{selected.before}</pre>
+        {selected.provider.origin==='MOCK'?<p>Mock 통제 전송 범위입니다. 실제 OpenAI로 전송하거나 유료 모델을 호출하지 않습니다.</p>:<AiRequestDisclosure task="선택한 근거의 코드 수정안 생성" scope={selected.context?'아래 수정 대상과 HTTP 등록·Handler 문맥·Source/Sink 위치·보존/제거 필드·파일/문맥 해시를 전송합니다. 주석은 제외되며 비밀값 의심 시 전송을 거부합니다.':'아래 원본 코드 범위·규칙·파일 ID·행·해시를 전송합니다. 실제 비밀값과 파일 전체는 전송하지 않습니다.'}/>}<pre className="source-ai-code">{selected.before}</pre>
         {selected.context&&<div aria-label="AI 전송 문맥 미리보기"><p>{selected.context.endpoint} · 원본 {selected.context.startLine}~{selected.context.endLine}행의 등록·Handler. import와 app 정의 포함, 주석 제외.</p><pre className="source-ai-code">{selected.context.code}</pre><p>제거 대상: {selected.context.removedFields.join(', ')} · 보존 대상: {selected.context.preservedFields.join(', ')}</p><ul aria-label="수정 대상 필드와 Source 근거">{selected.context.bindings?.map(b=><li key={b.sourceId}>{b.field} · Source {b.source.line}행 {b.source.column}열 → 응답 {b.sink.line}행<details><summary>연결 근거</summary>{b.sourceId} · {b.findingId} · {b.expressionHash}</details></li>)}</ul><p>Source/Sink 위치: {JSON.stringify({sources:selected.context.sources,sink:selected.context.sink})}</p><p>원본 파일 SHA-256: {selected.originalHash}</p><p>동의할 문맥 SHA-256: {selected.contextHash}</p></div>}
-        <p>{selected.provider.name} / {selected.provider.model} · 저장소 밖 Provider로 전송합니다. 민감정보가 보이면 동의하지 마세요.</p>
-        <label className="source-export-approval"><input type="checkbox" checked={consented} disabled={!!pending || dirty} onChange={e => setConsented(e.target.checked)} />이 코드 범위의 외부 전송과 유료 호출 가능성에 동의합니다.</label>
+        <p>{selected.provider.origin==='MOCK'?'Mock 통제 Provider · 실제 외부 AI 전송·비용 없음':`${selected.provider.name} / ${selected.provider.model} · 저장소 밖 Provider로 전송합니다. 민감정보가 보이면 동의하지 마세요.`}</p>
+        <label className="source-export-approval"><input type="checkbox" checked={consented} disabled={!!pending || dirty} onChange={e => setConsented(e.target.checked)} /> {selected.provider.origin==='MOCK'?'이 코드 범위의 Mock 통제 시험에 동의합니다.':'이 코드 범위의 외부 전송과 유료 호출 가능성에 동의합니다.'}</label>
         <button type="button" className="primary-button" disabled={disabled || !!pending || dirty || !consented} onClick={generate}>동의한 코드로 AI 수정안 생성</button>
       </>}
       {selected.state === 'GENERATING' && <p role="status">코드를 변경하지 않고 제안을 생성하고 있습니다. 취소해도 이미 전송한 요청의 처리·요금 취소는 보증하지 않습니다.</p>}

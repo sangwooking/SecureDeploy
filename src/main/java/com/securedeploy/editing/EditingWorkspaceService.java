@@ -392,7 +392,17 @@ public class EditingWorkspaceService {
     synchronized WorkspacePatch.View finishPatch(String id,String proposal,WorkspacePatch.Output output,String failure) {
         var state=owned(id);var session=patchOwned(state,proposal);
         if(!"GENERATING".equals(session.state))return patchView(state,session,false);
-        if(failure!=null){session.state=failure;session.explanation="수정 제안을 생성하거나 검증하지 못했습니다. 코드 변경은 없으며 수동 편집할 수 있습니다.";}
+        if(failure!=null){
+            session.state=switch(failure){case "PROVIDER_REFUSED","PROVIDER_INCOMPLETE"->"NEEDS_REVIEW";case "PROVIDER_INVALID_RESPONSE"->"INVALID";default->failure.startsWith("PROVIDER_")?"FAILED":failure;};
+            session.explanation=switch(failure){
+                case "PROVIDER_REFUSED"->"모델이 수정 제안을 거부했습니다. 추가 검토가 필요하며 파일은 변경되지 않았습니다.";
+                case "PROVIDER_INCOMPLETE"->"모델 응답이 완성되지 않아 수정안으로 사용하지 않았습니다. 추가 검토가 필요하며 파일은 변경되지 않았습니다.";
+                case "PROVIDER_TIMEOUT"->"AI 응답 제한 시간을 초과했습니다. 외부 처리·비용은 확인이 필요하며 자동 재시도하지 않습니다. 파일은 변경되지 않았습니다.";
+                case "PROVIDER_HTTP_ERROR"->"AI API 요청에 오류가 발생했습니다. 외부 처리·비용은 확인이 필요하며 자동 재시도하지 않습니다. 파일은 변경되지 않았습니다.";
+                case "PROVIDER_NOT_SENT"->"전송 전 설정·동의 또는 사용 한도 검사에서 중단했습니다. 외부 요청을 보내지 않았으며 파일은 변경되지 않았습니다.";
+                default->"수정 제안을 생성하거나 검증하지 못했습니다. 코드 변경은 없으며 수동 편집할 수 있습니다.";
+            };
+        }
         else {
             try {
                 WorkspacePatch.validate(output,patchView(state,session,true));

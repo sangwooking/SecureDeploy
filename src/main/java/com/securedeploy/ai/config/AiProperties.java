@@ -32,7 +32,7 @@ public class AiProperties {
     public static class OpenAi {
 
         private String apiKey = "";
-        private String model = "gpt-5.4-mini";
+        private String model = "gpt-5.4-mini-2026-03-17";
         private int timeoutSeconds = 30;
 
         public String getApiKey() {

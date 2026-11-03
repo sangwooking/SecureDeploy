@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class WorkspacePatchService {
-    private record Generation(WorkspacePatch.Output output,WorkspacePatchPlan.Output plan,AiUsageRecord usage){}
+    private record Generation(WorkspacePatch.Output output,WorkspacePatchPlan.Output plan,AiUsageRecord usage,String failure){}
     private final EditingWorkspaceService workspaces;
     private final AiProviderResolver resolver;
     private final AiProperties properties;
@@ -38,7 +38,7 @@ public class WorkspacePatchService {
     }
     public WorkspacePatch.Provider provider() {
         var selected=resolver.resolve();
-        boolean available=properties.getProvider()==AiProviderType.OPENAI&&selected.providerType()==AiProviderType.OPENAI&&selected.isAvailable()&&callPolicy.available(selected.executionOrigin());
+        boolean available=properties.getProvider()==AiProviderType.OPENAI&&selected.providerType()==AiProviderType.OPENAI&&selected.isAvailable()&&callPolicy.available(selected.executionOrigin(),properties.getOpenai().getModel());
         return new WorkspacePatch.Provider("OPENAI",properties.getOpenai().getModel(),available,selected.executionOrigin()==null?"UNVERIFIED_PROVIDER":selected.executionOrigin());
     }
     public WorkspacePatch.View prepare(String workspace,WorkspacePatch.Prepare request) {
@@ -64,22 +64,32 @@ public class WorkspacePatchService {
             future=executor.submit(()->{
                 selected.consumeLastTokenUsage();
                 WorkspacePatch.Output output=null;WorkspacePatchPlan.Output plan=null;AiUsageRecord measured;
+                String failure=null;boolean attempted=true;
                 try (var admission=AiAdmission.open(usersId,projectId,proposal,view.plan()!=null?"workspace_patch_plan_v1":"workspace_patch_v1",view.contextHash()!=null?view.contextHash():view.currentHash(),provider().model(),prompt.instructions(),prompt.untrustedData())) {if(view.plan()!=null)plan=selected.generateWorkspacePatchPlan(prompt);else output=selected.generateWorkspacePatch(prompt); }
+                catch(AiProviderFailure safe){failure="PROVIDER_"+safe.kind();attempted=safe.requestAttempted();}
+                catch(IllegalArgumentException invalid){failure="INVALID";}
+                catch(RuntimeException unavailable){failure="FAILED";}
                 finally {
                     // Missing usage after a request is not evidence that a remote call was free.
-                    var tokens=selected.consumeLastTokenUsage().orElse(new AiTokenUsage(0,0,0,true));
+                    var known=selected.consumeLastTokenUsage();
+                    var tokens=known.orElse(new AiTokenUsage(0,0,0,attempted,0,provider().model(),!attempted));
                     measured=usage.track(com.securedeploy.ai.dto.AiFeatureType.WORKSPACE_PATCH,selected.providerType(),null,null,tokens);
                 }
-                return new Generation(output,plan,measured);
+                return new Generation(output,plan,measured,failure);
             });
             jobs.put(proposal,future);
             // A cancellation before job registration must not leave a fresh request running unnoticed.
             if(!"GENERATING".equals(workspaces.patch(workspace,proposal).state()))future.cancel(true);
             int seconds=Math.max(1,Math.min(45,properties.getOpenai().getTimeoutSeconds()+2));
             var generated=future.get(seconds,TimeUnit.SECONDS);workspaces.recordPatchUsage(workspace,proposal,generated.usage());
-            return view.plan()!=null?workspaces.finishPlan(workspace,proposal,generated.plan(),null):workspaces.finishPatch(workspace,proposal,generated.output(),null);
+            return view.plan()!=null?workspaces.finishPlan(workspace,proposal,generated.plan(),generated.failure()):workspaces.finishPatch(workspace,proposal,generated.output(),generated.failure());
         }catch(InterruptedException interrupted){Thread.currentThread().interrupt();return workspaces.finishPatch(workspace,proposal,null,"FAILED");}
-        catch(Exception failed){return workspaces.finishPatch(workspace,proposal,null,failed instanceof ExecutionException&&failed.getCause() instanceof IllegalArgumentException?"INVALID":"FAILED");}
+        catch(Exception failed){
+            boolean attempted=permit!=null&&"OPENAI".equals(view.provider().origin());
+            workspaces.recordPatchUsage(workspace,proposal,usage.track(com.securedeploy.ai.dto.AiFeatureType.WORKSPACE_PATCH,AiProviderType.OPENAI,null,null,
+                    new AiTokenUsage(0,0,0,attempted,0,view.provider().model(),!attempted)));
+            return workspaces.finishPatch(workspace,proposal,null,failed instanceof TimeoutException?"PROVIDER_TIMEOUT":permit==null?"PROVIDER_NOT_SENT":"FAILED");
+        }
         finally {if(future!=null&&!future.isDone())future.cancel(true);jobs.remove(proposal);if(permit!=null)permit.close();}
     }
     public WorkspacePatch.View reject(String workspace,String proposal) {

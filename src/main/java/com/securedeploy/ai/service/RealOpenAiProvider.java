@@ -54,7 +54,7 @@ public class RealOpenAiProvider implements AiProvider {
     }
     private JsonNode structuredOutput(String schemaName, com.securedeploy.editing.WorkspacePatch.Prompt prompt,int maxOutputTokens,int maxTextChars) {
         lastTokenUsage.remove();
-        if(!isAvailable())throw new IllegalStateException("Provider unavailable");
+        if(!isAvailable())throw new AiProviderFailure(AiProviderFailure.Kind.NOT_SENT,false);
         var body=new LinkedHashMap<String,Object>();
         body.put("model",aiProperties.getOpenai().getModel());body.put("store",false);
         body.put("instructions",prompt.instructions());body.put("input",List.of(Map.of("role","user","content",prompt.untrustedData())));
@@ -64,7 +64,9 @@ public class RealOpenAiProvider implements AiProvider {
         catch(com.fasterxml.jackson.core.JsonProcessingException invalid){throw new IllegalArgumentException("AI request encoding failed");}
         var response=guardedSend(body,schemaName,maxOutputTokens);
         captureUsage(response);
-        if(!"completed".equals(response.path("status").asText()))throw new IllegalStateException("Incomplete patch response");
+        if(!"completed".equals(response.path("status").asText()))throw new AiProviderFailure(AiProviderFailure.Kind.INCOMPLETE,true);
+        for(var item:response.path("output")) for(var content:item.path("content"))
+            if("refusal".equals(content.path("type").asText()))throw new AiProviderFailure(AiProviderFailure.Kind.REFUSED,true);
         try {
             String text=extractOutputText(response);
             if(text.length()>maxTextChars)throw new IllegalArgumentException("Patch output limit");
@@ -72,7 +74,7 @@ public class RealOpenAiProvider implements AiProvider {
                     .with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
                     .with(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION).readTree(text);
             return tree;
-        } catch(java.io.IOException invalid){throw new IllegalArgumentException("Invalid patch response");}
+        } catch(java.io.IOException invalid){throw new AiProviderFailure(AiProviderFailure.Kind.INVALID_RESPONSE,true);}
     }
 
     @Override
@@ -313,7 +315,7 @@ public class RealOpenAiProvider implements AiProvider {
         try {
             if(objectMapper.writeValueAsBytes(body).length>30720||maxOutput>4000)throw new IllegalArgumentException("AI request budget exceeded");
         }catch(java.io.IOException bad){throw new IllegalArgumentException("AI request encoding failed");}
-        {
+        try {
             if(ledger==null)throw new IllegalStateException("Durable AI admission unavailable");
             String instructions=Objects.toString(body.get("instructions"),"");
             Object input=body.get("input");String data;
@@ -322,12 +324,12 @@ public class RealOpenAiProvider implements AiProvider {
             admission=ledger.reserve(com.securedeploy.ai.usage.AiAdmission.current(),feature,aiProperties.getOpenai().getModel(),
                 com.securedeploy.ai.usage.AiAdmission.hash(instructions+"\0"+data),32768,maxOutput);
             ledger.sending(admission); // Commit before the network boundary. Uncertain outcomes never retry.
-        }
+        } catch(RuntimeException denied) {throw new AiProviderFailure(AiProviderFailure.Kind.NOT_SENT,false);}
         try {
             var response=restClient().post().uri("/responses").contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION,"Bearer "+aiProperties.getOpenai().getApiKey()).body(body)
                 .exchange((request,result)->{
-                    if(!result.getStatusCode().is2xxSuccessful())throw new IllegalStateException("Provider request failed");
+                    if(!result.getStatusCode().is2xxSuccessful())throw new AiProviderFailure(AiProviderFailure.Kind.HTTP_ERROR,true);
                     byte[] bytes=result.getBody().readNBytes(65537);
                     if(bytes.length>65536)throw new IllegalArgumentException("Provider response limit");
                     return objectMapper.reader().with(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
@@ -339,7 +341,11 @@ public class RealOpenAiProvider implements AiProvider {
             return response;
         }catch(RuntimeException failure){
             if(admission!=null)try{ledger.uncertain(admission);}catch(RuntimeException ignored){/* SENDING remains durable; explicit reconciliation required. */}
-            throw new IllegalStateException("AI provider or durable settlement failed; no automatic retry");
+            if(failure instanceof AiProviderFailure safe)throw safe;
+            for(Throwable cause=failure;cause!=null;cause=cause.getCause())
+                if(cause instanceof java.net.SocketTimeoutException||cause instanceof java.net.http.HttpTimeoutException)
+                    throw new AiProviderFailure(AiProviderFailure.Kind.TIMEOUT,true);
+            throw new AiProviderFailure(AiProviderFailure.Kind.UNKNOWN,true);
         }
     }
 
