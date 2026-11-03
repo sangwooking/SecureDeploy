@@ -44,6 +44,25 @@ public class DurableAiLedger {
             exhibit=new ExhibitAiGate(java.nio.file.Path.of(control),express,spring,persistent);
         }
     }
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureMainCutover(
+            @Value("${securedeploy.ai.main-cutover.control-file:}") String control,
+            @Value("${securedeploy.ai.main-cutover.express-scope:}") String express,
+            @Value("${securedeploy.ai.main-cutover.spring-scope:}") String spring,
+            @Value("${securedeploy.ai.main-cutover.previous-request-id:}") String previous,
+            @Value("${server.port:8080}") int port) {
+        if(control.isBlank())return;
+        if(!enabled || port!=8080 || exhibit!=null
+                || !previous.matches("[A-Za-z0-9_-]{1,128}"))
+            throw new IllegalStateException("Invalid main AI cutover configuration");
+        var row=db.queryForObject("""
+            select count(*) from ai_usage_request_v1
+            where request_id=? and provider='OPENAI' and model='gpt-5.4-mini-2026-03-17'
+            and state='COMPLETED' and reserved_usd=0.033576000
+            """,Long.class,previous);
+        if(row!=1)throw new IllegalStateException("Original AI reservation is missing");
+        exhibit=new ExhibitAiGate(java.nio.file.Path.of(control),express,spring,true,ExhibitAiGate.MAIN_AUTHORIZATION);
+    }
     public void requireTransmissionOpen(){if(!transmissionOpen())throw denied();}
     public boolean transmissionOpen(){return exhibit==null||exhibit.open();}
     public boolean enabled(){return enabled;}

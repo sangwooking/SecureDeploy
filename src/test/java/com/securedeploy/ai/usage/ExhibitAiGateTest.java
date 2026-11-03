@@ -24,6 +24,21 @@ class ExhibitAiGateTest {
         assertFalse(gate.open());
     }
 
+    @Test void aSingleAuthorizationFileCannotOpenBothServers() throws Exception {
+        Path control=directory.resolve("authorization");
+        var exhibit=new ExhibitAiGate(control,"","",true);
+        var main=new ExhibitAiGate(control,"","",true,ExhibitAiGate.MAIN_AUTHORIZATION);
+        Files.writeString(control,ExhibitAiGate.LIVE_AUTHORIZATION);
+        assertTrue(exhibit.open());
+        assertFalse(main.open());
+        Files.delete(control);
+        assertFalse(exhibit.open());
+        assertFalse(main.open());
+        Files.writeString(control,ExhibitAiGate.MAIN_AUTHORIZATION);
+        assertFalse(exhibit.open());
+        assertTrue(main.open());
+    }
+
     @Test void consentScopeBudgetAndRestartAreFailClosed() throws Exception {
         Path control=directory.resolve("enable");
         Path challenge=directory.resolve("enable.challenge");

@@ -11,7 +11,9 @@ final class ExhibitAiGate {
     private static final String MODEL = "gpt-5.4-mini-2026-03-17";
     private static final BigDecimal BUDGET = new BigDecimal("0.10");
     static final String LIVE_AUTHORIZATION = "securedeploy-exhibit-v1:10:0.50";
+    static final String MAIN_AUTHORIZATION = "securedeploy-main-v1:10:0.50";
     private final Path control;
+    private final String authorization;
     private final boolean persistent;
     private final String bootToken = UUID.randomUUID().toString();
     private final String expressScope;
@@ -22,7 +24,12 @@ final class ExhibitAiGate {
     }
 
     ExhibitAiGate(Path control, String expressScope, String springScope, boolean persistent) {
+        this(control, expressScope, springScope, persistent, LIVE_AUTHORIZATION);
+    }
+
+    ExhibitAiGate(Path control, String expressScope, String springScope, boolean persistent, String authorization) {
         this.control = control;
+        this.authorization = authorization;
         this.persistent = persistent;
         this.expressScope = expressScope;
         this.springScope = springScope;
@@ -38,7 +45,7 @@ final class ExhibitAiGate {
 
     boolean open() {
         try {
-            String expected = persistent ? LIVE_AUTHORIZATION : bootToken;
+            String expected = persistent ? authorization : bootToken;
             return Files.isRegularFile(control, java.nio.file.LinkOption.NOFOLLOW_LINKS)
                     && Files.size(control)==expected.length()
                     && expected.equals(Files.readString(control));

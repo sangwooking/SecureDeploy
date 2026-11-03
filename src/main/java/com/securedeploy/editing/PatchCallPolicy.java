@@ -23,8 +23,9 @@ public class PatchCallPolicy {
     @org.springframework.beans.factory.annotation.Autowired
     void configureExhibition(
             @Value("${spring.datasource.url:}") String datasource,
-            @Value("${securedeploy.ai.exhibit.control-file:}") String control) {
-        persistentExhibit=!control.isBlank()
+            @Value("${securedeploy.ai.exhibit.control-file:}") String control,
+            @Value("${securedeploy.ai.main-cutover.control-file:}") String mainControl) {
+        persistentExhibit=!mainControl.isBlank()||!control.isBlank()
                 && "jdbc:postgresql://127.0.0.1:58869/securedeploy_exhibit_live".equals(datasource);
     }
     private final List<Attempt> attempts=new ArrayList<>();

@@ -390,8 +390,9 @@ public class EditingWorkspaceService {
     }
     private boolean exhibitConsentRequired;
     @org.springframework.beans.factory.annotation.Autowired
-    void configureExhibitConsent(@org.springframework.beans.factory.annotation.Value("${securedeploy.ai.exhibit.control-file:}") String control) {
-        exhibitConsentRequired=!control.isBlank();
+    void configureExhibitConsent(@org.springframework.beans.factory.annotation.Value("${securedeploy.ai.exhibit.control-file:}") String control,
+            @org.springframework.beans.factory.annotation.Value("${securedeploy.ai.main-cutover.control-file:}") String mainControl) {
+        exhibitConsentRequired=!control.isBlank()||!mainControl.isBlank();
     }
     synchronized WorkspacePatch.View beginPatch(String id,String proposal,WorkspacePatch.Consent consent,WorkspacePatch.Provider provider) {
         var state=owned(id);var session=patchOwned(state,proposal);
