@@ -55,12 +55,25 @@ public class DependencyAiAdviceService {
     private DurableAiLedger ledger;
     public Provider provider(long review){return describe(resolver.resolve(),plans.get(review));}
     private Provider describe(AiProvider selected){return describe(selected,null);}
+    private String approvedSource(com.securedeploy.persistence.entity.ReviewEntity review,long user,DependencyUpdatePlanService.Plan plan){
+        var source=review.getSourceMetadata();
+        var sca=review.getScaResult();
+        if(source==null||source.repositoryId()==null||source.commitSha()==null
+                ||!"GITHUB".equals(String.valueOf(review.getSourceType()))
+                ||!"GITHUB_APP".equals(source.accessMethod())
+                ||!Objects.equals(review.getProject().getUser().getId(),user)
+                ||sca==null||sca.status()!=com.securedeploy.sca.model.ScaResult.Status.COMPLETE)return null;
+        if(!"NPM".equals(plan.ecosystem()))return null;
+        String identity=source.repositoryId()+":"+source.commitSha()+":"+plan.packageName()+":"+plan.lockedVersion();
+        return ledger!=null&&ledger.permitsScopedDependencySource(user,identity)?identity:null;
+    }
     private Provider describe(AiProvider selected,DependencyUpdatePlanService.Snapshot evidence){
         String origin=selected.executionOrigin();if(!Set.of("OPENAI","MOCK").contains(origin==null?"":origin))origin="UNVERIFIED_PROVIDER";
         boolean blocked=workspaceOnly&&"OPENAI".equals(origin);
         if(blocked&&evidence!=null&&ledger!=null&&reviewAccess!=null){
             var review=reviewAccess.findAccessibleReviewWithVulnerabilities(evidence.reviewId(),"분석 결과에 접근할 수 없습니다.");
-            blocked=!ledger.permitsScopedDependency(users.currentUserId(),review.getProject().getId(),evidence.evidenceHash());
+            blocked=evidence.plans().stream().noneMatch(plan->approvedSource(review,users.currentUserId(),plan)!=null)
+                &&!ledger.permitsScopedDependency(users.currentUserId(),review.getProject().getId(),evidence.evidenceHash());
         }
         boolean available=properties.getProvider()==AiProviderType.OPENAI&&selected.providerType()==AiProviderType.OPENAI&&selected.isAvailable()&&!blocked;
         return new Provider("OPENAI",properties.getOpenai().getModel(),available,origin,blocked?"WORKSPACE_ONLY":null);
@@ -70,7 +83,13 @@ public class DependencyAiAdviceService {
         if(input==null||!Objects.equals(input.evidenceHash(),evidence.evidenceHash())||input.planIndex()<0||input.planIndex()>=evidence.plans().size())throw fail(HttpStatus.CONFLICT,"저장된 근거와 선택 항목이 일치하지 않습니다.");
         var provider=describe(resolver.resolve(),evidence);
         if("WORKSPACE_ONLY".equals(provider.unavailableReason()))
-            throw fail(HttpStatus.FORBIDDEN,"현재 실제 AI 호출은 승인된 코드 수정에만 허용됩니다. 라이브러리 업데이트는 저장된 공지와 수동 검토를 이용하세요.");
+            throw fail(HttpStatus.FORBIDDEN,"현재 검사의 원본은 SCA AI 전송 승인 범위에 없거나 근거가 불완전합니다. 승인된 GitHub 원본의 완료된 검사를 열어 주세요.");
+        if(workspaceOnly&&"OPENAI".equals(provider.origin())&&reviewAccess!=null&&ledger!=null){
+            var owned=reviewAccess.findAccessibleReviewWithVulnerabilities(review,"분석 결과에 접근할 수 없습니다.");
+            if(approvedSource(owned,users.currentUserId(),evidence.plans().get(input.planIndex()))==null
+                    &&!ledger.permitsScopedDependency(users.currentUserId(),owned.getProject().getId(),evidence.evidenceHash()))
+                throw fail(HttpStatus.FORBIDDEN,"선택한 패키지와 잠금 버전은 AI 전송 승인 범위에 없습니다.");
+        }
         WorkspacePatch.Prompt prompt;
         try{prompt=DependencyAiAdvice.prompt(evidence,input.planIndex(),mapper);}catch(RuntimeException e){throw fail(HttpStatus.UNPROCESSABLE_ENTITY,"검증된 npm 수정 후보와 선언 경로가 있는 항목만 지원합니다.");}
         synchronized(this){
@@ -98,7 +117,7 @@ public class DependencyAiAdviceService {
             if("OPENAI".equals(current.origin())){
                 if(reviewAccess==null)throw new IllegalStateException("Project ownership unavailable");
                 var owned=reviewAccess.findAccessibleReviewWithVulnerabilities(review,"분석 결과에 접근할 수 없습니다.");
-                try(var admission=AiAdmission.open(s.user,owned.getProject().getId(),s.id,"dependency_update_advice_v1",s.evidence.evidenceHash(),current.model(),s.prompt.instructions(),s.prompt.untrustedData())){AiAdmission.bindExhibitSource(s.evidence.evidenceHash());output=selected.generateDependencyAdvice(s.prompt);}
+                try(var admission=AiAdmission.open(s.user,owned.getProject().getId(),s.id,"dependency_update_advice_v1",s.evidence.evidenceHash(),current.model(),s.prompt.instructions(),s.prompt.untrustedData())){String source=approvedSource(owned,s.user,s.evidence.plans().get(s.index));AiAdmission.bindExhibitSource(source==null?s.evidence.evidenceHash():source);output=selected.generateDependencyAdvice(s.prompt);}
             }else output=selected.generateDependencyAdvice(s.prompt);
             try { DependencyAiAdvice.validate(output,s.evidence,s.index); }
             catch(IllegalArgumentException mismatch) { reason="EVIDENCE_MISMATCH";throw mismatch; }

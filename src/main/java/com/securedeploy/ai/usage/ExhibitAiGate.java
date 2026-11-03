@@ -19,6 +19,13 @@ final class ExhibitAiGate {
     private final String expressScope;
     private final String springScope;
     private volatile String dependencyScope="";
+    private volatile String dependencySourceScope="";
+    void configureDependencySource(String scope){dependencySourceScope=scope;}
+    boolean permitsDependencySource(long user,String source){
+        return MAIN_AUTHORIZATION.equals(authorization)&&open()&&source!=null
+            && dependencySourceScope.matches("[1-9][0-9]*:[1-9][0-9]*:[0-9a-f]{40}:[a-z0-9][a-z0-9._-]{0,99}:[0-9]+[.][0-9]+[.][0-9]+")
+            && dependencySourceScope.equals(user+":"+source);
+    }
     void configureDependency(String scope){dependencyScope=scope;}
     boolean permitsDependency(long user,long project,String evidence){
         return MAIN_AUTHORIZATION.equals(authorization)&&open()
@@ -65,7 +72,8 @@ final class ExhibitAiGate {
         if (!open() || request==null || !MODEL.equals(request.model())
                 || input<1 || input>32768 || output<1 || output>2000) return false;
         if("dependency_update_advice_v1".equals(request.feature()))
-            return request.consentHash().equals(source)&&permitsDependency(request.user(),request.project(),source);
+            return (request.consentHash().equals(source)&&permitsDependency(request.user(),request.project(),source))
+                || permitsDependencySource(request.user(),source);
         var expected = switch (request.feature()) {
             case "workspace_patch_plan_v1" -> expressScope;
             case "workspace_patch_v1" -> springScope;

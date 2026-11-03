@@ -73,6 +73,16 @@ public class DurableAiLedger {
         exhibit.configureDependency(dependencyScope);
         return exhibit.permitsDependency(user,project,evidence);
     }
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureDependencySourceScope(@Value("${securedeploy.ai.main-cutover.dependency-source-scope:}") String scope){
+        dependencySourceScope=scope;
+    }
+    private String dependencySourceScope="";
+    public boolean permitsScopedDependencySource(long user,String source){
+        if(!enabled||exhibit==null)return false;
+        exhibit.configureDependencySource(dependencySourceScope);
+        return exhibit.permitsDependencySource(user,source);
+    }
     public void requireTransmissionOpen(){if(!transmissionOpen())throw denied();}
     public boolean transmissionOpen(){return exhibit==null||exhibit.open();}
     public boolean enabled(){return enabled;}

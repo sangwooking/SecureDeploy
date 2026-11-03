@@ -24,7 +24,7 @@ export function DependencyAiAdvicePanel({reviewId,evidence,onEditDependency,sele
   <p className="advice-boundary">분석 결과와 별도의 AI 의견입니다. 제안만으로 파일·위험 평가·안전 판정은 바뀌지 않습니다.</p>
   <p className="provider-origin">{provider?providerSetupLabel(provider.origin,provider.name):'Provider 상태 확인 중'}{provider?.model&&<span> · {provider.model}</span>}</p>
   {provider&&!provider.available&&<p role="note">{provider.unavailableReason==='WORKSPACE_ONLY'
-   ?'현재 실제 AI 호출은 승인된 코드 수정에만 허용됩니다. 라이브러리 수정은 아래 공지와 업데이트 근거로 검토하세요.'
+   ?'현재 검사의 원본은 SCA AI 전송 승인 범위에 없거나 검사 근거가 불완전합니다. 승인된 GitHub 원본의 완료된 검사를 열어 주세요.'
    :'AI 제안을 사용할 수 없습니다. 아래 근거 기반 안내를 확인하세요.'}</p>}
   <div className="advice-request-controls"><label>AI 수정 방향을 요청할 공지<select value={choice} disabled={busy||!provider?.available} onChange={e=>{setChoice(e.target.value);setView(null);setConsent(false);}}><option value="">항목 선택</option>{eligible.map(({p,index})=><option key={index} value={index}>{p.packageName}@{p.lockedVersion} · {p.advisoryId}</option>)}</select></label>
    <button type="button" className="secondary-button" disabled={busy||!provider?.available||choice===''||!eligible.some(e=>String(e.index)===choice)} onClick={()=>void perform(()=>prepareDependencyAdvice(reviewId,evidence.evidenceHash,Number(choice)))}>AI 전송 범위 확인</button></div>
