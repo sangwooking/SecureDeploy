@@ -324,6 +324,8 @@ public class RealOpenAiProvider implements AiProvider {
             admission=ledger.reserve(com.securedeploy.ai.usage.AiAdmission.current(),feature,aiProperties.getOpenai().getModel(),
                 com.securedeploy.ai.usage.AiAdmission.hash(instructions+"\0"+data),32768,maxOutput);
             ledger.sending(admission); // Commit before the network boundary. Uncertain outcomes never retry.
+        } catch(com.securedeploy.ai.usage.DurableAiLedger.ExhibitLimit limit) {
+            throw new AiProviderFailure(limit.budget()?AiProviderFailure.Kind.EXHIBIT_BUDGET_LIMIT:AiProviderFailure.Kind.EXHIBIT_COUNT_LIMIT,false);
         } catch(RuntimeException denied) {throw new AiProviderFailure(AiProviderFailure.Kind.NOT_SENT,false);}
         try {
             try {ledger.requireTransmissionOpen();}

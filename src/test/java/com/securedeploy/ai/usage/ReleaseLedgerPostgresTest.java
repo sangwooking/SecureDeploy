@@ -83,6 +83,54 @@ class ReleaseLedgerPostgresTest {
    assertFalse(restarted.transmissionOpen());
   }finally{pool.shutdownNow();}
  }
+ @Test void liveExhibitionBudgetPersistsAcrossConcurrentReservations(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir)throws Exception{
+  var control=dir.resolve("authorization");
+  java.nio.file.Files.writeString(control,ExhibitAiGate.LIVE_AUTHORIZATION);
+  var source="a".repeat(64)+":"+"b".repeat(64)+":TS_SENSITIVE_DATA_EXPOSURE";
+  var scope=user+":"+project+":"+source;
+  var url="jdbc:postgresql://127.0.0.1:58869/securedeploy_exhibit_live";
+  var first=ledger("0.50","0.50","0.50");
+  var second=ledger("0.50","0.50","0.50");
+  first.configureExhibit(control.toString(),scope,"",url);
+  second.configureExhibit(control.toString(),scope,"",url);
+  var pool=Executors.newFixedThreadPool(8);
+  try{
+   List<Callable<Boolean>> calls=new ArrayList<>();
+   for(int i=0;i<16;i++){
+    int n=i;
+    calls.add(()->{
+     var active=n%2==0?first:second;
+     try(var context=AiAdmission.open(user,project,"live-exhibit-"+n,"workspace_patch_plan_v1","c".repeat(64),
+             "gpt-5.4-mini-2026-03-17","i","d")){
+      AiAdmission.bindExhibitSource(source);
+      var r=AiAdmission.current();
+      String id=active.reserve(r,r.feature(),r.model(),r.transmissionHash(),32768,2000);
+      active.sending(id);
+      active.uncertain(id);
+      // These timestamps model completed requests spread across the exhibition.
+      db.update("update ai_usage_request_v1 set created_at=current_timestamp-interval '2 hours' where request_id=?",id);
+      return true;
+     }catch(RuntimeException denied){return false;}
+    });
+   }
+   for(var result:pool.invokeAll(calls))result.get();
+   // The existing hourly abuse limit can deny some concurrent admissions.
+   // Complete any remaining slots after the window ages; lifetime history still counts.
+   for(int i=16;i<26;i++){
+    try(var context=AiAdmission.open(user,project,"live-exhibit-"+i,"workspace_patch_plan_v1","c".repeat(64),
+            "gpt-5.4-mini-2026-03-17","i","d")){
+     AiAdmission.bindExhibitSource(source);
+     var r=AiAdmission.current();
+     String id=second.reserve(r,r.feature(),r.model(),r.transmissionHash(),32768,2000);
+     second.sending(id);
+     second.uncertain(id);
+     db.update("update ai_usage_request_v1 set created_at=current_timestamp-interval '2 hours' where request_id=?",id);
+    }catch(DurableAiLedger.ExhibitLimit expected){assertFalse(expected.budget());break;}
+   }
+   assertEquals(10,db.queryForObject("select count(*) from ai_usage_request_v1 where state='PROVIDER_UNKNOWN'",Integer.class));
+   assertEquals(new BigDecimal("0.335760000"),db.queryForObject("select sum(reserved_usd) from ai_usage_request_v1 where state='PROVIDER_UNKNOWN'",BigDecimal.class));
+  }finally{pool.shutdownNow();}
+ }
  @Test void separateUserAndProjectLimitsAndConsentPayloadModelGate(){
   reserve(ledger("0.04","1","1"),"one");assertThrows(RuntimeException.class,()->reserve(ledger("0.04","1","1"),"two"));
   db.update("delete from ai_usage_request_v1");reserve(ledger("1","0.04","1"),"one");assertThrows(RuntimeException.class,()->reserve(ledger("1","0.04","1"),"two"));

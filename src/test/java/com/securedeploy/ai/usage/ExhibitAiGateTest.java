@@ -10,6 +10,20 @@ import org.junit.jupiter.api.io.TempDir;
 class ExhibitAiGateTest {
     @TempDir Path directory;
 
+    @Test void liveAuthorizationPersistsAndEnforcesSharedCeilings() throws Exception {
+        Path control=directory.resolve("authorization");
+        assertFalse(new ExhibitAiGate(control,"","",true).open());
+        Files.writeString(control,ExhibitAiGate.LIVE_AUTHORIZATION);
+        var gate=new ExhibitAiGate(control,"","",true);
+        assertTrue(gate.open());
+        assertTrue(gate.permitsReservation(9,9,new BigDecimal("0.302184"),new BigDecimal("0.033576")));
+        assertFalse(gate.permitsReservation(10,0,BigDecimal.ZERO,BigDecimal.ZERO));
+        assertFalse(gate.permitsReservation(9,0,new BigDecimal("0.48"),new BigDecimal("0.033576")));
+        assertTrue(new ExhibitAiGate(control,"","",true).open());
+        Files.delete(control);
+        assertFalse(gate.open());
+    }
+
     @Test void consentScopeBudgetAndRestartAreFailClosed() throws Exception {
         Path control=directory.resolve("enable");
         Path challenge=directory.resolve("enable.challenge");

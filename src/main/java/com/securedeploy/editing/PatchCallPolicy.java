@@ -19,6 +19,14 @@ public class PatchCallPolicy {
     }
     private final boolean externalEnabled;
     private final Clock clock;
+    private boolean persistentExhibit;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureExhibition(
+            @Value("${spring.datasource.url:}") String datasource,
+            @Value("${securedeploy.ai.exhibit.control-file:}") String control) {
+        persistentExhibit=!control.isBlank()
+                && "jdbc:postgresql://127.0.0.1:58869/securedeploy_exhibit_live".equals(datasource);
+    }
     private final List<Attempt> attempts=new ArrayList<>();
     private int active;
     @org.springframework.beans.factory.annotation.Autowired
@@ -42,7 +50,7 @@ public class PatchCallPolicy {
         BigDecimal reserved=mock?BigDecimal.ZERO:new BigDecimal("0.033576");
         BigDecimal userBudget=attempts.stream().filter(a->a.user==user).map(Attempt::reserved).reduce(BigDecimal.ZERO,BigDecimal::add);
         BigDecimal projectBudget=attempts.stream().filter(a->a.project==project).map(Attempt::reserved).reduce(BigDecimal.ZERO,BigDecimal::add);
-        if(userHourly>=6||projectHourly>=12||userBudget.add(reserved).compareTo(new BigDecimal("0.10"))>0||projectBudget.add(reserved).compareTo(new BigDecimal("0.20"))>0)throw rejected("AI 요청 횟수 또는 보수적 비용 예산 한도입니다.");
+        if(userHourly>=6||projectHourly>=12||userBudget.add(reserved).compareTo(new BigDecimal(persistentExhibit?"0.50":"0.10"))>0||projectBudget.add(reserved).compareTo(new BigDecimal(persistentExhibit?"0.50":"0.20"))>0)throw rejected("AI 요청 횟수 또는 보수적 비용 예산 한도입니다.");
         attempts.add(new Attempt(user,project,identity,now,reserved));active++;return new Permit();
     }
     private SecureDeployException rejected(String message){return new SecureDeployException(HttpStatus.TOO_MANY_REQUESTS,message);}

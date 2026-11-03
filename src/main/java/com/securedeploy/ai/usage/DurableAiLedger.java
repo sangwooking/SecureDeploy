@@ -25,16 +25,23 @@ public class DurableAiLedger {
             db.queryForObject("select count(*) from ai_usage_request_v1 where 1=0",Long.class);
             if(db.queryForObject("select count(*) from ai_usage_gate_v1 where id=1",Long.class)!=1)throw denied();}
     }
+    public static final class ExhibitLimit extends IllegalStateException {
+        private final boolean budget;
+        ExhibitLimit(boolean budget){this.budget=budget;}
+        public boolean budget(){return budget;}
+    }
     private ExhibitAiGate exhibit;
     @org.springframework.beans.factory.annotation.Autowired
     void configureExhibit(@Value("${securedeploy.ai.exhibit.control-file:}") String control,
             @Value("${securedeploy.ai.exhibit.express-scope:}") String express,
             @Value("${securedeploy.ai.exhibit.spring-scope:}") String spring,
             @Value("${spring.datasource.url:}") String datasource) {
+        boolean persistent="jdbc:postgresql://127.0.0.1:58869/securedeploy_exhibit_live".equals(datasource);
+        if (persistent && control.isBlank()) throw new IllegalStateException("Exhibition authorization path required");
         if (!control.isBlank()) {
-            if (!enabled || !"jdbc:postgresql://127.0.0.1:58850/securedeploy_exhibit_step2".equals(datasource))
+            if (!enabled || (!persistent && !"jdbc:postgresql://127.0.0.1:58850/securedeploy_exhibit_step2".equals(datasource)))
                 throw new IllegalStateException("Exhibition requires the dedicated local database");
-            exhibit=new ExhibitAiGate(java.nio.file.Path.of(control),express,spring);
+            exhibit=new ExhibitAiGate(java.nio.file.Path.of(control),express,spring,persistent);
         }
     }
     public void requireTransmissionOpen(){if(!transmissionOpen())throw denied();}
@@ -53,6 +60,10 @@ public class DurableAiLedger {
             db.queryForObject("select id from ai_usage_gate_v1 where id=1 for update",Integer.class);
             if(exhibit!=null){
                 var exhibition=db.queryForMap("select count(*) as n,count(*) filter(where feature=?) as same,coalesce(sum(reserved_usd),0) as total from ai_usage_request_v1 where state not in ('PREPARED','PRE_SEND_FAILED')",feature);
+                int count=((Number)exhibition.get("n")).intValue();
+                var total=(BigDecimal)exhibition.get("total");
+                if(exhibit.persistent() && count>=10)throw new ExhibitLimit(false);
+                if(exhibit.persistent() && total.add(reserved).compareTo(new BigDecimal("0.50"))>0)throw new ExhibitLimit(true);
                 if(!exhibit.permitsReservation(((Number)exhibition.get("n")).intValue(),
                         ((Number)exhibition.get("same")).intValue(),(BigDecimal)exhibition.get("total"),reserved))throw denied();
             }
@@ -64,7 +75,7 @@ public class DurableAiLedger {
                 if(Boolean.TRUE.equals(row.get("hourly"))){gc++;if(owner)uc++;if(project)pc++;}}
             if(uc>=6||pc>=12||gc>=60||u.add(reserved).compareTo(userLimit)>0||p.add(reserved).compareTo(projectLimit)>0||g.add(reserved).compareTo(serviceLimit)>0)throw denied();
             if(db.update("update ai_usage_request_v1 set state='RESERVED',updated_at=current_timestamp where request_id=? and state='PREPARED'",r.requestId())!=1)throw denied();
-        });}catch(RuntimeException failure){db.update("update ai_usage_request_v1 set state='PRE_SEND_FAILED',cost_status='NOT_SENT',updated_at=current_timestamp where request_id=? and state='PREPARED'",r.requestId());throw denied();}
+        });}catch(RuntimeException failure){db.update("update ai_usage_request_v1 set state='PRE_SEND_FAILED',cost_status='NOT_SENT',updated_at=current_timestamp where request_id=? and state='PREPARED'",r.requestId());if(failure instanceof ExhibitLimit limit)throw limit;throw denied();}
         return r.requestId();
     }
     public void sending(String id){if(!transmissionOpen())throw denied();if(db.update("update ai_usage_request_v1 set state='SENDING',updated_at=current_timestamp where request_id=? and state='RESERVED'",id)!=1)throw denied();}

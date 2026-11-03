@@ -10,15 +10,23 @@ import java.util.UUID;
 final class ExhibitAiGate {
     private static final String MODEL = "gpt-5.4-mini-2026-03-17";
     private static final BigDecimal BUDGET = new BigDecimal("0.10");
+    static final String LIVE_AUTHORIZATION = "securedeploy-exhibit-v1:10:0.50";
     private final Path control;
+    private final boolean persistent;
     private final String bootToken = UUID.randomUUID().toString();
     private final String expressScope;
     private final String springScope;
 
     ExhibitAiGate(Path control, String expressScope, String springScope) {
+        this(control, expressScope, springScope, false);
+    }
+
+    ExhibitAiGate(Path control, String expressScope, String springScope, boolean persistent) {
         this.control = control;
+        this.persistent = persistent;
         this.expressScope = expressScope;
         this.springScope = springScope;
+        if (persistent) return;
         try {
             Files.writeString(control.resolveSibling(control.getFileName()+".challenge"), bootToken);
         } catch (IOException e) {
@@ -26,10 +34,14 @@ final class ExhibitAiGate {
         }
     }
 
+    boolean persistent(){return persistent;}
+
     boolean open() {
         try {
-            return Files.isRegularFile(control) && Files.size(control)==bootToken.length()
-                    && bootToken.equals(Files.readString(control));
+            String expected = persistent ? LIVE_AUTHORIZATION : bootToken;
+            return Files.isRegularFile(control, java.nio.file.LinkOption.NOFOLLOW_LINKS)
+                    && Files.size(control)==expected.length()
+                    && expected.equals(Files.readString(control));
         } catch (IOException e) {
             return false;
         }
@@ -50,6 +62,7 @@ final class ExhibitAiGate {
     }
 
     boolean permitsReservation(int count, int sameFeature, BigDecimal total, BigDecimal cost) {
-        return open() && count<2 && sameFeature==0 && total.add(cost).compareTo(BUDGET)<=0;
+        return open() && count<(persistent?10:2) && (persistent||sameFeature==0)
+                && total.add(cost).compareTo(persistent?new BigDecimal("0.50"):BUDGET)<=0;
     }
 }
