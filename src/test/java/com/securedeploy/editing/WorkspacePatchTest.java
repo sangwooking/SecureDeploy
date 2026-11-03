@@ -61,6 +61,24 @@ class WorkspacePatchTest {
         workspaces.save(workspace.id(),file.id(),new EditingWorkspaceService.Change(2,file.originalHash(),input.replace("debug=true","debug=false")+"# manual\n"),false);
         try(var captured=workspaces.captureScan(workspace.id(),3)){assertEquals("MANUAL_AFTER_MOCK_AI",captured.provenance().files().get(0).changeOrigin());}
     }
+    @Test void refusalKeepsMeasuredUsageWithoutChangingSource() { failureOutcome(AiProviderFailure.Kind.REFUSED,"NEEDS_REVIEW","거부",true); }
+    @Test void incompleteKeepsMeasuredUsageWithoutBecomingPatch() { failureOutcome(AiProviderFailure.Kind.INCOMPLETE,"NEEDS_REVIEW","완성되지",true); }
+    @Test void transportTimeoutIsNotFreeAndDoesNotRetry() { failureOutcome(AiProviderFailure.Kind.TIMEOUT,"FAILED","제한 시간",false); }
+    @Test void presendDenialIsExplicitlyNotBilled() { failureOutcome(AiProviderFailure.Kind.NOT_SENT,"FAILED","전송 전",false); }
+    void failureOutcome(AiProviderFailure.Kind kind,String state,String message,boolean reported) {
+        var tracker=new TemplateAiUsageTracker(properties);
+        patches.shutdown();patches=new WorkspacePatchService(workspaces,new AiProviderResolver(properties,List.of(provider,template)),properties,users,mapper,tracker,Clock.systemUTC());
+        var calls=new AtomicInteger();
+        doAnswer(i->{calls.incrementAndGet();throw new AiProviderFailure(kind,kind!=AiProviderFailure.Kind.NOT_SENT);}).when(provider).generateWorkspacePatch(any());
+        var tokens=new AiTokenUsage(31,7,38,true,0,"gpt-5.4-mini-2026-03-17",true);
+        when(provider.consumeLastTokenUsage()).thenReturn(Optional.empty(),reported?Optional.of(tokens):Optional.empty());
+        var prepared=prepare();var generated=generate(prepared);
+        assertEquals(state,generated.state());assertTrue(generated.explanation().contains(message));assertEquals(1,calls.get());
+        assertNotNull(generated.usage());assertEquals(reported,generated.usage().usageKnown()&&generated.usage().billable());
+        assertEquals(kind!=AiProviderFailure.Kind.NOT_SENT,generated.usage().billable());
+        assertEquals(input,workspaces.content(workspace.id(),file.id()).text());assertEquals(1,workspaces.get(workspace.id()).revision());
+        if(reported)assertEquals(38,generated.usage().totalTokens());
+    }
     @AfterEach void cleanup(){patches.shutdown();workspaces.shutdown();}
     WorkspacePatch.Output valid(WorkspacePatch.Prompt prompt)throws Exception{
         var data=mapper.readTree(prompt.untrustedData());
