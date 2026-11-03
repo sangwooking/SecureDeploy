@@ -1,3 +1,4 @@
+import { AiPatchVerification } from './AiPatchVerification';
 import {originalVerified} from './sourceVerification';
 import {AiRequestDisclosure} from './AiRequestDisclosure';
 import {useUiCapabilities} from './useUiCapabilities';
@@ -103,7 +104,7 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
       <p>{file.path} · 현재 {selected.startLine}행 · 기준 revision {selected.revision} · {selected.ruleId}</p>
       {selected.flowFindingId&&!selected.context&&<p>{deterministic?'수정':'전송'} 범위: {selected.startLine}~{selected.startLine+selected.before.split('\n').length-1}행의 객체 응답 부분입니다. 파일 전체가 아닙니다.</p>}
       {selected.plan&&<p>{selected.provider.origin==='MOCK'?'Mock 계획을 시험하며 실제 모델 검증이 아닙니다.':'AI가 수정 방향을 제안합니다.'} SecureDeploy가 검증된 AST 범위의 코드 변경을 생성합니다. {selected.state==='ACCEPTED'?'사용자 승인 후 작업 공간에 적용됐으며 재검사와 호환성 확인이 필요합니다.':'사용자 승인을 기다립니다.'}</p>}
-      <p>{selected.explanation}</p>
+      <AiPatchVerification selected={selected} deterministic={deterministic} />
       {selected.usage&&<p role="status">{patchUsageLabel(selected)}</p>}
       {!deterministic&&selected.provider.origin!=='MOCK'&&!selected.usage&&['FAILED','INVALID','GENERATING'].includes(selected.state)&&<p>실제 사용량과 비용을 아직 확인하지 못했습니다. 무료 처리됐다는 의미는 아닙니다.</p>}
       {!deterministic&&selected.state === 'APPROVAL_REQUIRED' && <>
@@ -122,8 +123,8 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
         <h4>수정 후</h4><pre className="source-ai-code">{selected.after}</pre>
       </details>}
       {selected.diff && <div className="source-diff"><h4>현재 수정본 → {deterministic?'자동 수정안':'AI 제안'}</h4><PatchDiff patch={selected.diff} /></div>}
-      {selected.verificationSteps.length > 0 && <><h4>수정 후 확인</h4><ul>{selected.verificationSteps.map((s,i) => <li key={i}>{s}</li>)}</ul></>}
-      <ul>{selected.limitations.map((s,i) => <li key={i}>{s}</li>)}</ul>
+      {deterministic && selected.verificationSteps.length > 0 && <><h4>수정 후 확인</h4><ul>{selected.verificationSteps.map((s,i) => <li key={i}>{s}</li>)}</ul></>}
+      <ul>{deterministic && selected.limitations.map((s,i) => <li key={i}>{s}</li>)}</ul>
       {selected.state === 'PROPOSED' && <><label className="source-export-approval"><input type="checkbox" checked={accepted} disabled={disabled || dirty || !!pending} onChange={e => setAccepted(e.target.checked)} />Diff와 미확인 조건을 검토했고 현재 작업 공간에만 적용하도록 승인합니다.</label>
         {selected.flowFindingId&&<label className="source-export-approval"><input type="checkbox" checked={compatibilityAccepted} disabled={disabled||dirty||!!pending} onChange={e=>setCompatibilityAccepted(e.target.checked)} />응답 필드 제거로 API 호환성이 달라질 수 있음을 확인했습니다.</label>}
         <button type="button" className="primary-button" disabled={disabled || dirty || !!pending || !accepted || (!!selected.flowFindingId&&!compatibilityAccepted)} onClick={apply}>{deterministic?'검토한 자동 수정안 적용':'검토한 AI 수정안 적용'}</button></>}
