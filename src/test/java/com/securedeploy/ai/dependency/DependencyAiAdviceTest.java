@@ -65,6 +65,24 @@ class DependencyAiAdviceTest {
         assertThrows(RuntimeException.class,()->service.generate(1,p.id(),new DependencyAiAdviceService.Consent(snapshot.evidenceHash(),true)));verify(provider,times(1)).generateDependencyAdvice(any());
     }
     @Test void disabledProviderDoesNotMasqueradeAsACompletedProposal(){var p=prepare();props.setProvider(AiProviderType.TEMPLATE);assertFalse(service.provider().available());assertThrows(RuntimeException.class,()->service.generate(1,p.id(),new DependencyAiAdviceService.Consent(snapshot.evidenceHash(),true)));verify(provider,never()).generateDependencyAdvice(any());}
+    @Test void workspaceOnlyPolicyDeniesScaBeforeCreatingAConsentSession(){
+        when(provider.executionOrigin()).thenReturn("OPENAI");
+        service.configureScope("/test/authorization","");
+        assertEquals("WORKSPACE_ONLY",service.provider().unavailableReason());
+        assertFalse(service.provider().available());
+        var failure=assertThrows(com.securedeploy.global.error.SecureDeployException.class,this::prepare);
+        assertEquals(403,failure.getStatus().value());
+        verify(provider,never()).generateDependencyAdvice(any());
+    }
+    @Test void refusalAndMalformedResponseProduceDifferentSafeMessages(){
+        var p=prepare();
+        when(provider.generateDependencyAdvice(any())).thenThrow(new com.securedeploy.ai.service.AiProviderFailure(
+                com.securedeploy.ai.service.AiProviderFailure.Kind.REFUSED,true));
+        var v=service.generate(1,p.id(),new DependencyAiAdviceService.Consent(snapshot.evidenceHash(),true));
+        assertEquals("NEEDS_REVIEW",v.state());assertTrue(v.message().contains("거부"));assertNull(v.output());
+        assertTrue(DependencyAiAdviceService.failureMessage("INVALID_RESPONSE").contains("형식"));
+        assertTrue(DependencyAiAdviceService.failureMessage("EVIDENCE_MISMATCH").contains("근거"));
+    }
     @Test void staleEvidenceCannotBeTransmitted(){var p=prepare();var changed=new DependencyUpdatePlanService.Snapshot(1,1,null,snapshot.analyzedAt(),"changed",snapshot.origin(),snapshot.modelVerification(),snapshot.plans(),snapshot.limitations());when(plans.get(1)).thenReturn(changed);assertThrows(RuntimeException.class,()->service.generate(1,p.id(),new DependencyAiAdviceService.Consent(snapshot.evidenceHash(),true)));verify(provider,never()).generateDependencyAdvice(any());}
     @Test void failuresAreNotRetriedOrReturnedAsModelOutput(){var p=prepare();when(provider.generateDependencyAdvice(any())).thenThrow(new IllegalStateException("private provider response"));var v=service.generate(1,p.id(),new DependencyAiAdviceService.Consent(snapshot.evidenceHash(),true));assertEquals("FAILED",v.state());assertNull(v.output());assertFalse(v.message().contains("private"));verify(provider,times(1)).generateDependencyAdvice(any());}
 }
