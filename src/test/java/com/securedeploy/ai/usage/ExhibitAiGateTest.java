@@ -1,0 +1,34 @@
+package com.securedeploy.ai.usage;
+
+import static org.junit.jupiter.api.Assertions.*;
+import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+class ExhibitAiGateTest {
+    @TempDir Path directory;
+
+    @Test void consentScopeBudgetAndRestartAreFailClosed() throws Exception {
+        Path control=directory.resolve("enable");
+        Path challenge=directory.resolve("enable.challenge");
+        String source="a".repeat(64)+":"+"b".repeat(64)+":DEBUG_ENABLED";
+        var request=new AiAdmission.Request(1,2,"request","workspace_patch_v1","c".repeat(64),
+                "gpt-5.4-mini-2026-03-17","d".repeat(64));
+        var gate=new ExhibitAiGate(control,"","1:2:"+source);
+        assertFalse(gate.permits(request,source,32768,2000));
+        Files.copy(challenge,control);
+        assertTrue(gate.permits(request,source,32768,2000));
+        assertFalse(gate.permits(request,source+"x",32768,2000));
+        assertFalse(gate.permits(request,source,32769,2000));
+        assertFalse(gate.permits(request,source,32768,2001));
+        assertTrue(gate.permitsReservation(1,0,new BigDecimal("0.03"),new BigDecimal("0.03")));
+        assertFalse(gate.permitsReservation(2,0,BigDecimal.ZERO,BigDecimal.ZERO));
+        assertFalse(gate.permitsReservation(1,1,BigDecimal.ZERO,BigDecimal.ZERO));
+        assertFalse(gate.permitsReservation(1,0,new BigDecimal("0.09"),new BigDecimal("0.02")));
+        assertFalse(new ExhibitAiGate(control,"","1:2:"+source).open());
+        Files.delete(control);
+        assertFalse(gate.open());
+    }
+}

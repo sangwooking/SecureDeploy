@@ -8,6 +8,9 @@ import java.util.HexFormat;
 public final class AiAdmission implements AutoCloseable {
     public record Request(long user,long project,String requestId,String feature,String consentHash,
                           String model,String transmissionHash) { }
+    private static final ThreadLocal<String> SOURCE=new ThreadLocal<>();
+    public static void bindExhibitSource(String manifest){if(current()==null)throw new IllegalStateException();SOURCE.set(manifest);}
+    public static String exhibitSource(){return SOURCE.get();}
     private static final ThreadLocal<Request> CURRENT=new ThreadLocal<>();
     private AiAdmission(Request r){if(CURRENT.get()!=null)throw new IllegalStateException("Nested AI admission");CURRENT.set(r);}
     public static AiAdmission open(long user,long project,String requestId,String feature,String consentHash,
@@ -16,5 +19,5 @@ public final class AiAdmission implements AutoCloseable {
     }
     public static Request current(){return CURRENT.get();}
     public static String hash(String value){try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));}catch(Exception e){throw new IllegalStateException();}}
-    @Override public void close(){CURRENT.remove();}
+    @Override public void close(){CURRENT.remove();SOURCE.remove();}
 }

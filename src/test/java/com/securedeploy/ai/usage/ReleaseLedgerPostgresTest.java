@@ -32,6 +32,57 @@ class ReleaseLedgerPostgresTest {
    assertEquals("PRE_SEND_FAILED",db.queryForObject("select state from ai_usage_request_v1 where request_id='third-id'",String.class));
   }finally{pool.shutdownNow();}
  }
+ @Test void exhibitionCountsFailuresAcrossInstancesAndRestart(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir)throws Exception{
+  var control=dir.resolve("enable");
+  var challenge=dir.resolve("enable.challenge");
+  String base="a".repeat(64)+":"+"b".repeat(64);
+  String express=base+":TS_SENSITIVE_DATA_EXPOSURE",spring=base+":DEBUG_ENABLED";
+  String dedicated="jdbc:postgresql://127.0.0.1:58850/securedeploy_exhibit_step2";
+  var a=ledger("1","1","1");
+  var b=ledger("1","1","1");
+  a.configureExhibit(control.toString(),user+":"+project+":"+express,user+":"+project+":"+spring,dedicated);
+  var secondControl=dir.resolve("enable-second");
+  b.configureExhibit(secondControl.toString(),user+":"+project+":"+express,user+":"+project+":"+spring,dedicated);
+  java.nio.file.Files.copy(challenge,control);
+  java.nio.file.Files.copy(dir.resolve("enable-second.challenge"),secondControl);
+  var pool=Executors.newFixedThreadPool(8);
+  try{
+   List<Callable<Boolean>> calls=new ArrayList<>();
+   for(int i=0;i<8;i++){
+    int n=i;
+    calls.add(()->{
+     String feature=n%2==0?"workspace_patch_plan_v1":"workspace_patch_v1";
+     String source=n%2==0?express:spring;
+     var selected=n<4?a:b;
+     try(var context=AiAdmission.open(user,project,"exhibit-"+n,feature,"c".repeat(64),
+             "gpt-5.4-mini-2026-03-17","i","d")){
+      AiAdmission.bindExhibitSource(source);
+      var r=AiAdmission.current();
+      String id=selected.reserve(r,feature,r.model(),r.transmissionHash(),32768,2000);
+      selected.sending(id);
+      selected.uncertain(id);
+      return true;
+     }catch(RuntimeException denied){return false;}
+    });
+   }
+   int sent=0;
+   for(var result:pool.invokeAll(calls))if(result.get())sent++;
+   assertEquals(2,sent);
+   assertEquals(2,db.queryForObject("select count(*) from ai_usage_request_v1 where state='PROVIDER_UNKNOWN'",Integer.class));
+   var restarted=ledger("1","1","1");
+   restarted.configureExhibit(control.toString(),user+":"+project+":"+express,user+":"+project+":"+spring,dedicated);
+   assertFalse(restarted.transmissionOpen());
+   java.nio.file.Files.copy(challenge,control,java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+   try(var context=AiAdmission.open(user,project,"restart","workspace_patch_plan_v1","c".repeat(64),
+           "gpt-5.4-mini-2026-03-17","i","d")){
+    AiAdmission.bindExhibitSource(express);
+    var r=AiAdmission.current();
+    assertThrows(RuntimeException.class,()->restarted.reserve(r,r.feature(),r.model(),r.transmissionHash(),32768,2000));
+   }
+   java.nio.file.Files.delete(control);
+   assertFalse(restarted.transmissionOpen());
+  }finally{pool.shutdownNow();}
+ }
  @Test void separateUserAndProjectLimitsAndConsentPayloadModelGate(){
   reserve(ledger("0.04","1","1"),"one");assertThrows(RuntimeException.class,()->reserve(ledger("0.04","1","1"),"two"));
   db.update("delete from ai_usage_request_v1");reserve(ledger("1","0.04","1"),"one");assertThrows(RuntimeException.class,()->reserve(ledger("1","0.04","1"),"two"));

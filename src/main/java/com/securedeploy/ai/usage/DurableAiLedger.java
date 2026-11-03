@@ -25,10 +25,25 @@ public class DurableAiLedger {
             db.queryForObject("select count(*) from ai_usage_request_v1 where 1=0",Long.class);
             if(db.queryForObject("select count(*) from ai_usage_gate_v1 where id=1",Long.class)!=1)throw denied();}
     }
+    private ExhibitAiGate exhibit;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureExhibit(@Value("${securedeploy.ai.exhibit.control-file:}") String control,
+            @Value("${securedeploy.ai.exhibit.express-scope:}") String express,
+            @Value("${securedeploy.ai.exhibit.spring-scope:}") String spring,
+            @Value("${spring.datasource.url:}") String datasource) {
+        if (!control.isBlank()) {
+            if (!enabled || !"jdbc:postgresql://127.0.0.1:58850/securedeploy_exhibit_step2".equals(datasource))
+                throw new IllegalStateException("Exhibition requires the dedicated local database");
+            exhibit=new ExhibitAiGate(java.nio.file.Path.of(control),express,spring);
+        }
+    }
+    public void requireTransmissionOpen(){if(!transmissionOpen())throw denied();}
+    public boolean transmissionOpen(){return exhibit==null||exhibit.open();}
     public boolean enabled(){return enabled;}
     public String reserve(AiAdmission.Request r,String feature,String model,String wireHash,int input,int output){
         if(!Set.of("workspace_patch_v1","workspace_patch_plan_v1","dependency_update_advice_v1","semantic_review").contains(feature)||!enabled||r==null||r.user()<=0||r.project()<=0||!feature.equals(r.feature())||!model.equals(r.model())||!wireHash.equals(r.transmissionHash())
                 ||!r.requestId().matches("[A-Za-z0-9_-]{1,128}")||!r.consentHash().matches("[0-9a-f]{64}")||input<1||input>32768||output<1||output>4000||!AiCostPolicy.priced(model))throw denied();
+        if(exhibit!=null&&!exhibit.permits(r,AiAdmission.exhibitSource(),input,output))throw denied();
         BigDecimal reserved=AiCostPolicy.cost(new AiTokenUsage(input,output,input+output,true,0,model,true));
         // First durable event survives a later quota failure; duplicate IDs are never retransmitted.
         try{db.update("insert into ai_usage_request_v1(request_id,user_id,project_id,feature,provider,model,consent_hash,transmission_hash,state,reserved_input,reserved_output,reserved_usd) values(?,?,?,?,?,?,?,?, 'PREPARED',?,?,?)",
@@ -36,6 +51,11 @@ public class DurableAiLedger {
         catch(org.springframework.dao.DataIntegrityViolationException duplicate){throw denied();}
         try{tx.executeWithoutResult(s->{
             db.queryForObject("select id from ai_usage_gate_v1 where id=1 for update",Integer.class);
+            if(exhibit!=null){
+                var exhibition=db.queryForMap("select count(*) as n,count(*) filter(where feature=?) as same,coalesce(sum(reserved_usd),0) as total from ai_usage_request_v1 where state not in ('PREPARED','PRE_SEND_FAILED')",feature);
+                if(!exhibit.permitsReservation(((Number)exhibition.get("n")).intValue(),
+                        ((Number)exhibition.get("same")).intValue(),(BigDecimal)exhibition.get("total"),reserved))throw denied();
+            }
             var rows=db.queryForList("select user_id,project_id,greatest(reserved_usd,coalesce(estimated_usd,0)) as reserved_usd,created_at,state,(created_at>current_timestamp-interval '1 hour') as hourly from ai_usage_request_v1 where created_at>current_timestamp-interval '24 hours' and state not in ('PREPARED','PRE_SEND_FAILED')");
             BigDecimal u=BigDecimal.ZERO,p=BigDecimal.ZERO,g=BigDecimal.ZERO;int uc=0,pc=0,gc=0;
             for(var row:rows){var amount=(BigDecimal)row.get("reserved_usd");g=g.add(amount);
@@ -47,7 +67,7 @@ public class DurableAiLedger {
         });}catch(RuntimeException failure){db.update("update ai_usage_request_v1 set state='PRE_SEND_FAILED',cost_status='NOT_SENT',updated_at=current_timestamp where request_id=? and state='PREPARED'",r.requestId());throw denied();}
         return r.requestId();
     }
-    public void sending(String id){if(db.update("update ai_usage_request_v1 set state='SENDING',updated_at=current_timestamp where request_id=? and state='RESERVED'",id)!=1)throw denied();}
+    public void sending(String id){if(!transmissionOpen())throw denied();if(db.update("update ai_usage_request_v1 set state='SENDING',updated_at=current_timestamp where request_id=? and state='RESERVED'",id)!=1)throw denied();}
     public void complete(String id,AiTokenUsage usage){
         var cost=usage==null?null:AiCostPolicy.cost(usage);boolean known=cost!=null&&usage.usageKnown();
         if(db.update("update ai_usage_request_v1 set state=?,actual_input=?,actual_output=?,cached_input=?,usage_model=?,estimated_usd=?,cost_status=?,updated_at=current_timestamp where request_id=? and state='SENDING'",

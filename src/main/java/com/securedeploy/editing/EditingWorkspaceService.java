@@ -212,6 +212,14 @@ public class EditingWorkspaceService {
         }
         return new Discovery(creating.contains(user)?"CREATING":"NONE",null);
     }
+    synchronized String exhibitSource(String id, WorkspacePatch.View view) {
+        var state=owned(id);
+        if(state.revision!=view.revision() || state.revision!=1 || !verified(state)
+                || state.files.stream().anyMatch(f->f.edit!=null)) return "";
+        return com.securedeploy.ai.usage.AiAdmission.hash(state.files.stream()
+                .map(f->f.original.path()+"\0"+f.original.directory()+"\0"+f.hash)
+                .collect(java.util.stream.Collectors.joining("\n")))+":"+view.originalHash()+":"+view.ruleId();
+    }
     synchronized long projectId(String id){return owned(id).project;}
     public synchronized Workspace get(String id) { return describe(owned(id)); }
     public synchronized Content content(String id, String fileId) {
@@ -380,10 +388,18 @@ public class EditingWorkspaceService {
     public synchronized WorkspacePatch.View patch(String id,String proposal) {
         var state=owned(id);return patchView(state,patchOwned(state,proposal),false);
     }
+    private boolean exhibitConsentRequired;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureExhibitConsent(@org.springframework.beans.factory.annotation.Value("${securedeploy.ai.exhibit.control-file:}") String control) {
+        exhibitConsentRequired=!control.isBlank();
+    }
     synchronized WorkspacePatch.View beginPatch(String id,String proposal,WorkspacePatch.Consent consent,WorkspacePatch.Provider provider) {
         var state=owned(id);var session=patchOwned(state,proposal);
+        var contextHash=patchView(state,session,true).contextHash();
+        boolean requireContextHash=session.context!=null||exhibitConsentRequired
+                ||(consent!=null&&consent.contextHash()!=null);
         if(session.method().equals("DETERMINISTIC_FIX")||!"APPROVAL_REQUIRED".equals(session.state)||consent==null||!consent.consented()||consent.revision()!=session.revision
-                ||session.context!=null&&!patchView(state,session,true).contextHash().equals(consent.contextHash())
+                ||requireContextHash&&(contextHash==null||!contextHash.equals(consent.contextHash()))
                 ||!session.currentHash.equals(consent.currentHash())||!session.provider.equals(provider))throw fail(HttpStatus.CONFLICT,"전송 동의가 없거나 코드·Provider·revision이 변경되었습니다. 새 제안을 준비해 주세요.");
         session.state="GENERATING";session.explanation="동의한 최소 코드 범위만 전송합니다. 아직 파일은 변경되지 않았습니다.";
         return patchView(state,session,true);

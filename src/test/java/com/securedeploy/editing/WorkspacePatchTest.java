@@ -55,7 +55,7 @@ class WorkspacePatchTest {
         workspace=workspaces.create(4,null);file=workspace.files().get(0);
     }
     @Test void mockOriginSurvivesApprovalAndSubsequentManualEditing() throws Exception {
-        when(provider.executionOrigin()).thenReturn("MOCK");var p=prepare();var generated=patches.generate(workspace.id(),p.id(),new WorkspacePatch.Consent(1,p.currentHash(),true));assertEquals("PROPOSED",generated.state());
+        when(provider.executionOrigin()).thenReturn("MOCK");var p=prepare();var generated=patches.generate(workspace.id(),p.id(),new WorkspacePatch.Consent(1,p.currentHash(),true,p.contextHash()));assertEquals("PROPOSED",generated.state());
         workspaces.applyPatch(workspace.id(),p.id(),new WorkspacePatch.Decision(1,p.currentHash(),true));
         try(var captured=workspaces.captureScan(workspace.id(),2)){assertEquals("MOCK_AI_APPROVED",captured.provenance().files().get(0).changeOrigin());}
         workspaces.save(workspace.id(),file.id(),new EditingWorkspaceService.Change(2,file.originalHash(),input.replace("debug=true","debug=false")+"# manual\n"),false);
@@ -85,7 +85,7 @@ class WorkspacePatchTest {
         return new WorkspacePatch.Output("PATCH",data.path("fileId").asText(),data.path("startLine").asInt(),data.path("expectedHash").asText(),"debug=false","불필요한 상세 오류를 줄이는 설정 제안입니다.",List.of("설정 적용과 로컬 동작을 테스트하고 재검사하세요."),List.of("실제 운영 설정은 미확인입니다."));
     }
     WorkspacePatch.View prepare(){var content=workspaces.content(workspace.id(),file.id());return patches.prepare(workspace.id(),new WorkspacePatch.Prepare(file.id(),77,workspace.revision(),file.originalHash(),content.currentHash()));}
-    WorkspacePatch.View generate(WorkspacePatch.View p){return patches.generate(workspace.id(),p.id(),new WorkspacePatch.Consent(p.revision(),p.currentHash(),true));}
+    WorkspacePatch.View generate(WorkspacePatch.View p){return patches.generate(workspace.id(),p.id(),new WorkspacePatch.Consent(p.revision(),p.currentHash(),true,p.contextHash()));}
     WorkspacePatch.Decision decision(WorkspacePatch.View p){return new WorkspacePatch.Decision(p.revision(),p.currentHash(),true);}
     void deno() throws Exception {
         workspaces.delete(workspace.id());

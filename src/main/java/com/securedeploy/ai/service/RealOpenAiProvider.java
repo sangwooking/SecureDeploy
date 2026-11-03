@@ -326,6 +326,8 @@ public class RealOpenAiProvider implements AiProvider {
             ledger.sending(admission); // Commit before the network boundary. Uncertain outcomes never retry.
         } catch(RuntimeException denied) {throw new AiProviderFailure(AiProviderFailure.Kind.NOT_SENT,false);}
         try {
+            try {ledger.requireTransmissionOpen();}
+            catch(IllegalStateException closed){throw new AiProviderFailure(AiProviderFailure.Kind.NOT_SENT,false);}
             var response=restClient().post().uri("/responses").contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION,"Bearer "+aiProperties.getOpenai().getApiKey()).body(body)
                 .exchange((request,result)->{

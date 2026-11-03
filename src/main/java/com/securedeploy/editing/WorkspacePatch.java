@@ -32,7 +32,10 @@ public final class WorkspacePatch {
                        int startLine, String before, String after, String diff, Provider provider,
                        String explanation, List<String> verificationSteps, List<String> limitations,String flowFindingId,String method,com.securedeploy.ai.usage.AiUsageRecord usage, ResponsePatchValidator.Context context) {
         @com.fasterxml.jackson.annotation.JsonProperty("contextHash")
-        public String contextHash(){return context==null?null:WorkspacePatchPlan.METHOD.equals(method)?WorkspacePatchPlan.fingerprint(this):context.fingerprint();}
+        public String contextHash(){return context==null?("DEBUG_ENABLED".equals(ruleId)
+                    ? com.securedeploy.ai.usage.AiAdmission.hash(String.join("\0", fileId,
+                            originalHash,currentHash,Long.toString(revision),Integer.toString(startLine),before))
+                    : null):WorkspacePatchPlan.METHOD.equals(method)?WorkspacePatchPlan.fingerprint(this):context.fingerprint();}
         @com.fasterxml.jackson.annotation.JsonProperty("plan") public WorkspacePatchPlan.Contract plan(){return WorkspacePatchPlan.contract(this);}
         public View(String id,String state,String fileId,long findingId,String ruleId,long reviewId,String sourceRevision,long revision,String originalHash,String currentHash,int startLine,String before,String after,String diff,Provider provider,String explanation,List<String> verificationSteps,List<String> limitations,String flowFindingId,String method,com.securedeploy.ai.usage.AiUsageRecord usage){this(id,state,fileId,findingId,ruleId,reviewId,sourceRevision,revision,originalHash,currentHash,startLine,before,after,diff,provider,explanation,verificationSteps,limitations,flowFindingId,method,usage,null);}
         public View(String id,String state,String fileId,long findingId,String ruleId,long reviewId,String sourceRevision,long revision,String originalHash,String currentHash,int startLine,String before,String after,String diff,Provider provider,String explanation,List<String> verificationSteps,List<String> limitations,String flowFindingId,String method){this(id,state,fileId,findingId,ruleId,reviewId,sourceRevision,revision,originalHash,currentHash,startLine,before,after,diff,provider,explanation,verificationSteps,limitations,flowFindingId,method,null);}

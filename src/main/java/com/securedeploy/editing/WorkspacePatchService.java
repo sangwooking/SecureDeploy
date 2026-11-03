@@ -61,11 +61,12 @@ public class WorkspacePatchService {
             var selected=resolver.resolve();
             permit=callPolicy.reserve(users.currentUserId(),workspaces.projectId(workspace),SourceArchive.hash(((view.contextHash()!=null?view.contextHash():view.currentHash())+"|"+proposal).getBytes(java.nio.charset.StandardCharsets.UTF_8)),provider().model(),provider().origin(),prompt);
             long usersId=users.currentUserId(),projectId=workspaces.projectId(workspace);
+            String exhibitSource=workspaces.exhibitSource(workspace,view);
             future=executor.submit(()->{
                 selected.consumeLastTokenUsage();
                 WorkspacePatch.Output output=null;WorkspacePatchPlan.Output plan=null;AiUsageRecord measured;
                 String failure=null;boolean attempted=true;
-                try (var admission=AiAdmission.open(usersId,projectId,proposal,view.plan()!=null?"workspace_patch_plan_v1":"workspace_patch_v1",view.contextHash()!=null?view.contextHash():view.currentHash(),provider().model(),prompt.instructions(),prompt.untrustedData())) {if(view.plan()!=null)plan=selected.generateWorkspacePatchPlan(prompt);else output=selected.generateWorkspacePatch(prompt); }
+                try (var admission=AiAdmission.open(usersId,projectId,proposal,view.plan()!=null?"workspace_patch_plan_v1":"workspace_patch_v1",view.contextHash()!=null?view.contextHash():view.currentHash(),provider().model(),prompt.instructions(),prompt.untrustedData())) {AiAdmission.bindExhibitSource(exhibitSource);if(view.plan()!=null)plan=selected.generateWorkspacePatchPlan(prompt);else output=selected.generateWorkspacePatch(prompt); }
                 catch(AiProviderFailure safe){failure="PROVIDER_"+safe.kind();attempted=safe.requestAttempted();}
                 catch(IllegalArgumentException invalid){failure="INVALID";}
                 catch(RuntimeException unavailable){failure="FAILED";}
