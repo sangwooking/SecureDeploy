@@ -20,7 +20,7 @@ const examples: Record<string, {before:string; after:string; check:string}> = {
     after: "// After the server issues an HttpOnly session cookie:\nconst response = await fetch('/api/me', { credentials: 'same-origin' });",
     check: '서버의 쿠키 발급과 CSRF 방어가 전제입니다. 로그인·갱신·로그아웃 및 교차 출처 요구사항을 확인하세요.',
   },
-  SQL_INJECTION: {
+  DANGEROUS_SQL: {
     before: 'await db.query("SELECT * FROM users WHERE id = " + id);',
     after: 'await db.query("SELECT * FROM users WHERE id = $1", [id]);',
     check: 'PostgreSQL 스타일 예시입니다. 실제 드라이버의 바인딩 문법과 권한 검사를 확인하세요.',
@@ -29,6 +29,11 @@ const examples: Record<string, {before:string; after:string; check:string}> = {
     before: 'element.innerHTML = input;',
     after: 'element.textContent = input;',
     check: '브라우저에서 평문을 표시할 때의 예시입니다. 서버 응답은 HTML 문맥에 맞게 인코딩하고 정상 출력도 확인하세요.',
+  },
+  REACT_DANGEROUS_HTML: {
+    before: '<div dangerouslySetInnerHTML={{ __html: input }} />',
+    after: '<div>{input}</div>',
+    check: '입력을 텍스트로 표시하는 예시입니다. HTML 렌더링이 기능 요구사항이면 별도 정화와 정책 검증이 필요합니다.',
   },
   TS_SENSITIVE_DATA_EXPOSURE: {
     before: 'res.json({ status, token: process.env.SERVICE_TOKEN });',
