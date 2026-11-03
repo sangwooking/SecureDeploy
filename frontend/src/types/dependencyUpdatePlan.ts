@@ -10,7 +10,7 @@ export interface DependencyUpdatePlans {
   schemaVersion: number; reviewId: number; sourceRevision: string | null; analyzedAt: string | null;
   evidenceHash: string; origin: string; modelVerification: string; plans: DependencyUpdatePlan[]; limitations: string[];
 }
-export interface DependencyAdviceProvider {name:string;model:string;available:boolean;origin:string}
+export interface DependencyAdviceProvider {name:string;model:string;available:boolean;origin:string;unavailableReason?:string|null}
 export interface DependencyAdviceOutput {
  evidenceHash:string;packageName:string;lockedVersion:string;advisoryId:string;decision:string;candidateVersion:string;
  explanation:string;whyItMatters:string;possibleImpact:string;recommendedAction:string;verificationSteps:string[];uncertainties:string[];

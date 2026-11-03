@@ -43,7 +43,7 @@ export function DependencyUpdatePlans({reviewId,onEditDependency,selectedDepende
       {!result.plans.length&&<p>이 저장 결과에는 업데이트 계획으로 연결할 보안 공지가 없습니다. 전체 안전을 의미하지 않습니다.</p>}
       {selectedDependency&&selectedIndex===-1&&<p role="note">이 공지에 연결된 업데이트 근거가 없거나 여러 계획과 겹칩니다. 다른 공지의 AI 의견을 대신 표시하지 않습니다.</p>}
       {cap.value?.npmIsolation&&cap.value.npmIsolation.state!=='AVAILABLE_OFFLINE_BROKER'?<p role="note">{cap.value.npmIsolation.message}</p>:!cap.value?.providerAvailable&&!cap.value?.npmTreePlans&&<p>AI Provider 설정이 필요해요. 아래 근거 기반 계획과 수동 수정을 이용할 수 있습니다.</p>}
-      {shownPlans.map((p,i)=><details key={`${p.ecosystem}:${p.packageName}:${p.lockedVersion}:${p.advisoryId}:${i}`}>
+      {shownPlans.map((p,i)=><details open={!!selectedDependency} key={`${p.ecosystem}:${p.packageName}:${p.lockedVersion}:${p.advisoryId}:${i}`}>
         <summary>{p.packageName}@{p.lockedVersion} → {p.sameMajorCandidates.join(', ')||'같은 major 후보 미확인'} · {p.advisoryId} · 적용 가능 미확인</summary>
         <h4>확인된 근거</h4><p>{p.explanation}</p>
         <p>{kind[p.dependencyKind]??kind.UNKNOWN} · 버전 근거: {p.sourceFiles.join(', ')||'미확인'}</p>
@@ -56,6 +56,8 @@ export function DependencyUpdatePlans({reviewId,onEditDependency,selectedDepende
           && <><h4>직접 의존성 수동 업데이트 예시</h4>
             <pre>npm install --package-lock-only --ignore-scripts --no-audit --no-fund {p.packageName}@{p.sameMajorCandidates[0]}</pre>
             <p>격리 복사본에서만 실행하세요. package.json과 package-lock.json의 Diff, 중첩 버전, 공지 재검사와 앱 호환성을 확인해야 합니다.</p></>}
+        {(p.dependencyKind==='TRANSITIVE'||p.dependencyKind==='MIXED')&&<p>직접 선언된 상위 패키지부터 검토하세요. 해당 패키지의 후보가 수정된 하위 버전을 실제로 선택하는지 격리 복사본에서 잠금 파일을 재생성해 확인하세요.</p>}
+        {cap.value&&!cap.value.npmTreePlans&&<p>현재 서버에서 의존성 수정 파일 자동 생성은 비활성화되어 있습니다. 수동으로 변경한 경우 Diff·재검사와 호환성 확인이 필요합니다.</p>}
         <h4>수정 후 확인할 일</h4><ol>{p.verificationSteps.map((s,j)=><li key={j}>{s}</li>)}</ol>
         <h4>미확인 사항</h4><ul>{p.unknowns.map((s,j)=><li key={j}>{s}</li>)}</ul>
         <p>공지 수정 시각: {p.advisoryModified||'미기록'} · 패키지 관리자 근거: {p.packageManagerEvidence}</p>
