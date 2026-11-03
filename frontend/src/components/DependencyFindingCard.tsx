@@ -20,6 +20,10 @@ export function DependencyFindingCard({ dependency: original, reviewId, finding,
   useEffect(()=>setSupplement(null),[reviewId,original]);
   const dep=supplement?.original===original&&supplement.reviewId===reviewId?supplement.value:original;
   const fixed=currentSeriesFix(dep);
+  const npmPackage = dep.ecosystem==='NPM' && /^(?:@[a-z0-9._-]+\/)?[a-z0-9][a-z0-9._-]*$/.test(dep.packageName)
+    ? `https://www.npmjs.com/package/${dep.packageName.split('/').map(encodeURIComponent).join('/')}` : null;
+  const advisory = /^(?:CVE-|GHSA-|OSV-|PYSEC-|GO-|RUSTSEC-)[a-z0-9-]+$/i.test(dep.osvId)
+    ? `https://osv.dev/vulnerability/${encodeURIComponent(dep.osvId)}` : null;
   const knownExploited = [dep.osvId, ...dep.aliases].some(id => intelligence?.cves[id.toUpperCase()]?.kev.knownExploited === true);
   const evidence=<><span className="source-label">SCA 보안 공지 · 실제 영향은 추가 확인</span>
     <span className={`risk-badge risk-${finding?.priority?.toLowerCase() ?? 'review_required'}`}>
@@ -30,6 +34,10 @@ export function DependencyFindingCard({ dependency: original, reviewId, finding,
     {dep.ecosystem === 'PYPI' && <p className="review-caution">실제 설치 여부는 미확인입니다. 이 라이브러리 조회가 Python 서버 코드의 인증·권한 및 데이터 흐름을 검증하는 것은 아니에요. 서버 코드 검사 결과는 별도로 확인해 주세요.</p>}
     {knownExploited && <p className="review-caution">분석 당시 정보에 실제 공격에서 악용된 이력이 있습니다. 이 프로젝트가 공격받았다는 뜻은 아닙니다.</p>}
     <p className="advisory-identity"><strong>보안 공지</strong> <code>{dep.osvId}</code></p>
+    {(npmPackage||advisory)&&<p>
+      {advisory&&<a href={advisory} target="_blank" rel="noopener noreferrer">OSV 공지 원문</a>}
+      {npmPackage&&<> · <a href={npmPackage} target="_blank" rel="noopener noreferrer">공식 npm 패키지</a></>}
+    </p>}
     <dl className="dependency-versions">
       <div><dt>라이브러리</dt><dd>{dependencyText(dep.packageName)}</dd></div>
       <div><dt>현재 버전</dt><dd>{dependencyText(dep.installedVersion)}</dd></div>

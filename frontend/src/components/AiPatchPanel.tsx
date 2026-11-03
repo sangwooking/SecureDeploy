@@ -116,6 +116,11 @@ export function AiPatchPanel({ workspace, file, content, findings, flowFindings 
         <button type="button" className="primary-button" disabled={disabled || !!pending || dirty || !consented} onClick={generate}>동의한 코드로 AI 수정안 생성</button>
       </>}
       {selected.state === 'GENERATING' && <p role="status">코드를 변경하지 않고 제안을 생성하고 있습니다. 취소해도 이미 전송한 요청의 처리·요금 취소는 보증하지 않습니다.</p>}
+      {selected.diff && selected.after != null && <details open>
+        <summary>{selected.state==='ACCEPTED'?'승인된 수정 범위':'서버가 검증한 수정 범위 · 승인 대기'}</summary>
+        <h4>수정 전</h4><pre className="source-ai-code">{selected.before}</pre>
+        <h4>수정 후</h4><pre className="source-ai-code">{selected.after}</pre>
+      </details>}
       {selected.diff && <div className="source-diff"><h4>현재 수정본 → {deterministic?'자동 수정안':'AI 제안'}</h4><PatchDiff patch={selected.diff} /></div>}
       {selected.verificationSteps.length > 0 && <><h4>수정 후 확인</h4><ul>{selected.verificationSteps.map((s,i) => <li key={i}>{s}</li>)}</ul></>}
       <ul>{selected.limitations.map((s,i) => <li key={i}>{s}</li>)}</ul>

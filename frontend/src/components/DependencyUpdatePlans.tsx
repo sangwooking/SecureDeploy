@@ -50,6 +50,12 @@ export function DependencyUpdatePlans({reviewId,onEditDependency,selectedDepende
         <p>이 공지에 기록된 수정 버전: {p.fixedVersionEvidence.join(', ')||'확인되지 않음'}</p>
         <p>동일 major 검토 후보: {p.sameMajorCandidates.join(', ')||'확인되지 않음'} · 호환성 검증 전 추천 버전으로 확정하지 않습니다.</p>
         {p.locations.map((l,j)=><p key={j}><code>{l.file}:{l.line}</code> · {l.section} · {l.parentPackage} {l.declaredVersion} · {l.confirmed?'선언 확인':'선언 미확인'}{l.peer?' · peer 조건 확인 필요':''}</p>)}
+        {p.ecosystem==='NPM' && p.dependencyKind==='DIRECT' && p.action==='REVIEW_DIRECT_DECLARATION' && p.packageManagerEvidence==='NPM_LOCK_OBSERVED_VERSION_UNVERIFIED' && p.sourceFiles.includes('package-lock.json')
+          && /^(?:@[a-z0-9._-]+\/)?[a-z0-9][a-z0-9._-]*$/.test(p.packageName)
+          && p.sameMajorCandidates.length===1 && /^\d+\.\d+\.\d+$/.test(p.sameMajorCandidates[0])
+          && <><h4>직접 의존성 수동 업데이트 예시</h4>
+            <pre>npm install --package-lock-only --ignore-scripts --no-audit --no-fund {p.packageName}@{p.sameMajorCandidates[0]}</pre>
+            <p>격리 복사본에서만 실행하세요. package.json과 package-lock.json의 Diff, 중첩 버전, 공지 재검사와 앱 호환성을 확인해야 합니다.</p></>}
         <h4>수정 후 확인할 일</h4><ol>{p.verificationSteps.map((s,j)=><li key={j}>{s}</li>)}</ol>
         <h4>미확인 사항</h4><ul>{p.unknowns.map((s,j)=><li key={j}>{s}</li>)}</ul>
         <p>공지 수정 시각: {p.advisoryModified||'미기록'} · 패키지 관리자 근거: {p.packageManagerEvidence}</p>
