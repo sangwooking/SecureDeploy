@@ -24,7 +24,7 @@ const url='http://workspace-fixture.local';
    identityStatus:'VERIFIED_ZIP_MANIFEST',sourceVerification:{status:'VERIFIED'},
    changedFileIds:[],files:paths.map((path,i)=>({path,id:'f'+i,editable:true,originalHash:'hash',size:contents.length,changed:false}))};
   const writes=[];
-  let includeRescan=false;
+  let includeRescan=false, handoff=false;
   const after={...result,reviewId:102,vulnerabilities:[],sca:{...result.sca,dependencyVulnerabilities:[]},
    coverage:{status:'PARTIAL',entries:[{kind:'FILE',status:'SELECTED',filePath:code.filePath}]},
    workspaceScan:{workspaceId:'test-w',originalReviewId:result.reviewId,revision:2,inputHash:'scan-hash',baselineVerified:true,files:[]}};
@@ -49,7 +49,13 @@ const url='http://workspace-fixture.local';
    if(u.pathname==='/api/reviews/102')return json(after);
    if(u.pathname==='/api/editing-workspaces/scans/test-scan')return json({id:'test-scan',workspaceId:'test-w',revision:2,
     inputHash:'scan-hash',reviewId:102,state:'SUCCEEDED',message:'fixture scan',capturedAt:new Date().toISOString()});
-   if(u.pathname==='/api/ui-capabilities')return json({schemaVersion:1,providerAvailable:false});
+   if(u.pathname==='/api/ui-capabilities')return json({schemaVersion:1,providerAvailable:false,dependencyPlans:false,dependencyAdvice:false,workspaceSemanticReview:false,dependencyFiles:true,npmTreePlans:handoff,npmGeneration:false});
+   if(handoff&&u.pathname.endsWith('/dependencies/update-plans'))return json({evidenceHash:'same-evidence',plans:[dependency]});
+   if(handoff&&u.pathname.endsWith('/dependencies/ai-proposals/demo-advice'))return json({reviewId:result.reviewId,evidenceHash:'same-evidence',state:'GENERATED',planIndex:0,output:{decision:'PROPOSE_UPDATE',candidateVersion:'7.30.1'}});
+   if(handoff&&u.pathname.endsWith('/test-w/npm-tree-plans')){
+    assert.deepEqual(request.postDataJSON(),{revision:1,planIndex:0,adviceId:'demo-advice'});
+    return json({state:'EXECUTION_CONSENT_REQUIRED',message:'Docker 검증 동의 대기',affectedPaths:[],attempts:[]});
+   }
    if(u.pathname==='/api/editing-workspaces/test-w')return json(workspace);
    const file=u.pathname.match(/^\/api\/editing-workspaces\/test-w\/files\/(f\d)$/);
    if(file)return json({fileId:file[1],revision:workspace.revision,originalHash:'hash',currentHash:includeRescan?'edited':'hash',text:contents,newline:'LF',bom:false});
@@ -89,6 +95,13 @@ const url='http://workspace-fixture.local';
   await page.setViewportSize({width:390,height:844});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   assert.deepEqual(writes,[]);
+  handoff=true;includeRescan=false;workspace.revision=1;workspace.changedFileIds=[];workspace.files[0].changed=false;
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto(`${url}/#/projects/${result.projectId}/edit?review=${result.reviewId}&advice=demo-advice`);
+  await page.reload();
+  await page.getByRole('button',{name:'업데이트 수정안 만들기',exact:true}).click();
+  await page.getByText('Docker 검증 동의 대기').waitFor();
+  assert.deepEqual(writes,['/api/editing-workspaces/test-w/npm-tree-plans']);
   assert.deepEqual(errors,[]);
   console.log('WORKSPACE_FILE_FINDINGS_CHROMIUM_PASS');
  }finally{await browser.close();}
